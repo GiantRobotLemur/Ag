@@ -1,7 +1,12 @@
 # The CMake configuration for the Silver (Ag) runtime utility library.
+cmake_minimum_required(VERSION 3.21)
 set(AG_VERSION "0.0.1.0")
 
-if (PROJECT_IS_TOP_LEVEL)
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}")
+    set(AG_IS_ROOT 1)
+endif()
+
+if (DEFINED AG_IS_ROOT)
     project(Silver
             VERSION "${AG_VERSION}"
             DESCRIPTION "An cross platform runtime library."
@@ -12,8 +17,9 @@ endif()
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/ConfigureBuild.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/Utilities.cmake")
 
+if (DEFINED AG_IS_ROOT)
+    ag_configure_build()
 
-if (PROJECT_IS_TOP_LEVEL)
     set(ExtFolderName "3rdParty")
 
     message(STATUS "Obtaining Google Test...")
@@ -30,13 +36,4 @@ if (PROJECT_IS_TOP_LEVEL)
     # target_link_libraries(${myTarget} PRIVATE glm::glm)
 endif()
 
-# Add the location of public header files.
-set(AG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Include")
-
-# Underlying runtime components.
-add_subdirectory(SymbolPackager)
-add_subdirectory(Core)
-
-if ("${Qt6_FOUND}")
-    add_subdirectory(QtInterop)
-endif()
+add_subdirectory(Source)
