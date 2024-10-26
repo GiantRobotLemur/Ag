@@ -1,39 +1,28 @@
-# AG Core - Documentation
+# Silver (Ag)
 
-AG (inspired by the periodic table symbol for Silver) represents a set of
-non-domain-specific libraries which underpin the Mighty Oak project and may
-go on to form the basis of other projects.
+Ag (inspired by the periodic table symbol for Silver) represents a set of
+non-domain-specific libraries which underpin the
+[Mighty Oak](https://github.com/GiantRobotLemur/MightyOak) project has gone
+go on to form the basis of other projects since.
 
-AG Core is the lowest level library. It provides the most basic functionality
-for up-stream code. It is dependent upon the platform C Runtime Library
-(currently MSVC Runtime and glibc), the C++ Standard Template Library and, in
-the case of Windows, the Win32 subsystem and shell. Currently AG Core is not
-dependent upon any third party libraries which are not available to the host
-platform as standard.
+The motivation here is that I'm fed up of creating everything from the ground
+up in C++. There are so many common tools missing from the runtime libraries
+or differences between platform runtime libraries which need to be written
+around that I decided to invest in creating re-usable components which I
+could use in my projects to be able to reduce the amount of set-up and boiler
+plate code I had to write just to get going.
 
-The library is intended mostly for internal use. It is completely annotated
-with Doxygen comments, although could benefit from more detailed explanation
-about various topics. Compiling the Documentation CMake project will yield
-this information and in .chm form if the HTML Help compiler is available
-under Windows.
+These libraries are intended mostly for internal use. They are completely
+annotated with Doxygen comments, although could benefit from more detailed
+explanation about various topics.
 
-Some notable features of AG Core are:
-* Optimised low-level binary operations (bit scan, byte order, etc.).
-* Tools for dynamic management of in-line memory blocks.
-* Enumeration metadata tools.
-* Support for Unicode conversions.
-* Immutable UTF-8 strings.
-* Symbol extraction and packaging for use in stack traces.
-* An Immutable exception class hierarchy with stack traces.
-* Try/Catch mechanism for hardware exceptions.
-* A robust application framework including command line handling.
-* Optimised sorted linear maps and sets.
-* String formatting using type-safe variable arguments.
-* URI management.
-* File path management using both Win32 and POSIX-style paths.
-* File system integration.
+* [Core](Doc/Core.md) - A base runtime library providing components missing
+in C/C++ runtime.
+* [Symbol Packager](Doc/SymbolPackager.md) - A stand-alone tools to extract
+symbols from binaries and packages them for use at runtime to create readable
+stack traces by the Core library.
+* QtInterop - A library which integrates Core with Qt6.
 
-# QtInterop
-
-This is a library which provides basic utilities for working Qt6 and
-allowing the AgCore library to inter-operate with it.
+This repository has been created so that it can be a git sub-module within
+another. It provides not only C++ libraries, but also CMake utilities which
+are available to the parent repository.

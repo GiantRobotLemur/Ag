@@ -20,20 +20,9 @@ include("${CMAKE_CURRENT_LIST_DIR}/cmake/Utilities.cmake")
 if (DEFINED AG_IS_ROOT)
     ag_configure_build()
 
-    set(ExtFolderName "3rdParty")
+    ag_configure_gtest()
 
-    message(STATUS "Obtaining Google Test...")
-    FetchContent_MakeAvailable(googletest)
-    include(GoogleTest)
-    set_target_properties(gtest PROPERTIES FOLDER "${ExtFolderName}")
-    set_target_properties(gtest_main PROPERTIES FOLDER "${ExtFolderName}")
-    set_target_properties(gmock PROPERTIES FOLDER "${ExtFolderName}")
-    set_target_properties(gmock_main PROPERTIES FOLDER "${ExtFolderName}")
-
-    # message(STATUS "Obtaining glm...")
-    # FetchContent_MakeAvailable(glm)
-    # set_target_properties(glm PROPERTIES FOLDER "${ExtFolderName}")
-    # target_link_libraries(${myTarget} PRIVATE glm::glm)
+    ag_configure_glm()
 endif()
 
 add_subdirectory(Source)

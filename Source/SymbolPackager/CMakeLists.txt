@@ -7,12 +7,6 @@ else()
     set(TARGET_ARCH "${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif()
 
-# message(STATUS "VS Platform Name: ${CMAKE_VS_PLATFORM_NAME}")
-# message(STATUS "Generator Platform: ${CMAKE_GENERATOR_PLATFORM}")
-# message(STATUS "Host Processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-# message(STATUS "Target Processor: ${CMAKE_SYSTEM_PROCESSOR}")
-# message(STATUS "Target Architecture: ${TARGET_ARCH}")
-
 # This might be important when building for ARM64 on x64.
 set(AG_EXT_SYMBOL_PACKAGER "" CACHE FILEPATH "The path to an external Symbol Packager tool binary.")
 
@@ -56,8 +50,8 @@ function(ag_enable_stacktrace targetName)
     else()
         set(TARGET_ARCH "${CMAKE_HOST_SYSTEM_PROCESSOR}")
     endif()
-
-    if (NOT DEFINED AG_EXT_SYMBOL_PACKAGER)
+    
+    if (DEFINED AG_EXT_SYMBOL_PACKAGER AND NOT "${AG_EXT_SYMBOL_PACKAGER}" STREQUAL "")
         set(SymTool "${AG_EXT_SYMBOL_PACKAGER}")
     elseif (NOT "${TARGET_ARCH}" STREQUAL "${CMAKE_HOST_SYSTEM_PROCESSOR}")
         message(STATUS "${targetName} - Not generating symbols due to cross-compilation.")
@@ -103,22 +97,3 @@ function(ag_enable_stacktrace targetName)
                            COMMENT "Creating stack trace data for ${targetName}...")
     endif()
 endfunction()
-
-#function(enable_stacktrace targetName)
-#    # Ensure the linker generates a .map file and use it to produce a stack
-#    # trace symbol file which sits alongside the binary.
-#    if (DEFINED WIN32)
-#        target_link_options(${targetName} PRIVATE "LINKER:/MAP:${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.map")
-#    else()
-#        target_link_options(${targetName} PRIVATE "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.map")
-#    endif()
-#
-#    # install(TARGETS "${targetName}_Symbols" RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
-#    add_custom_command(TARGET ${targetName} POST_BUILD
-#                       COMMAND SymbolPackager ARGS "$<TARGET_FILE_BASE_NAME:${targetName}>.map"
-#                                              -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
-#                       COMMAND SymbolPackager ARGS "$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
-#                                              -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.txt"
-#                       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-#                       COMMENT "Creating stack trace data for ${targetName}...")
-#endfunction()
