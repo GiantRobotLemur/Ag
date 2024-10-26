@@ -2,9 +2,9 @@
 //! @brief The definition of an object which reads symbols pre-packaged in
 //! a file.
 //! @date 2021-2023
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////

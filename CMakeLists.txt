@@ -18,10 +18,13 @@ include("${CMAKE_CURRENT_LIST_DIR}/cmake/ConfigureBuild.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/Utilities.cmake")
 
 if (DEFINED AG_IS_ROOT)
+    # Set build settings compatible with the Ag libraries.
     ag_configure_build()
 
+    # Get Google Test
     ag_configure_gtest()
 
+    # Get GLM.
     ag_configure_glm()
 endif()
 

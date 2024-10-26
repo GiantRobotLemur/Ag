@@ -3,9 +3,9 @@
 //! pairs.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2022-2023
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __AG_CORE_LINEAR_SORTED_MAP_HPP__
@@ -39,18 +39,18 @@ namespace Ag {
 //! Mappings are stored as std::pair<Key, Value> objects in a vector.
 //! Indexed elements appear first ordered by their key. Non-indexed elements
 //! appear at the end of the collection.
-//! 
+//!
 //! New elements are always added to the end of the collection, the sorted state
 //! will be maintained as long as possible without actually sorting depending on
 //! the keys of mappings added. The non-indexed elements will be sorted and
 //! integrated into the set of sorted elements by calling the reindex()
 //! member function, which does nothing if all elements are already sorted.
-//! 
+//!
 //! The needsReindexing() member function determines if any elements are
 //! unsorted. The containsKey() and find() member functions operate across all
 //! elements using a combination of binary and linear search. The findIndexed()
 //! member function only operates on sorted mappings.
-//! 
+//!
 //! @note The key comparer is stateful. A new comparer is created at
 //! construction, but it has a state which can be manipulated between
 //! re-indexes.
@@ -143,13 +143,13 @@ private:
     //! This is a very cheeky bit of code which (reasonably?) assumes that
     //! an std::pair merely constructs its two fields in turn and destroys
     //! them, with no other processing.
-    //! 
+    //!
     //! The code uses an appropriately sized block of bytes to in-place
     //! initialise the key (first) field, but leaves the other blank. The
     //! resultant pointer is wrapped in a unique_ptr which will ensure that
     //! only the key field will have its destructor called, if required,
     //! when the pointer goes out of scope.
-    //! 
+    //!
     //! The whole reason for this is to be able to use the STL lower_bound()
     //! and equal_range() functions without having to default construct a
     //! dummy mapping containing a value. The comparer should only operate
@@ -689,7 +689,7 @@ public:
         _sortedCount = 0;
         _mappings.clear();
     }
-    
+
     //! @brief Appends a range of key/value pairs into the map, maintaining
     //! the sorted order is possible.
     //! @tparam MapIterator An iterator which points to a mapping.

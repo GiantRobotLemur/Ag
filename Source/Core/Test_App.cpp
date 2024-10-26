@@ -2,9 +2,9 @@
 //! @brief The definition of unit tests for the App class.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2021-2023
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ protected:
             return Cli::ProgramArguments::processArgument(argument, error);
         }
     }
-    
+
     virtual bool validate(String &error) const
     {
         if (_phase == Fail_CommandLineValidate)
@@ -177,7 +177,7 @@ public:
             return true;
         }
     }
-    
+
     virtual int run()
     {
         // The application tried to perform it's function.
@@ -222,7 +222,7 @@ public:
             App::reportException(error);
         }
     }
-    
+
     virtual void reportError(utf8_cptr_t errorText) override
     {
         _errors.emplace_back(errorText);

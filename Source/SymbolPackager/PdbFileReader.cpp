@@ -2,9 +2,9 @@
 //! @brief The definition of an object which can read symbols from a Microsoft
 //! Program Database file.
 //! @date 2021-2023
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +82,7 @@ void appendWin32Error(std::string &destination, DWORD errorCode)
 {
     char *messageBuffer = nullptr;
 
-    DWORD length = ::FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+    DWORD length = ::FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER |
                                     FORMAT_MESSAGE_FROM_SYSTEM |
                                     FORMAT_MESSAGE_IGNORE_INSERTS,
                                     NULL, errorCode,

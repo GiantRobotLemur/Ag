@@ -2,9 +2,9 @@
 //! @brief The declaration of an object which manages command line arguments.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2021-2023
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __AG_SYMPKG_COMMAND_LINE_HPP__

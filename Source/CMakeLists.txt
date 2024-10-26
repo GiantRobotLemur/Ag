@@ -7,6 +7,6 @@ set(AG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Include")
 add_subdirectory(SymbolPackager)
 add_subdirectory(Core)
 
-if ("${Qt6_FOUND}")
+if ("${Qt6_FOUND}" AND "${AG_CONFIG_QT}")
     add_subdirectory(QtInterop)
 endif()

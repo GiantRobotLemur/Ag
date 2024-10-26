@@ -2,9 +2,9 @@
 //! @brief The unit tests for the PackedFieldHelper class.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2021-2023
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ namespace {
     if (lhs.getBufferSize() != rhs.size())
     {
         result = ::testing::AssertionFailure();
-        
+
         result << "The buffer is " << lhs.getBufferSize() <<
             " bytes long but the expected result is " <<
             rhs.size() << " bytes.";
@@ -46,7 +46,7 @@ namespace {
             if (buffer[index] != nextByte)
             {
                 ::testing::Message msg;
-                
+
                 msg << "Byte " << index << " should be 0x";
                 msg << std::setfill('0') << std::setw(2) << std::right <<
                     std::hex << std::uppercase;

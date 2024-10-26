@@ -2,9 +2,9 @@
 //! @brief The declaration of a sorted set based on a linear collection.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2022-2024
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef __AG_CORE_LINEAR_SORTED_SET_HPP__
@@ -237,7 +237,7 @@ public:
             auto pos = std::lower_bound(_index.begin(), sortedEnd,
                                         value, _comparer);
 
-            if ((pos != sortedEnd) && 
+            if ((pos != sortedEnd) &&
                 (_comparer(*pos, value) == false) &&
                 (_comparer(value, *pos) == false))
             {

@@ -1,8 +1,8 @@
-# Silver (Ag)
-
+# Silver (Ag) - A platform-independent library of runtime tools
+---
 Ag (inspired by the periodic table symbol for Silver) represents a set of
 non-domain-specific libraries which underpin the
-[Mighty Oak](https://github.com/GiantRobotLemur/MightyOak) project has gone
+[Mighty Oak](https://github.com/GiantRobotLemur/Ag) project has gone
 go on to form the basis of other projects since.
 
 The motivation here is that I'm fed up of creating everything from the ground

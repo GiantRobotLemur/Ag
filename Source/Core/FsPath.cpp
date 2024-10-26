@@ -2,9 +2,9 @@
 //! @brief The definition of an object representing a file path.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2022-2024
-//! @copyright This file is part of the Mighty Oak project which is released
+//! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
-//! https://github.com/GiantRobotLemur/MightyOak for full license details.
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -872,7 +872,7 @@ void PathBuilder::makeRelative()
 //! the same root as the current path.
 //! @details
 //! This function will only work properly if basePath and the current path share
-//! the same root and don't have any relative references ('.' or '..') in them. 
+//! the same root and don't have any relative references ('.' or '..') in them.
 void PathBuilder::makeRelative(const PathBuilder &basePath)
 {
     if (_rootType != PathRootType::None)

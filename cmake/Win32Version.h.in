@@ -6,13 +6,13 @@
 #define VER_FILEVERSION             @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,@PROJECT_VERSION_TWEAK@
 #define VER_FILEVERSION_STR         "@APP_VERSION@\0"
 #define VER_COMPANY_NAME            "GiantRobotLemur@na-se.co.uk"
-#define VER_COPYRIGHT               "This file is part of the Mighty Oak project which is released under LGPL 3 license. Go to https://github.com/GiantRobotLemur/MightyOak for full license details."
+#define VER_COPYRIGHT               "This file is part of the Silver (Ag) project which is released under LGPL 3 license. Go to https://github.com/GiantRobotLemur/Ag for full license details."
 #define VER_PRODUCT_NAME            "@PROJECT_NAME@"
 #define VER_DESCRIPTION             "@APP_DESCRIPTION@"
 #define VER_EXE_NAME                "@APP_NAME@.exe"
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        101
