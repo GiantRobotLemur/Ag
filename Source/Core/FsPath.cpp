@@ -16,6 +16,7 @@
 #include <iterator>
 #include <memory>
 
+#include "CoreInternal.hpp"
 #include "Ag/Core/CodePoint.hpp"
 #include "Ag/Core/Format.hpp"
 #include "Ag/Core/FsPath.hpp"
@@ -24,7 +25,6 @@
 #include "Ag/Core/Utils.hpp"
 #include "Ag/Core/Variant.hpp"
 #include "FsPathSchema.hpp"
-#include "Platform.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions

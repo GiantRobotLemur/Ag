@@ -1,7 +1,7 @@
 //! @file Core/Test_PackedFieldHelper.cpp
 //! @brief The unit tests for the PackedFieldHelper class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -15,7 +15,8 @@
 
 #include <gtest/gtest.h>
 
-#include "Ag/Private/SymbolEncoding.hpp"
+#include <Ag/Core.hpp>
+#include <Ag/Private/SymbolEncoding.hpp>
 
 namespace Ag {
 

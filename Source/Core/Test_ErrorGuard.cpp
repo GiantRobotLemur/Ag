@@ -1,7 +1,7 @@
 //! @file Core/Test_ErrorGuard.cpp
 //! @brief The definition of the unit tests for the ErrorGuard class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -14,8 +14,8 @@
 
 #include <gtest/gtest.h>
 
-#include "Ag/GTest_Core.hpp"
-#include "Ag/Core/ErrorGuard.hpp"
+#include <Ag/Core.hpp>
+#include <Ag/GTest_Core.hpp>
 
 #ifdef __GNUC__
 // Disable warnings for code which is intended to induce runtime errors.

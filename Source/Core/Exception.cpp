@@ -2,7 +2,7 @@
 //! @brief The definition of the base exception class used throughout the
 //! Ag libraries.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "CoreInternal.hpp"
-#include "Platform.hpp"
 #include "Ag/Core/Exception.hpp"
 #include "Ag/Core/InlineMemory.hpp"
 #include "Ag/Core/String.hpp"

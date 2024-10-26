@@ -1,7 +1,7 @@
 //! @file Core/Test_App.cpp
 //! @brief The definition of unit tests for the App class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -16,11 +16,7 @@
 #include <string_view>
 #include <gtest/gtest.h>
 
-#include "Ag/Core/App.hpp"
-#include "Ag/Core/ProgramArguments.hpp"
-#include "Ag/Core/Exception.hpp"
-#include "Ag/Core/String.hpp"
-#include "Ag/Core/Utils.hpp"
+#include <Ag/Core.hpp>
 
 namespace Ag {
 

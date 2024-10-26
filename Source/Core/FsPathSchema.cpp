@@ -2,7 +2,7 @@
 //! @brief The definition of an object which abstracts the differences between
 //! file path formats.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023
+//! @date 2023-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -13,13 +13,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <algorithm>
 
+#include "CoreInternal.hpp"
 #include "Ag/Core/String.hpp"
 #include "Ag/Core/Utf.hpp"
 #include "Ag/Core/Utils.hpp"
 #include "Ag/Core/Variant.hpp"
 
 #include "FsPathSchema.hpp"
-#include "Platform.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions

@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "CoreInternal.hpp"
-#include "Ag/Core/Utf.hpp"
 #include "Win32API.hpp"
+#include "Ag/Core/Utf.hpp"
 
 namespace Ag {
 

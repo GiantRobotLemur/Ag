@@ -1,7 +1,7 @@
 //! @file Test_LinearSortedSet.cpp
 //! @brief The definition of unit tests for the LinearSortedSet template class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2023
+//! @date 2022-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,11 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gtest/gtest.h>
 
-#include "Ag/Core/LinearSortedSet.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
+#include <Ag/Core.hpp>
 
 namespace Ag {
 

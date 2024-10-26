@@ -2,7 +2,7 @@
 //! @brief The definition of an object which manages command line argument
 //! parsing, processing and verification.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -18,14 +18,13 @@
 #include <unordered_map>
 #include <string_view>
 
+#include "CoreInternal.hpp"
 #include "Ag/Core/Exception.hpp"
 #include "Ag/Core/Format.hpp"
 #include "Ag/Core/ProgramArguments.hpp"
 #include "Ag/Core/Utf.hpp"
 #include "Ag/Core/Utils.hpp"
 #include "Ag/Core/Variant.hpp"
-
-#include "Platform.hpp"
 
 namespace Ag {
 namespace Cli {

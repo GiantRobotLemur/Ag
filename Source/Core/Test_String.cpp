@@ -2,7 +2,7 @@
 //! @brief The definition of unit tests for the Ag::String data type and
 //! supporting types.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -13,8 +13,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gtest/gtest.h>
 
-#include "Ag/Core/String.hpp"
-#include "Ag/Core/Utils.hpp"
+#include <Ag/Core.hpp>
 
 namespace Ag {
 
@@ -429,7 +428,6 @@ GTEST_TEST(StringValue, CompareIgnoreCase)
     EXPECT_EQ(specimen.compareIgnoreCase(String("hello world!")), 0);
     EXPECT_EQ(specimen.compareIgnoreCase(String("hElLo wOrLd!")), 0);
 }
-
 
 GTEST_TEST(StringValue, TryParseUint32)
 {

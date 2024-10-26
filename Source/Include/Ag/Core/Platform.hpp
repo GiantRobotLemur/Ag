@@ -1,8 +1,8 @@
-//! @file Core/Platform.hpp
-//! @brief The includes platform specific headers hidden behind conditional
-//! compilation macros.
+//! @file Ag/Core/Platform.hpp
+//! @brief The includes platform-specific headers required by the public
+//! Ag Core API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023
+//! @date 2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -15,25 +15,29 @@
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
-#include "Win32API.hpp"
-#else
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <execinfo.h>
-#include <time.h>
-#include "PosixAPI.hpp"
+
+#ifndef WIN32_MEAN_AND_LEAN
+#define WIN32_MEAN_AND_LEAN
 #endif
 
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-// Needed to implement the Win32 file system schema, even under Linux.
-#ifndef _MAX_PATH
-#define _MAX_PATH 260
+#ifndef UNICODE
+#define UNICODE
+#endif
+
+#ifndef NOMINMAX
+#define NOMINMAX    // Macros min(a,b) and max(a,b)
+#endif
+
+#include <Windows.h>
+
+#else // ifndef _WIN32
+
+#include <csetjmp>
+#include <csignal>
+#include <execinfo.h>
+#include <nl_types.h>
+#include <langinfo.h>
+
 #endif
 
 #endif // Header guard

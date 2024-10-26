@@ -2,7 +2,7 @@
 //! @brief The definition of an object which defines which command line options
 //! are valid.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2023
+//! @date 2022-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -17,7 +17,7 @@
 #include <map>
 #include <unordered_map>
 
-#include "Platform.hpp"
+#include "CoreInternal.hpp"
 #include "Ag/Core/CodePoint.hpp"
 #include "Ag/Core/CommandLineSchema.hpp"
 #include "Ag/Core/Exception.hpp"
@@ -27,7 +27,6 @@
 #include "Ag/Core/LinearSortedMap.hpp"
 #include "Ag/Core/Utils.hpp"
 #include "Ag/Core/Variant.hpp"
-
 
 namespace Ag {
 namespace Cli {

@@ -14,6 +14,7 @@
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered (loosely) by dependency.
+#include "Core/Platform.hpp"
 #include "Core/Configuration.hpp"
 #include "Core/Binary.hpp"
 #include "Core/Timer.hpp"

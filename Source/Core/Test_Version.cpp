@@ -1,7 +1,7 @@
 //! @file Core/Test_Version.cpp
 //! @brief The definition of unit tests for the Version class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023
+//! @date 2023-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,8 +12,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gtest/gtest.h>
 
-#include "Ag/GTest_Core.hpp"
-#include "Ag/Core/Version.hpp"
+#include <Ag/Core.hpp>
+#include <Ag/GTest_Core.hpp>
 
 namespace Ag {
 

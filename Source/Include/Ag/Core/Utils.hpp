@@ -358,17 +358,6 @@ constexpr TEnum forceFromScalar(U scalar) noexcept
     return static_cast<TEnum>(static_cast<typename std::underlying_type<TEnum>::type>(scalar));
 }
 
-//! @brief Rounds a real value to the nearest integer.
-//! @tparam TDest The target integer scalar type.
-//! @tparam TSrc The source real scalar type.
-//! @param[in] realValue The real value to be rounded.
-//! @return The realValue rounded and cast to an integer.
-template<typename TDest, typename TSrc>
-TDest roundNearest(TSrc realValue)
-{
-    return static_cast<TDest>(std::rint(realValue));
-}
-
 } // namespace Ag
 
 #endif // Header guard

@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "Platform.hpp"
+#include "CoreInternal.hpp"
 #include "Ag/Core/CodePoint.hpp"
 #include "Ag/Core/FsDirectory.hpp"
 #include "Ag/Core/Format.hpp"

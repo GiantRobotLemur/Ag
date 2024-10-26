@@ -1,7 +1,8 @@
 # CMakeLists configuration for the Ag::Core library
 
 # Define the library.
-ag_add_library(AgCore SOURCES   CoreInternal.hpp
+ag_add_library(AgCore SOURCES   PreCompiledHeader.hpp
+                                CoreInternal.hpp
                                 CoreInternal.cpp
                                 Binary.cpp
                                 ByteOrder.cpp
@@ -32,8 +33,8 @@ ag_add_library(AgCore SOURCES   CoreInternal.hpp
                                 Uri.cpp
                                 Timer.cpp
                                 Version.cpp
-                                Platform.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/Configuration.hpp
+                                ${AG_INCLUDE_DIR}/Ag/Core/Platform.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/EnumInfo.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/Math.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/Utils.hpp
@@ -75,11 +76,109 @@ ag_add_library(AgCore SOURCES   CoreInternal.hpp
                                 ${AG_INCLUDE_DIR}/Ag/GTest_Core.hpp
                     FOLDER      Core)
 
+target_precompile_headers(AgCore PRIVATE [["PreCompiledHeader.hpp"]])
+target_include_directories(AgCore PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(AgCore PUBLIC "${AG_INCLUDE_DIR}")
+
 list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
                      "${AG_INCLUDE_DIR}/Ag/Core.hpp"
                      "${AG_INCLUDE_DIR}/Ag/Core")
 
-target_include_directories(AgCore PUBLIC "${AG_INCLUDE_DIR}")
+source_group("Build" FILES
+    PreCompiledHeader.hpp
+    CoreInternal.hpp
+    CoreInternal.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Configuration.hpp
+    Core.natvis
+    cpp.hint
+    ${AG_INCLUDE_DIR}/Ag/Core.hpp
+    ${AG_INCLUDE_DIR}/Ag/GTest_Core.hpp
+)
+source_group("Platform" FILES
+    ${AG_INCLUDE_DIR}/Ag/Core/Platform.hpp
+    StackTrace.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/StackTrace.hpp
+    Timer.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Timer.hpp
+    Win32API.hpp
+    Win32API.cpp
+    PosixAPI.hpp
+    PosixAPI.cpp
+)
+source_group("Basics" FILES
+    Binary.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Binary.hpp
+    ByteOrder.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/ByteOrder.hpp
+    Memory.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Memory.hpp
+    InlineMemory.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/InlineMemory.hpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Math.hpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Utils.hpp
+)
+
+source_group("Data Types" FILES
+    Variant.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Variant.hpp
+    VariantType.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/VariantType.hpp
+    VariantTypes.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/VariantTypes.hpp
+    Version.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Version.hpp
+    ${AG_INCLUDE_DIR}/Ag/Core/EnumInfo.hpp
+    ${AG_INCLUDE_DIR}/Ag/Core/CollectionTools.hpp
+    ${AG_INCLUDE_DIR}/Ag/Core/LinearSortedSet.hpp
+    ${AG_INCLUDE_DIR}/Ag/Core/LinearSortedMap.hpp
+)
+
+source_group("Text" FILES
+    CodePoint.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/CodePoint.hpp
+    Utf.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Utf.hpp
+    ScalarParser.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/ScalarParser.hpp
+    StringPrivate.cpp
+    StringPrivate.hpp
+    String.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/String.hpp
+    Format.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Format.hpp
+)
+
+source_group("Error Handling" FILES
+    Exception.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Exception.hpp
+    ErrorGuard.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/ErrorGuard.hpp
+)
+
+source_group("IO" FILES
+    Stream.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Stream.hpp
+    FsPathSchema.cpp
+    FsPathSchema.hpp
+    FsPath.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/FsPath.hpp
+    FsSearchPathList.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/FsSearchPathList.hpp
+    FsDirectory.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/FsDirectory.hpp
+    Uri.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Uri.hpp
+)
+
+source_group("Framework" FILES
+    CommandLineSchema.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/CommandLineSchema.hpp
+    ProgramArguments.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/ProgramArguments.hpp
+    App.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/App.hpp
+)
+
 
 # Define the unit test harness.
 ag_add_test_app(Core_Tests TEST_LIB AgCore
@@ -103,3 +202,7 @@ ag_add_test_app(Core_Tests TEST_LIB AgCore
                                     Test_Uri.cpp
                                     Test_Timer.cpp
                                     Test_Version.cpp)
+
+target_precompile_headers(Core_Tests PRIVATE <gtest/gtest.h>
+                                             [["PreCompiledHeader.hpp"]])
+target_include_directories(Core_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

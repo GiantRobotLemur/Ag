@@ -1,7 +1,7 @@
 //! @file Core/Test_Timer.cpp
 //! @brief The definition of unit tests for high-resolution timing functions.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023
+//! @date 2023-2024
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gtest/gtest.h>
 
-#include "Ag/Core/Timer.hpp"
+#include <Ag/Core.hpp>
 
 namespace Ag {
 

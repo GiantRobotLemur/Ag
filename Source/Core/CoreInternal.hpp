@@ -19,10 +19,31 @@
 #include <utility>
 #include <vector>
 
+// Include system headers private to Ag Core here.
+#ifdef _WIN32
+#include "Win32API.hpp"
+#else
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <execinfo.h>
+#include <time.h>
+#include "PosixAPI.hpp"
+#endif
+
 #include "Ag/Core/Utils.hpp"
 #include "Ag/Core/VariantType.hpp"
 
-#include "Platform.hpp"
+////////////////////////////////////////////////////////////////////////////////
+// Macro Definitions
+////////////////////////////////////////////////////////////////////////////////
+// Needed to implement the Win32 file system schema, even under Linux.
+#ifndef _MAX_PATH
+#define _MAX_PATH 260
+#endif
 
 namespace Ag {
 
