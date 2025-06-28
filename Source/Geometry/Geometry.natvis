@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="Ag::Geom::Angle">
+    <DisplayString>{_value/3.1415926535897932384*180.0}</DisplayString>
+  </Type>
+
+  <Type Name="Ag::Geom::Point2I">
+      <DisplayString>({_x}, {_y})</DisplayString>
+  </Type>
+
+  <Type Name="Ag::Geom::Size2I">
+    <DisplayString>[{_width} x {_height}]</DisplayString>
+  </Type>
+
+  <Type Name="Ag::Geom::Rect2I">
+    <DisplayString>{_origin}, {_extents}</DisplayString>
+  </Type>
+
+  <Type Name="Ag::Geom::Point2D">
+    <DisplayString>({_x}, {_y})</DisplayString>
+  </Type>
+
+  <Type Name="Ag::Geom::Size2D">
+    <DisplayString>[{_width} x {_height}]</DisplayString>
+  </Type>
+
+  <Type Name="Ag::Geom::Rect2D">
+    <DisplayString>{_origin}, {_extents}</DisplayString>
+  </Type>
+
+  <Type Name="Ag::Geom::SnapPoint">
+    <DisplayString>({_x}, {_y})</DisplayString>
+  </Type>
+
+  <!-- <Type Name="Ag::2D::Mesh2D::Edge">
+    <DisplayString>#{_id} ({_vertices[0]._id}-{_vertices[1]._id})</DisplayString>
+  </Type>
+
+  <Type Name="Ag::2D::Mesh2D::DirectedEdge">
+    <DisplayString Condition="_isForward">{_parent.vertices[0]._id}->{_parent.vertices[1]._id}</DisplayString>
+    <DisplayString Condition="!_isForward">{_parent._vertices[1]._id}->{_parent._vertices[0]._id}</DisplayString>
+  </Type> -->
+</AutoVisualizer>

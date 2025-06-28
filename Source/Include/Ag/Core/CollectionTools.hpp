@@ -2,7 +2,7 @@
 //! @brief The declaration of various useful collection-related template data
 //! structures and functions.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2024
+//! @date 2023-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -22,6 +22,92 @@ namespace Ag {
 ////////////////////////////////////////////////////////////////////////////////
 // Templates
 ////////////////////////////////////////////////////////////////////////////////
+//! @brief Creates an immutable static mapping from constant data.
+//! @tparam TKey The data type of keys used to look up values.
+//! @tparam TValue The data type of values being indexed.
+//! @tparam TKeyComp An object used to perform less-than comparisons on
+//! TKey objects.
+//! @remarks Creates map from an array of std::pair<TKey, TValue> elements.
+template<typename TKey, typename TValue, typename TKeyComp = std::less<TKey>>
+class StaticMap
+{
+public:
+    using MappingType = std::pair<TKey, TValue>;
+    using MappingCPtr = const MappingType *;
+private:
+    struct KeyCompare
+    {
+        bool operator()(const MappingType &lhs, const MappingType &rhs) const
+        {
+            TKeyComp KeyComparer;
+
+            return KeyComparer(lhs.first, rhs.first);
+        }
+    };
+
+    const MappingType *_mappings;
+    size_t _count;
+
+public:
+    //! @brief Constructs a map from a static array with a fixed size.
+    //! @tparam TCount The count of elements in the array.
+    //! @param[in] mappings The array to be sorted into an index.
+    template<size_t TCount>
+    StaticMap(MappingType(&mappings)[TCount]) :
+        _mappings(mappings),
+        _count(TCount)
+    {
+        std::sort(mappings, mappings + TCount, KeyCompare());
+    }
+
+    //! @brief Constructs a map from a static array with a specified size.
+    //! @param[in] mappings The array to be sorted into an index.
+    //! @param[in] count The count of elements in @p count.
+    //! @remarks The @p mappings array will be sorted according to the
+    //! key elements.
+    StaticMap(MappingType *mappings, size_t count) :
+        _mappings(mappings),
+        _count(count)
+    {
+        std::sort(mappings, mappings + count, KeyCompare());
+    }
+
+    //! @brief Attempts to find the index of a mapping matching a key.
+    //! @param[in] key The key to look up.
+    //! @param[out] index Receives the index of the matching mapping, if any.
+    //! @retval true If a matching mapping was found.
+    //! @retval false If no mapping had a matching key.
+    bool tryFindValue(const TKey &key, size_t &index) const
+    {
+        // Create a pointer to a mapping from just the key knowing that
+        // the value element of the pair will NEVER be accessed.
+        MappingCPtr keyMapping = reinterpret_cast<MappingCPtr>(&key);
+
+        auto pos = std::lower_bound(_mappings, _mappings + _count,
+                                    *keyMapping, KeyCompare());
+
+        if (TKeyComp()(key, pos->first) == false)
+        {
+            index = std::distance(_mappings, pos);
+            return true;
+        }
+        else
+        {
+            index = _count;
+            return false;
+        }
+    }
+
+    //! @brief Gets the value at a specified index
+    //! @param[in] index The 0-based index of the mapping to extract
+    //! a value from.
+    //! @return A reference to the value in the mapping.
+    const TValue &getValue(size_t index) const
+    {
+        return _mappings[index].second;
+    }
+};
+
 //! @brief An equivalent of std::pair<iterator> which can be used with
 //! range-based for loops.
 //! @tparam TIterator The data type of the iterators defining the range.
@@ -51,7 +137,7 @@ template<typename TIterator> struct IteratorRange
     //! @brief Constructs an active range.
     //! @param first The position of the first item in the range.
     //! @param afterLast The position of the item after the last in the range.
-    IteratorRange(const Iterator &first, const IteratorRange &afterLast) :
+    IteratorRange(const Iterator &first, const Iterator &afterLast) :
         Begin(first),
         End(afterLast)
     {
@@ -211,6 +297,79 @@ bool getGroupValues(const IteratorRange<TMappingIterator> &range,
     }
 
     return count > 0;
+}
+
+//! @brief Adds a run of elements to a vector, ensuring enough space has been
+//! allocated before hand.
+//! @tparam TValue The data type of the values stored in the vector.
+//! @tparam TIter The data type of the iterator referencing new values.
+//! @param[in] collection The collection to append the new elements to.
+//! @param[in] begin The iterator referencing the first item to append.
+//! @param[in] end The iterator after the last item to append.
+//! @return The count of elements added to @p collection.
+template<typename TValue, typename TIter>
+size_t bulkAppend(std::vector<TValue> &collection, TIter begin, TIter end)
+{
+    if (begin == end)
+        return 0;
+
+    size_t count = std::distance(begin, end);
+    size_t originalSize = collection.size();
+    size_t requiredSize = originalSize + count;
+
+    if (collection.capacity() < requiredSize)
+        collection.reserve(requiredSize);
+
+    for (TIter current = begin; current != end; ++current)
+    {
+        collection.emplace_back(*current);
+    }
+
+    return collection.size() - originalSize;
+}
+
+//! @brief Ensures a vector has capacity for a specified number of elements.
+//! @tparam TCollection The data type of vector to extend.
+//! @param[in] collection The vector to ensure the capacity of.
+//! @param[in] totalCapacity The total number of elements the vector needs
+//! to be able to hold.
+template<typename TCollection>
+void ensureCapacity(TCollection &collection, size_t totalCapacity)
+{
+    if (collection.capacity() < totalCapacity)
+        collection.reserve(totalCapacity);
+}
+
+//! @brief Ensures a vector has capacity to append a specified number of 
+//! additional elements.
+//! @tparam TCollection The data type of vector to extend.
+//! @param[in] collection The vector to ensure the capacity of.
+//! @param[in] extraCapacity The count of additional elements the vector needs
+//! to be able to hold.
+template<typename TCollection>
+void ensureExtraCapacity(TCollection &collection, size_t extraCapacity)
+{
+    size_t requiredSize = collection.size() + extraCapacity;
+
+    if (collection.capacity() < requiredSize)
+        collection.reserve(requiredSize);
+}
+
+//! @brief Calculates a difference between values.
+//! @tparam T The data type of the values being compared..
+//! @param[in] lhs The first value to compare.
+//! @param[in] rhs The second value to compare.
+//! @param[out] diff Receives the result of the comparison, -1 if
+//! @p lhs is less than @p rhs, 0 if they are equal and 1 if
+//! @p lhs is greater than @p rhs.
+//! @retval true The values differ.
+//! @retval false The values were the same.
+template<typename T>
+bool diffValues(T lhs, T rhs, int &diff)
+{
+    diff = (lhs == rhs) ? 0 : ((lhs < rhs) ? -1 : 1);
+
+    return diff != 0;
 }
 
 } // namespace Ag

@@ -1,0 +1,31 @@
+//! @file Geometry/DCEL_Triangulate.hpp
+//! @brief The declaration of functions and structures needed to triangulate
+//! convex and monotone polygons.
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2025
+//! @copyright This file is part of the Silver (Ag) project which is released
+//! under LGPL 3 license. See LICENSE file at the repository root or go to
+//! https://github.com/GiantRobotLemur/Ag for full license details.
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef __AG_GEOMETRY_DCEL_TRIANGULATE_HPP__
+#define __AG_GEOMETRY_DCEL_TRIANGULATE_HPP__
+
+////////////////////////////////////////////////////////////////////////////////
+// Dependent Header Files
+////////////////////////////////////////////////////////////////////////////////
+#include "Ag/Geometry/DCEL.hpp"
+
+namespace Ag {
+namespace Geom {
+namespace DCEL {
+
+////////////////////////////////////////////////////////////////////////////////
+// Function Declarations
+////////////////////////////////////////////////////////////////////////////////
+IDCollection triangulateRing(const Ring &ring);
+
+}}} // namespace Ag::Geom::DCEL
+
+#endif // Header guard
+////////////////////////////////////////////////////////////////////////////////

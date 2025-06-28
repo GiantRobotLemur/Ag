@@ -1,7 +1,7 @@
 //! @file Ag/Core/name_here.hpp
 //! @brief The declaration of
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024
+//! @date 2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.

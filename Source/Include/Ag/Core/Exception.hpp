@@ -156,7 +156,21 @@ public:
 
     // Construction
     ArgumentException(const char *argName);
+    ArgumentException(const char *detail, const char *argName);
     ~ArgumentException() = default;
+};
+
+//! @brief An exception thrown when a function argument has an unexpected null value.
+class ArgumentNullException : public Exception
+{
+public:
+    // Public Data
+    //! @brief The domain used to annotate exceptions of this type.
+    static const char *Domain;
+
+    // Construction
+    ArgumentNullException(const char *argName);
+    ~ArgumentNullException() = default;
 };
 
 //! @brief An exception thrown when an attempt is made to cast a base type to
@@ -183,7 +197,7 @@ public:
     static const char *Domain;
 
     // Construction
-    ObjectNotBoundException(const char *objectTypeName, const char *operation);
+    ObjectNotBoundException(utf8_cptr_t objectTypeName, utf8_cptr_t operation);
     ~ObjectNotBoundException() = default;
 };
 

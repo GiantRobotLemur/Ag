@@ -16,6 +16,7 @@ ag_add_library(AgCore SOURCES   PreCompiledHeader.hpp
                                 StackTrace.cpp
                                 Exception.cpp
                                 ErrorGuard.cpp
+                                Trace.cpp
                                 ScalarParser.cpp
                                 Stream.cpp
                                 VariantType.cpp
@@ -50,6 +51,7 @@ ag_add_library(AgCore SOURCES   PreCompiledHeader.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/StackTrace.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/Exception.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/ErrorGuard.hpp
+                                ${AG_INCLUDE_DIR}/Ag/Core/Trace.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/ScalarParser.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/String.hpp
                                 ${AG_INCLUDE_DIR}/Ag/Core/Stream.hpp
@@ -153,6 +155,8 @@ source_group("Error Handling" FILES
     ${AG_INCLUDE_DIR}/Ag/Core/Exception.hpp
     ErrorGuard.cpp
     ${AG_INCLUDE_DIR}/Ag/Core/ErrorGuard.hpp
+    Trace.cpp
+    ${AG_INCLUDE_DIR}/Ag/Core/Trace.hpp
 )
 
 source_group("IO" FILES

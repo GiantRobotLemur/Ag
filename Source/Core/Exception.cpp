@@ -2,7 +2,7 @@
 //! @brief The definition of the base exception class used throughout the
 //! Ag libraries.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -544,6 +544,37 @@ ArgumentException::ArgumentException(const char *argName)
                  argName);
 
     initialise(Domain, argumentMessage, detail);
+}
+
+//! @brief A constructor used explicitly when logic within the program detects
+//! that the argument to a function is invalid.
+//! @param[in] argName The name of the argument with the invalid value.
+ArgumentException::ArgumentException(const char *detail, const char *argName)
+{
+    std::string detailText;
+    appendPrintf(detailText, "The function argument '%s' had an invalid value: ",
+                 argName, detail);
+
+    initialise(Domain, argumentMessage, detailText);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ArgumentNullException Members
+////////////////////////////////////////////////////////////////////////////////
+const char *ArgumentNullException::Domain = "ArgumentNullException";
+static const char *argumentNullMessage =
+"A function was passed a pointer argument an unexpected null value.";
+
+//! @brief A constructor used explicitly when logic within the program detects
+//! that the argument to a function was unexpectedly nullptr.
+//! @param[in] argName The name of the null argument.
+ArgumentNullException::ArgumentNullException(const char *argName)
+{
+    std::string detail;
+    appendPrintf(detail, "The function argument '%s' was null.",
+                 argName);
+
+    initialise(Domain, argumentNullMessage, detail);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
 //! @brief The declaration of useful stand-alone utility functions defined by
 //! the core library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -356,6 +356,17 @@ template<typename TEnum, typename U,
 constexpr TEnum forceFromScalar(U scalar) noexcept
 {
     return static_cast<TEnum>(static_cast<typename std::underlying_type<TEnum>::type>(scalar));
+}
+
+//! @brief Rounds a real value to the nearest integer.
+//! @tparam TDest The target integer scalar type.
+//! @tparam TSrc The source real scalar type.
+//! @param[in] realValue The real value to be rounded.
+//! @return The realValue rounded and cast to an integer.
+template<typename TDest, typename TSrc>
+TDest roundNearest(TSrc realValue)
+{
+    return static_cast<TDest>(std::rint(realValue));
 }
 
 } // namespace Ag
