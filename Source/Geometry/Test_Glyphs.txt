@@ -1,0 +1,10 @@
+Pound:000A3
+AnA:A
+AnB:B
+AnC:C
+An_e:e
+Pilcrow:¶
+PlaceOfSajdah:06E9
+EndOfAyah:06DD
+SmilingFace:263A
+BlackFace:263B

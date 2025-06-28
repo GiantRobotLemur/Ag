@@ -35,3 +35,7 @@
 .vs
 .vscode
 build*
+
+# Allow projects to be temporarily configured without being
+# part of the repository.
+Source/Extra

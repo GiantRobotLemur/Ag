@@ -2,6 +2,78 @@
 
 include(CMakePrintHelpers)
 
+# This might be important when building for ARM64 on x64.
+set(AG_EXT_SYMBOL_PACKAGER "" CACHE FILEPATH "The path to an external Symbol Packager tool binary.")
+
+function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
+    if (NOT TARGET ${destTargetName})
+        message(SEND_ERROR "'${destTargetName}' is not a valid target.")
+        return()
+    endif()
+
+    if (NOT TARGET ${symbolTargetName})
+        message(SEND_ERROR "'${symbolTargetName}' is not a valid target.")
+        return()
+    endif()
+
+    # Fix up difference between CMAKE system ID and generator platform.
+    if ("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
+        set (TARGET_ARCH "AMD64")
+    else()
+        set(TARGET_ARCH "${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    endif()
+
+    if (DEFINED AG_EXT_SYMBOL_PACKAGER AND NOT "${AG_EXT_SYMBOL_PACKAGER}" STREQUAL "")
+        set(SymTool "${AG_EXT_SYMBOL_PACKAGER}")
+    elseif (NOT "${TARGET_ARCH}" STREQUAL "${CMAKE_HOST_SYSTEM_PROCESSOR}")
+        message(STATUS "${symbolTargetName} - Not generating symbols due to cross-compilation.")
+        return()
+    else()
+        # Use the SymbolPackager target name.
+        set(SymTool "SymbolPackager")
+    endif()
+
+    if (DEFINED WIN32)
+        # Use the PDB file to extract function symbols.
+        add_custom_command(TARGET ${destTargetName} POST_BUILD
+                           COMMAND "${SymTool}" ARGS "$<TARGET_PDB_FILE:${symbolTargetName}>"
+                                                  -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.sym"
+                                                  --exe "$<TARGET_FILE:${symbolTargetName}>"
+                           COMMAND "${SymTool}" ARGS "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.sym"
+                                                  -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.txt"
+                           WORKING_DIRECTORY "$<TARGET_FILE_DIR:${destTargetName}>"
+                           COMMENT "Creating stack trace data for ${symbolTargetName}...")
+    else()
+        # Ensure the linker generates a .map file and use it to produce a stack
+        # trace symbol file which sits alongside the binary.
+        target_link_options(${targetName} PRIVATE "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.map")
+
+        # install(TARGETS "${targetName}_Symbols" RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
+
+        # EXPERIMENTAL Use nm to extract the symbols, even internal symbols.
+        #add_custom_command(TARGET ${targetName} POST_BUILD
+        #                   COMMAND nm ARGS -a --demangle "$<TARGET_FILE:${targetName}>" > "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.nm"
+        #                   COMMAND SymbolPackager ARGS "{CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.nm"
+        #                                          -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
+        #                   COMMAND SymbolPackager ARGS "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
+        #                                          -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.txt"
+        #                   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        #                   COMMENT "Creating stack trace data for ${targetName}...")
+
+        add_custom_command(TARGET ${targetName} POST_BUILD
+                           COMMAND "${SymTool}" ARGS "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.map"
+                                                  -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
+                           COMMAND "${SymTool}" ARGS "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
+                                                  -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.txt"
+                           WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+                           COMMENT "Creating stack trace data for ${targetName}...")
+    endif()
+endfunction()
+
+function(ag_enable_stacktrace targetName)
+    ag_enable_proxy_stacktrace("${targetName}" "${targetName}")
+endfunction()
+
 # Create a static library which is part of the Ag suite.
 # Arguments: target                   - The mandatory target name
 #            QT                       - Defines the target using qt_add_library().
@@ -284,7 +356,7 @@ function(ag_add_cli_app target)
     ag_enable_stacktrace(${target})
 endfunction()
 
-# ag_add_static_data(target, StaticData.hpp, Input1.txt Input2.txt ...)
+# ag_add_static_data(target, StaticData.hpp Input1.txt Input2.txt ...)
 #
 # Will produce StaticData.hpp containing function declarations like:
 # const char *getInputText1();
@@ -363,3 +435,25 @@ function(ag_add_static_data target headerName)
     target_include_directories(${target} PRIVATE ${headerDir})
 endfunction()
 
+# ag_copy_shared_lib(<destTarget> <shared_lib_targets...>)
+#
+# Copies shared library binaries to the build output filder of destTarget.
+#
+function(ag_copy_shared_lib destTarget)
+    foreach(targetName IN LISTS ARGN)
+        if (TARGET ${targetName})
+            # Add a command to copy the library binary to the
+            add_custom_command(TARGET ${destTarget} POST_BUILD
+                    COMMAND "${CMAKE_COMMAND}"
+                    ARGS    -E copy_if_different
+                            #"$<TARGET_PDB_FILE:${targetName}>"
+                            #"$<TARGET_FILE_BASE_NAME:${targetName}>.pdb"
+                            #"$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
+                            "$<TARGET_FILE:${targetName}>"
+                            "$<TARGET_FILE_DIR:${destTarget}>"
+                    COMMENT "Copying ${targetName} to ${destTarget} output directory...")
+        else()
+            message(SEND_ERROR "'${target}' is not a valid target.")
+        endif()
+    endforeach()
+endfunction()

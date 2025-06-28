@@ -33,59 +33,118 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
             option(AG_CONFIG_WIN32 "Indicates whether Win32-specific components should be configured." OFF)
         endif()
 
-        set(AG_EXT_SYMBOL_PACKAGER "" CACHE FILEPATH "The path to a pre-built Symbol Packager tool (usefull in cross compilation).")
+        set(AG_EXT_SYMBOL_PACKAGER "" CACHE FILEPATH "The path to a pre-built Symbol Packager tool (useful in cross compilation).")
 
         option(AG_STATIC_RUNTIME "Indicates whether libraries should link to static C/C++ runtime libraries" OFF)
         option(AG_CONFIG_QT "Indicates whether Qt-dependent components should be configured." OFF)
         option(AG_CONFIG_GFX "Indicates whether Graphics-related components should be configured." OFF)
-        option(AG_CONFIG_GL "Indicates whether OpenGL-dependent components should be configured." OFF)
-        option(AG_CONFIG_SDL "Indicates whether lib SDL-dependent components should be configured." OFF)
+        #option(AG_CONFIG_GL "Indicates whether OpenGL-dependent components should be configured." OFF)
+        option(AG_CONFIG_SDL3 "Indicates whether lib SDL3-dependent components should be configured." OFF)
 
         include(FetchContent)
 
         if (AG_STATIC_RUNTIME)
             message(STATUS "Linking to static runtime libraries")
-            set(_GTEST_ARGS "-Dgtest_force_shared_crt:BOOL=OFF -DBUILD_GMOCK:BOOL=OFF -DINSTALL_GTEST:BOOL=OFF")
+
             if(MSVC)
                 # Tell MSVC to link to static runtime libraries.
                 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
             endif()
-        else()
-            set(_GTEST_ARGS "-Dgtest_force_shared_crt:BOOL=ON -DBUILD_GMOCK:BOOL=OFF -DINSTALL_GTEST:BOOL=OFF")
         endif()
 
         FetchContent_Declare(googletest
                              GIT_REPOSITORY https://github.com/google/googletest.git
-                             GIT_TAG release-1.12.1
-                             CMAKE_CACHE_ARGS "${_GTEST_ARGS}"
-                             FIND_PACKAGE_ARGS NAMES GTest)
+                             GIT_TAG release-1.12.1)
 
         FetchContent_Declare(glm
                              GIT_REPOSITORY https://github.com/g-truc/glm.git
-                             GIT_TAG 1.0.1
-                             CMAKE_CACHE_ARGS -DGLM_BUILD_TESTS:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF
-                             FIND_PACKAGE_ARGS NAMES glm)
+                             GIT_TAG 1.0.1)
+
+        FetchContent_Declare(SDL3
+                             GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+                             GIT_TAG release-3.2.10)
 
         # Define the name of folder used for fetched content projects.
         set(AG_EXT_PROJ_FOLDER "3rdParty")
     endmacro()
 
+    function(ag_config_external_projects)
+        foreach(target IN LISTS ARGN)
+            if (TARGET ${target})
+                set_target_properties("${target}" PROPERTIES FOLDER "${AG_EXT_PROJ_FOLDER}")
+
+                # This is only good for CMake 3.25+ :-(
+                set_target_properties("${target}" PROPERTIES SYSTEM ON)
+            endif()
+        endforeach()
+    endfunction()
+
     macro(ag_configure_gtest)
         enable_testing()
 
         message(STATUS "Obtaining Google Test...")
+
+        # Set Google Test configuration options here as
+        #   FetchContent_Declare(CMAKE_CACHE_ARGS) has no effect.
+        option(BUILD_GMOCK "Build GMock" OFF)
+        option(INSTALL_GTEST "Insatll GTest" OFF)
+
+        if (AG_STATIC_RUNTIME)
+            option(gtest_force_shared_crt "Static CRT" OFF)
+        else()
+            option(gtest_force_shared_crt "Static CRT" ON)
+        endif()
+
         FetchContent_MakeAvailable(googletest)
         include(GoogleTest)
-        set_target_properties(gtest PROPERTIES FOLDER "${AG_EXT_PROJ_FOLDER}")
-        set_target_properties(gtest_main PROPERTIES FOLDER "${AG_EXT_PROJ_FOLDER}")
-        set_target_properties(gmock PROPERTIES FOLDER "${AG_EXT_PROJ_FOLDER}")
-        set_target_properties(gmock_main PROPERTIES FOLDER "${AG_EXT_PROJ_FOLDER}")
+
+        ag_config_external_projects(gtest gtest_main gmock gmock_main)
     endmacro()
 
     macro(ag_configure_glm)
         message(STATUS "Obtaining glm...")
+
+        # Set GLM configuration options here as
+        #   FetchContent_Declare(CMAKE_CACHE_ARGS) has no effect.
+        option(GLM_BUILD_TESTS "Build Tests" OFF)
+        option(BUILD_SHARED_LIBS "Build Shared" OFF)
+
         FetchContent_MakeAvailable(glm)
-        set_target_properties(glm PROPERTIES FOLDER "${AG_EXT_PROJ_FOLDER}")
+        ag_config_external_projects(glm)
         # target_link_libraries(${myTarget} PRIVATE glm::glm)
+
+        # Adds the .natvis file to MSVC projects, but only to the final binary.
+        function(GLM_Link target)
+            if(DEFINED MSVC)
+                # Include the .natvis file packaged with GLM.
+                get_target_property(glm_inc_dirs glm::glm INTERFACE_INCLUDE_DIRECTORIES)
+                list(GET glm_inc_dirs 0 glm_inc_dir)
+
+                if (EXISTS "${glm_inc_dir}/glm.natvis")
+                    message(STATUS "${target}: Adding ${glm_inc_dir}/glm.natvis")
+                    target_sources("${target}" PRIVATE "${glm_inc_dir}/glm.natvis")
+                endif()
+            endif()
+        endfunction()
+    endmacro()
+
+    macro(ag_configure_sdl3)
+        message(STATUS "Obtaining SDL 3...")
+
+        # Set SDL2 configuration options here as
+        #   FetchContent_Declare(CMAKE_CACHE_ARGS) has no effect.
+        if (AG_STATIC_RUNTIME)
+            option(SDL_FORCE_STATIC_VCRT "Use Static MSVCRT" ON)
+            option(SDL_STATIC "Build Static" ON)
+        else()
+            option(SDL_FORCE_STATIC_VCRT "Use Static MSVCRT" OFF)
+        endif()
+
+        option(SDL_TEST_LIBRARY "Build the SDL3_test library" OFF)
+        option(SDL_DISABLE_UNINSTALL  "Disable uninstallation of SDL3" ON)
+
+        FetchContent_MakeAvailable(SDL3)
+
+        ag_config_external_projects(SDL3_test SDL3-shared SDL3-static SDL_uclibc unintall)
     endmacro()
 endif()

@@ -1,9 +1,10 @@
-# Silver (Ag) - A platform-independent library of runtime tools
+# Silver (Ag)
+## A platform-independent library of runtime tools
 ---
 Ag (inspired by the periodic table symbol for Silver) represents a set of
 non-domain-specific libraries which underpin the
-[Mighty Oak](https://github.com/GiantRobotLemur/Ag) project has gone
-go on to form the basis of other projects since.
+[Mighty Oak](https://github.com/GiantRobotLemur/MightyOak) project has gone
+on to form the basis of other projects since.
 
 The motivation here is that I'm fed up of creating everything from the ground
 up in C++. There are so many common tools missing from the runtime libraries
@@ -22,6 +23,14 @@ in C/C++ runtime.
 symbols from binaries and packages them for use at runtime to create readable
 stack traces by the Core library.
 * QtInterop - A library which integrates Core with Qt6.
+* [Geometry](Doc/Geometry.md) - A 2D geometry library which supports decomposing polygons into triangle lists with O(n log n) complexity.
+* WriteGlyphGeometry - A Win32 tool to extract the geometry of glyphs from
+  a font to use in the unit tests for the Geometry library.
+* [Win32Base](Doc/Win32Base.md) - A library which provides basic tools for
+  creating a native Win32 GUI application and other low-level Win32 tools
+  such as COM interface wrappers.
+* [Sdl3Tools](Doc/Sdl3Tools.md) - C++ wrappers for the SDL 3 library, focusing
+  on its GPU framework.
 
 This repository has been created so that it can be a git sub-module within
 another. It provides not only C++ libraries, but also CMake utilities which
