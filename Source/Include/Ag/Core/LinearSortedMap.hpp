@@ -2,7 +2,7 @@
 //! @brief The declaration of a sorted linear collection containing key/value
 //! pairs.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2023
+//! @date 2022-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -69,7 +69,7 @@ public:
 private:
     // Internal Types
     //! @brief An adapter which compares mapping objects using the
-    //! key comparer for usee with std::lower_bound() and std::equal_range().
+    //! key comparer for use with std::lower_bound() and std::equal_range().
     struct MappingComparer
     {
     private:

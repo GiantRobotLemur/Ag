@@ -26,6 +26,9 @@ namespace DCEL {
 RingCollection traceRings(NodeTable &nodes, EdgeTable &edges,
                           bool hasBuddyEdges = false);
 
+SortedIDToIDMap findPartitionedRings(NodeTable &nodes, EdgeTable &edges,
+                                     RingCollection &rings);
+
 }}} // namespace Ag::Geom::DCEL
 
 #endif // Header guard

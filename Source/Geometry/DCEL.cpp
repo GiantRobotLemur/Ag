@@ -1494,10 +1494,16 @@ IDCollection Ring::getNodeIDs() const
 {
     IDCollection nodeIDs;
 
-    if (_nodeCount > 0)
-    {
-        nodeIDs.reserve(_nodeCount);
-    }
+    appendNodeIDs(nodeIDs);
+
+    return nodeIDs;
+}
+
+//! @brief Appends the identifiers of nodes which define the ring to a collection.
+//! @param[in] nodeIDs A reference to the collection to append node IDs to.
+void Ring::appendNodeIDs(IDCollection &nodeIDs) const
+{
+    ensureExtraCapacity(nodeIDs, _nodeCount);
 
     HalfEdgePtr currentEdge = _firstHalfEdge;
 
@@ -1506,10 +1512,7 @@ IDCollection Ring::getNodeIDs() const
         nodeIDs.push_back(currentEdge->getEndNodeID());
 
         currentEdge = currentEdge->getNextEdge();
-    }
-    while ((currentEdge != nullptr) && (currentEdge != _firstHalfEdge));
-
-    return nodeIDs;
+    } while ((currentEdge != nullptr) && (currentEdge != _firstHalfEdge));
 }
 
 //! @brief Gets a collection of points defining the ring.
@@ -1705,6 +1708,15 @@ void RingSystem::build(NodeTable &nodes, EdgeTable &edges,
 
     // Ensure the index is ready to be searched.
     _holesByParentID.reindex();
+}
+
+//! @brief Rebuilds the ring system after rings have been partitioned to remove holes.
+//! @param[in] nodes The table of nodes to annotate with edges to their left.
+//! @param[in] edges The table of edges to annotate with ring IDs.
+void RingSystem::buildFromPartitioned(NodeTable &nodes, EdgeTable &edges)
+{
+    // Re-scan the edges to form a new set of CCW-only polygons.
+    _holesByParentID = findPartitionedRings(nodes, edges, _allRings);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

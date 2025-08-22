@@ -1244,7 +1244,7 @@ bool makeYMonotone(NodeTable &nodes, EdgeTable &edges,
          putchar('\n');
 
         // Reform the ring split by diagonals into several rings.
-        rings.build(nodes, edges, true);
+        rings.buildFromPartitioned(nodes, edges);
     }
 
     return (connections.empty() == false);

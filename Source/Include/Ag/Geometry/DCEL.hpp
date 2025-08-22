@@ -570,6 +570,7 @@ public:
 
     // Operations
     IDCollection getNodeIDs() const;
+    void appendNodeIDs(IDCollection &nodeIDs) const;
     Point2DCollection getVertices() const;
     NodeCPtrCollection getNodes() const;
     void getNodesAndEdges(NodePtrCollection &nodes, HalfEdgePtrCollection &edges) const;
@@ -607,6 +608,7 @@ public:
     // Operations
     void clear();
     void build(NodeTable &nodes, EdgeTable &edges, bool hasBuddyEdges = false);
+    void buildFromPartitioned(NodeTable &nodes, EdgeTable &edges);
 private:
     // Internal Fields
     RingCollection _allRings;

@@ -713,24 +713,24 @@ GTEST_TEST(DCEL_MakeYMonotone, DiamondWithHole)
     for (const Ring &ring : rings.getRings())
         dumpRingGeometry(ring);
 
-    EXPECT_EQ(rings.getRingCount(), 2u);
+    EXPECT_EQ(rings.getRingCount(), 3u);
+    EXPECT_EQ(rings.getFilledCount(), 2u);
+    EXPECT_EQ(rings.getHoleCount(), 1u);
     int holeCount = 0;
 
     for (const Ring &ring : rings.getRings())
     {
         if (ring.isHole())
         {
-            EXPECT_FALSE(ring.isCCW());
             ++holeCount;
         }
         else
         {
-            EXPECT_TRUE(ring.isCCW());
             EXPECT_TRUE(ring.isYMonotone());
         }
     }
 
-    EXPECT_EQ(0, holeCount);
+    EXPECT_EQ(1, holeCount);
 }
 
 GTEST_TEST(DCEL_MakeYMonotone, StarShape)
@@ -857,9 +857,10 @@ TEST_P(DCELTests, Triangulate)
 
     for (const Ring &ring : rings.getRings())
     {
-        EXPECT_TRUE(ring.isCCW());
+        if (ring.isHole())
+            continue;
+
         EXPECT_TRUE(ring.isYMonotone());
-        EXPECT_FALSE(ring.isHole());
 
         // Triangulate the monotone polygon.
         //dumpRingNodes(ring);
@@ -941,10 +942,15 @@ GTEST_TEST(DCEL_Triangulate, DiamondWithHole)
 
     EXPECT_TRUE(makeYMonotone(nodes, edges, rings));
     size_t yMonotoneSize = rings.getRingCount();
-    EXPECT_EQ(yMonotoneSize, 2u);
+    EXPECT_EQ(yMonotoneSize, 3u);
+    EXPECT_EQ(rings.getFilledCount(), 2u);
+    EXPECT_EQ(rings.getHoleCount(), 1u);
 
     for (const Ring &ring : rings.getRings())
     {
+        if (ring.isHole())
+            continue;
+
         EXPECT_TRUE(ring.isCCW());
         EXPECT_TRUE(ring.isYMonotone());
         EXPECT_FALSE(ring.isHole());

@@ -27,6 +27,59 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Local Data Types
 ////////////////////////////////////////////////////////////////////////////////
+//! @brief A structure used to recognise a ring, even if its nodes have been
+//! reorientated
+class RingValue
+{
+private:
+    IDCollection _nodeIDs;
+    size_t _hash;
+    uint32_t _flags;
+
+public:
+    RingValue() : _hash(0) {}
+
+    RingValue(const Ring &ring) :
+        _nodeIDs(ring.getNodeIDs()),
+        _hash(0)
+    {
+        // Calculate the sorted set of nodes in the ring.
+        std::sort(_nodeIDs.begin(), _nodeIDs.end());
+
+        // Hash the nodes in sorted order.
+        constexpr int HashShift = 5;
+
+        for (ID id : _nodeIDs)
+        {
+            _hash = Ag::Bin::rotateLeft(_hash, HashShift) ^ id;
+        }
+    }
+
+    size_t getHash() const { return _hash; }
+
+    bool operator==(const RingValue &rhs) const
+    {
+        if ((_hash != rhs._hash) ||
+            (_nodeIDs.size() != rhs._nodeIDs.size()))
+            return false;
+
+        return std::equal(_nodeIDs.begin(), _nodeIDs.end(), rhs._nodeIDs.begin());
+    }
+};
+
+//! @brief A hash function for RingValue objects.
+struct RingValueHash
+{
+    size_t operator()(const RingValue &rhs) const
+    {
+        return rhs.getHash();
+    }
+};
+
+//! @brief An alias for a hash set of RingValue objects.
+using RingValueSet = std::unordered_set<RingValue, RingValueHash>;
+
+
 //! @brief An operator which generates rings from initial edge.
 class TraceRings
 {
@@ -36,6 +89,7 @@ private:
     NodeTable &_nodes;
     EdgeTable &_edges;
     RingCollection &_rings;
+    bool _ignoreCW;
 
     //! @brief Creates one or more rings from an ordered set of directed edges.
     //! @param[in] source The edges forming the ring.
@@ -190,6 +244,10 @@ private:
             ++edgeCount;
         }
 
+        // Trivially reject CW wound rings.
+        if (_ignoreCW && (totalArea < 0.0))
+            return;
+
         // Set assume the ring is X and Y monotone until proven otherwise.
         uint32_t ringFlags = Ring::IsXMonotone | Ring::IsYMonotone;
 
@@ -205,7 +263,7 @@ private:
                 NodeCPtr currentNode = currentEdge->getStartNode();
                 NodeCPtr nextNode = currentEdge->getEndNode();
 
-                // TODO: These classifictaions produce Split/Merge vertices
+                // TODO: These classifications produce Split/Merge vertices
                 // when edges perpendicular to the sweep direction are
                 // encountered. I guess that detects strict-monotone polygons,
                 // but is that useful?
@@ -347,11 +405,12 @@ private:
     }
 
 public:
-    TraceRings(NodeTable &nodes, EdgeTable &edges, RingCollection &rings) :
+    TraceRings(NodeTable &nodes, EdgeTable &edges, RingCollection &rings, bool ignoreCW = false) :
         _replacedIDs(0),
         _nodes(nodes),
         _edges(edges),
-        _rings(rings)
+        _rings(rings),
+        _ignoreCW(ignoreCW)
     {
     }
 
@@ -360,7 +419,8 @@ public:
         _replacedIDs(0),
         _nodes(nodes),
         _edges(edges),
-        _rings(rings)
+        _rings(rings),
+        _ignoreCW(false)
     {
         _ringIDsToReplace.reserve(affectedRingIDs.size());
 
@@ -553,6 +613,107 @@ SortedIDToIDMap connectRings(const EdgeTable &edges, RingCollection &rings)
 
         // Add to the index.
         ringIDByParentID.push_back(parentID, ring.getID());
+    }
+
+    ringIDByParentID.reindex();
+
+    return ringIDByParentID;
+}
+
+
+//! @brief Creates a mapping of filled rings and the holes they contain.
+//! @param[in] edges The index of all edges in the system.
+//! @param[in] rings The collection of CCW rings where  used to derive the mapping.
+//! @return A sorted non-unique mapping of parent ring ID to child ring IDs.
+SortedIDToIDMap connectCCWRings(const EdgeTable &edges, RingCollection &rings)
+{
+    for (Ring &ring : rings)
+    {
+        ring.setParentRingID(VisitedID);
+    }
+
+    // Connect all rings
+    for (Ring &ring : rings)
+    {
+        NodePtr leftMostNode = ring.getFirstEdge()->getStartNode();
+        EdgePtr edgeLeftOfRing = leftMostNode->getBuddyEdge();
+
+        if (edgeLeftOfRing == nullptr)
+        {
+            // Its the ring which bounds the outer-most region to fill.
+            ring.setParentRingID(NullID);
+
+            continue;
+        }
+
+        // Analyse the edge left of the current ring.
+        bool isAssignedToParent = false;
+
+        for (DirectionIndex direction = 0; direction < 2; ++direction)
+        {
+            HalfEdgePtr directedEdgeOnLeft = edgeLeftOfRing->getHalfEdge(direction);
+            ID connectedRingID = directedEdgeOnLeft->getRingID();
+
+            // Check to see if the ring has no neighbour to the left.
+            if ((connectedRingID >= rings.size()) ||
+                (connectedRingID == ring.getID()))
+                continue;
+
+            const Ring &ringOnLeft = rings[connectedRingID];
+
+            // See if the left-most corner is shared between siblings.
+            if (isNodeOnRing(edges, leftMostNode->getID(), connectedRingID))
+            {
+                if (!isAssignedToParent &&
+                    (ringOnLeft.isHole() == ring.isHole()))
+                {
+                    // The left most node on the current ring/hole is on the
+                    // neighbouring ring/hole, therefore they are siblings.
+                    ring.setParentRingID(connectedRingID);
+                }
+
+                // If the rings share the node, but are different orientations
+                // they can't be related, so don't bother checking.
+                continue;
+            }
+
+            const bool couldConnect = isEdgeGoingDown(directedEdgeOnLeft);
+
+            // A connection between hole and filled ring takes priority over a
+            // sibling connection between holes.
+            if (couldConnect && !isAssignedToParent)
+            {
+                // The edge belongs to either a sibling or a parent.
+                ring.setParentRingID(connectedRingID);
+                isAssignedToParent = ringOnLeft.isHole() != ring.isHole();
+            }
+        }
+    }
+
+    // Compile the sibling connections into parent connections.
+    SortedIDToIDMap ringIDByParentID;
+    ringIDByParentID.reserve(rings.size());
+
+    for (Ring &ring : rings)
+    {
+        ID parentID = ring.getParentRingID();
+        const bool isHole = ring.isHole();
+
+        // Work along the chain of siblings until we find a parent.
+        while ((parentID < rings.size()) &&
+               (rings[parentID].isHole() == isHole))
+        {
+            parentID = rings[parentID].getParentRingID();
+        }
+
+        // Assign the parent of the current ring.
+        ring.setParentRingID(parentID);
+
+        if (ring.isHole())
+        {
+            // Add the hole to the index.
+            ringIDByParentID.push_back(parentID, ring.getID());
+        }
     }
 
     ringIDByParentID.reindex();
@@ -864,6 +1025,76 @@ RingCollection traceRings(NodeTable &nodes, EdgeTable &edges,
     resetRingEdgeIDs(edges, ringsAndHoles);
 
     return ringsAndHoles;
+}
+
+//! @brief Creates a set of rings from nodes and edges which have been partitioned
+//! so that all filled areas are y-monotone.
+//! @param[in] nodes The table of nodes to annotate with edges to their left.
+//! @param[in] edges The table of edges to annotate with ring IDs
+//! @param[in,out] rings The original collection of rings and holes to be updated
+//! with new rings, but with the holes preserved.
+//! @return A mapping of filled ring IDs to the IDs of remaining holes.
+//! @remarks It is assumed that nodes have been annotated with edges
+//! immediately to their left.
+SortedIDToIDMap findPartitionedRings(NodeTable &nodes, EdgeTable &edges,
+                                     RingCollection &rings)
+{
+    // Gather the nodes involved in each hole so that they can be recognised,
+    // albeit possibly with a different winding, once new rings have been
+    // created.
+    RingValueSet holeSignatures;
+    uint32_t minHoleNodes = std::numeric_limits<uint32_t>::max();
+    uint32_t maxHoleNodes = 0;
+
+    for (auto &ring : rings)
+    {
+        if (ring.isHole() == false)
+            continue;
+
+        // Set up trivial rejection when matching holes.
+        minHoleNodes = std::min(minHoleNodes, ring.getNodeCount());
+        maxHoleNodes = std::max(maxHoleNodes, ring.getNodeCount());
+
+        holeSignatures.emplace(ring);
+    }
+
+    // Disconnect all edges and remove associations with any rings.
+    edges.resetConnections();
+    rings.clear();
+
+    TraceRings ringTracer(nodes, edges, rings, /* ignoreCW = */ true);
+
+    // Process all edges to ensure every possible ring is resolved,
+    // but ignoring any CW rings.
+    edges.forEachEdge(ringTracer);
+
+    if (!holeSignatures.empty())
+    {
+        // Rediscover any holes which persisted.
+        for (auto &ring : rings)
+        {
+            uint32_t ringSize = ring.getNodeCount();
+
+            if ((ringSize < minHoleNodes) || (ringSize > maxHoleNodes))
+                continue;
+
+            RingValue ringSignature(ring);
+
+            auto pos = holeSignatures.find(ringSignature);
+
+            if (pos != holeSignatures.end())
+            {
+                ring.setFlags(ring.getFlags() | Ring::IsHole);
+            }
+        }
+
+        // Determine parentage by scanning connected rings and
+        // using the edge on the left to link child systems of filled
+        // rings to parent holes.
+        return connectCCWRings(edges, rings);
+    }
+
+    return { };
 }
 
 }}} // namespace Ag::Geom::DCEL
