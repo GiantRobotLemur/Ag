@@ -165,6 +165,31 @@ private:
         }
     }
 
+    //! @brief Updates ring flags based on whether a node is an intermediate on
+    //! a horizontal or vertical line.
+    //! @param[in,out] flags The ring flags to update.
+    //! @param[in] prevNode The previous node on the ring boundary.
+    //! @param[in] currentNode The current node on the ring boundary.
+    //! @param[in] nextNode The next node on the ring boundary.
+    static void updateNodeFlags(uint32_t &flags, NodeCPtr prevNode,
+                                NodeCPtr currentNode, NodeCPtr nextNode)
+    {
+        const SnapPoint &currentPos = currentNode->getGridPosition();
+
+        SnapPoint prevDelta = prevNode->getGridPosition() - currentPos;
+        SnapPoint nextDelta = currentPos - nextNode->getGridPosition();
+
+        if ((prevDelta.getX() == 0) && (nextDelta.getX() == 0))
+        {
+            flags |= Ring::HasIntermediateHorzNodes;
+        }
+
+        if ((prevDelta.getY() == 0) && (nextDelta.getY() == 0))
+        {
+            flags |= Ring::HasIntermediateVertNodes;
+        }
+    }
+
     //! @brief Creates a single ring from an ordered set of directed edges.
     //! @param beginEdge The position of the first edge in the ring.
     //! @param endEdge The position after the last edge in the ring.
@@ -176,15 +201,19 @@ private:
         // Calculate the statistics of the ring from its edges.
         const Point2D &basePoint = (*beginEdge)->getStartNode()->getRealPosition();
         uint32_t edgeCount = 0;
+        uint32_t nodeFlags = 0;
         double totalArea = 0.0;
         ID ringID = static_cast<ID>(_rings.size());
         int offsetSign = 0;
         bool isConvex = true;
 
         // Re-use an old ID if we are replacing rings.
+        bool reusedID = false;
+
         if (_replacedIDs < _ringIDsToReplace.size())
         {
             ringID = _ringIDsToReplace[_replacedIDs++];
+            reusedID = true;
         }
 
         // Calculate winding and convexity from ring edges.
@@ -206,6 +235,10 @@ private:
 
             totalArea += (prevPt.getX() - nextPoint.getX()) * (prevPt.getY() + nextPoint.getY());
             prevPt = nextPoint;
+
+            // Update node flags to determine if a broken horizontal or vertical edge is included.
+            updateNodeFlags(nodeFlags, currentEdge->getStartNode(),
+                            nextNode, successorEdge->getEndNode());
 
             // Find the edge starting at the minimum X nodes.
             if (nextNode->getGridPosition().lessThanXMajor(leftMostEdge->getStartNode()->getGridPosition()))
@@ -246,7 +279,17 @@ private:
 
         // Trivially reject CW wound rings.
         if (_ignoreCW && (totalArea < 0.0))
+        {
+            if (reusedID)
+                --_replacedIDs;
+
+            // Un-assign the edges, but don't process them again as
+            // the edge at the beginning or a ring.
+            for (auto edgePos = beginEdge; edgePos != endEdge; ++edgePos)
+                (*edgePos)->setRingID(VisitedID);
+
             return;
+        }
 
         // Set assume the ring is X and Y monotone until proven otherwise.
         uint32_t ringFlags = Ring::IsXMonotone | Ring::IsYMonotone;
@@ -297,6 +340,9 @@ private:
                 prevNode = currentNode;
             } while ((ringFlags != 0) && (currentEdge != leftMostEdge));
         }
+
+        // Merge in the node-specific flags.
+        ringFlags |= nodeFlags;
 
         Bin::updateMask(ringFlags, Ring::IsConvex, isConvex);
         Bin::updateMask(ringFlags, Ring::IsCCW, totalArea > 0.0);

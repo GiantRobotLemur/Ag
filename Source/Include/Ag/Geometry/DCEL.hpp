@@ -512,6 +512,8 @@ public:
     static constexpr uint32_t IsHole = 0x10;
     static constexpr uint32_t HasChildren = 0x20;
     static constexpr uint32_t IsSurrounding = 0x40;
+    static constexpr uint32_t HasIntermediateHorzNodes = 0x80;
+    static constexpr uint32_t HasIntermediateVertNodes = 0x100;
 
     // Construction/Destruction
     Ring(ID ringID, HalfEdgePtr firstHalfEdge,
