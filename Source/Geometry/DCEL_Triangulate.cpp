@@ -208,15 +208,13 @@ BoundaryEdgeCollection enumerateSideNodes(const Ring &ring, uint8_t majorIndex)
 //! @return A collection of triangle vertex indices, three for each triangle defined.
 IDCollection triangulateRing(const Ring &ring)
 {
-    constexpr uint32_t Triangulatable = Ring::IsXMonotone | Ring::IsYMonotone | Ring::IsConvex;
-
-    if ((ring.getFlags() & Triangulatable) == 0)
-        throw OperationException("A ring cannot be triangulated if it isn't convex or monotone.");
+    constexpr uint32_t HasIntermediateFlagNodes = Ring::HasIntermediateHorzNodes | Ring::HasIntermediateVertNodes;
+    const uint32_t ringFlags = ring.getFlags();
 
     IDCollection indices;
     indices.reserve((ring.getNodeCount() - 2) * 3);
 
-    if (ring.isConvex())
+    if (((ringFlags & Ring::IsConvex) != 0) && ((ringFlags & HasIntermediateFlagNodes) == 0))
     {
         // Easy, pick the first point and create a triangle fan using it
         // as the point common to all.
@@ -248,7 +246,7 @@ IDCollection triangulateRing(const Ring &ring)
             // else - if (determinant == 0) - It's  a line of points.
         }
     }
-    else
+    else if (ringFlags & Ring::IsMonotone)
     {
         // The ring is X or Y monotone, enumerate the nodes and which sides of
         // the ring they are on True = Max X/Y, False = Min X/Y.
@@ -370,6 +368,10 @@ IDCollection triangulateRing(const Ring &ring)
                 nodeStack.push_back(current);
             }
         }
+    }
+    else
+    {
+        throw OperationException("A ring cannot be triangulated if it isn't convex or strictly monotone.");
     }
 
     return indices;

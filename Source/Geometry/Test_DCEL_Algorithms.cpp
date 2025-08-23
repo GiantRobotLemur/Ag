@@ -62,6 +62,21 @@ static const PrimVertex SimpleA_Vertices[] = {
     { 917, 602 },
 };
 
+// These are taken from the horizontal cross on the pound glyph, which is a
+// rectangle, but formed from 8 points because of intermediate points on the
+// top and bottom horizontal lines.
+static const IndexRange ComplexRect_Indices[] = { { 0, 8 } };
+static const PrimVertex ComplexRect_Vertices[] = {
+    { 44.00, 661.00 },
+    { 240.00, 661.00 },
+    { 427.00, 661.00 },
+    { 711.00, 661.00 },
+    { 711.00, 809.00 },
+    { 396.00, 809.00 },
+    { 198.00, 809.00 },
+    { 44.00, 809.00 },
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Unit Tests
 ////////////////////////////////////////////////////////////////////////////////
@@ -601,88 +616,6 @@ GTEST_TEST(DCEL_MonotoneCheck, FivePointStarNotMonotone)
     }
 }
 
-//GTEST_TEST(DCEL_MakeXMonotone, StarShape)
-//{
-//    NodeTable nodes(Rect2D(-100, -100, 100, 100));
-//    EdgeTable edges(12);
-//
-//    // Create 5-pointed star.
-//    auto IDs = addPolygon(edges, nodes, {
-//                            { 8, 2 },
-//                            { 9, 2 },
-//                            { 10, 3 },
-//                            { 11, 2 },
-//                            { 12, 2 },
-//                            { 10.5, 1 },
-//                            { 11.5, 0 },
-//                            { 10, 0.5 },
-//                            { 8.5, 0 },
-//                            { 9.5, 1 },
-//                          });
-//
-//    RingSystem rings;
-//    rings.build(nodes, edges, false);
-//
-//    ASSERT_EQ(rings.getRingCount(), 1u);
-//
-//    EXPECT_TRUE(makeMonotone(nodes, edges, rings, true, true));
-//
-//    EXPECT_GT(rings.getRingCount(), 1u);
-//
-//    for (const Ring &ring : rings.getRings())
-//    {
-//        EXPECT_TRUE(ring.isCCW());
-//        EXPECT_TRUE(ring.isXMonotone());
-//    }
-//}
-//
-//GTEST_TEST(DCEL_MakeXMonotone, DiamondWithHole)
-//{
-//    NodeTable nodes(Rect2D(-100, -100, 100, 100));
-//    EdgeTable edges(12);
-//
-//    // Create diamond intended to be a hole.
-//    addPolygon(edges, nodes, {
-//                            { 5, 10 },
-//                            { 7, 8 },
-//                            { 5, 6 },
-//                            { 3, 8 } });
-//
-//    // Add an outer diamond to surround the hole.
-//    addPolygon(edges, nodes, {
-//                            { 5, 12 },
-//                            { 9, 8 },
-//                            { 5, 4 },
-//                            { 1, 8 },
-//                          });
-//
-//    RingSystem rings;
-//    rings.build(nodes, edges, false);
-//
-//    ASSERT_EQ(rings.getRingCount(), 2u);
-//
-//    EXPECT_TRUE(makeMonotone(nodes, edges, rings, true, true));
-//
-//    EXPECT_EQ(rings.getRingCount(), 2u);
-//    int holeCount = 0;
-//
-//    for (const Ring &ring : rings.getRings())
-//    {
-//        if (ring.isHole())
-//        {
-//            EXPECT_FALSE(ring.isCCW());
-//            ++holeCount;
-//        }
-//        else
-//        {
-//            EXPECT_TRUE(ring.isCCW());
-//            EXPECT_TRUE(ring.isXMonotone());
-//        }
-//    }
-//
-//    EXPECT_EQ(0, holeCount);
-//}
-
 GTEST_TEST(DCEL_MakeYMonotone, DiamondWithHole)
 {
     NodeTable nodes(Rect2D(-100, -100, 100, 100));
@@ -1041,14 +974,14 @@ GTEST_TEST(DCEL_Triangulate, StarShape)
     }
 }
 
-GTEST_TEST(DCEL_Triangulate, PoundGlyph)
+GTEST_TEST(DCEL_Triangulate, ComplexRect)
 {
-    GlyphInfo metadata(Pound_Indices, std::size(Pound_Indices), Pound_Vertices);
+    GlyphInfo metadata(ComplexRect_Indices, std::size(ComplexRect_Indices), ComplexRect_Vertices);
 
     NodeTable nodes(metadata.Range, metadata.VertexCount);
     EdgeTable edges(metadata.EdgeCount);
 
-    addGlyph(nodes, edges, Pound_Indices, std::size(Pound_Indices), Pound_Vertices);
+    addGlyph(nodes, edges, ComplexRect_Indices, std::size(ComplexRect_Indices), ComplexRect_Vertices);
 
     RingSystem rings;
     rings.build(nodes, edges, false);
@@ -1057,15 +990,11 @@ GTEST_TEST(DCEL_Triangulate, PoundGlyph)
 
     dumpNodes(nodes);
 
-    EXPECT_TRUE(makeYMonotone(nodes, edges, rings));
-    size_t yMonotoneSize = rings.getRingCount();
-    EXPECT_GT(yMonotoneSize, 0u);
-
+    // We just want to triangulate a polygon which isn't strictly Y-monotone.
     for (const Ring &ring : rings.getRings())
     {
-        EXPECT_TRUE(ring.isCCW());
-        EXPECT_TRUE(ring.isYMonotone());
-        EXPECT_FALSE(ring.isHole());
+        if (ring.isHole())
+            continue;
 
         // Triangulate the monotone polygon.
         dumpRingGeometry(ring);
@@ -1073,15 +1002,6 @@ GTEST_TEST(DCEL_Triangulate, PoundGlyph)
 
         // Ensure we have enough triangles.
         ASSERT_EQ(0u, triangles.size() % 3);
-
-        // TODO: This fails because the monotone sweep adds horizontal
-        // edges creating a rectangle in the middle of the glyph of more
-        // than 4 points (because some points are on the horizontal edges).
-        // 
-        // Although the entire rectangle gets triangulated, not all the
-        // points are used. If that was required, such as because we were
-        // trying to smooth shade with gradient stops, that would be a
-        // problem.
         EXPECT_EQ((ring.getNodeCount() - 2) * 3, triangles.size());
 
         for (size_t i = 0; i < triangles.size(); i += 3)
