@@ -36,6 +36,18 @@ enum MonotoneVertexClass : uint32_t
     EndVertex,
 };
 
+//! @brief Sweep event types used when detecting line intersections.
+enum IntersectionEventType : uint32_t
+{
+    // Note - set in the order in which event types at the same node
+    // should be processed.
+    HorizontalEdgeEnding,
+    DiagonalEdgeEnding,
+    Intersection,
+    HorizontalEdgeStarting,
+    DiagonalEdgeStarting,
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +83,7 @@ class SweepEdge
 {
 public:
     // Construction/Destruction
-    SweepEdge(NodePtr node);
+    SweepEdge(NodeCPtr node);
     SweepEdge(const SweepContext &context, EdgePtr edge);
     ~SweepEdge() = default;
 
@@ -80,6 +92,8 @@ public:
     constexpr HalfEdgePtr getEdge() const noexcept { return _edge; }
     constexpr const LineEq2D &getEdgeLine() const noexcept { return _edgeLine; }
 
+    NodePtr getEarliestNode() const;
+    NodePtr getLatestNode() const;
     SnapPoint getSweepIntersection(const SweepContext &context) const;
 
     // Operations
@@ -95,6 +109,7 @@ private:
 
 using SweepEdgeCollection = std::vector<SweepEdge>;
 using SweepEdgeIter = SweepEdgeCollection::iterator;
+using SweepRange = IteratorRange<SweepEdgeIter>;
 
 //! @brief An object which holds the current state of a plane sweep.
 class SweepStatus
@@ -105,21 +120,28 @@ public:
     ~SweepStatus() = default;
 
     // Accessors
-    constexpr SweepEdgeCollection &getDiagonalEdgesInSweep() noexcept { return _diagonalEdges; }
-    constexpr HalfEdgePtrCollection &getColinearEdgesInSweep() noexcept { return _colinearEdges; }
-    bool findEdgeBeforeNode(NodePtr position, SweepEdgeIter &prevEdge);
+    SweepEdgeIter begin();
+    SweepEdgeIter end();
+    bool isEmpty() const noexcept;
+    bool hasDiagonalEdges() const noexcept;
+    bool hasHorizontalEdges() const noexcept;
+    NodePtr getRightMostHorizontal() const;
+    constexpr SweepEdgeCollection &getEdgesInSweep() noexcept { return _sortedEdges; }
+    constexpr SweepEdgeCollection &getHorizontalEdgesInSweep() noexcept { return _horizontalEdges; }
+    bool tryFindDiagonalEdgeAfterNode(NodePtr position, SweepEdgeIter &nextEdge);
+    SweepRange findEdgesAtSweep();
 
     // Operations
-    SweepEdgeIter addEdge(EdgePtr edge);
+    SweepEdgeIter addDiagonalEdge(EdgePtr edge);
+    SweepEdgeIter addHorizontalEdge(EdgePtr edge);
     SweepEdgeIter removeEdge(SweepEdgeIter edgePos);
+    void removeHorizontalEdge(EdgePtr edge);
     SweepEdgeIter removeEdge(HalfEdgeCPtr edgeToRemove);
-    SweepEdgeIter removeEdgeAtSweep();
-    EdgePtr succeedEdgeAtSweep();
 private:
     // Internal Fields
     SweepContext &_context;
-    SweepEdgeCollection _diagonalEdges;
-    HalfEdgePtrCollection _colinearEdges;
+    SweepEdgeCollection _sortedEdges;
+    SweepEdgeCollection _horizontalEdges;
 };
 
 //! @brief An object which defines an event which occurs during a plane sweep.
@@ -166,6 +188,10 @@ public:
 class SweepEventQueue
 {
 public:
+    // Public Types
+    using EventQueue = std::deque<SweepEvent>;
+    using EventIter = EventQueue::iterator;
+
     // Construction/Destruction
     SweepEventQueue(const SweepContext &context);
     SweepEventQueue(const SweepContext &context, const SweepEvent *initialEvents,
@@ -176,14 +202,16 @@ public:
     bool isEmpty() const noexcept;
 
     // Operations
+    bool tryAddUniqueEvent(const SweepEvent &eventToAdd);
     void insertEvent(const SweepEvent &eventToInsert);
     bool tryPopEvent(SweepEvent &nextEvent);
+
 private:
     // Internal Types
-    using EventQueue = std::deque<SweepEvent>;
 
     // Internal Fields
     const SweepContext &_context;
+    CompareSweepElements _comparer;
     EventQueue _sortedEvents;
 };
 
@@ -192,6 +220,8 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 void sortSweepEvents(const SweepContext &context, SweepEventCollection &events);
 bool containsSweepEvent(const SweepContext &context, SweepEventCollection &events, const SweepEvent &key);
+
+bool findAllIntersections(NodeTable &nodes, EdgeTable &edges);
 
 }}} // namespace Ag::Geom::DCEL
 

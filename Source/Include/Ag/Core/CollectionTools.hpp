@@ -22,6 +22,71 @@ namespace Ag {
 ////////////////////////////////////////////////////////////////////////////////
 // Templates
 ////////////////////////////////////////////////////////////////////////////////
+//! @brief Performs a less-than comparison on the first member of a pair.
+//! @tparam TKey The data type of the first member of the pair - to be compared.
+//! @tparam TValue The data type of the second member of the pair.
+//! @tparam TKeyComp The data type of a binary function which performs the
+//! less-than comparison on the TKey values.
+//! @remarks This functor can be useful when using the standard algorithms
+//! std::sort(), std::lower_bound(), std::upper_bound() and std::equal_range()
+//! on keyed pairs.
+template<typename TKey, typename TValue, typename TKeyComp = std::less<TKey>>
+struct LessThanKeyComparer
+{
+    bool operator()(const std::pair<TKey, TValue> &lhs,
+                    const std::pair<TKey, TValue> &rhs) const
+    {
+        TKeyComp KeyComparer;
+
+        return KeyComparer(lhs.first, rhs.first);
+    }
+};
+
+//! @brief Performs an equality comparison using only the first member of a pair.
+//! @tparam TKey The data type of the first member of the pair - to be compared.
+//! @tparam TValue The data type of the second member of the pair.
+//! @tparam TKeyComp The data type of a binary function which performs the
+//! equal-to comparison on TKey values.
+//! @remarks This functor can be useful when using the std::unique() standard
+//! algorithm on keyed pairs.
+template<typename TKey, typename TValue, typename TKeyComp = std::equal_to<TKey>>
+struct EqualToKeyComparer
+{
+    bool operator()(const std::pair<TKey, TValue> &lhs,
+                    const std::pair<TKey, TValue> &rhs) const
+    {
+        TKeyComp KeyComparer;
+
+        return KeyComparer(lhs.first, rhs.first);
+    }
+};
+
+//! @brief Performs an equality comparison on a standard pair.
+//! @tparam TKey The data type of the first member of the pair.
+//! @tparam TValue The data type of the second member of the pair.
+//! @tparam TKeyComp The data type of a binary function which performs the
+//! equal-to comparison on TKey values.
+//! @tparam TValueComp The data type of a binary function which performs the
+//! equal-to comparison on TValue values.
+//! @remarks This functor can be useful when using the std::unique() standard
+//! algorithm on std::pair objects.
+template<typename TKey, typename TValue,
+         typename TKeyComp = std::equal_to<TKey>,
+         typename TValueComp = std::equal_to<TValue>>
+struct EqualToPairComparer
+{
+    bool operator()(const std::pair<TKey, TValue> &lhs,
+                    const std::pair<TKey, TValue> &rhs) const
+    {
+        TKeyComp KeyComparer;
+        TValueComp ValueComp;
+
+        return KeyComparer(lhs.first, rhs.first) &&
+               ValueComp(lhs.second, rhs.second);
+    }
+};
+
+
 //! @brief Creates an immutable static mapping from constant data.
 //! @tparam TKey The data type of keys used to look up values.
 //! @tparam TValue The data type of values being indexed.
@@ -32,19 +97,14 @@ template<typename TKey, typename TValue, typename TKeyComp = std::less<TKey>>
 class StaticMap
 {
 public:
+    // Public Types
     using MappingType = std::pair<TKey, TValue>;
     using MappingCPtr = const MappingType *;
 private:
-    struct KeyCompare
-    {
-        bool operator()(const MappingType &lhs, const MappingType &rhs) const
-        {
-            TKeyComp KeyComparer;
+    // Internal Types
+    using KeyCompare = LessThanKeyComparer<TKey, TValue, TKeyComp>;
 
-            return KeyComparer(lhs.first, rhs.first);
-        }
-    };
-
+    // Internal Fields
     const MappingType *_mappings;
     size_t _count;
 
@@ -371,6 +431,8 @@ bool diffValues(T lhs, T rhs, int &diff)
 
     return diff != 0;
 }
+
+static_assert(false < true, "diffValues<bool>() will not work correctly.");
 
 } // namespace Ag
 

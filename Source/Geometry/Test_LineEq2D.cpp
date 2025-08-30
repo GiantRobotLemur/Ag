@@ -1,7 +1,10 @@
 //! @file Test_LineEq2D.cpp
 //! @brief The definition of unit tests for the LineEq2D class.
-//! @author Nick Arkell
-//! @copyright (c) 2021-2024 Nick Arkell : Software Engineer
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
+//! @copyright This file is part of the Silver (Ag) project which is released
+//! under LGPL 3 license. See LICENSE file at the repository root or go to
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,6 +71,22 @@ GTEST_TEST(LineEq2D, GetDistanceToPoint)
     EXPECT_NEAR(specimen.getDistanceToPoint(Point2D(1, 0)), -recipRoot2, 1e-8);
 }
 
+GTEST_TEST(LineEq2D, CreateVertical)
+{
+    EXPECT_TRUE(LineEq2D::createVertical(0).isVertical());
+    EXPECT_TRUE(LineEq2D::createVertical(-10).isVertical());
+    EXPECT_TRUE(LineEq2D::createVertical(69).isVertical());
+    EXPECT_FALSE(LineEq2D::createVertical(12).isHorizontal());
+}
+
+GTEST_TEST(LineEq2D, CreateHorizontal)
+{
+    EXPECT_TRUE(LineEq2D::createHorizontal(0).isHorizontal());
+    EXPECT_TRUE(LineEq2D::createHorizontal(-10).isHorizontal());
+    EXPECT_TRUE(LineEq2D::createHorizontal(69).isHorizontal());
+    EXPECT_FALSE(LineEq2D::createHorizontal(12).isVertical());
+}
+
 GTEST_TEST(LineEq2D, IsHorizontal)
 {
     EXPECT_TRUE(LineEq2D(Point2D(0, 0), Point2D(1, 0)).isHorizontal());
@@ -84,7 +103,6 @@ GTEST_TEST(LineEq2D, IsHorizontal)
 
     EXPECT_FALSE(LineEq2D(Point2D(-10, 20), Point2D(-11, -20)).isHorizontal());
 }
-
 
 GTEST_TEST(LineEq2D, IsVertical)
 {
@@ -103,6 +121,95 @@ GTEST_TEST(LineEq2D, IsVertical)
     EXPECT_FALSE(LineEq2D(Point2D(10, 10), Point2D(20, -20)).isVertical());
 }
 
+GTEST_TEST(LineEq2D, IsColinear)
+{
+    NumericDomain domain(-20, 20);
+
+    // Test vertical.
+    EXPECT_TRUE(LineEq2D(Point2D(5, -5), Point2D(5, 5)).isColinear(domain, LineEq2D(Point2D(5, -1), Point2D(5, 12))));
+    EXPECT_TRUE(LineEq2D(Point2D(5, -5), Point2D(5, 5)).isColinear(domain, LineEq2D(Point2D(5, 12), Point2D(5, -1))));
+
+    // Test horizontal.
+    EXPECT_TRUE(LineEq2D(Point2D(-5, 5), Point2D(5, 5)).isColinear(domain, LineEq2D(Point2D(-5, 5), Point2D(5, 5))));
+    EXPECT_TRUE(LineEq2D(Point2D(-5, 5), Point2D(5, 5)).isColinear(domain, LineEq2D(Point2D(7, 5), Point2D(2, 5))));
+
+    // Test diagonal.
+    EXPECT_TRUE(LineEq2D(Point2D(-4, 0), Point2D(0, 4)).isColinear(domain, LineEq2D(Point2D(-8, -4), Point2D(4, 8))));
+    EXPECT_TRUE(LineEq2D(Point2D(-4, 0), Point2D(0, 4)).isColinear(domain, LineEq2D(Point2D(4, 8), Point2D(-8, -4))));
+
+    // Test vertical vs horizontal.
+    EXPECT_FALSE(LineEq2D(Point2D(5, -5), Point2D(5, 5)).isColinear(domain, LineEq2D(Point2D(-5, 5), Point2D(5, 5))));
+
+    // Test vertical vs diagonal.
+    EXPECT_FALSE(LineEq2D(Point2D(5, -5), Point2D(5, 5)).isColinear(domain, LineEq2D(Point2D(-4, 0), Point2D(0, 4))));
+
+    // Test horizontal vs diagonal.
+    EXPECT_FALSE(LineEq2D(Point2D(-5, 5), Point2D(5, 5)).isColinear(domain, LineEq2D(Point2D(-4, 0), Point2D(0, 4))));
+
+    // Test parallel
+    EXPECT_FALSE(LineEq2D(Point2D(-4, 0), Point2D(0, 4)).isColinear(domain, LineEq2D(Point2D(4, 0), Point2D(8, 4))));
+    EXPECT_FALSE(LineEq2D(Point2D(-4, 0), Point2D(0, 4)).isColinear(domain, LineEq2D(Point2D(8, 4), Point2D(4, 0))));
+}
+
+GTEST_TEST(LineEq2D, GetOrigin)
+{
+    // Test vertical.
+    auto origin = LineEq2D(Point2D(5, -5), Point2D(5, 5)).getOrigin();
+    EXPECT_DOUBLE_EQ(origin.getX(), 5.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 0.0);
+
+    origin = LineEq2D(Point2D(5, 5), Point2D(5, -5)).getOrigin();
+    EXPECT_DOUBLE_EQ(origin.getX(), 5.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 0.0);
+
+    // Test horizontal.
+    origin = LineEq2D(Point2D(-5, 5), Point2D(5, 5)).getOrigin();
+    EXPECT_DOUBLE_EQ(origin.getX(), 0.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 5.0);
+
+    origin = LineEq2D(Point2D(5, 5), Point2D(-5, 5)).getOrigin();
+    EXPECT_DOUBLE_EQ(origin.getX(), 0.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 5.0);
+
+    // Test diagonal.
+    origin = LineEq2D(Point2D(-4, 0), Point2D(0, 4)).getOrigin();
+    EXPECT_DOUBLE_EQ(origin.getX(), -2.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 2.0);
+
+    origin = LineEq2D(Point2D(0, 4), Point2D(-4, 0)).getOrigin();
+    EXPECT_DOUBLE_EQ(origin.getX(), -2.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 2.0);
+}
+
+GTEST_TEST(LineEq2D, GetDelta)
+{
+    // Test vertical.
+    auto origin = LineEq2D(Point2D(5, -5), Point2D(5, 5)).getDelta();
+    EXPECT_DOUBLE_EQ(origin.getX(), 0.0);
+    EXPECT_DOUBLE_EQ(std::abs(origin.getY()), 1.0);
+
+    origin = LineEq2D(Point2D(5, 5), Point2D(5, -5)).getDelta();
+    EXPECT_DOUBLE_EQ(origin.getX(), 0.0);
+    EXPECT_DOUBLE_EQ(std::abs(origin.getY()), 1.0);
+
+    // Test horizontal.
+    origin = LineEq2D(Point2D(-5, 5), Point2D(5, 5)).getDelta();
+    EXPECT_DOUBLE_EQ(std::abs(origin.getX()), 1.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 0.0);
+
+    origin = LineEq2D(Point2D(5, 5), Point2D(-5, 5)).getDelta();
+    EXPECT_DOUBLE_EQ(std::abs(origin.getX()), 1.0);
+    EXPECT_DOUBLE_EQ(origin.getY(), 0.0);
+
+    // Test diagonal.
+    origin = LineEq2D(Point2D(-4, 0), Point2D(0, 4)).getDelta();
+    EXPECT_DOUBLE_EQ(origin.getX(), origin.getY());
+    EXPECT_NE(origin.getY(), 0.0);
+
+    origin = LineEq2D(Point2D(0, 4), Point2D(-4, 0)).getDelta();
+    EXPECT_DOUBLE_EQ(origin.getX(), origin.getY());
+    EXPECT_NE(origin.getY(), 0.0);
+}
 
 GTEST_TEST(LineEq2D, AngleTo)
 {

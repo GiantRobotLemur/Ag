@@ -70,6 +70,34 @@ LineEq2D::LineEq2D(const LineSeg2D &rhs) :
     }
 }
 
+//! @brief Constructs a line from raw equation components.
+//! @param[in] a The cosine of the angle a perpendicular makes with the horizontal.
+//! @param[in] b The cosine of the angle a perpendicular makes with the vertical.
+//! @param[in] c The distance from the origin to the nearest point.
+//! @throws ArgumentException If (a^2 + b^2) is near-enough 0, as the definition is invalid.
+//! @note The equation parameters will be normalised so that (a^2 + b^2) == 1.0.
+LineEq2D::LineEq2D(double a, double b, double c) :
+    _a(a),
+    _b(b),
+    _c(c)
+{
+    // Ensure the line is normalised.
+    double magnitude = (_a * _a) + (_b * _b);
+
+    if (NumericDomain::SignedScalar.isNearZero(magnitude))
+    {
+        throw ArgumentException("The values do not represent a valid equation of a line.", "a/b");
+    }
+    else if (NumericDomain::SignedScalar.isNearEqual(magnitude, 1.0) == false)
+    {
+        double magRoot = std::sqrt(magnitude);
+
+        _a /= magRoot;
+        _b /= magRoot;
+        _c /= magRoot;
+    }
+}
+
 //! @brief Constructs an object representing an infinite line passing
 //! through two points.
 //! @param[in] first The first point the line should pass through.
@@ -97,6 +125,22 @@ LineEq2D::LineEq2D(const Point2D &first, const Point2D &second) :
     }
 }
 
+//! @brief Creates the equation of a vertical line.
+//! @param[in] throughX The X value at every point on the line.
+//! @return A newly created vertical line.
+LineEq2D LineEq2D::createVertical(double throughX)
+{
+    return LineEq2D(-1, 0, throughX);
+}
+
+//! @brief Creates the equation of a horizontal line.
+//! @param[in] throughY The Y value at every point on the line.
+//! @return A newly created horizontal line.
+LineEq2D LineEq2D::createHorizontal(double throughY)
+{
+    return LineEq2D(0, 1, -throughY);
+}
+
 //! @brief Gets the cosine of the angle the normal to the line makes
 //! with the horizontal.
 //! @return A value between -1. and 1.0.
@@ -112,18 +156,32 @@ double LineEq2D::getB() const { return _b; }
 //! @return The signed shortest distance from the origin to the line.
 double LineEq2D::getC() const { return _c; }
 
+//! @brief Calculates the closest point on the line to the origin.
+//! @return A position on the line.
+Point2D LineEq2D::getOrigin() const
+{
+    double denominator = (_a * _a) + (_b * _b);
+    double factor = -_c / denominator;
+
+    return { _a * factor, _b * factor };
+}
+
+//! @brief Gets the gradient of the line as a unit vector.
+//! @return A gradient of the line, the negative of the gradient would be an
+//! equally valid representation.
+Point2D LineEq2D::getDelta() const
+{
+    double denominator = (_a * _a) + (_b * _b);
+    double rootDenominator = std::sqrt(denominator);
+
+    return { _b / rootDenominator, -_a / rootDenominator };
+}
+
 //! @brief Determines if the line is near-enough horizontal.
 //! @retval true The line is near-enough horizontal.
 //! @retval false The line is not horizontal.
 bool LineEq2D::isHorizontal() const
 {
-    //double aHorz = 0;
-    //double bHorz = 1;
-    //double cHorz = 0;
-    //double cosine = (_a * aHorz) + (_b * bHorz);
-
-    //return NumericDomain::SignedScalar.isNearEqual(std::abs(cosine), 1.0);
-
     return NumericDomain::SignedScalar.isNearEqual(std::abs(_b), 1.0);
 }
 
@@ -132,13 +190,6 @@ bool LineEq2D::isHorizontal() const
 //! @retval false The line is not vertical.
 bool LineEq2D::isVertical() const
 {
-    //double aVert = -1;
-    //double bVert = 0;
-    //double cVert = 0;
-    //double cosine = (_a * aVert) + (_b * bVert);
-
-    //return NumericDomain::SignedScalar.isNearEqual(std::abs(cosine), 1.0);
-
     return NumericDomain::SignedScalar.isNearEqual(std::abs(_a), 1.0);
 }
 
@@ -146,6 +197,18 @@ bool LineEq2D::isVertical() const
 const double *LineEq2D::toVector() const
 {
     return &_a;
+}
+
+//! @brief Determines if the lines represented by this and another line equation
+//! are near-enough co-linear, even if they have different definitions.
+//! @param[in] domain The numeric domain used to compare distances to the origin.
+//! @param[in] rhs The equation of the line to compare against this one.
+//! @retval true The lines near-enough overlap along their entire length.
+//! @retval false The lines do not overlap.
+bool LineEq2D::isColinear(const NumericDomain &domain, const LineEq2D &rhs) const
+{
+    return isParallel(rhs) &&
+        domain.isNearZero(getDistanceToPoint(rhs.getOrigin()));
 }
 
 //! @brief Determines if a line is parallel to the current one.

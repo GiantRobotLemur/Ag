@@ -80,14 +80,14 @@ Angle::Angle(double angleInRadians) :
 //! @returns A new angle object.
 Angle Angle::fromDegrees(double angleInDegrees)
 {
-    return Angle(angleInDegrees * Pi / 180.0);
+    return Angle(degreesToRadians(angleInDegrees));
 }
 
 //! @brief Gets the value of the angle in radians in the range +/-Pi.
 double Angle::toRadians() const { return _value; }
 
 //! @brief Gets the value of the angle in degrees in the range +/- 180.
-double Angle::toDegrees() const { return _value * 180.0 / Pi; }
+double Angle::toDegrees() const { return radiansToDegrees(_value); }
 
 //! @brief Gets the angular offset from the current angular bearing to another.
 //! @param[in] nextAngle The angle to calculate the shortest offset to.
@@ -268,7 +268,6 @@ Angle Angle::operator-() const
 {
     return Angle(-_value);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // AngleOrientation Member Function Definitions

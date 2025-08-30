@@ -1,6 +1,6 @@
 # Silver (Ag)
 ## A platform-independent library of runtime tools
----
+
 Ag (inspired by the periodic table symbol for Silver) represents a set of
 non-domain-specific libraries which underpin the
 [Mighty Oak](https://github.com/GiantRobotLemur/MightyOak) project has gone
@@ -23,7 +23,9 @@ in C/C++ runtime.
 symbols from binaries and packages them for use at runtime to create readable
 stack traces by the Core library.
 * QtInterop - A library which integrates Core with Qt6.
-* [Geometry](Doc/Geometry.md) - A 2D geometry library which supports decomposing polygons into triangle lists with O(n log n) complexity.
+* [Geometry](Doc/Geometry.md) - A 2D geometry library which implements
+primitives and low-complexity algorithms for line intersection, polygon/hole
+tracing and decomposition of polygons into triangle.
 * WriteGlyphGeometry - A Win32 tool to extract the geometry of glyphs from
   a font to use in the unit tests for the Geometry library.
 * [Win32Base](Doc/Win32Base.md) - A library which provides basic tools for

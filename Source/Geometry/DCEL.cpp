@@ -349,8 +349,7 @@ Node &NodeTable::addNode(const Point2D &realPosition)
 
         // Update indexes.
         NodePtr newNode = _allNodes.back().get();
-        _nodesByID[newNode->getID()] = newNode;
-        _nodesByPosition[gridPosition] = newNode;
+        indexNode(newNode);
 
         return *newNode;
     }
@@ -376,12 +375,67 @@ void NodeTable::removeNode(ID nodeID)
 
     if (pos != _allNodes.end())
     {
-        _nodesByID.erase(nodeID);
-        _nodesByPosition.erase(pos->get()->getGridPosition());
+        deindexNode(pos->get());
         _allNodes.erase(pos);
     }
 }
 
+//! @brief Removes all nodes which have no incident edges.
+//! @return The count of nodes removed.
+size_t NodeTable::removeDisconnectedNodes(const EdgeTable &edges)
+{
+    struct IsNodeConnected
+    {
+    private:
+        const EdgeTable &_edges;
+    public:
+        IsNodeConnected(const EdgeTable &edges) :
+            _edges(edges)
+        {
+        }
+
+        bool operator()(const NodeUPtr &nodePtr) const
+        {
+            return _edges.anyEdgesAtNode(nodePtr->getID());
+        }
+    };
+
+    // Shuffle disconnected nodes to the end of the table without
+    // destroying them.
+    auto last = std::partition(_allNodes.begin(), _allNodes.end(),
+                               IsNodeConnected(edges));
+
+    if (last == _allNodes.end())
+        return 0;
+
+    // Remove the affected nodes from the various indexes.
+    for (auto nodePos = last; nodePos != _allNodes.end(); ++nodePos)
+    {
+        deindexNode(nodePos->get());
+    }
+
+    // Remove the nodes from the table.
+    size_t removedCount = std::distance(last, _allNodes.end());
+    _allNodes.erase(last, _allNodes.end());
+
+    return removedCount;
+}
+
+//! @brief Adds a new node to the various indexes.
+//! @param[in] node The new node to index.
+void NodeTable::indexNode(NodePtr node)
+{
+    _nodesByID[node->getID()] = node;
+    _nodesByPosition[node->getGridPosition()] = node;
+}
+
+//! @brief Removes a node from the various indexes.
+//! @param[in] node The node to remove.
+void NodeTable::deindexNode(NodePtr node)
+{
+    _nodesByID.erase(node->getID());
+    _nodesByPosition.erase(node->getGridPosition());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // HalfEdge Member Definitions
@@ -463,6 +517,15 @@ NodePtr HalfEdge::getEndNode() const noexcept
     return _parent->_nodes[_index ^ 1];
 }
 
+//! @brief Determines of a specified node appears at either end of the edge.
+//! @param[in] node The node to check for.
+//! @retval true The @p node is at the start or end of the edge.
+//! @retval false The @p node is not used to define this edge.
+bool HalfEdge::hasNode(NodeCPtr node) const noexcept
+{
+    return _parent->hasNode(node);
+}
+
 //! @brief Sets the identifier of the ring for which the edge forms a part of
 //! the perimeter.
 //! @param[in] ring The identifier of the ring or NullID
@@ -515,6 +578,13 @@ HalfEdgeCPtr HalfEdge::getReverse() const noexcept
 Angle HalfEdge::getAngle() const
 {
     return Angle(_parent->_angle + (Angle::Pi * _index));
+}
+
+//! @brief Gets the directed line segment tracing the edge.
+//! @return A line segment which matches the edge.
+LineSeg2D HalfEdge::getSegment() const
+{
+    return LineSeg2D(getStartNode()->getRealPosition(), getEndNode()->getRealPosition());
 }
 
 //! @brief Resets the previous/next edge IDs and ring ID to null values.
@@ -831,6 +901,15 @@ bool EdgeTable::isEmpty() const noexcept
 uint32_t EdgeTable::getCount() const noexcept
 {
     return static_cast<uint32_t>(_allEdges.size());
+}
+
+//! @brief Determines if a node forms part of any defined edges.
+//! @param[in] nodeId The unique numeric identifier of the node.
+//! @retval true The node is used to define at least one edge.
+//! @retval false The nodes is not part of any edge in the table.
+bool EdgeTable::anyEdgesAtNode(ID nodeId) const
+{
+    return _edgesByNode.find(nodeId) != _edgesByNode.end();
 }
 
 //! @brief Attempts to find an edge corresponding to an identifier.
@@ -1238,15 +1317,10 @@ Edge *EdgeTable::addEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID)
             // Add the edge to the table.
             _allEdges.push_back(std::make_unique<Edge>(newEdge));
 
-            // Add the edge to the indexes.
             EdgePtr edgePtr = _allEdges.back().get();
-            _edgesByID[edgePtr->getID()] = edgePtr;
-            _edgesByConnection[edgePtr->getKey()] = edgePtr;
 
-            for (DirectionIndex i = 0; i < 2; ++i)
-            {
-                _edgesByNode.emplace(edgePtr->getNodeID(i), edgePtr);
-            }
+            // Add the edge to the indexes.
+            indexEdge(edgePtr);
 
             return edgePtr;
         }
@@ -1260,7 +1334,6 @@ Edge *EdgeTable::addEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID)
         // The edge already exists.
         return edgeIDPos->second;
     }
-
 }
 
 //! @brief Removes the specified edge from the collection.
@@ -1274,29 +1347,11 @@ void EdgeTable::removeEdge(ID edgeID)
         // Remove the edge from indexes.
         EdgePtr edgeToRemove = edgeIDPos->second;
 
-        for (DirectionIndex i = 0; i < 2; ++i)
-        {
-            // Remove mappings for both ends of the edge.
-            auto mappingRange = _edgesByNode.equal_range(edgeToRemove->getNodeID(i));
-
-            for (auto j = mappingRange.first; j != mappingRange.second; )
-            {
-                if (j->second == edgeToRemove)
-                {
-                    j = _edgesByNode.erase(j);
-
-                    // Highlander pattern: There should only be one.
-                    break;
-                }
-                else
-                {
-                    ++j;
-                }
-            }
-        }
-
-        _edgesByConnection.erase(edgeToRemove->getKey());
+        // Given we already have the ID mapping, remove it without searching again.
         _edgesByID.erase(edgeIDPos);
+
+        // Remove the edge from other indexes.
+        deindexEdge(edgeToRemove, false);
 
         // Find the actual edge storage.
         // TODO: This uses slow linear search: Optimise.
@@ -1321,7 +1376,7 @@ void EdgeTable::resetConnections()
 }
 
 //! @brief Splits a specified edge about a specified joint, which is expected
-//! to be somewhere within its interior.
+//! to be somewhere within its interior, removing the original edge.
 //! @param[in] nodes The table the node defining the edge and to split by.
 //! @param[in] edgeID The identifier of the edge to split.
 //! @param[in] nodeToSplitAboutID The identifier of the node at the split point.
@@ -1344,53 +1399,135 @@ SplitEdgeResult EdgeTable::splitEdge(NodeTable &nodes, ID edgeID, ID nodeToSplit
         throw Ag::OperationException("Splitting an edge about one of its ends.");
     }
 
-    NodePtr nodeToSplitAbout = &nodes[nodeToSplitAboutID];
-    ID endNodeID = originalEdge->getSecondNodeID();
+    Edge originalCopy = *originalEdge;
+    ID firstNodeID = originalEdge->getFirstNodeID();
+    ID secondNodeID = originalEdge->getSecondNodeID();
 
-    auto newEdgePos = _edgesByConnection.find(makeEdgeKey(nodeToSplitAboutID, endNodeID));
-    EdgePtr secondEdgePtr = nullptr;
+    // Both the partial edges could already exist - check.
+    auto firstHalfPos = _edgesByConnection.find(makeEdgeKey(firstNodeID, nodeToSplitAboutID));
+    auto secondHalfPos = _edgesByConnection.find(makeEdgeKey(nodeToSplitAboutID, secondNodeID));
 
-    if (newEdgePos == _edgesByConnection.end())
+    SplitEdgeResult result;
+    result.SplitNode = &nodes[nodeToSplitAboutID];
+
+    bool originalEdgeReplaced = false;
+
+    if (firstHalfPos == _edgesByConnection.end())
     {
-        // We need to create the new edge.
-        Edge secondEdge(_idSeed++, nodeToSplitAbout, originalEdge->getSecondNode());
-
-        // If we get this far, all nodes are valid.
-        _allEdges.emplace_back(std::make_unique<Edge>(secondEdge));
-        secondEdgePtr = _allEdges.back().get();
-
-        // Update indexes to include the new edge.
-        _edgesByID.insert({ secondEdgePtr->getID(), secondEdgePtr });
-        _edgesByNode.insert({ nodeToSplitAboutID, secondEdgePtr });
-        _edgesByNode.insert({ endNodeID, secondEdgePtr });
-        _edgesByConnection.insert({ secondEdgePtr->getKey(), secondEdgePtr });
+        result.FirstEdge = createEdge(nodes, firstNodeID, nodeToSplitAboutID, originalEdge);
+        originalEdgeReplaced = (originalEdge != nullptr);
     }
     else
     {
-        // The second edge already exists.
-        secondEdgePtr = newEdgePos->second;
+        result.FirstEdge = firstHalfPos->second;
     }
 
-    // Partially remove the original edge from node-based indexes.
-    _edgesByConnection.erase(originalEdge->getKey());
-
-    auto edgeNodePair = _edgesByNode.equal_range(endNodeID);
-
-    for (auto i = edgeNodePair.first; i != edgeNodePair.second; ++i)
+    if (secondHalfPos == _edgesByConnection.end())
     {
-        if (i->second == originalEdge)
-        {
-            // Replace the original edge with the new one in this index.
-            i->second = secondEdgePtr;
-            break;
-        }
+        result.SecondEdge = createEdge(nodes, nodeToSplitAboutID, secondNodeID,
+                                       originalEdgeReplaced ? nullptr : originalEdge);
+        originalEdgeReplaced = true;
+    }
+    else
+    {
+        result.SecondEdge = secondHalfPos->second;
     }
 
-    // Truncate the original edge and connect to the new edge created after
-    // the split.
-    originalEdge->updateAfterSplit(nodeToSplitAbout, secondEdgePtr);
+    if ((originalEdge != nullptr) && (originalEdgeReplaced == false))
+    {
+        // Remove the original edge if it wasn't re-used.
+        removeEdge(edgeID);
+    }
 
-    return SplitEdgeResult(originalEdge, secondEdgePtr, nodeToSplitAbout);
+    return result;
+}
+
+//! @brief Replaces an edge with a new definition.
+//! @param[in] nodes The table of nodes which are used to defined edges in this table.
+//! @param[in] edgeID The identity of the edge to replace.
+//! @param[in] firstNodeID The ID of the first node on the new edge.
+//! @param[in] secondNodeID The ID of the second node on the new edge.
+//! @retval true The existing edge @p edgeID was replaced by the new edge.
+//! @retval false Edge @p edgeID was not replaced because an edge between
+//! @p firstNodeID and @p secondNodeID already existed.
+bool EdgeTable::replaceEdge(NodeTable &nodes, ID edgeID, ID firstNodeID, ID secondNodeID)
+{
+    EdgePtr edge;
+
+    // Ensure the required edge doesn't already exist.
+    if (tryFindEdgeByNodes(firstNodeID, secondNodeID, edge))
+        return false;
+
+    if (tryFindEdgeByID(edgeID, edge) == false)
+        throw ArgumentException("An edge with the specified ID does not exist.", "edgeID");
+
+    NodePtr firstNode = nullptr;
+
+    if (nodes.tryFindNodeByID(firstNodeID, firstNode) == false)
+        throw ArgumentException("A node with the specified ID does not exist.", "firstNodeID");
+
+    NodePtr secondNode = nullptr;
+
+    if (nodes.tryFindNodeByID(secondNodeID, secondNode) == false)
+        throw ArgumentException("A node with the specified ID does not exist.", "secondNodeID");
+
+    // Remove the original edge from all but the ID index.
+    deindexEdge(edge, false);
+
+    // Overwrite the edge.
+    *edge = Edge(edgeID, firstNode, secondNode);
+
+    // Add the new edge to the non-ID indexes.
+    indexEdge(edge, false);
+
+    return true;
+}
+
+//! @brief Removes edges which aren't currently assigned to a ring.
+//! @param[in] maxAssignedRingID The first invalid ring ID indicating an edge
+//! is unassigned, essentially the size of the Ring collection.
+//! @return The count of edges removed.
+size_t EdgeTable::removeUnassignedEdges(ID maxAssignedRingID)
+{
+    struct IsEdgeAssigned
+    {
+    private:
+        ID _maxRingID;
+    public:
+        IsEdgeAssigned(ID maxRingID) :
+            _maxRingID(maxRingID)
+        {
+        }
+
+        bool operator()(const EdgeUPtr &edge) const
+        {
+            return (edge->getHalfEdge(0)->getRingID() <= _maxRingID) ||
+                   (edge->getHalfEdge(1)->getRingID() <= _maxRingID);
+        }
+    };
+
+    // Use partition() instead of remove_if() as it does not destroy
+    // the unassigned edges before we've had a chance to remove them
+    // from the indexes.
+    auto last = std::partition(_allEdges.begin(), _allEdges.end(),
+                               IsEdgeAssigned(maxAssignedRingID));
+
+    // No edges were removed.
+    if (last == _allEdges.end())
+        return 0;
+
+    // Remove the unassigned edges from all indexes.
+    size_t deletedEdgeCount = std::distance(last, _allEdges.end());
+
+    for (auto edgeToRemove = last; edgeToRemove != _allEdges.end(); ++edgeToRemove)
+    {
+        deindexEdge(edgeToRemove->get(), /* removeIndexByID */ true);
+    }
+
+    // Delete the edges.
+    _allEdges.erase(last, _allEdges.end());
+
+    return deletedEdgeCount;
 }
 
 //! @brief Gets the edge with a specified identifier.
@@ -1455,6 +1592,87 @@ const HalfEdge *EdgeTable::operator[](const HalfEdgeID &edgeID) const
     }
 
     throw InvalidHalfEdgeIDException(edgeID);
+}
+
+//! @brief An internal function used to create a new edge, possibly replacing
+//! and old one.
+//! @param[in] nodes The table of nodes which define the edges in this table.
+//! @param[in] firstNodeID The ID of the node at the beginning of the new edge.
+//! @param[in] secondNodeID The ID of the node at the end of the new edge.
+//! @param[in] edgeToReplace The optional existing edge to replace with the
+//! new one, null to create an entirely new edge.
+//! @return A pointer to new newly created node, possibly @p edgeToReplace.
+EdgePtr EdgeTable::createEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID,
+                              EdgePtr edgeToReplace)
+{
+    if (edgeToReplace == nullptr)
+    {
+        return addEdge(nodes, firstNodeID, secondNodeID);
+    }
+    else
+    {
+        // Remove the existing edge from all indexes except the ID index.
+        deindexEdge(edgeToReplace, false);
+
+        *edgeToReplace = Edge(edgeToReplace->getID(), &nodes[firstNodeID], &nodes[secondNodeID]);
+
+        // Add the edge back into indexes in a new position.
+        indexEdge(edgeToReplace, false);
+
+        return edgeToReplace;
+    }
+}
+
+//! @brief Adds an edge to internal indexes.
+//! @param[in] edgePtr The edge to index.
+//! @param[in] indexByID True to add the edge to the ID index, false to omit that index.
+void EdgeTable::indexEdge(EdgePtr edgePtr, bool indexByID /*= true*/)
+{
+    if (indexByID)
+        _edgesByID[edgePtr->getID()] = edgePtr;
+
+    _edgesByConnection[edgePtr->getKey()] = edgePtr;
+
+    for (DirectionIndex i = 0; i < 2; ++i)
+    {
+        _edgesByNode.emplace(edgePtr->getNodeID(i), edgePtr);
+    }
+}
+
+//! @brief Removes an edge from internal indexes.
+//! @param[in] edgePtr The edge to de-index.
+//! @param[in] indexByID True to remove the edge from the ID index, false to omit that index.
+void EdgeTable::deindexEdge(EdgePtr edgePtr, bool indexByID /*= true*/)
+{
+    _edgesByConnection.erase(makeEdgeKey(edgePtr->getFirstNodeID(),
+                                         edgePtr->getSecondNodeID()));
+
+    for (DirectionIndex i = 0; i < 2; ++i)
+    {
+        NodePtr node = edgePtr->getNode(i);
+
+        auto edgesAtNode = _edgesByNode.equal_range(node->getID());
+
+        for (auto mappingPos = edgesAtNode.first; mappingPos != edgesAtNode.second; )
+        {
+            if (mappingPos->second == edgePtr)
+            {
+                mappingPos = _edgesByNode.erase(mappingPos);
+
+                // Highlander pattern: There should only be one.
+                break;
+            }
+            else
+            {
+                ++mappingPos;
+            }
+        }
+    }
+
+    if (indexByID)
+    {
+        _edgesByID.erase(edgePtr->getID());
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
