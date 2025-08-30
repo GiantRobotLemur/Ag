@@ -143,10 +143,10 @@ private:
                     }
                     else
                     {
-                        // TODO: Remove the edges that goes out and back.
+                        // Reset the edges so that they could appear in another ring.
                         for (auto pos = loopPos; pos != loopEnd; ++pos)
                         {
-                            (*pos)->setRingID(0);
+                            (*pos)->setRingID(NullID);
                         }
                     }
 
@@ -158,7 +158,9 @@ private:
                 }
             }
 
-            if (canCreateRing)
+            // Ensure we have at least 3 unique nodes before trying
+            // to create a ring.
+            if (canCreateRing && (visitedNodes.size() > 2))
             {
                 createRing(source.begin(), source.end());
             }
@@ -391,10 +393,6 @@ private:
             {
                 EdgePtr edge = mappingPos.second;
 
-                // Skip co-linear edges.
-                if (edge == currentEdge->getParent())
-                    continue;
-
                 HalfEdgePtr directedEdge = edge->getHalfEdgeFrom(currentNodeID);
 
                 if (directedEdge == startEdge)
@@ -404,16 +402,28 @@ private:
                     successorEdge = directedEdge;
                     break;
                 }
-                else if (directedEdge->getRingID() != NullID)
+
+                if (directedEdge->getRingID() != NullID)
                 {
                     // The edge has already been assigned to a ring, don't
                     // overwrite it.
                     continue;
                 }
 
-                // Calculate the angle of the new edge relative to the old.
-                double angularOffset = rootAngle.getOffsetTo(directedEdge->getAngle());
+                double angularOffset = 0.0;
 
+                if (edge == currentEdge->getParent())
+                {
+                    // Allow the return edge, but as the worst possible choice
+                    // of successor.
+                    angularOffset = -Angle::Pi2;
+                }
+                else
+                {
+                    angularOffset = rootAngle.getOffsetTo(directedEdge->getAngle());
+                }
+
+                // Calculate the angle of the new edge relative to the old.
                 if ((successorEdge == nullptr) || (angularOffset > bestOffset))
                 {
                     // We've found a first successor edge or a better one.

@@ -27,6 +27,7 @@
 #include "Angle.hpp"
 #include "Point2D.hpp"
 #include "Rect2D.hpp"
+#include "LineSeg2D.hpp"
 #include "SnapContext.hpp"
 #include "SnapPoint.hpp"
 
@@ -50,6 +51,7 @@ using DirectionIndex = uint8_t;
 
 struct HalfEdgeID;
 class Edge;
+class EdgeTable;
 
 using IDCollection = std::vector<ID>;
 using SortedIDSet = std::set<ID>;
@@ -171,7 +173,12 @@ public:
 
     Node &addNode(const Point2D &realPosition);
     void removeNode(ID nodeID);
+    size_t removeDisconnectedNodes(const EdgeTable &edges);
 private:
+    // Internal Functions
+    void indexNode(NodePtr node);
+    void deindexNode(NodePtr node);
+
     // Internal Fields
     SnapContext _grid;
     NodeCollection _allNodes;
@@ -262,6 +269,7 @@ public:
     ID getEndNodeID() const noexcept;
     NodePtr getStartNode() const noexcept;
     NodePtr getEndNode() const noexcept;
+    bool hasNode(NodeCPtr node) const noexcept;
 
     //! @brief Gets the non-directed edge this half-edge belongs to.
     constexpr Edge *getParent() const noexcept { return _parent; }
@@ -283,6 +291,7 @@ public:
     HalfEdge *getReverse() noexcept;
     const HalfEdge *getReverse() const noexcept;
     Angle getAngle() const;
+    LineSeg2D getSegment() const;
 
     // Operations
     void resetConnections();
@@ -434,6 +443,7 @@ public:
     // Accessors
     bool isEmpty() const noexcept;
     uint32_t getCount() const noexcept;
+    bool anyEdgesAtNode(ID nodeId) const;
     bool tryFindEdgeByID(ID edgeId, EdgePtr &edge);
     bool tryFindEdgeByID(ID edgeId, EdgeCPtr &edge) const;
     bool tryFindHalfEdgeByID(const HalfEdgeID &id, HalfEdgePtr &edge);
@@ -457,6 +467,8 @@ public:
     void removeEdge(ID edgeID);
     void resetConnections();
     SplitEdgeResult splitEdge(NodeTable &nodes, ID edgeID, ID nodeToSplitAboutID);
+    bool replaceEdge(NodeTable &nodes, ID edgeID, ID firstNodeID, ID secondNodeID);
+    size_t removeUnassignedEdges(ID maxAssignedRingID);
 
     //! @brief Performs an operation on every edge, possibly out of
     //! order and in parallel.
@@ -487,6 +499,12 @@ public:
     HalfEdge *operator[](const HalfEdgeID &edgeID);
     const HalfEdge *operator[](const HalfEdgeID &edgeID) const;
 private:
+    // Internal Functions
+    EdgePtr createEdge(NodeTable &nodes, ID firstNodeID,
+                       ID secondNodeID, EdgePtr edgeToReplace);
+    void indexEdge(EdgePtr edgePtr, bool indexByID = true);
+    void deindexEdge(EdgePtr edgePtr, bool indexByID = true);
+
     // Internal Types
     using EdgeIDIndex = std::map<ID, Edge *>;
     using EdgeKeyIndex = std::map<EdgeKey, Edge *>;

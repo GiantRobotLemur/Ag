@@ -34,15 +34,21 @@ public:
     ~LineEq2D() = default;
     LineEq2D(const Line2D &rhs);
     LineEq2D(const LineSeg2D &rhs);
+    LineEq2D(double a, double b, double c);
     LineEq2D(const Point2D &first, const Point2D &second);
+    static LineEq2D createVertical(double throughX);
+    static LineEq2D createHorizontal(double throughY);
 
     // Accessors
     double getA() const;
     double getB() const;
     double getC() const;
+    Point2D getOrigin() const;
+    Point2D getDelta() const;
     bool isHorizontal() const;
     bool isVertical() const;
     const double *toVector() const;
+    bool isColinear(const NumericDomain &domain, const LineEq2D &rhs) const;
     bool isParallel(const LineEq2D &rhs) const;
     bool isPerpendicular(const LineEq2D &rhs) const;
     double getAngleTo(const LineEq2D &rhs) const;

@@ -60,7 +60,8 @@ enum class AngleAnchor : uint8_t
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief A class which represents an angle in radians in a normalised range.
+//! @brief A class which represents an angle in radians in a normalised range of
+//! +/- Pi radians.
 class Angle
 {
 public:
@@ -93,6 +94,22 @@ public:
     double toRadians() const;
     double toDegrees() const;
     double getOffsetTo(const Angle &nextAngle) const;
+
+    //! @brief Converts an angle from degrees to radians without normalisation.
+    //! @param[in] angleInDegrees The angle in degrees to convert.
+    //! @return The equivalent angle in degrees.
+    static constexpr double Angle::degreesToRadians(double angleInDegrees) noexcept
+    {
+        return (angleInDegrees * Pi) / 180.0;
+    }
+
+    //! @brief Converts an angle from radians to degrees without normalisation.
+    //! @param[in] angleInRadians The angle in radians to convert.
+    //! @return The equivalent angle in radians.
+    static constexpr double Angle::radiansToDegrees(double angleInRadians) noexcept
+    {
+        return (angleInRadians * 180.0) / Pi;
+    }
 
     // Operations
     Angle reverse() const;

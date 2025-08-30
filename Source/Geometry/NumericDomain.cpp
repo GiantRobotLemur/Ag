@@ -158,9 +158,9 @@ bool NumericDomain::trySnapRange(double &value, double targetMin,
 //! distance, they are considered equal and false is returned.
 bool NumericDomain::isLessThan(double lhs, double rhs) const
 {
-    double delta = rhs - lhs - _epsilon;
+    double delta = rhs - lhs;
 
-    return (delta >= 0.0);
+    return (delta > 0.0) && (std::abs(delta) > _epsilon);
 }
 
 //! @brief Determines if a value is less-than or near-enough equal to another.
@@ -188,9 +188,9 @@ bool NumericDomain::isLessThanOrEqual(double lhs, double rhs) const
 //! distance, they are considered equal and false is returned.
 bool NumericDomain::isGreaterThan(double lhs, double rhs) const
 {
-    double delta = lhs - rhs - _epsilon;
+    double delta = lhs - rhs;
 
-    return (delta >= 0.0);
+    return (delta > 0.0) && (std::abs(delta) > _epsilon);
 }
 
 //! @brief Determines if a value is greater-than or near-enough equal to another.

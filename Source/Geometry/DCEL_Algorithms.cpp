@@ -268,10 +268,6 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Local Data
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
 // Local Functions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Determines if a vertex in a monotone sweep was classified as a
@@ -287,7 +283,6 @@ bool isMergeVertex(/*const SweepContext &context,
 {
     return (vertex->getFlags() & 1) != 0;
 }
-
 
 //! @brief Classifies a point for use in a monotone-polygon making sweep.
 //! @param[in] ringFlags The flags associated with the ring the points belong to.
@@ -1065,9 +1060,6 @@ uint32_t classifyYMonotonePoint(uint32_t ringFlags,
     // Y-monotone.
     return classifyMonotonePoint<CompareNodeYMonotoneSweepOrder>(ringFlags, prevNode,
                                                                  currentNode, nextNode);
-
-    //return classifyMonotonePoint<CompareNodeByVerticalPosition>(ringFlags, prevNode,
-    //                                                            currentNode, nextNode);
 }
 
 //! @brief Performs a vertical sweep through all nodes in the mesh to annotate
