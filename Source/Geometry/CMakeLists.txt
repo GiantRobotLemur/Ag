@@ -27,6 +27,7 @@ ag_add_library(Geometry FOLDER      Geometry
                                     ${GEOM_INCLUDE_DIR}/Size2D.hpp
                                     Rect2D.cpp
                                     ${GEOM_INCLUDE_DIR}/Rect2D.hpp
+                                    ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
                                     LineSeg2D.cpp
                                     ${GEOM_INCLUDE_DIR}/LineSeg2D.hpp
                                     Line2D.cpp
@@ -39,6 +40,10 @@ ag_add_library(Geometry FOLDER      Geometry
                                     ${GEOM_INCLUDE_DIR}/SnapPoint.hpp
                                     SnapContext.cpp
                                     ${GEOM_INCLUDE_DIR}/SnapContext.hpp
+                                    QuadBezierCurve2D.cpp
+                                    ${GEOM_INCLUDE_DIR}/QuadBezierCurve2D.hpp
+                                    CubicBezierCurve2D.cpp
+                                    ${GEOM_INCLUDE_DIR}/CubicBezierCurve2D.hpp
                                     DCEL.cpp
                                     ${GEOM_INCLUDE_DIR}/DCEL.hpp
                                     DCEL_Sweep.cpp
@@ -70,6 +75,8 @@ ag_add_test_app(Geometry_Tests  TEST_LIB    Geometry
                                             Test_Line2D.cpp
                                             Test_LineEq2D.cpp
                                             Test_LineSeg2D.cpp
+                                            Test_QuadBezierCurve2D.cpp
+                                            Test_CubicBezierCurve2D.cpp
                                             Test_DCEL_Tools.cpp
                                             Test_DCEL_Tools.hpp
                                             Test_DCEL.cpp

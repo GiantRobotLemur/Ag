@@ -30,8 +30,8 @@ namespace Geom {
 //! @param[in] x2 The horizontal offset of the end point from the origin.
 //! @param[in] y2 The vertical offset of the end point from the origin.
 LineSeg2D::LineSeg2D(double x1, double y1, double x2, double y2) :
-    _origin(x1, y1),
-    _delta(x2 - x1, y2 - y1)
+    _start(x1, y1),
+    _end(x2, y2)
 {
 }
 
@@ -39,8 +39,8 @@ LineSeg2D::LineSeg2D(double x1, double y1, double x2, double y2) :
 //! @param[in] start The point at the start of the line segment.
 //! @param[in] end The point at the end of the line segment.
 LineSeg2D::LineSeg2D(const Point2D &start, const Point2D &end) :
-    _origin(start),
-    _delta(end - start)
+    _start(start),
+    _end(end)
 {
 }
 
@@ -48,45 +48,183 @@ LineSeg2D::LineSeg2D(const Point2D &start, const Point2D &end) :
 //! @param[in] line The infinite line defining an origin and direction.
 //! @param[in] length The distance the line segment should extend from its origin.
 LineSeg2D::LineSeg2D(const Line2D &line, double length) :
-    _origin(line.getOrigin()),
-    _delta(line.getDelta() * length)
+    _start(line.getOrigin()),
+    _end((line.getDelta() * length) + _start)
 {
 }
 
-//! @brief Gets the point at the start of the line segment.
-const Point2D &LineSeg2D::getStart() const { return _origin; }
-
 //! @brief Sets the point at the start of the line segment.
 //! @param[in] start The new position of the start of the line segment.
-void LineSeg2D::setStart(const Point2D &start) { _origin = start; }
+void LineSeg2D::setStart(const Point2D &start) noexcept { _start = start; }
+
+//! @brief Sets the end point of the line segment.
+//! @param[in] end The new end point.
+void LineSeg2D::setEnd(const Point2D &end) noexcept { _end = end; }
+
+//! @brief Calculates the position of a point along the line segment,
+//! possibly before the start point or after the end point.
+//! @param[in] parameter The scalar parameter giving the point to find,
+//! 0.0 for the start point, 1.0 for the end point, 0.5 for half way, etc.
+Point2D LineSeg2D::getPoint(double parameter) const
+{
+    Point2D delta = _end - _start;
+
+    return delta.fma(parameter, _start);
+}
+
+//! @brief Gets the parameter of the point along the line closest to a
+//! specified position, ignoring the end points of the line.
+//! @param[in] position The position to measure to.
+//! @return The parameter of the closest point on the curve, which may be less
+//! than 0.0 or greater than 1.0.
+double LineSeg2D::getParameter(const Point2D &position) const
+{
+    // From A Programmer's Geometry : Section 3.2
+    // t = -[(xK - xJ)(xL - xK) + (yK - yJ)(yL - yK)] /
+    //      [(xL - xK)^2 + (yL - yK)^2]
+
+    // K = _start
+    // L = end (xL - xK) = _delta.getX()
+    //         (yL - yK) = _delta.getY()
+    // J = position
+    // K - J = posDelta (xK - xJ) = posDelta.getX()
+    //                  (yK - yJ) = posDelta.getY()
+
+    Point2D posDelta = _start - position;
+    Point2D delta = _end - _start;
+    double denominator = delta.dotProduct(delta);
+    double t;
+
+    if (NumericDomain::SignedScalar.isNearZero(denominator))
+    {
+        // The line has no length, distances should be measured in
+        // terms of the start point alone.
+        t = 0.0;
+    }
+    else
+    {
+        t = -posDelta.dotProduct(delta) / denominator;
+    }
+
+    return t;
+}
+
+//! @brief Gets the shortest distance to the line from a point.
+//! @param[in] pt The point to measure to.
+//! @param[out] param Receives the parameter of the point on the line to
+//! measure to which will be clamped into the range 0.0 - 1.0.
+//! @return The distance from @p pt to the closest point on the segment defined
+//! by the parameter returned in @p param.
+//! @note If the closest perpendicular point is not between the end points,
+//! the parameter and distance will be calculated in terms of the closest
+//! end point.
+double LineSeg2D::getDistanceToPoint(const Point2D &pt, double &param) const
+{
+    // From A Programmer's Geometry : Section 3.2
+    // t = -[(xK - xJ)(xL - xK) + (yK - yJ)(yL - yK)] /
+    //      [(xL - xK)^2 + (yL - yK)^2]
+
+    // r = sqrt{[(xK - xJ) + t(xL - xK)]^2 + [(yK - yJ) + t(yL - yK)]^2}
+
+    // K = _start
+    // L = end (xL - xK) = _delta.getX()
+    //         (yL - yK) = _delta.getY()
+    // J = pt
+    // K - J = posDelta (xK - xJ) = posDelta.getX()
+    //                  (yK - yJ) = posDelta.getY()
+
+    Point2D posDelta = _start - pt;
+    Point2D delta = _end - _start;
+    double denominator = delta.dotProduct(delta);
+
+    if (NumericDomain::SignedScalar.isNearZero(denominator))
+    {
+        // The line has no length, distances should be measured in
+        // terms of the start point alone.
+        param = 0.0;
+    }
+    else
+    {
+        param = -posDelta.dotProduct(delta) / denominator;
+
+        // Clamp the point to a position between the ends of the segment.
+        param = std::clamp(param, 0.0, 1.0);
+    }
+
+    Point2D deltaT = delta * param;
+    Point2D term = posDelta + deltaT;
+
+    // double r = std::sqrt{[posDelta.getX() + deltaT.getX()]^2 +
+    //                      [posDelta.getY() + deltaT.getY()]^2}
+    double r = std::sqrt(term.dotProduct(term));
+
+    return r;
+}
+
+//! @brief Gets the shortest distance to the line from a point.
+//! @param[in] pt The point to measure to.
+//! @param[out] param Receives the parameter of the point on the line to measure
+//! to, the result may not be in the range 0.0 to 1.0.
+//! @return The distance from @p pt to the closest point on the line defined
+//! by the parameter returned in @p param.
+//! @note The closest point detected may not be between the end points of the
+//! line segment.
+double LineSeg2D::getPerpDistanceToPoint(const Point2D &pt, double &param) const
+{
+    // From A Programmer's Geometry : Section 3.2
+    // t = -[(xK - xJ)(xL - xK) + (yK - yJ)(yL - yK)] /
+    //      [(xL - xK)^2 + (yL - yK)^2]
+
+    // r = sqrt{[(xK - xJ) + t(xL - xK)]^2 + [(yK - yJ) + t(yL - yK)]^2}
+
+    // K = _start
+    // L = end (xL - xK) = _delta.getX()
+    //         (yL - yK) = _delta.getY()
+    // J = pt
+    // K - J = posDelta (xK - xJ) = posDelta.getX()
+    //                  (yK - yJ) = posDelta.getY()
+
+    Point2D posDelta = _start - pt;
+    Point2D delta = _end - _start;
+    double denominator = delta.dotProduct(delta);
+
+    if (NumericDomain::SignedScalar.isNearZero(denominator))
+    {
+        // The line has no length, distances should be measured in
+        // terms of the start point alone.
+        param = 0.0;
+    }
+    else
+    {
+        param = -posDelta.dotProduct(delta) / denominator;
+    }
+
+    Point2D deltaT = delta * param;
+    Point2D term = posDelta + deltaT;
+
+    // double r = std::sqrt{[posDelta.getX() + deltaT.getX()]^2 +
+    //                      [posDelta.getY() + deltaT.getY()]^2}
+    double r = std::sqrt(term.dotProduct(term));
+
+    return r;
+}
 
 //! @brief Gets the vector from the start point to the end point.
-const Point2D &LineSeg2D::getDelta() const { return _delta; }
+Point2D LineSeg2D::getDelta() const noexcept { return _start + _end; }
 
 //! @brief Sets the offset of the end point of the line segment relative
 //! to the start point.
 //! @param[in] delta The new offset of the end point.
-void LineSeg2D::setDelta(const Point2D &delta) { _delta = delta; }
-
-//! @brief Gets the end point of the line segment.
-Point2D LineSeg2D::getEnd() const { return _origin + _delta; }
-
-//! @brief Sets the end point of the line segment.
-//! @param[in] end The new end point.
-void LineSeg2D::setEnd(const Point2D &end) { _delta = end - _origin; }
-
-//! @brief Gets the line segment as a vector of four doubles representing
-//! the start point and direction vector.
-//! @note The pointer is guaranteed to be aligned on a 16-byte boundary.
-const double *LineSeg2D::asVector() const
+void LineSeg2D::setDelta(const Point2D &delta) noexcept
 {
-    return reinterpret_cast<const double *>(this);
+    _end = _start + delta;
 }
 
 //! @brief Gets the unsigned length of the line segment.
 double LineSeg2D::getLength() const
 {
-    double magnitudeSq = _delta.magnitudeSquared();
+    Point2D delta = _end - _start;
+    double magnitudeSq = delta.magnitudeSquared();
 
     if (NumericDomain::UnsignedScalar.isNearZero(magnitudeSq))
     {
@@ -96,15 +234,6 @@ double LineSeg2D::getLength() const
     {
         return std::sqrt(magnitudeSq);
     }
-}
-
-//! @brief Calculates the position of a point along the line segment,
-//! possibly before the start point or after the end point.
-//! @param[in] parameter The scalar parameter giving the point to find,
-//! 0.0 for the start point, 1.0 for the end point, 0.5 for half way, etc.
-Point2D LineSeg2D::getPoint(double parameter) const
-{
-    return _delta.fma(parameter, _origin);
 }
 
 //! @brief Calculates the determinant of a point relative to the line segment.
@@ -120,9 +249,10 @@ Point2D LineSeg2D::getPoint(double parameter) const
 //! the absolute value of 0.5 * the value returned.
 double LineSeg2D::getDeterminant(const Point2D &rhs) const
 {
-    Point2D externalDelta = rhs - _origin;
+    Point2D externalDelta = rhs - _start;
+    Point2D delta = _end - _start;
 
-    return _delta.determinant(externalDelta);
+    return delta.determinant(externalDelta);
 }
 
 //! @brief Calculates the point of intersection between a line segment and
@@ -140,7 +270,8 @@ bool LineSeg2D::tryCalculateIntersection(const NumericDomain &domain,
                                          const Line2D &rhs,
                                          Point2D &intersection) const
 {
-    double det = _delta.determinant(rhs.getDelta());
+    Point2D delta = _end - _start;
+    double det = delta.determinant(rhs.getDelta());
     bool hasIntersection = true;
 
     if (domain.isNearZero(det))
@@ -149,10 +280,10 @@ bool LineSeg2D::tryCalculateIntersection(const NumericDomain &domain,
     }
     else
     {
-        Point2D originDelta = rhs.getOrigin() - _origin;
+        Point2D originDelta = rhs.getOrigin() - _start;
         double thisParam = rhs.getDelta().determinant(originDelta) / det;
 
-        intersection = _delta.fma(thisParam, _origin);
+        intersection = delta.fma(thisParam, _start);
     }
 
     return hasIntersection;
@@ -179,7 +310,8 @@ bool LineSeg2D::tryCalculateIntersection(const NumericDomain &domain,
         NumericDomain::UnsignedScalar.trySnapRange(thisParam, 0.0, 1.0) &&
         NumericDomain::UnsignedScalar.trySnapRange(rhsParam, 0.0, 1.0))
     {
-        intersection = _delta.fma(thisParam, _origin);
+        Point2D delta = _end - _start;
+        intersection = delta.fma(thisParam, _start);
         hasIntersection = true;
     }
     else
@@ -210,7 +342,9 @@ bool LineSeg2D::tryCalculateIntersectionParam(const NumericDomain &domain,
                                               double &thisParam,
                                               double &rhsParam) const
 {
-    double det = rhs._delta.determinant(_delta);
+    Point2D delta = _end - _start;
+    Point2D rhsDelta = rhs._end - rhs._start;
+    double det = rhsDelta.determinant(delta);
     bool hasIntersection = true;
 
     if (domain.isNearZero(det))
@@ -221,9 +355,9 @@ bool LineSeg2D::tryCalculateIntersectionParam(const NumericDomain &domain,
     }
     else
     {
-        Point2D originDelta = rhs._origin - _origin;
-        thisParam = rhs._delta.determinant(originDelta) / det;
-        rhsParam = _delta.determinant(originDelta) / det;
+        Point2D originDelta = rhs._start - _start;
+        thisParam = rhsDelta.determinant(originDelta) / det;
+        rhsParam = delta.determinant(originDelta) / det;
     }
 
     return hasIntersection;
@@ -232,9 +366,7 @@ bool LineSeg2D::tryCalculateIntersectionParam(const NumericDomain &domain,
 //! @brief Swaps the start and end points of the line segment.
 void LineSeg2D::reverse()
 {
-    Point2D end = _origin + _delta;
-    _origin = end;
-    _delta *= -1.0;
+    std::swap(_start, _end);
 }
 
 //! @brief Overwrites the line segment with properties derived from an
@@ -243,8 +375,8 @@ void LineSeg2D::reverse()
 //! @param[in] length The distance the line segment should extend from its origin.
 void LineSeg2D::setLine(const Line2D &line, double length)
 {
-    _origin = line.getOrigin();
-    _delta = line.getDelta() * length;
+    _start = line.getOrigin();
+    _end = (line.getDelta() * length) + _start;
 }
 
 //! @brief Overwrites the line segment with a definition given by a start
@@ -260,8 +392,8 @@ void LineSeg2D::setLine(const Line2D &line, double length)
 void LineSeg2D::setPointDelta(double originX, double originY,
                               double deltaX, double deltaY)
 {
-    _origin.set(originX, originY);
-    _delta.set(deltaX, deltaY);
+    _start.set(originX, originY);
+    _end.set(originX + deltaX, originY + deltaY);
 }
 
 //! @brief Overwrites the line segment with a definition given by a start
@@ -270,8 +402,8 @@ void LineSeg2D::setPointDelta(double originX, double originY,
 //! @param[in] delta The new offset vector from origin to the new end point.
 void LineSeg2D::setPointDelta(const Point2D &origin, const Point2D &delta)
 {
-    _origin = origin;
-    _delta = delta;
+    _start = origin;
+    _end = origin + delta;
 }
 
 //! @brief Overwrites the line segment with a definition given by start
@@ -286,8 +418,8 @@ void LineSeg2D::setPointDelta(const Point2D &origin, const Point2D &delta)
 //! to the origin.
 void LineSeg2D::setPointPoint(double x1, double y1, double x2, double y2)
 {
-    _origin.set(x1, y1);
-    _delta.set(x2 - x1, y2 - y1);
+    _start.set(x1, y1);
+    _end.set(x2, y2);
 }
 
 //! @brief Overwrites the line segment with a definition given by start
@@ -296,9 +428,32 @@ void LineSeg2D::setPointPoint(double x1, double y1, double x2, double y2)
 //! @param[in] end The new end point of the line segment.
 void LineSeg2D::setPointPoint(const Point2D &start, const Point2D &end)
 {
-    _origin = start;
-    _delta = end - start;
+    _start = start;
+    _end = end;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Templates
+////////////////////////////////////////////////////////////////////////////////
+namespace Line {
+//! @brief A specialization of findNearestPointParam() which doesn't use
+//! successive approximation.
+//! @param[in] line The line to find the nearest point.
+//! @param[in] point The point to track in relation to @p line.
+//! @param[in] startParam The parameter on @p line to start searching from.
+//! @param[in] endParam The parameter on @p line to not search beyond.
+//! @return The parameter value, 0.0 to 1.0 of the point on @p line which is
+//! closest to @p point.
+template<>
+double findNearestPointParam<LineSeg2D>(const LineSeg2D &line, const Point2D &point,
+                                        double startParam, double endParam)
+{
+    auto range = std::minmax(startParam, endParam);
+
+    return std::clamp(line.getParameter(point), range.first, range.second);
+}
+
+} // namespace Line
 
 }} // namespace Ag::Geom
 ////////////////////////////////////////////////////////////////////////////////

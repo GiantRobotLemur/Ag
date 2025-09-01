@@ -75,10 +75,10 @@ public:
     void setX(Component x) noexcept;
     void setY(Component y) noexcept;
     void set(Component x, Component y) noexcept;
-    ComponentPtr asComponents() noexcept;
+    ComponentPtr toArray() noexcept;
 
     //! @brief Gets the point as an array of component values.
-    constexpr ComponentCPtr asComponents() const noexcept
+    constexpr ComponentCPtr toArray() const noexcept
     {
         return &_x;
     }

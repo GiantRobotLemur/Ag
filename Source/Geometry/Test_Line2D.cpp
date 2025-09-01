@@ -1,7 +1,10 @@
 //! @file Test_Line2D.cpp
 //! @brief The definition of unit tests for the Line2D class.
-//! @author Nick Arkell
-//! @copyright (c) 2021-2024 Nick Arkell : Software Engineer
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
+//! @copyright This file is part of the Silver (Ag) project which is released
+//! under LGPL 3 license. See LICENSE file at the repository root or go to
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,10 +42,10 @@ GTEST_TEST(Line2D, InitConstruct)
     EXPECT_EQ(specimen.getOrigin().getY(), 11);
     EXPECT_EQ(specimen.getDelta().getX(), -value);
     EXPECT_EQ(specimen.getDelta().getY(), value);
-    EXPECT_EQ(specimen.asVector()[0], -1);
-    EXPECT_EQ(specimen.asVector()[1], 11);
-    EXPECT_EQ(specimen.asVector()[2], -value);
-    EXPECT_EQ(specimen.asVector()[3], value);
+    EXPECT_EQ(specimen.toArray()[0], -1);
+    EXPECT_EQ(specimen.toArray()[1], 11);
+    EXPECT_EQ(specimen.toArray()[2], -value);
+    EXPECT_EQ(specimen.toArray()[3], value);
 }
 
 GTEST_TEST(Line2D, GetPoint)
@@ -114,10 +117,10 @@ GTEST_TEST(Line2D, GetDistanceToPoint)
     Line2D specimen(0, 0, 2, 2);
     double param = 0.0;
 
-    EXPECT_NEAR(specimen.getDistanceToPoint(Point2D(0, 1), param), 0.5, 1e-8);
+    EXPECT_NEAR(specimen.getPerpDistanceToPoint(Point2D(0, 1), param), 0.5, 1e-8);
     EXPECT_NEAR(param, recipRoot2, 1e-8);
 
-    EXPECT_NEAR(specimen.getDistanceToPoint(Point2D(1, 0), param), 0.5, 1e-8);
+    EXPECT_NEAR(specimen.getPerpDistanceToPoint(Point2D(1, 0), param), 0.5, 1e-8);
     EXPECT_NEAR(param, recipRoot2, 1e-8);
 }
 

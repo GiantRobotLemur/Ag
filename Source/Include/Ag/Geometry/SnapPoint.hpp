@@ -49,7 +49,7 @@ public:
     int64_t getY() const;
     void setY(int64_t y);
     void set(int64_t x, int64_t y);
-    const int64_t *asVector() const;
+    const int64_t *toArray() const;
     bool lessThanYMajor(const SnapPoint &rhs) const;
     bool lessThanXMajor(const SnapPoint &rhs) const;
     bool lessThanSweep(const SnapPoint &rhs) const;

@@ -38,6 +38,7 @@ public:
     bool isWoundCCW() const;
     double getArea() const;
     double getDeterminant() const;
+    constexpr const double *toArray() const noexcept { return _vertices->toArray(); }
     constexpr const Point2D *getVertices() const noexcept { return _vertices; }
 
     // Operations

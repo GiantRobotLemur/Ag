@@ -1,7 +1,10 @@
-//! @file Test_LineSeg2D.cpp
+//! @file Geometry/Test_LineSeg2D.cpp
 //! @brief The definition of unit tests for the LineSeg2D class.
-//! @author Nick Arkell
-//! @copyright (c) 2021-2024 Nick Arkell : Software Engineer
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
+//! @copyright This file is part of the Silver (Ag) project which is released
+//! under LGPL 3 license. See LICENSE file at the repository root or go to
+//! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,6 +215,88 @@ GTEST_TEST(LineSeg2D, TryCalculateIntersection)
 
     EXPECT_DOUBLE_EQ(intersectionPt.getX(), crossAt.getX());
     EXPECT_DOUBLE_EQ(intersectionPt.getY(), crossAt.getY());
+}
+
+GTEST_TEST(LineSeg2D, GetParameterDistance)
+{
+    const LineSeg2D specimen(0, 0, 10, 10);
+    const Point2D upperTarget(0, 10);
+    const Point2D lowerTarget(10, 0);
+    const Point2D beforeStart(-5, -5);
+    const Point2D afterEnd(15, 15);
+
+    // Test a point above the line.
+    double param = specimen.getParameter(upperTarget);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    double distance = specimen.getDistanceToPoint(upperTarget, param);
+    EXPECT_DOUBLE_EQ(distance, specimen.getLength() * 0.5);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    // Test a point below the line.
+    param = specimen.getParameter(lowerTarget);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    distance = specimen.getDistanceToPoint(lowerTarget, param);
+    EXPECT_DOUBLE_EQ(distance, specimen.getLength() * 0.5);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    // Test a point before the start of the line
+    param = specimen.getParameter(beforeStart);
+    EXPECT_DOUBLE_EQ(param, -0.5);
+
+    distance = specimen.getDistanceToPoint(beforeStart, param);
+    EXPECT_DOUBLE_EQ(distance, specimen.getLength() * 0.5);
+    EXPECT_DOUBLE_EQ(param, 0);
+
+    // Test a point after the end of the line.
+    param = specimen.getParameter(afterEnd);
+    EXPECT_DOUBLE_EQ(param, 1.5);
+
+    distance = specimen.getDistanceToPoint(afterEnd, param);
+    EXPECT_DOUBLE_EQ(distance, specimen.getLength() * 0.5);
+    EXPECT_DOUBLE_EQ(param, 1.0);
+}
+
+GTEST_TEST(LineSeg2D, GetPerpParameterDistance)
+{
+    const LineSeg2D specimen(0, 0, 10, 10);
+    const Point2D upperTarget(0, 10);
+    const Point2D lowerTarget(10, 0);
+    const Point2D beforeStart(-5, -5);
+    const Point2D afterEnd(15, 15);
+
+    // Test a point above the line.
+    double param = specimen.getParameter(upperTarget);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    double distance = specimen.getPerpDistanceToPoint(upperTarget, param);
+    EXPECT_DOUBLE_EQ(distance, specimen.getLength() * 0.5);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    // Test a point below the line.
+    param = specimen.getParameter(lowerTarget);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    distance = specimen.getPerpDistanceToPoint(lowerTarget, param);
+    EXPECT_DOUBLE_EQ(distance, specimen.getLength() * 0.5);
+    EXPECT_DOUBLE_EQ(param, 0.5);
+
+    // Test a point before the start of the line
+    param = specimen.getParameter(beforeStart);
+    EXPECT_DOUBLE_EQ(param, -0.5);
+
+    distance = specimen.getPerpDistanceToPoint(beforeStart, param);
+    EXPECT_DOUBLE_EQ(distance, 0.0);
+    EXPECT_DOUBLE_EQ(param, -0.5);
+
+    // Test a point after the end of the line.
+    param = specimen.getParameter(afterEnd);
+    EXPECT_DOUBLE_EQ(param, 1.5);
+
+    distance = specimen.getPerpDistanceToPoint(afterEnd, param);
+    EXPECT_DOUBLE_EQ(distance, 0.0);
+    EXPECT_DOUBLE_EQ(param, 1.5);
 }
 
 } // Anonymous namespace.

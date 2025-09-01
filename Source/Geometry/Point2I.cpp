@@ -73,7 +73,7 @@ void Point2I::set(Point2I::Component x, Point2I::Component y) noexcept
 }
 
 //! @brief Gets the point as an array of component values.
-Point2I::ComponentPtr Point2I::asComponents() noexcept
+Point2I::ComponentPtr Point2I::toArray() noexcept
 {
     return &_x;
 }
