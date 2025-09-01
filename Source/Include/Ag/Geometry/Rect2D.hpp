@@ -21,9 +21,6 @@
 
 namespace Ag {
 namespace Geom {
-////////////////////////////////////////////////////////////////////////////////
-// Data Type Declarations
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -45,6 +42,7 @@ public:
     Rect2D(const Point2D &origin, const Size2D &extents);
     Rect2D(const Point2D &corner1, const Point2D &corner2);
     Rect2D(double x1, double y1, double x2, double y2);
+    Rect2D(const Point2D *range, size_t count);
     Rect2D(const Rect2D &rhs);
     Rect2D(Rect2D &&rhs) noexcept;
     ~Rect2D() = default;
@@ -66,7 +64,7 @@ public:
     Point2D getExtreme() const;
     Point2D getOriginXExtremeY() const;
     Point2D getExtremeXOriginY() const;
-    const double *asVector() const noexcept;
+    const double *toArray() const noexcept;
     Rect2D combine(const Point2D &rhs) const;
     Rect2D combine(const Rect2D &rhs) const;
     bool contains(const Point2D &rhs) const;

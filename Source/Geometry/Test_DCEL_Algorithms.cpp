@@ -1,6 +1,6 @@
 //! @file Geometry/Test_DCEL_Algorithms.cpp
 //! @brief The definition of unit tests for algorithms which operate on a
-//! doubly connected edge list..
+//! doubly connected edge list.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2024-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
@@ -20,10 +20,6 @@
 #include "Test_DCEL_Tools.hpp"
 
 #include "Test_GlyphData.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 namespace Ag {
 namespace Geom {

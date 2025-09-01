@@ -26,9 +26,12 @@
 #include "Geometry/Size2D.hpp"
 #include "Geometry/Rect2D.hpp"
 #include "Geometry/Line2D.hpp"
+#include "Geometry/LineHelpers.hpp"
 #include "Geometry/LineSeg2D.hpp"
 #include "Geometry/LineEq2D.hpp"
 #include "Geometry/Triangle2D.hpp"
+#include "Geometry/QuadBezierCurve2D.hpp"
+#include "Geometry/CubicBezierCurve2D.hpp"
 #include "Geometry/DCEL.hpp"
 #include "Geometry/DCEL_Algorithms.hpp"
 

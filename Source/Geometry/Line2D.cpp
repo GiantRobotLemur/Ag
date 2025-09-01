@@ -93,7 +93,7 @@ void Line2D::setDelta(const Point2D &delta)
 
 //! @brief Gets the origin and delta vectors as an array of 4 doubles which is
 //! guaranteed to be aligned on a 16-byte boundary.
-const double *Line2D::asVector() const
+const double *Line2D::toArray() const
 {
     return reinterpret_cast<const double *>(this);
 }
@@ -116,7 +116,7 @@ Point2D Line2D::getPoint(double parameter) const
 double Line2D::getParameter(const Point2D &position) const
 {
     double param = 0;
-    getDistanceToPoint(position, param);
+    getPerpDistanceToPoint(position, param);
 
     return param;
 }
@@ -178,7 +178,7 @@ bool Line2D::isColinear(const NumericDomain &domain, const Line2D &rhs) const
         // Now determine if the lines overlay each other by calculating the
         // distance from a point on one line to the other.
         double param = 0.0;
-        double distance = getDistanceToPoint(rhs.getOrigin(), param);
+        double distance = getPerpDistanceToPoint(rhs.getOrigin(), param);
 
         isColinear = domain.isNearZero(distance);
     }
@@ -203,11 +203,11 @@ double Line2D::getDeterminant(const Point2D &rhs) const
 //! @param[in] pt The point to measure to.
 //! @return The distance to the line, the sign indicates the side of the line
 //! the point is on.
-double Line2D::getDistanceToPoint(const Point2D &pt) const
+double Line2D::getPerpDistanceToPoint(const Point2D &pt) const
 {
     double param = 0;
 
-    return getDistanceToPoint(pt, param);
+    return getPerpDistanceToPoint(pt, param);
 }
 
 //! @brief Calculates the perpendicular distance from the nearest point on the
@@ -217,7 +217,7 @@ double Line2D::getDistanceToPoint(const Point2D &pt) const
 //! which the perpendicular extends
 //! @return The distance to the line, the sign indicates the side of the line
 //! the point is on.
-double Line2D::getDistanceToPoint(const Point2D &pt, double &param) const
+double Line2D::getPerpDistanceToPoint(const Point2D &pt, double &param) const
 {
     Point2D deltaSq = _delta * _delta;
 

@@ -139,7 +139,7 @@ void Size2D::set(double width, double height)
 }
 
 //! @brief Gets the object as a 2-element array of real values.
-const double *Size2D::asVector() const noexcept
+const double *Size2D::toArray() const noexcept
 {
     static_assert(sizeof(Size2D) == (sizeof(double) * 2),
                   "A Size2D should be an alias for a vector of 2 doubles.");

@@ -76,7 +76,7 @@ void Point2D::set(Point2D::Component x, Point2D::Component y) noexcept
 }
 
 //! @brief Gets the point as an array of component values.
-Point2D::ComponentPtr Point2D::asComponents() noexcept
+Point2D::ComponentPtr Point2D::toArray() noexcept
 {
     return &_x;
 }

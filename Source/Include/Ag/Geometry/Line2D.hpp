@@ -44,19 +44,24 @@ public:
     // Accessors
     const Point2D &getOrigin() const;
     void setOrigin(const Point2D &origin);
+
     const Point2D &getDelta() const;
     void setDelta(const Point2D &delta);
-    const double *asVector() const;
+
+    const double *toArray() const;
     Point2D getPoint(double parameter) const;
     double getParameter(const Point2D &position) const;
+
     bool isHorizontal() const;
     bool isVertical() const;
     bool isParallel(const Line2D &rhs) const;
     bool isPerpendicular(const Line2D &rhs) const;
     bool isColinear(const NumericDomain &domain, const Line2D &rhs) const;
     double getDeterminant(const Point2D &rhs) const;
-    double getDistanceToPoint(const Point2D &pt) const;
-    double getDistanceToPoint(const Point2D &pt, double &param) const;
+
+    double getPerpDistanceToPoint(const Point2D &pt) const;
+    double getPerpDistanceToPoint(const Point2D &pt, double &param) const;
+
     bool tryCalculateIntersection(const Line2D &rhs, Point2D &intersection) const;
     bool tryCalculateIntersectionParam(const Line2D &rhs, double &lhsParam) const;
     bool tryCalculateIntersectionParam(const Line2D &rhs, double &lhsPparam, double &rhsParam) const;

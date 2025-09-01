@@ -170,6 +170,30 @@ Rect2D::Rect2D(double x1, double y1, double x2, double y2)
                  minAndMaxY.second - minAndMaxY.first);
 }
 
+//! @brief Constructs a rectangle which minimally encompasses an array
+//! of points.
+//! @param[in] range The array of points used to define the rectangle.
+//! @param[in] count The count of elements in @p range.
+Rect2D::Rect2D(const Point2D *range, size_t count)
+{
+    if (count < 1)
+        return;
+
+    // Use the first point as the origin.
+    _origin = *range;
+    Point2D extreme = _origin;
+
+    for (size_t i = 1; i < count; ++i)
+    {
+        const Point2D &next = range[i];
+
+        _origin = _origin.min(next);
+        extreme = extreme.max(next);
+    }
+
+    _extents = extreme - _origin;
+}
+
 //! @brief Constructs a copy of a rectangle.
 //! @param[in] rhs The rectangle to copy.
 Rect2D::Rect2D(const Rect2D &rhs) :
@@ -295,7 +319,7 @@ Point2D Rect2D::getExtremeXOriginY() const
 
 //! @brief Gets the rectangle as a pointer to an array of 4 scalars, the
 //! origin X and Y coordinates and the width and height values.
-const double *Rect2D::asVector() const noexcept
+const double *Rect2D::toArray() const noexcept
 {
     static_assert(sizeof(Rect2D) == (sizeof(double) * 4),
                   "A Rect2D should be an alias for a vector of 4 doubles.");

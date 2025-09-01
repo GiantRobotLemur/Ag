@@ -46,7 +46,7 @@ public:
     double getHeight() const;
     void setHeight(double height);
     void set(double width, double height);
-    const double *asVector() const noexcept;
+    const double *toArray() const noexcept;
 
     // Operations
     void clear();

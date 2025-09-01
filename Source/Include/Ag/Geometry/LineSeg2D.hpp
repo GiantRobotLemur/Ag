@@ -17,6 +17,7 @@
 #include "../Core/Configuration.hpp"
 
 #include "Ag/Geometry/Point2D.hpp"
+#include "Ag/Geometry/LineHelpers.hpp"
 
 namespace Ag {
 namespace Geom {
@@ -30,10 +31,30 @@ class NumericDomain;
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
+// Parametric line concept:
+//
+// class AbstractParametricLineSegment
+// {
+//      const double *toArray() const noexcept;
+//      const Point2D &getStart() const noexcept;
+//      void setStart(const Point2D &newStart) noexcept;
+//      Point2D getEnd() const noexcept;
+//      void setEnd(const Point2D &end) noexcept;
+//
+//      Point2D getPoint(double parameter) const;
+//      double getParameter(const Point2D &position) const;
+//      double getDistanceToPoint(const Point2D &pt, double &param) const;
+//      Point2DCollection toPolyline(double tolerance, double startParam = 0.0, double endParam = 1.0) const
+// }
+
 //! @brief A 2-dimensional parametric line segment object represented using
 //! real values.
 class STRUCT_ALIGN_16 LineSeg2D
 {
+private:
+    // Internal Fields
+    Point2D _start;
+    Point2D _end;
 public:
     // Construction/Destruction
     LineSeg2D() = default;
@@ -42,16 +63,30 @@ public:
     LineSeg2D(const Line2D &line, double length);
     ~LineSeg2D() = default;
 
-    // Accessors
-    const Point2D &getStart() const;
-    void setStart(const Point2D &start);
-    const Point2D &getDelta() const;
-    void setDelta(const Point2D &delta);
-    Point2D getEnd() const;
-    void setEnd(const Point2D &end);
-    const double *asVector() const;
-    double getLength() const;
+    // Concept
+    //! @brief Gets the line segment as a vector of four doubles representing
+    //! the start point and direction vector.
+    //! @note The pointer is guaranteed to be aligned on a 16-byte boundary.
+    constexpr const double *toArray() const noexcept { return _start.toArray(); }
+
+    //! @brief Gets the point at the start of the line segment.
+    constexpr const Point2D &getStart() const noexcept { return _start; }
+    void setStart(const Point2D &start) noexcept;
+
+    //! @brief Gets the end point of the line segment.
+    constexpr const Point2D &getEnd() const noexcept { return _end; }
+    void setEnd(const Point2D &end) noexcept;
     Point2D getPoint(double parameter) const;
+
+    double getParameter(const Point2D &position) const;
+    double getDistanceToPoint(const Point2D &pt, double &param) const;
+    double getPerpDistanceToPoint(const Point2D &pt, double &param) const;
+
+    // Accessors
+    Point2D getDelta() const noexcept;
+    void setDelta(const Point2D &delta) noexcept;
+    double getLength() const;
+
     double getDeterminant(const Point2D &rhs) const;
     bool tryCalculateIntersection(const NumericDomain &domain, const Line2D &rhs,
                                   Point2D &intersection) const;
@@ -68,11 +103,19 @@ public:
     void setPointDelta(const Point2D & origin, const Point2D & delta);
     void setPointPoint(double x1, double y1, double x2, double y2);
     void setPointPoint(const Point2D &start, const Point2D &end);
-private:
-    // Internal Fields
-    Point2D _origin;
-    Point2D _delta;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Templates
+////////////////////////////////////////////////////////////////////////////////
+namespace Line {
+
+template<> double findNearestPointParam<LineSeg2D>(const LineSeg2D &line,
+                                                   const Point2D &point,
+                                                   double startParam,
+                                                   double endParam);
+
+} // namespace Line
 
 }} // namespace Ag::Geom
 

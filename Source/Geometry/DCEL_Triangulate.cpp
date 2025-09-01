@@ -78,8 +78,8 @@ BoundaryEdgeNode::BoundaryEdgeNode(NodeCPtr node,
 
 bool BoundaryEdgeNode::operator<(const BoundaryEdgeNode &rhs) const
 {
-    auto lhsComponents = _node->getGridPosition().asVector();
-    auto rhsComponents = rhs._node->getGridPosition().asVector();
+    auto lhsComponents = _node->getGridPosition().toArray();
+    auto rhsComponents = rhs._node->getGridPosition().toArray();
 
     const uint8_t minorIndex = _majorIndex ^ 1;
 
@@ -104,8 +104,8 @@ bool BoundaryEdgeNode::operator<(const BoundaryEdgeNode &rhs) const
 
 bool BoundaryEdgeNode::isLevelWith(const BoundaryEdgeNode &rhs) const
 {
-    return (_node->getGridPosition().asVector()[_majorIndex] ==
-            rhs._node->getGridPosition().asVector()[_majorIndex]);
+    return (_node->getGridPosition().toArray()[_majorIndex] ==
+            rhs._node->getGridPosition().toArray()[_majorIndex]);
 }
 
 void BoundaryEdgeNode::initialiseBoundary(uint32_t sequence, bool isOnMaxSide)
@@ -141,9 +141,9 @@ BoundaryEdgeCollection enumerateSideNodes(const Ring &ring, uint8_t majorIndex)
         if (!orderedNodes.empty())
         {
             // Update the minimum/maximum node indexes.
-            auto currentComponents = currentNode->getGridPosition().asVector();
-            auto minComponents = orderedNodes[minNodeIndex].getNode()->getGridPosition().asVector();
-            auto maxComponents = orderedNodes[maxNodeIndex].getNode()->getGridPosition().asVector();
+            auto currentComponents = currentNode->getGridPosition().toArray();
+            auto minComponents = orderedNodes[minNodeIndex].getNode()->getGridPosition().toArray();
+            auto maxComponents = orderedNodes[maxNodeIndex].getNode()->getGridPosition().toArray();
 
             // Properly sort nodes which are level by their minor component.
             if ((currentComponents[safeMajorIndex] < minComponents[safeMajorIndex]) ||

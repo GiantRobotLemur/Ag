@@ -85,7 +85,7 @@ void SnapPoint::set(int64_t x, int64_t y)
 }
 
 //! @brief Gets the point as an array of 2 x signed 64-bit integers.
-const int64_t *SnapPoint::asVector() const
+const int64_t *SnapPoint::toArray() const
 {
     static_assert(sizeof(SnapPoint) == (sizeof(int64_t) * 2),
                   "A snap point should only consist of 2 x 64-bit integers.");
