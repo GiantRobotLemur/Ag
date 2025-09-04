@@ -239,12 +239,21 @@ double Point2D::distance(const Point2D &rhs) const
 //! @brief Calculates the angle of a line connecting the current point to another.
 //! @param[in] rhs The point to measure the angle to.
 //! @return The angle in radians relative to the X axis, counter-clockwise in
-//! a LH coordinate system.
+//! a LH coordinate system between -Pi and Pi.
 double Point2D::angleTo(const Point2D &rhs) const
 {
     Point2D delta = rhs - *this;
 
     return std::atan2(delta.getY(), delta.getX());
+}
+
+//! @brief Calculates the angle of a line formed from the origin to the current
+//! position i.e. it's vector direction.
+//! @return The angle in radians relative to the X axis, counter-clockwise in
+//! a LH coordinate system between -Pi and Pi.
+double Point2D::angleFromOrigin() const
+{
+    return std::atan2(_y, _x);
 }
 
 //! @brief Performs a (possibly optimised) fused-multiply-add operation on the

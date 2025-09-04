@@ -44,6 +44,8 @@ ag_add_library(Geometry FOLDER      Geometry
                                     ${GEOM_INCLUDE_DIR}/QuadBezierCurve2D.hpp
                                     CubicBezierCurve2D.cpp
                                     ${GEOM_INCLUDE_DIR}/CubicBezierCurve2D.hpp
+                                    Arc2D.cpp
+                                    ${GEOM_INCLUDE_DIR}/Arc2D.hpp
                                     DCEL.cpp
                                     ${GEOM_INCLUDE_DIR}/DCEL.hpp
                                     DCEL_Sweep.cpp
@@ -77,6 +79,7 @@ ag_add_test_app(Geometry_Tests  TEST_LIB    Geometry
                                             Test_LineSeg2D.cpp
                                             Test_QuadBezierCurve2D.cpp
                                             Test_CubicBezierCurve2D.cpp
+                                            Test_Arc2D.cpp
                                             Test_DCEL_Tools.cpp
                                             Test_DCEL_Tools.hpp
                                             Test_DCEL.cpp

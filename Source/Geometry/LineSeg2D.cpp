@@ -210,7 +210,7 @@ double LineSeg2D::getPerpDistanceToPoint(const Point2D &pt, double &param) const
 }
 
 //! @brief Gets the vector from the start point to the end point.
-Point2D LineSeg2D::getDelta() const noexcept { return _start + _end; }
+Point2D LineSeg2D::getDelta() const noexcept { return _end - _start; }
 
 //! @brief Sets the offset of the end point of the line segment relative
 //! to the start point.
