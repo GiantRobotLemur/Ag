@@ -32,6 +32,7 @@
 #include "Geometry/Triangle2D.hpp"
 #include "Geometry/QuadBezierCurve2D.hpp"
 #include "Geometry/CubicBezierCurve2D.hpp"
+#include "Geometry/Arc2D.hpp"
 #include "Geometry/DCEL.hpp"
 #include "Geometry/DCEL_Algorithms.hpp"
 

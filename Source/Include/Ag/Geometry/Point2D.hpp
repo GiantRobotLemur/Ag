@@ -193,6 +193,7 @@ public:
 
     double distance(const Point2D &rhs) const;
     double angleTo(const Point2D &rhs) const;
+    double angleFromOrigin() const;
     Point2D fma(Component scale, const Point2D &translation) const;
     Point2D fma(const Point2D &scale, const Point2D &translation) const;
     Point2D normalised() const;
