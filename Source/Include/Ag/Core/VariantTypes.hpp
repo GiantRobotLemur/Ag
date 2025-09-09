@@ -1,7 +1,7 @@
 //! @file Ag/Core/VariantTypes.hpp
 //! @brief The declaration of various implementations of the VariantType class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -32,8 +32,6 @@ public: static const name ## VariantType *getInstance(); \
     virtual void destroy(const VariantData &value) const override; \
     virtual void copy(VariantData &destination, const VariantData &source) const override; \
     virtual void move(VariantData &destination, VariantData &&source) const override; \
-    virtual bool read(IStream *input, VariantData &destination) const override; \
-    virtual bool write(IStream *output, const VariantData &source) const override; \
     virtual void toString(const FormatInfo &format, const VariantData &value, \
                           std::string &buffer) const override; \
     virtual bool tryParse(const LocaleInfo &format, utf8_cptr_t source, \
@@ -82,8 +80,6 @@ public:
     virtual void destroy(const VariantData &value) const override;
     virtual void copy(VariantData &destination, const VariantData &source) const override;
     virtual void move(VariantData &destination, VariantData &&source) const override;
-    virtual bool read(IStream *input, VariantData &destination) const override;
-    virtual bool write(IStream *output, const VariantData &source) const override;
     virtual void toString(const FormatInfo &format, const VariantData &value,
                           std::string &buffer) const override;
     virtual bool tryParse(const LocaleInfo &format, utf8_cptr_t source,
@@ -111,8 +107,6 @@ public:
     virtual void destroy(const VariantData &value) const override;
     virtual void copy(VariantData &destination, const VariantData &source) const override;
     virtual void move(VariantData &destination, VariantData &&source) const override;
-    virtual bool read(IStream *input, VariantData &destination) const override;
-    virtual bool write(IStream *output, const VariantData &source) const override;
     virtual void toString(const FormatInfo &format, const VariantData &value,
                           std::string &buffer) const override;
     virtual bool tryParse(const LocaleInfo &format, utf8_cptr_t source,
@@ -138,8 +132,6 @@ public:
     virtual void destroy(const VariantData &value) const override;
     virtual void copy(VariantData &destination, const VariantData &source) const override;
     virtual void move(VariantData &destination, VariantData &&source) const override;
-    virtual bool read(IStream *input, VariantData &destination) const override;
-    virtual bool write(IStream *output, const VariantData &source) const override;
     virtual void toString(const FormatInfo &format, const VariantData &value,
                           std::string &buffer) const override;
     virtual bool tryParse(const LocaleInfo &format, utf8_cptr_t source,
@@ -167,8 +159,6 @@ public:
     virtual void destroy(const VariantData &value) const override;
     virtual void copy(VariantData &destination, const VariantData &source) const override;
     virtual void move(VariantData &destination, VariantData &&source) const override;
-    virtual bool read(IStream *input, VariantData &destination) const override;
-    virtual bool write(IStream *output, const VariantData &source) const override;
     virtual void toString(const FormatInfo &format, const VariantData &value,
                           std::string &buffer) const override;
     virtual bool tryParse(const LocaleInfo &format, utf8_cptr_t source,

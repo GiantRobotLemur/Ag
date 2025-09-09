@@ -18,9 +18,6 @@ include("${CMAKE_CURRENT_LIST_DIR}/cmake/ConfigureBuild.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/Utilities.cmake")
 
 if (DEFINED AG_IS_ROOT)
-    #set(AG_CONFIG_SDL3 ON)
-    #set(AG_CONFIG_GLM ON)
-
     # Set build settings compatible with the Ag libraries.
     ag_configure_build()
 
@@ -37,6 +34,9 @@ if (DEFINED AG_IS_ROOT)
         include("${presetPath}")
     endif()
 
+    # Get bzip2 - Always needed for AgCore
+    ag_configure_bzip2()
+
     # Get Google Test
     ag_configure_gtest()
 
@@ -48,6 +48,15 @@ if (DEFINED AG_IS_ROOT)
     if (AG_CONFIG_SDL3)
         ag_configure_sdl3()
     endif()
+else()
+    # Set build settings compatible with the Ag libraries.
+    ag_configure_build()
+
+    # Get bzip2 - Always needed for AgCore
+    ag_configure_bzip2()
+
+    # Get Google Test
+    ag_configure_gtest()
 endif()
 
 add_subdirectory(Source)

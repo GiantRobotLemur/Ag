@@ -1,6 +1,7 @@
 //! @file CommandLine.cpp
 //! @brief The definition of an object which manages command line arguments.
-//! @date 2021-2024
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -22,10 +23,6 @@
 
 #include "CommandLine.hpp"
 #include "Utils.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 namespace {
 ////////////////////////////////////////////////////////////////////////////////
@@ -209,7 +206,8 @@ bool tryParseFormat(const std::string &value, Format &fmt)
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs an object which manages the command line options.
 CommandLine::CommandLine() :
-    _command(Command_Max)
+    _command(Command_Max),
+    _compressSymbols(true)
 {
     std::vector<char> buffer;
     int bufferSize = 128;
@@ -233,6 +231,12 @@ CommandLine::CommandLine() :
 Command CommandLine::getCommand() const
 {
     return _command;
+}
+
+//! @brief Gets whether symbols should be compressed when encoded in a symbol file.
+bool CommandLine::compressSymbols() const
+{
+    return _compressSymbols;
 }
 
 //! @brief Gets the primary input file specified the last time a command line
@@ -270,6 +274,8 @@ void CommandLine::displayHelp()
 "Options:\n"
 "  -?/h              Displays this usage summary.\n"
 "  --help\n"
+"  -c                Writes symbols in a compressed format (the default).\n"
+"  -u                Writes symbols in an uncompressed format.\n"
 "  -o <file>         Specifies the name of the symbol file to write.\n"
 "  --output <file>   \n"
 "  -f <format>       Specifies the format of the input file. Valid values are:\n"
@@ -362,6 +368,16 @@ bool CommandLine::tryParse(int argc, const char *argv[], std::string &error)
                                      "Argument -%c should be followed by an "
                                      "input file format specification.", optionChar);
                     }
+                    break;
+
+                case 'U':
+                case 'u':
+                    _compressSymbols = false;
+                    break;
+
+                case 'C':
+                case 'c':
+                    _compressSymbols = true;
                     break;
 
                 case '?':

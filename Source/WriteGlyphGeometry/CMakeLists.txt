@@ -1,6 +1,6 @@
 # CMakeLists file for the WriteGlyphGeometry tool.
 
-if(WIN32)
+if(WIN32 AND AG_CONFIG_WIN32)
     # The WriteGlyphGeometry tool extracts glyph geometry from fonts using
     # Windows GDI, hence is Win32-only.
     add_executable(WriteGlyphGeometry
@@ -85,7 +85,7 @@ function(embed_glyph_geometry target)
         cmake_path(APPEND sourceDir "${backupName}" OUTPUT_VARIABLE backupPath)
     endif()
 
-    if (WIN32)
+    if (TARGET WriteGlyphGeometry)
         # Create a command to extract the glyph outlines from GDI fonts.
         if (NOT GLYPH_FONT)
             set(GLYPH_FONT "Arial")

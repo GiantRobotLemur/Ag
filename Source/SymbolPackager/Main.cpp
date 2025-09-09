@@ -1,8 +1,9 @@
-//! @file SymbolPackager.cpp
+//! @file SymbolPackager/SymbolPackager.cpp
 //! @brief The definition of the entry point for a command line tool which
 //! extracts and packages up the symbols for a binary module in order to support
 //! symbolic stack traces.
-//! @date 2021-2023
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -61,17 +62,16 @@ bool readSymbols(const CommandLine &args, SymbolDb &symbols, std::string &error)
 bool writeSymbols(const CommandLine &args, const SymbolDb &symbols,
                   std::string &error)
 {
-    StdFilePtr output;
     bool isOK = false;
     error.clear();
 
-    if (tryOpenFile(args.getOutputFile().c_str(), "wb", output))
+    FileStream output;
+
+    if (output.tryOpen(args.getOutputFile().c_str(), "wb"))
     {
-        if (symbols.writeSymbolFile(output.get()))
-        {
-            isOK = true;
-        }
-        else
+        isOK = symbols.writeSymbolFile(&output, args.compressSymbols());
+
+        if (isOK == false)
         {
             appendFormat(error, "Failed to write symbol file '%s'.",
                          args.getOutputFile().c_str());

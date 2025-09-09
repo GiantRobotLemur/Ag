@@ -1,7 +1,7 @@
 //! @file CommandLine.hpp
 //! @brief The declaration of an object which manages command line arguments.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -30,7 +30,6 @@ enum Command
     Command_Max,
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,9 +40,11 @@ class CommandLine
 public:
     // Construction/Destruction
     CommandLine();
+    ~CommandLine() = default;
 
     // Accessors
     Command getCommand() const;
+    bool compressSymbols() const;
     const std::string &getInputFile() const;
     const std::string &getExecutableFile() const;
     const std::string &getOutputFile() const;
@@ -53,16 +54,13 @@ public:
     static void displayHelp();
     bool tryParse(int argc, const char *argv[], std::string &error);
 private:
-    // Internal Types
-
-    // Internal Functions
-
     // Internal Fields
     std::string _outputFile;
     std::string _inputFile;
     std::string _exeFile;
     std::string _workingFolder;
     Command _command;
+    bool _compressSymbols;
 };
 
 #endif // Header guard

@@ -2,7 +2,7 @@
 //! @brief The declaration of objects which measure and initialise blocks of
 //! memory packed with fields.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -83,6 +83,17 @@ public:
     InlineField allocateUTF32(const utf16_cptr_t &utf16Text);
     InlineField allocateArray(size_t elementCount, size_t elementSize);
 
+    //! @brief Allocates a block for a structure.
+    //! @tparam T The data type of the structure to allocate space for.
+    //! @param[in] count The count of structure instances to allocate space for.
+    //! @return Details of the area allocated for the structure(s).
+    template<typename T> InlineField allocateStruct(size_t count = 1)
+    {
+        align(alignof(T));
+
+        return allocateRaw(sizeof(T) * count);
+    }
+
     template<typename T> InlineField allocateArray(size_t elementCount)
     {
         // Ensure the offset returned has an appropriate alignment.
@@ -145,6 +156,15 @@ public:
     // Accessors
     size_t getSize() const;
     void *getFieldData(const InlineField &field) const;
+
+    //! @brief Gets a pointer to a previously allocated structure field.
+    //! @tparam T The data type of the structure allocated.
+    //! @param[in] field The details of the pre-allocated field.
+    //! @return A pointer to the allocated structure.
+    template<typename T> T *getFieldStruct(const InlineField &field) const
+    {
+        return reinterpret_cast<T *>(_buffer + field.Offset);
+    }
 
     //! @brief Attempts to get a pointer to a typed field within the buffer.
     //! @tparam T The data type of the field to reference.
@@ -229,6 +249,32 @@ public:
 
     void *initialiseArray(const InlineField &field, const void *elements,
                           size_t elementCount, size_t elementSize);
+
+    //! @brief Initialises an structure in the buffer.
+    //! @tparam T The data type of the structure being initialised.
+    //! @param[in] field A description of the field pre-allocated in the buffer
+    //! to copy the data to.
+    //! @param[in] item An instance of the structure to copy into the buffer.
+    //! @return A pointer to the initialised field within the buffer, nullptr
+    //! if the field was outside the buffer or too small.
+    template<typename T> T *initialiseStruct(const InlineField &field,
+                                             const T &item)
+    {
+        if (field.Offset >= _byteCount)
+            return nullptr;
+
+        size_t maxFieldSize = std::min(_byteCount - field.Offset,
+                                        field.Count);
+
+        if (maxFieldSize <= sizeof(T))
+            return nullptr;
+
+        T* reference = reinterpret_cast<T *>(_buffer + field.Offset);
+
+        std::uninitialized_copy_n(&item, 1, reference);
+
+        return reference;
+    }
 
     //! @brief Initialises an array of type elements in the buffer.
     //! @tparam T The data type of the elements being initialised.
