@@ -1,7 +1,7 @@
 //! @file Core/StackTrace.cpp
 //! @brief The definition of an object used to gather a stack trace.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -22,6 +22,7 @@
 #include "CoreInternal.hpp"
 #include "Ag/Core/InlineMemory.hpp"
 #include "Ag/Core/StackTrace.hpp"
+#include "Ag/Core/Stream.hpp"
 #include "Ag/Core/Utf.hpp"
 #include "Ag/Core/Utils.hpp"
 #include "Ag/Private/SymbolEncoding.hpp"
@@ -264,22 +265,16 @@ struct CompareBySymbolOrdinal
 // Local Functions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Attempts to read a number of bytes from an stdio stream.
-//! @param[in] ptr The unique pointer to the open stream.
+//! @param[in] stream The open stream to read from.
 //! @param[out] buffer The buffer to read bytes into.
 //! @param[in] byteCount The count of bytes to read.
 //! @retval All the required bytes were successfully read.
 //! @retval The read failed or the end of the stream was unexpectedly encountered.
-bool tryRead(StdFilePtr &ptr, void *buffer, size_t byteCount)
+bool tryRead(IStream *stream, void *buffer, size_t byteCount)
 {
-    bool isRead = false;
-    if (ptr)
-    {
-        size_t bytesRead = fread(buffer, 1, byteCount, ptr.get());
+    size_t bytesRead = stream->read(buffer, byteCount);
 
-        isRead = (bytesRead == byteCount);
-    }
-
-    return isRead;
+    return (bytesRead == byteCount);
 }
 
 //! @brief Adds an empty string to a string table.
@@ -301,6 +296,27 @@ std::string &addString(StringElements &strings, size_t &ordinal)
     strings.back().Offset = offset;
 
     return strings.back().Text;
+}
+
+//! @brief Attempts to find and open the file defining function symbols associated
+//! with a specific binary module.
+//! @param[in] moduleFilePath The full path to the binary module.
+//! @returns Either a valid pointer to an open .sym file or nullptr if no symbols
+//! associated with the module could be found.
+IFileStream::UPtr findSymbolFile(const std::string &moduleFilePath)
+{
+    Fs::PathBuilder path(moduleFilePath);
+
+    // Change the extension.
+    path.setFileExtension("sym");
+
+    IFileStream::UPtr symbolStream;
+
+    // Open the file, but don't throw an exception on failure.
+    IFileStream::tryOpen(symbolStream, path,
+                         FileAccess::Read | FileAccess::OpenExisting);
+
+    return symbolStream;
 }
 
 #ifdef _WIN32
@@ -399,46 +415,6 @@ void resolveModules(TraceElements &traces, ModuleElements &modules,
         // Assign a module to the stack trace element.
         element.ModuleOrdinal = lastModule;
     }
-}
-
-//! @brief Attempts to find and open the file defining function symbols associated
-//! with a specific binary module.
-//! @param[in] moduleFilePath The full path to the binary module.
-//! @returns Either a valid pointer to an open .sym file or nullptr if no symbols
-//! associated with the module could be found.
-FILE *findSymbolFile(const std::string &moduleFilePath)
-{
-    // Search appropriate folders for the .sym file and open it.
-    // Perform the search in Unicode as the ANSI version of functions will not treat
-    // 8-bit character strings as UTF-8.
-    std::wstring symbolFile;
-    symbolFile.reserve(moduleFilePath.length() + 4);
-
-    size_t dotPos = moduleFilePath.rfind('.');
-
-    if (dotPos == std::string::npos)
-    {
-        // Copy the entire file path.
-        Utf::appendToWide(symbolFile, moduleFilePath.c_str(),
-                          moduleFilePath.length());
-    }
-    else
-    {
-        // Copy the module file path up to the extension.
-        Utf::appendToWide(symbolFile, moduleFilePath.c_str(), dotPos);
-    }
-
-    // Change the extension.
-    symbolFile.append(L".sym");
-
-    FILE *fp = nullptr;
-
-    if (_wfopen_s(&fp, symbolFile.c_str(), L"rb") != 0)
-    {
-        fp = nullptr;
-    }
-
-    return fp;
 }
 
 #else
@@ -559,39 +535,143 @@ void resolveModules(TraceElements &traces, ModuleElements &modules,
         }
     }
 }
-
-//! @brief Attempts to find and open the file defining function symbols associated
-//! with a specific binary module.
-//! @param[in] moduleFilePath The full path to the binary module.
-//! @returns Either a valid pointer to an open .sym file or nullptr if no symbols
-//! associated with the module could be found.
-FILE *findSymbolFile(const std::string &moduleFilePath)
-{
-    // Search appropriate folders for the .sym file and open it.
-    std::string symbolFile;
-    symbolFile.reserve(moduleFilePath.length() + 4);
-
-    size_t dotPos = moduleFilePath.rfind('.');
-
-    if (dotPos == std::string::npos)
-    {
-        // Copy the entire file path.
-        symbolFile.assign(moduleFilePath);
-    }
-    else
-    {
-        // Copy the module file path up to the extension.
-        symbolFile.assign(moduleFilePath, 0, dotPos);
-    }
-
-    // Change the extension.
-    symbolFile.append(".sym");
-
-    FILE *fp = fopen(symbolFile.c_str(), "rb");
-
-    return fp;
-}
 #endif
+
+//! @brief Scans through a symbol file to find the ordinals of symbols we want to
+//! resolve.
+//! @param[in] input The symbol file input stream pointing to the beginning of the
+//! offsets table.
+//! @param[in] header The header read from the symbol file.
+//! @param[in] begin The iterator of the first offset to resolve.
+//! @param[in] end The iterator pointing to after the last offset to resolve.
+//! @param[in] elementsBySymbol A table to receive traces of symbols we are interested in.
+//! @return A boolean value indicating if the operation was successful.
+bool accumulateSymbolOffsets(IStream *input, const SymbolHeaderV1 &header,
+                             TraceElements::iterator begin, TraceElements::iterator end,
+                             std::vector<TraceElement *> &elementsBySymbol)
+{
+    PackedFieldHelper symbolFields({ header.SymbolOffsetBitCount,
+                                     header.SymbolOrdinalBitCount });
+
+    TraceElements::iterator current = begin;
+    uintptr_t currentOffset = static_cast<uintptr_t>(header.InitialOffset);
+    size_t prevOrdinal = ~0u;
+    bool isOK = true;
+
+    // Stream through the contents only retaining the data we need.
+    for (uint32_t index = 0; isOK && (index < header.SymbolCount); ++index)
+    {
+        if (symbolFields.read(input))
+        {
+            currentOffset += symbolFields.getField<uintptr_t>(0);
+            size_t ordinal = symbolFields.getField<size_t>(1);
+
+            while ((current != end) && (current->Record.Offset < currentOffset))
+            {
+                // The entry is beyond the one we were looking for,
+                // assign the previous one.
+                current->SymbolOrdinal = prevOrdinal;
+
+                elementsBySymbol.push_back(&(*current));
+
+                ++current;
+            }
+
+            prevOrdinal = ordinal;
+        }
+        else
+        {
+            isOK = false;
+        }
+    }
+
+    // Assign all of the entries left to the last symbol read.
+    while (current != end)
+    {
+        // The entry is beyond the one we were looking for,
+        // assign the previous one.
+        current->SymbolOrdinal = prevOrdinal;
+
+        elementsBySymbol.push_back(&(*current));
+
+        ++current;
+    }
+
+    return isOK;
+}
+
+//! @brief Scans through a symbol file string table to find the strings associated
+//! with offsets we want to look up.
+//! @param[in] input The symbol file input stream positioned at the beginning of the
+//! string table.
+//! @param[in] header The header read from the beginning of the file.
+//! @param[in] elementsBySymbol The collection of symbol traces to resolve sorted into
+//! ordinal order.
+//! @param[in] stringTable The string table to add symbol items to.
+//! @return A boolean value indicating if the operation was successful.
+bool assignSymbolsToOffsets(IStream *input, const SymbolHeaderV1 &header,
+                            const std::vector<TraceElement *> &elementsBySymbol,
+                            StringElements &stringTable)
+{
+    auto element = elementsBySymbol.begin();
+
+    bool isOK = true;
+
+    // Read the string data.
+    PackedFieldHelper stringFields({ header.StringPrefixBitCount,
+                                        header.StringSuffixBitCount });
+    std::vector<char> buffer;
+    buffer.reserve(static_cast<size_t>(header.MaxStringLength) + 1);
+
+    for (size_t ordinal = 0;
+         isOK && (ordinal < header.SymbolCount) && (element != elementsBySymbol.end());
+         ++ordinal)
+    {
+        if (stringFields.read(input))
+        {
+            size_t prefixSize = stringFields.getField<size_t>(0);
+            size_t suffixSize = stringFields.getField<size_t>(1);
+
+            buffer.resize(prefixSize + suffixSize);
+
+            if (tryRead(input, buffer.data() + prefixSize,
+                        suffixSize))
+            {
+                // We have the complete string.
+                if (((element != elementsBySymbol.end()) &&
+                    ((*element)->SymbolOrdinal == ordinal)))
+                {
+                    // Create a symbol from the current contents
+                    // of the buffer.
+                    size_t symbolOrdinal = ~0u;
+
+                    std::string &symbol = addString(stringTable,
+                                                    symbolOrdinal);
+
+                    symbol.assign(buffer.data(), prefixSize + suffixSize);
+
+                    // Apply the symbol to all affected elements.
+                    while ((element != elementsBySymbol.end()) &&
+                            ((*element)->SymbolOrdinal == ordinal))
+                    {
+                        (*element)->SymbolOrdinal = symbolOrdinal;
+                        ++element;
+                    }
+                }
+            }
+            else
+            {
+                isOK = false;
+            }
+        }
+        else
+        {
+            isOK = false;
+        }
+    }
+
+    return isOK;
+}
 
 //! @brief Resolve the symbols in the stack trace which reference a specific module.
 //! @param[in] moduleFilePath The path to the module containing the symbols to resolve.
@@ -603,135 +683,73 @@ FILE *findSymbolFile(const std::string &moduleFilePath)
 void resolveSymbols(const std::string &moduleFilePath, StringElements &stringTable,
                     TraceElements::iterator begin, TraceElements::iterator end)
 {
-    StdFilePtr symbolFile(findSymbolFile(moduleFilePath));
+    IFileStream::UPtr symbolFile(findSymbolFile(moduleFilePath));
 
+    bool symbolsRead = false;
+
+    // Check to ensure the file was successfully opened before scanning it.
     if (symbolFile)
     {
-        SymbolHeader fileData;
+        SymbolFileHeader fileHeader;
+        SymbolHeaderV1 fileData;
 
-        if (tryRead(symbolFile, &fileData, sizeof(fileData)) &&
-            (std::memcmp(fileData.Header.Signature, SYMBOL_SIGNATURE,
-                         sizeof(fileData.Header.Signature)) == 0) &&
-            (fileData.Header.Version[0] == 1) &&
-            (fileData.Header.Version[1] == 0) &&
-            (fileData.Header.Version[2] == 0) &&
-            (fileData.Header.Version[3] == 0))
+        if (tryRead(symbolFile.get(), &fileHeader, sizeof(fileHeader)) &&
+            tryRead(symbolFile.get(), &fileData, sizeof(fileData)) &&
+            (std::memcmp(fileHeader.Signature, SYMBOL_SIGNATURE,
+                         sizeof(fileHeader.Signature)) == 0) &&
+            (fileHeader.Version[0] == 1) &&
+            ((fileHeader.Version[1] == 0) || (fileHeader.Version[1] == 1)) &&
+            (fileHeader.Version[2] == 0) &&
+            (fileHeader.Version[3] == 0))
         {
             // The file is valid.
-            PackedFieldHelper symbolFields({ fileData.SymbolOffsetBitCount,
-                                             fileData.SymbolOrdinalBitCount });
             std::vector<TraceElement *> elementsBySymbol;
             elementsBySymbol.reserve(std::distance(begin, end));
 
-            TraceElements::iterator current = begin;
-            uintptr_t currentOffset = static_cast<uintptr_t>(fileData.InitialOffset);
-            size_t prevOrdinal = ~0u;
-            bool isOK = true;
+            static constexpr size_t BufferSize = 16 * 1024;
 
-            // Stream through the contents only retaining the data we need.
-            for (uint32_t index = 0; isOK && (index < fileData.SymbolCount); ++index)
+            if (fileHeader.Version[1] == 1)
             {
-                if (symbolFields.read(symbolFile.get()))
+                // The symbol data is compressed.
+                Bz2DecompressionStream dataStream(symbolFile.get(), BufferSize);
+                dataStream.disableExceptions();
+
+                if (accumulateSymbolOffsets(&dataStream, fileData,
+                                            begin, end, elementsBySymbol))
                 {
-                    currentOffset += symbolFields.getField<uintptr_t>(0);
-                    size_t ordinal = symbolFields.getField<size_t>(1);
+                    // Order the elements by the ordinal of the symbol within
+                    // the file so that we can apply the symbols as they are read in.
+                    std::sort(elementsBySymbol.begin(), elementsBySymbol.end(),
+                              CompareBySymbolOrdinal());
 
-                    while ((current != end) && (current->Record.Offset < currentOffset))
-                    {
-                        // The entry is beyond the one we were looking for,
-                        // assign the previous one.
-                        current->SymbolOrdinal = prevOrdinal;
-
-                        elementsBySymbol.push_back(&(*current));
-
-                        ++current;
-                    }
-
-                    prevOrdinal = ordinal;
-                }
-                else
-                {
-                    isOK = false;
+                    symbolsRead = assignSymbolsToOffsets(&dataStream, fileData,
+                                                         elementsBySymbol,
+                                                         stringTable);
                 }
             }
-
-            // Assign all of the entries left to the last symbol read.
-            while (current != end)
+            else
             {
-                // The entry is beyond the one we were looking for,
-                // assign the previous one.
-                current->SymbolOrdinal = prevOrdinal;
+                // The symbol data is uncompressed, but reading from a raw
+                // OS stream would benefit from some buffering.
+                BufferedStream dataStream(symbolFile.get(), 16 * 1024);
 
-                elementsBySymbol.push_back(&(*current));
-
-                ++current;
-            }
-
-            if (isOK)
-            {
-                // Order the elements by the ordinal of the symbol within
-                // the file so that we can apply the symbols as they are read in.
-                std::sort(elementsBySymbol.begin(), elementsBySymbol.end(),
-                          CompareBySymbolOrdinal());
-
-                auto element = elementsBySymbol.begin();
-
-                // Read the string data.
-                PackedFieldHelper stringFields({ fileData.StringPrefixBitCount,
-                                                 fileData.StringSuffixBitCount });
-                std::vector<char> buffer;
-                buffer.reserve(static_cast<size_t>(fileData.MaxStringLength) + 1);
-
-                for (size_t ordinal = 0;
-                     isOK && (ordinal < fileData.SymbolCount) && (element != elementsBySymbol.end());
-                     ++ordinal)
+                if (accumulateSymbolOffsets(&dataStream, fileData,
+                                            begin, end, elementsBySymbol))
                 {
-                    if (stringFields.read(symbolFile.get()))
-                    {
-                        size_t prefixSize = stringFields.getField<size_t>(0);
-                        size_t suffixSize = stringFields.getField<size_t>(1);
+                    // Order the elements by the ordinal of the symbol within
+                    // the file so that we can apply the symbols as they are read in.
+                    std::sort(elementsBySymbol.begin(), elementsBySymbol.end(),
+                              CompareBySymbolOrdinal());
 
-                        buffer.resize(prefixSize + suffixSize);
-
-                        if (tryRead(symbolFile, buffer.data() + prefixSize,
-                                    suffixSize))
-                        {
-                            // We have the complete string.
-                            if (((element != elementsBySymbol.end()) &&
-                                 ((*element)->SymbolOrdinal == ordinal)))
-                            {
-                                // Create a symbol from the current contents
-                                // of the buffer.
-                                size_t symbolOrdinal = ~0u;
-
-                                std::string &symbol = addString(stringTable,
-                                                                symbolOrdinal);
-
-                                symbol.assign(buffer.data(), prefixSize + suffixSize);
-
-                                // Apply the symbol to all affected elements.
-                                while ((element != elementsBySymbol.end()) &&
-                                       ((*element)->SymbolOrdinal == ordinal))
-                                {
-                                    (*element)->SymbolOrdinal = symbolOrdinal;
-                                    ++element;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            isOK = false;
-                        }
-                    }
-                    else
-                    {
-                        isOK = false;
-                    }
+                    symbolsRead = assignSymbolsToOffsets(&dataStream, fileData,
+                                                         elementsBySymbol,
+                                                         stringTable);
                 }
             }
         }
     }
-    else
+
+    if (symbolsRead == false)
     {
         // Set all symbols to be empty.
         for (auto current = begin; current != end; ++current)

@@ -1,7 +1,8 @@
-//! @file SymbolDb.cpp
+//! @file SymbolPackager/SymbolDb.cpp
 //! @brief The definition of an object which can store symbolic information to
 //! be packaged as a file.
-//! @date 2021-2023
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <algorithm>
 
+#include "CompressionStream.hpp"
 #include "SymbolDb.hpp"
 #include "Ag/Private/SymbolEncoding.hpp"
 
@@ -79,7 +81,7 @@ size_t calcPrefixLength(const std::string &lhs, const std::string &rhs)
 //! @param[in] fieldPacker An object used to pack the fields in each row.
 //! @param[in] entries The collection of entries to write ordered by Offset.
 //! @return A boolean value indicating whether the table was successfully written.
-bool writeSymbols(FILE *output, Ag::PackedFieldHelper &fieldPacker,
+bool writeSymbols(Ag::IStream *output, Ag::PackedFieldHelper &fieldPacker,
                   const std::vector<SymbolEntry> &entries)
 {
     bool isOK = true;
@@ -120,7 +122,7 @@ bool writeSymbols(FILE *output, Ag::PackedFieldHelper &fieldPacker,
 //! table.
 //! @param[in] entries A collection of symbol entries lexically ordered.
 //! @return A boolean value indicating whether the table was successfully written.
-bool writeStrings(FILE *output, Ag::PackedFieldHelper &fieldPacker,
+bool writeStrings(Ag::IStream *output, Ag::PackedFieldHelper &fieldPacker,
                   const std::vector<SymbolEntry *> &entries)
 {
     bool isOK = true;
@@ -150,7 +152,7 @@ bool writeStrings(FILE *output, Ag::PackedFieldHelper &fieldPacker,
 
         // Write the fields and the suffix characters.
         if ((fieldPacker.write(output) == false) ||
-            (fwrite(entry->Symbol.c_str() + prefix, 1, suffix, output) != suffix))
+            (output->write(entry->Symbol.c_str() + prefix, suffix) != suffix))
         {
             isOK = false;
             break;
@@ -158,6 +160,24 @@ bool writeStrings(FILE *output, Ag::PackedFieldHelper &fieldPacker,
     }
 
     return isOK;
+}
+
+bool writeSymbolFileHeader(Ag::IStream *output,
+                           uint8_t verMajor, uint8_t verMinor,
+                           uint8_t verRevision, uint8_t verPatch)
+{
+    // Initialise the file header.
+    Ag::SymbolFileHeader header;
+
+    zeroFill(header);
+    std::memcpy(header.Signature, SYMBOL_SIGNATURE,
+                sizeof(header.Signature));
+    header.Version[0] = verMajor;
+    header.Version[1] = verMinor;
+    header.Version[2] = verRevision;
+    header.Version[3] = verPatch;
+
+    return output->write(&header, sizeof(header)) == sizeof(header);
 }
 
 } // Anonymous namespace
@@ -188,7 +208,7 @@ SymbolEntry::SymbolEntry(uint64_t offset, const BoundedString &symbol) :
 //! @brief Constructs an empty symbol database.
 SymbolDb::SymbolDb() :
     _maxSymbolLength(0),
-    _offsetBits(0),
+    _offsetDeltaBits(0),
     _prefixBits(0),
     _suffixBits(0)
 {
@@ -211,7 +231,7 @@ void SymbolDb::compile()
     _symbolIndex.clear();
 
     _maxSymbolLength = 0;
-    _offsetBits = 0;
+    _offsetDeltaBits = 0;
     _prefixBits = 0;
     _suffixBits = 0;
 
@@ -221,11 +241,6 @@ void SymbolDb::compile()
         CompareOffset compareByOffset;
 
         std::sort(_symbolTable.begin(), _symbolTable.end(), compareByOffset);
-
-        // Ensure any symbols for duplicate offsets are removed.
-        //auto pos = std::unique(_symbolTable.begin(), _symbolTable.end(),
-        //                       compareByOffset);
-        //_symbolTable.erase(pos, _symbolTable.end());
 
         // Calculate the sizes of fields needed to encode the symbols.
         uint64_t maxDelta = 0;
@@ -247,7 +262,7 @@ void SymbolDb::compile()
         }
 
         _maxSymbolLength = static_cast<uint32_t>(maxLength);
-        _offsetBits = countSignificantBits(maxDelta);
+        _offsetDeltaBits = countSignificantBits(maxDelta);
 
         // Calculate the sizes of fields needed to encode the strings.
         std::sort(_symbolIndex.begin(), _symbolIndex.end(), CompareSymbol());
@@ -311,8 +326,13 @@ void SymbolDb::addSymbol(uint64_t offset, const BoundedString &symbol)
     reset();
 }
 
-//! @brief Writes the contents of the database to an output stream.
-bool SymbolDb::writeSymbolFile(FILE *outputStream) const
+//! @brief Writes the contents of the database to an output stream
+//! using the version 1 format.
+//! @param[in] outputStream The binary stream to write the binary symbol data to.
+//! @param[in] compress True to write the symbol data compressed using
+//! the bz2 compression library, false to write the symbol data using
+//! conventional compression.
+bool SymbolDb::writeSymbolFile(Ag::IStream *outputStream, bool compress) const
 {
     if ((_symbolTable.empty() == false) && _symbolIndex.empty())
     {
@@ -321,17 +341,12 @@ bool SymbolDb::writeSymbolFile(FILE *outputStream) const
         return false;
     }
 
-    // Initialise the file header.
-    Ag::SymbolHeader fileData;
-
-    std::memset(&fileData, 0, sizeof(fileData));
-    std::memcpy(fileData.Header.Signature, SYMBOL_SIGNATURE,
-                sizeof(fileData.Header.Signature));
+    // Initialise the V1 symbol data header.
+    Ag::SymbolHeaderV1 fileData;
 
     uint32_t ordinalBits = countSignificantBits(_symbolTable.size());
 
-    fileData.Header.Version[0] = 1;
-    fileData.SymbolOffsetBitCount = static_cast<uint8_t>(_offsetBits);
+    fileData.SymbolOffsetBitCount = static_cast<uint8_t>(_offsetDeltaBits);
     fileData.SymbolOrdinalBitCount = static_cast<uint8_t>(ordinalBits);
     fileData.StringPrefixBitCount = static_cast<uint8_t>(_prefixBits);
     fileData.StringSuffixBitCount = static_cast<uint8_t>(_suffixBits);
@@ -343,27 +358,25 @@ bool SymbolDb::writeSymbolFile(FILE *outputStream) const
         fileData.InitialOffset = _symbolTable.front().Offset;
     }
 
-    // Write the file header.
-    bool isOK =
-        (fwrite(&fileData, 1, sizeof(fileData), outputStream) == sizeof(fileData));
-
-    if (isOK && (_symbolTable.empty() == false))
+    // Write the file header, uncompressed is 1.0.0.0, compressed is 1.1.0.0.
+    if (writeSymbolFileHeader(outputStream, 1, compress ? 1 : 0, 0, 0) &&
+        (outputStream->write(&fileData, sizeof(fileData)) == sizeof(fileData)))
     {
-        // Write the compressed symbol table.
-        Ag::PackedFieldHelper symbolFields({ _offsetBits, ordinalBits });
-
-        isOK = writeSymbols(outputStream, symbolFields, _symbolTable);
-
-        if (isOK)
+        if (compress)
         {
-            // Write the compressed string table.
-            Ag::PackedFieldHelper stringFields({ _prefixBits, _suffixBits });
+            // Compress the symbol data.
+            Bz2CompressionStream dataStream(outputStream);
 
-            isOK = writeStrings(outputStream, stringFields, _symbolIndex);
+            return writeSymbolData(&dataStream);
+        }
+        else
+        {
+            // Write the symbol data uncompressed.
+            return writeSymbolData(outputStream);
         }
     }
 
-    return isOK;
+    return false;
 }
 
 //! @brief Writes out the contents of the database as text.
@@ -417,13 +430,36 @@ bool SymbolDb::writeText(FILE *outputStream) const
     return isOK;
 }
 
+bool SymbolDb::writeSymbolData(Ag::IStream *outputStream) const
+{
+    if (_symbolTable.empty())
+        return true;
+
+    uint32_t ordinalBits = countSignificantBits(_symbolTable.size());
+
+    // Write the compressed symbol table.
+    Ag::PackedFieldHelper symbolFields({ _offsetDeltaBits, ordinalBits });
+
+    bool isOK = writeSymbols(outputStream, symbolFields, _symbolTable);
+
+    if (isOK)
+    {
+        // Write the compressed string table.
+        Ag::PackedFieldHelper stringFields({ _prefixBits, _suffixBits });
+
+        isOK = writeStrings(outputStream, stringFields, _symbolIndex);
+    }
+
+    return isOK;
+}
+
 //! @brief Resets the compilation state of the database.
 void SymbolDb::reset()
 {
     _symbolIndex.clear();
 
     _maxSymbolLength = 0;
-    _offsetBits = 0;
+    _offsetDeltaBits = 0;
     _prefixBits = 0;
     _suffixBits = 0;
 }

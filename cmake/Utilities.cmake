@@ -36,7 +36,7 @@ function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
     if (DEFINED WIN32)
         # Use the PDB file to extract function symbols.
         add_custom_command(TARGET ${destTargetName} POST_BUILD
-                           COMMAND "${SymTool}" ARGS "$<TARGET_PDB_FILE:${symbolTargetName}>"
+                           COMMAND "${SymTool}" ARGS "$<TARGET_PDB_FILE:${symbolTargetName}>" -c
                                                   -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.sym"
                                                   --exe "$<TARGET_FILE:${symbolTargetName}>"
                            COMMAND "${SymTool}" ARGS "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.sym"

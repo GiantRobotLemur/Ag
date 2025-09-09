@@ -1,7 +1,8 @@
-//! @file Utils.cpp
+//! @file SymbolPackager/Utils.cpp
 //! @brief The definition of stand-alone helper functions for use by the
 //! symbol packager tool.
-//! @date 2021-2023
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -229,6 +230,67 @@ bool BoundedString::startsWith(const BoundedString &rhs) const
     }
 
     return hasPrefix;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// FileStream Member Function Definitions
+////////////////////////////////////////////////////////////////////////////////
+FileStream::FileStream() :
+    _file(nullptr)
+{
+}
+
+FileStream::~FileStream()
+{
+    close();
+}
+
+bool FileStream::isOpen() const
+{
+    return _file != nullptr;
+}
+
+bool FileStream::tryOpen(const char *fileName, const char *mode)
+{
+    close();
+
+#ifdef _MSC_VER
+    auto errorCode = fopen_s(&_file, fileName, mode);
+
+    if (errorCode != 0)
+    {
+        _file = nullptr;
+    }
+#else
+    _file = fopen(fileName, mode);
+#endif
+
+    return _file != nullptr;
+}
+
+void FileStream::close()
+{
+    if (_file != nullptr)
+    {
+        fclose(_file);
+        _file = nullptr;
+    }
+}
+
+size_t FileStream::read(void *targetBuffer, size_t requiredByteCount)
+{
+    if (_file == nullptr)
+        return 0;
+
+    return fread(targetBuffer, 1, requiredByteCount, _file);
+}
+
+size_t FileStream::write(const void *sourceBuffer, size_t sourceByteCount)
+{
+    if (_file == nullptr)
+        return 0;
+
+    return fwrite(sourceBuffer, 1, sourceByteCount, _file);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

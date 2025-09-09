@@ -1,7 +1,7 @@
 //! @file Ag/Core/PreCompiledHeader.hpp
 //! @brief The root private pre-compiled header for the Core project.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024
+//! @date 2024-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -60,6 +60,9 @@
 
 // System Headers (required by the public Core API).
 #include "Ag/Core/Platform.hpp"
+
+// Include libbz2 for internal compression services.
+#include <bzlib.h>
 
 #endif // Header guard
 ////////////////////////////////////////////////////////////////////////////////

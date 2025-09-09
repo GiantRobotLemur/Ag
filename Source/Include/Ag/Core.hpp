@@ -1,7 +1,7 @@
 //! @file Ag/Core.hpp
 //! @brief Consolidates all core library headers into a single file for convenience.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -23,6 +23,7 @@
 #include "Core/EnumInfo.hpp"
 #include "Core/Memory.hpp"
 #include "Core/InlineMemory.hpp"
+#include "Private/ByteProducerConsumer.hpp" // A header shared between SymbolPackager and AgCore.
 #include "Core/CollectionTools.hpp"
 #include "Core/LinearSortedSet.hpp"
 #include "Core/LinearSortedMap.hpp"
@@ -45,6 +46,7 @@
 #include "Core/FsPath.hpp"
 #include "Core/FsSearchPathList.hpp"
 #include "Core/FsDirectory.hpp"
+#include "Core/Stream.hpp"
 #include "Core/Uri.hpp"
 #include "Core/App.hpp"
 

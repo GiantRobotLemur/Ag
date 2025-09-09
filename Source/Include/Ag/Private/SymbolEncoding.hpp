@@ -1,7 +1,8 @@
-//! @file SymbolEncoding.hpp
+//! @file Ag/Private/SymbolEncoding.hpp
 //! @brief The declaration of data types shared between the Symbol Packager tool
 //! and the Core library which reads the symbol data.
-//! @date 2021-2023
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -44,9 +45,6 @@ struct SymbolFileHeader
 //! @brief The version 1 structure of a binary symbol file.
 struct SymbolHeaderV1
 {
-    //! @brief The header identifying the file type and version.
-    SymbolFileHeader Header;
-
     //! @brief The count of bits in the offset field of symbol table entries.
     uint8_t SymbolOffsetBitCount;
 
@@ -83,10 +81,10 @@ struct SymbolHeaderV1
     // } StringTable[SymbolCount];
 };
 
-//! @brief An alias of the current version of the file structure.
-typedef SymbolHeaderV1 SymbolHeader;
-
 //! @brief An object which packs multiple scalar fields into a run of bytes.
+//! @note This class requires the IStream interface to be defined to be able
+//! to read/write field data. That interface has different definitions and
+//! implementations between AgCore and SymbolPackager, but both are compatible.
 class PackedFieldHelper
 {
 private:
@@ -170,12 +168,6 @@ private:
             // Pad the last sub-field in order to create a packed field which
             // takes up a whole number of bytes.
             uint32_t roundedBits = (totalBits + 7) & ~0x07;
-
-            //SubField &last = _fields.back();
-            //uint32_t endBit = last.Offset + last.Count;
-            //uint32_t paddingBits = roundedBits - endBit;
-
-            //last.Count += paddingBits;
 
             // Create a buffer of an appropriate size.
             _buffer.resize(roundedBits / 8, 0);
@@ -263,10 +255,9 @@ public:
     //! @param[in] outputStream The stream to write the encoded field to.
     //! @retval true The entire field was successfully written.
     //! @retval false The data could not be written to the stream.
-    bool write(FILE *outputStream) const
+    bool write(IStream *outputStream) const
     {
-        size_t bytesWritten = fwrite(_buffer.data(), 1,
-                                     _buffer.size(), outputStream);
+        size_t bytesWritten = outputStream->write(_buffer.data(), _buffer.size());
 
         return bytesWritten == _buffer.size();
     }
@@ -275,10 +266,9 @@ public:
     //! @param[in] inputStream The stream to read bytes from.
     //! @retval true The data was successfully read.
     //! @retval false The data could not be read from the input stream.
-    bool read(FILE *inputStream)
+    bool read(IStream *inputStream)
     {
-        size_t bytesRead = fread(_buffer.data(), 1,
-                                 _buffer.size(), inputStream);
+        size_t bytesRead = inputStream->read(_buffer.data(), _buffer.size());
 
         return bytesRead == _buffer.size();
     }

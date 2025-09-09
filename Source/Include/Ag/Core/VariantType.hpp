@@ -1,8 +1,8 @@
-//! @file VariantType.hpp
+//! @file Ag/Core/VariantType.hpp
 //! @brief The declaration of a value type which can hold one of many possible
 //! data types.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2023
+//! @date 2022-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -110,18 +110,6 @@ public:
     //! @param[in] destination The object to receives the moved data.
     //! @param[in] source The rval reference to transfer from.
     virtual void move(VariantData &destination, VariantData &&source) const = 0;
-
-    //! @brief Attempts to deserialize the variant value from a stream of bytes.
-    //! @param[in] input The binary stream to read from.
-    //! @param[out] destination The variant data to populate from the stream.
-    //! @retval true A value was successfully read.
-    //! @retval false The value could not be read from the stream.
-    virtual bool read(IStream *input, VariantData &destination) const = 0;
-
-    //! @brief Attempts to serialize the variant value as a stream of bytes.
-    //! @param[in] output The stream to write bytes to.
-    //! @param[in] source The variant value to be written to the stream.
-    virtual bool write(IStream *output, const VariantData &source) const = 0;
 
     //! @brief Formats the object as text.
     //! @param[in] format Options relating to how values are formatted.

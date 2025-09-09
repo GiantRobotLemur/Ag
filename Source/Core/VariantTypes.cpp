@@ -1,7 +1,7 @@
 //! @file Core/VariantTypes.cpp
 //! @brief The definition of various implementations of the VariantType class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -48,10 +48,6 @@ void name ## VariantType::copy(VariantData &destination, const VariantData &sour
     destination. name = source. name ; } \
 void name ## VariantType::move(VariantData &destination, VariantData &&source) const { \
     destination. name = source. name ; } \
-bool name ## VariantType::read(IStream *input, VariantData &destination) const { \
-    return input->tryRead(&destination. name, sizeof(destination. name )); } \
-bool name ## VariantType::write(IStream *output, const VariantData &source) const { \
-    return output->tryWrite(&source. name, sizeof(source. name)); } \
 void name ## VariantType::toString(const FormatInfo &format, \
                                const VariantData &value, \
                                std::string &buffer) const { \
@@ -86,13 +82,11 @@ bool convert ## source ## To ## target (const VariantData &sourceValue, \
     map[VariantTypePair(VariantTypes::  source, VariantTypes::  target)] = \
         convert ## source ## To ## target
 
-
 namespace Ag {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global Data
 ////////////////////////////////////////////////////////////////////////////////
-
 DECLARE_VARIANT_TYPE(Boolean);
 DECLARE_VARIANT_TYPE(Character);
 DECLARE_VARIANT_TYPE(Int8);
@@ -625,29 +619,6 @@ void BooleanVariantType::move(VariantData &destination, VariantData &&source) co
 }
 
 // Inherited from VariantType.
-bool BooleanVariantType::read(IStream *input, VariantData &destination) const
-{
-    uint8_t scalar;
-    bool isOK = false;
-
-    if (input->tryRead(&scalar, sizeof(scalar)))
-    {
-        destination.Boolean = (scalar != 0);
-        isOK = true;
-    }
-
-    return isOK;
-}
-
-// Inherited from VariantType.
-bool BooleanVariantType::write(IStream *output, const VariantData &source) const
-{
-    uint8_t scalar = source.Boolean ? 0xFF : 0x00;
-
-    return output->tryWrite(&scalar, sizeof(scalar));
-}
-
-// Inherited from VariantType.
 void BooleanVariantType::toString(const FormatInfo &format,
                                   const VariantData &value,
                                   std::string &buffer) const
@@ -775,52 +746,6 @@ void CharacterVariantType::move(VariantData &destination, VariantData &&source) 
 }
 
 // Inherited from VariantType.
-bool CharacterVariantType::read(IStream *input, VariantData &destination) const
-{
-    // Read in the character as UTF-8-encoded bytes.
-    Utf::FromUtf8Converter converter;
-    uint8_t currentByte;
-    bool hasError = false;
-    bool hasValue = false;
-
-    while ((hasValue == false) && (hasError == false) &&
-           input->tryRead(&currentByte, 1))
-    {
-        // Read the lead byte.
-        hasValue = converter.tryConvert(currentByte,
-                                        destination.Character,
-                                        hasError);
-    }
-
-    return hasValue;
-}
-
-// Inherited from VariantType.
-bool CharacterVariantType::write(IStream *output, const VariantData &source) const
-{
-    // Write the character encoded as UTF-8.
-    Utf::ToUtf8Converter converter;
-    const size_t BufferSize = 8;
-    size_t length = converter.setCodePoint(source.Character);
-    bool isOK = false;
-
-    if (length < BufferSize)
-    {
-        uint8_t buffer[BufferSize];
-        size_t index;
-
-        for (index = 0; converter.tryGetNextByte(buffer[index]); ++index)
-        {
-            // Nothing to do.
-        }
-
-        isOK = output->tryWrite(buffer, index);
-    }
-
-    return isOK;
-}
-
-// Inherited from VariantType.
 void CharacterVariantType::toString(const FormatInfo &format, const VariantData &value,
                                     std::string &buffer) const
 {
@@ -938,18 +863,6 @@ void PointerVariantType::move(VariantData &destination, VariantData &&source) co
 {
     destination.Pointer = source.Pointer;
     source.Pointer = nullptr;
-}
-
-// Inherited from VariantType.
-bool PointerVariantType::read(IStream *input, VariantData &destination) const
-{
-    return input->tryRead(&destination.Pointer, sizeof(destination.Pointer));
-}
-
-// Inherited from VariantType.
-bool PointerVariantType::write(IStream *output, const VariantData &source) const
-{
-    return output->tryWrite(&source.Pointer, sizeof(source.Pointer));
 }
 
 // Inherited from VariantType.
@@ -1078,62 +991,6 @@ void StringVariantType::move(VariantData &destination, VariantData &&source) con
 {
     destination.Pointer = source.Pointer;
     source.Pointer = nullptr;
-}
-
-// Inherited from VariantType.
-bool StringVariantType::read(IStream *input, VariantData &destination) const
-{
-    size_t length;
-    bool isOK = false;
-
-    if (IStream::tryReadLength(input, length))
-    {
-        std::vector<char> buffer;
-
-        if (length > 0)
-        {
-            buffer.resize(length, '\0');
-
-            if (input->tryRead(buffer.data(), length))
-            {
-                destination.Pointer = new Ag::String(buffer.data(), length);
-                isOK = true;
-            }
-        }
-        else
-        {
-            // The string is empty.
-            isOK = true;
-            destination.Pointer = new Ag::String();
-        }
-    }
-
-    return isOK;
-}
-
-// Inherited from VariantType.
-bool StringVariantType::write(IStream *output, const VariantData &source) const
-{
-    const Ag::String *str = static_cast<const Ag::String *>(source.Pointer);
-
-    size_t length = str->getUtf8Length();
-    bool isOK = false;
-
-    if (IStream::tryWriteLength(output, length))
-    {
-        if (length > 0)
-        {
-            // Write out the text as UTF-8 encoded bytes.
-            isOK = output->tryWrite(str->getUtf8Bytes(), length);
-        }
-        else
-        {
-            // The string was empty.
-            isOK = true;
-        }
-    }
-
-    return isOK;
 }
 
 // Inherited from VariantType.

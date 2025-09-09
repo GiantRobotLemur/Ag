@@ -1,7 +1,8 @@
-//! @file SymbolFileReader.cpp
+//! @file SymbolPackager/SymbolFileReader.cpp
 //! @brief The definition of an object which reads symbols pre-packaged in
 //! a file.
-//! @date 2021-2023
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,6 +12,7 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include "CommandLine.hpp"
+#include "CompressionStream.hpp"
 #include "SymbolDb.hpp"
 #include "Ag/Private/SymbolEncoding.hpp"
 #include "SymbolFileReader.hpp"
@@ -34,7 +36,7 @@ typedef std::pair<uint64_t, size_t> RawSymbol;
 //! @param[out] rawSymbols A collection to receive the raw symbols read.
 //! @retval true The table was successfully read.
 //! @retval false The end of the input stream was unexpectedly encountered.
-bool readSymbolTable(FILE *input, size_t symbolCount,
+bool readSymbolTable(Ag::IStream *input, size_t symbolCount,
                      Ag::PackedFieldHelper &fieldUnpacker, uint64_t initialOffset,
                      std::vector<RawSymbol> &rawSymbols)
 {
@@ -71,7 +73,7 @@ bool readSymbolTable(FILE *input, size_t symbolCount,
 //! @param[out] stringTable A collection to receive the strings read.
 //! @retval true The table was successfully read.
 //! @retval false The end of the input stream was unexpectedly encountered.
-bool readStringTable(FILE *input, size_t stringCount, size_t maxLength,
+bool readStringTable(Ag::IStream *input, size_t stringCount, size_t maxLength,
                      Ag::PackedFieldHelper &stringFields,
                      std::vector<std::string> &stringTable)
 {
@@ -95,7 +97,9 @@ bool readStringTable(FILE *input, size_t stringCount, size_t maxLength,
             buffer.resize(prefixSize + suffixSize, '\0');
 
             // Read the additional characters required to form the string.
-            if (tryRead(input, buffer.data() + prefixSize, suffixSize))
+            size_t bytesRead = input->read(buffer.data() + prefixSize, suffixSize);
+
+            if (bytesRead == suffixSize)
             {
                 stringTable.emplace_back(buffer.data(),
                                          prefixSize + suffixSize);
@@ -105,6 +109,16 @@ bool readStringTable(FILE *input, size_t stringCount, size_t maxLength,
     }
 
     return isOK;
+}
+
+bool isMatchingVersion(const Ag::SymbolFileHeader &header,
+                       uint8_t major, uint8_t minor,
+                       uint8_t revision, uint8_t patch)
+{
+    return (header.Version[0] == major) &&
+           (header.Version[1] == minor) &&
+           (header.Version[2] == revision) &&
+           (header.Version[3] == patch);
 }
 
 } // Anonymous namespace
@@ -125,73 +139,108 @@ SymbolFileReader::SymbolFileReader(const CommandLine &args) :
 //! @param[out] error Receives an error message if the operation failed.
 void SymbolFileReader::readSymbols(SymbolDb &symbols, std::string &error)
 {
-    StdFilePtr input;
+    FileStream input;
     error.clear();
 
-    if (tryOpenFile(_inputFile.c_str(), "rb", input))
+    if (input.tryOpen(_inputFile.c_str(), "rb"))
     {
-        Ag::SymbolHeader fileData;
+        Ag::SymbolFileHeader fileHeader;
+        size_t bytesRead = input.read(&fileHeader, sizeof(fileHeader));
 
-        if (tryRead(input, &fileData, sizeof(fileData)) == false)
+        if (bytesRead != sizeof(fileHeader))
         {
             appendFormat(error, "Failed to read header from symbol file '%s'.",
                          _inputFile.c_str());
+            return;
         }
-        else if (std::memcmp(fileData.Header.Signature,
+        else if (std::memcmp(fileHeader.Signature,
                              SYMBOL_SIGNATURE,
-                             sizeof(fileData.Header.Signature)) != 0)
+                             sizeof(fileHeader.Signature)) != 0)
         {
             appendFormat(error, "The signature of symbol file '%s' did "
                          "not have the expected value.",
                          _inputFile.c_str());
+            return;
         }
-        else if ((fileData.Header.Version[0] != 1) ||
-                 (fileData.Header.Version[1] != 0) ||
-                 (fileData.Header.Version[2] != 0) ||
-                 (fileData.Header.Version[3] != 0))
+
+        if (isMatchingVersion(fileHeader, 1, 0, 0, 0) ||
+            isMatchingVersion(fileHeader, 1, 1, 0, 0))
+        {
+            Ag::SymbolHeaderV1 header;
+
+            if (input.read(&header, sizeof(header)) != sizeof(header))
+            {
+                appendFormat(error, "Failed to read the v1 format header from the "
+                             "file '%s'.", _inputFile.c_str());
+                return;
+            }
+            else if (header.SymbolCount < 1)
+            {
+                // No symbols to read.
+                return;
+            }
+
+            if (fileHeader.Version[1] == 1)
+            {
+                // The symbols use bz2 compression.
+                Bz2DecompressionStream decompressor(&input, 4096);
+
+                readSymbolData(&decompressor, header, symbols, error);
+            }
+            else
+            {
+                // The symbols use conventional compression alone.
+                readSymbolData(&input, header, symbols, error);
+            }
+        }
+        else
         {
             appendFormat(error, "The symbol file '%s' was encoded using "
                          "a format newer than that which the program supports.",
                          _inputFile.c_str());
-        }
-        else if (fileData.SymbolCount > 0)
-        {
-            Ag::PackedFieldHelper symbolFields({ fileData.SymbolOffsetBitCount,
-                                                 fileData.SymbolOrdinalBitCount });
-            Ag::PackedFieldHelper stringFields({ fileData.StringPrefixBitCount,
-                                                 fileData.StringSuffixBitCount });
-
-            std::vector<RawSymbol> symbolTable;
-            std::vector<std::string> stringTable;
-
-            if (readSymbolTable(input.get(), fileData.SymbolCount, symbolFields,
-                                fileData.InitialOffset, symbolTable) == false)
-            {
-                appendFormat(error, "Failed to read the symbol table from the "
-                             "file '%s'.", _inputFile.c_str());
-            }
-            else if (readStringTable(input.get(), fileData.SymbolCount, fileData.MaxStringLength,
-                                     stringFields, stringTable) == false)
-            {
-                appendFormat(error, "Failed to read the string table from the "
-                             "file '%s'.", _inputFile.c_str());
-            }
-            else
-            {
-                // Combine the symbol a string tables.
-                for (const RawSymbol &symbol : symbolTable)
-                {
-                    const std::string &fnName = stringTable.at(symbol.second);
-
-                    symbols.addSymbol(symbol.first, fnName);
-                }
-            }
+            return;
         }
     }
     else
     {
         appendFormat(error, "Failed to open symbol file '%s'.",
                      _inputFile.c_str());
+    }
+}
+
+void SymbolFileReader::readSymbolData(Ag::IStream *input,
+                                      const Ag::SymbolHeaderV1 &header,
+                                      SymbolDb &symbols, std::string &error)
+{
+    Ag::PackedFieldHelper symbolFields({ header.SymbolOffsetBitCount,
+                                            header.SymbolOrdinalBitCount });
+    Ag::PackedFieldHelper stringFields({ header.StringPrefixBitCount,
+                                            header.StringSuffixBitCount });
+
+    std::vector<RawSymbol> symbolTable;
+    std::vector<std::string> stringTable;
+
+    if (readSymbolTable(input, header.SymbolCount, symbolFields,
+                        header.InitialOffset, symbolTable) == false)
+    {
+        appendFormat(error, "Failed to read the symbol table from the "
+                     "file '%s'.", _inputFile.c_str());
+    }
+    else if (readStringTable(input, header.SymbolCount, header.MaxStringLength,
+                                stringFields, stringTable) == false)
+    {
+        appendFormat(error, "Failed to read the string table from the "
+                     "file '%s'.", _inputFile.c_str());
+    }
+    else
+    {
+        // Combine the symbol a string tables.
+        for (const RawSymbol &symbol : symbolTable)
+        {
+            const std::string &fnName = stringTable.at(symbol.second);
+
+            symbols.addSymbol(symbol.first, fnName);
+        }
     }
 }
 

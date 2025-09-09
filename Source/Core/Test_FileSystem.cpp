@@ -1,7 +1,7 @@
 //! @file Test_FileSystem.cpp
 //! @brief The definition of unit tests for file system related classes.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -705,22 +705,32 @@ GTEST_TEST(FsPathBuilder, SetFileExtensionWin32)
     PathBuilder specimen("/Document/Hello", getWin32Schema());
 
     EXPECT_TRUE(specimen.getFileExtension().isEmpty());
+    EXPECT_TRUE(specimen.getLastExtension().isEmpty());
+
+    // Set a single extension.
+    specimen.setFileExtension(".info", true);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "info");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "info");
 
     // Try to add one without specifying a leading period.
-    specimen.setFileExtension("doc");
-    EXPECT_STRINGEQC(specimen.getFileExtension(), "doc");
+    specimen.setFileExtension("doc.bak", false);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "doc.bak");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "bak");
+
+    // Try with one leading period.
+    specimen.setFileExtension(".tex", true);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "doc.tex");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "tex");
+
+    // Try replacing the extension with multiple leading periods.
+    specimen.setFileExtension("..txt", false);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "txt");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "txt");
 
     // Try specifying only a leading period.
     specimen.setFileExtension(".");
     EXPECT_TRUE(specimen.getFileExtension().isEmpty());
-
-    // Try with one leading period.
-    specimen.setFileExtension(".tex");
-    EXPECT_STRINGEQC(specimen.getFileExtension(), "tex");
-
-    // Try replacing the extension with multiple leading periods.
-    specimen.setFileExtension("..txt");
-    EXPECT_STRINGEQC(specimen.getFileExtension(), "txt");
+    EXPECT_TRUE(specimen.getLastExtension().isEmpty());
 }
 
 GTEST_TEST(FsPathBuilder, SetFileExtensionPosix)
@@ -729,22 +739,32 @@ GTEST_TEST(FsPathBuilder, SetFileExtensionPosix)
     PathBuilder specimen("/Document/Hello", getPosixSchema());
 
     EXPECT_TRUE(specimen.getFileExtension().isEmpty());
+    EXPECT_TRUE(specimen.getLastExtension().isEmpty());
+
+    // Set a single extension.
+    specimen.setFileExtension(".info", true);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "info");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "info");
 
     // Try to add one without specifying a leading period.
-    specimen.setFileExtension("doc");
-    EXPECT_STRINGEQC(specimen.getFileExtension(), "doc");
+    specimen.setFileExtension("doc.bak", false);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "doc.bak");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "bak");
+
+    // Try with one leading period.
+    specimen.setFileExtension(".tex", true);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "doc.tex");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "tex");
+
+    // Try replacing the extension with multiple leading periods.
+    specimen.setFileExtension("..txt", false);
+    EXPECT_STRINGEQC(specimen.getFileExtension(), "txt");
+    EXPECT_STRINGEQC(specimen.getLastExtension(), "txt");
 
     // Try specifying only a leading period.
     specimen.setFileExtension(".");
     EXPECT_TRUE(specimen.getFileExtension().isEmpty());
-
-    // Try with one leading period.
-    specimen.setFileExtension(".tex");
-    EXPECT_STRINGEQC(specimen.getFileExtension(), "tex");
-
-    // Try replacing the extension with multiple leading periods.
-    specimen.setFileExtension("..txt");
-    EXPECT_STRINGEQC(specimen.getFileExtension(), "txt");
+    EXPECT_TRUE(specimen.getLastExtension().isEmpty());
 }
 
 GTEST_TEST(FsPathBuilder, MakeCanonicalWin32)
@@ -1412,6 +1432,33 @@ GTEST_TEST(FsPath, GetFileExtensionPosix)
     specimen = "~/Docs/Manual.pdf";
 
     EXPECT_STRINGEQC(specimen.getFileExtension(), "pdf");
+}
+
+GTEST_TEST(FsPath, ChangeFileExtensionWin32)
+{
+    // Start with no extension.
+    Path specimen("/Document/Hello.pdf.bak", getWin32Schema());
+    Path lastReplaced = specimen.changeFileExtension("txt", true);
+
+    EXPECT_STRINGEQC(lastReplaced.toString(), "\\Document\\Hello.pdf.txt");
+
+    Path allReplaced = specimen.changeFileExtension(".info", false);
+
+    EXPECT_STRINGEQC(allReplaced.toString(), "\\Document\\Hello.info");
+}
+
+GTEST_TEST(FsPath, ChangeFileExtensionPosix)
+{
+    // Start with no extension.
+    Path specimen("/Document/Hello.pdf.bak", getPosixSchema());
+
+    Path lastReplaced = specimen.changeFileExtension(".txt", true);
+
+    EXPECT_STRINGEQC(lastReplaced.toString(), "/Document/Hello.pdf.txt");
+
+    Path allReplaced = specimen.changeFileExtension(".info", false);
+
+    EXPECT_STRINGEQC(allReplaced.toString(), "/Document/Hello.info");
 }
 
 GTEST_TEST(FsPath, AppendWin32)

@@ -52,6 +52,14 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
             endif()
         endif()
 
+
+        # Configure the bzip2 compression library needed by SymbolPackager and AgCore
+        # Note: Only the master branch (and none of the tags) seems to have
+        #   CMake integration.
+        FetchContent_Declare(bzip2
+                             GIT_REPOSITORY https://github.com/libarchive/bzip2.git
+                             GIT_TAG master)
+
         FetchContent_Declare(googletest
                              GIT_REPOSITORY https://github.com/google/googletest.git
                              GIT_TAG release-1.12.1)
@@ -79,6 +87,22 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         endforeach()
     endfunction()
 
+    macro(ag_configure_bzip2)
+        message(STATUS "Obtaining bzip2...")
+        option(ENABLE_LIB_ONLY "Bzip2 libs only" on)
+        option(ENABLE_STATIC_LIB "Build bzip2 static lib" on)
+        option(ENABLE_SHARED_LIB "Build bzip2 shared lib" off)
+        FetchContent_MakeAvailable(bzip2)
+
+        if (bzip2_POPULATED)
+            set(BZIP2_INCLUDE_DIRECTORY "${bzip2_SOURCE_DIR}")
+        else()
+            message(FATAL "Failed to obtain bzip2 source code.")
+        endif()
+
+        ag_config_external_projects(bz2_ObjLib bz2_static check)
+    endmacro()
+
     macro(ag_configure_gtest)
         enable_testing()
 
@@ -87,7 +111,7 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         # Set Google Test configuration options here as
         #   FetchContent_Declare(CMAKE_CACHE_ARGS) has no effect.
         option(BUILD_GMOCK "Build GMock" OFF)
-        option(INSTALL_GTEST "Insatll GTest" OFF)
+        option(INSTALL_GTEST "Install GTest" OFF)
 
         if (AG_STATIC_RUNTIME)
             option(gtest_force_shared_crt "Static CRT" OFF)

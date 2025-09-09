@@ -1,7 +1,7 @@
 //! @file FsPath.cpp
 //! @brief The definition of an object representing a file path.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2024
+//! @date 2022-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -25,10 +25,6 @@
 #include "Ag/Core/Utils.hpp"
 #include "Ag/Core/Variant.hpp"
 #include "FsPathSchema.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 namespace Ag {
 namespace Fs {
@@ -230,6 +226,7 @@ PathBuilder::PathBuilder(const Path &filePath) :
             if (flush && (buffer.empty() == false))
             {
                 _pathElements.emplace_back(buffer);
+                buffer.clear();
             }
         }
     }
@@ -492,6 +489,31 @@ String PathBuilder::getFileExtension() const
     {
         const String &fileName = _pathElements.back();
 
+        auto dotPos = fileName.find(U'.');
+
+        if (dotPos != fileName.end())
+        {
+            ++dotPos;
+
+            extension = fileName.substring(dotPos, fileName.end());
+        }
+    }
+
+    return extension;
+}
+
+//! @brief Gets the characters after the first non-leading dot in the last
+//! path element.
+//! @returns The file extension without any leading period or an empty string
+//! if there is no file name or the last element has no extension.
+String PathBuilder::getLastExtension() const
+{
+    String extension;
+
+    if (_pathElements.empty() == false)
+    {
+        const String &fileName = _pathElements.back();
+
         auto dotPos = fileName.reverseFind(U'.');
 
         if (dotPos != fileName.end())
@@ -508,7 +530,9 @@ String PathBuilder::getFileExtension() const
 //! @brief Changes or sets the file extension in the last element of the path.
 //! @param[in] extension The new file extension, possibly empty, possibly with
 //! leading period '.' characters.
-void PathBuilder::setFileExtension(string_cref_t extension)
+//! @param[in] last True to only change the text after the last period, false
+//! to change the text after the first non-leading period.
+void PathBuilder::setFileExtension(string_cref_t extension, bool last /*= false*/)
 {
     if (_pathElements.empty())
     {
@@ -524,8 +548,21 @@ void PathBuilder::setFileExtension(string_cref_t extension)
                            fileName.getUtf8Length(),
                            fileName.getUtf32Length());
 
-        // Look for the first dot after the first character.
-        size_t dotPos = buffer.find(U'.', 1);
+        size_t dotPos = std::u32string::npos;
+
+        if (last)
+        {
+            // Look for the last non-leading dot character.
+            dotPos = buffer.rfind(U'.');
+
+            if (dotPos == 0)
+                dotPos = std::u32string::npos;
+        }
+        else
+        {
+            // Look for the first non-leading dot character.
+            dotPos = buffer.find(U'.', 1);
+        }
 
         if (dotPos != std::u32string::npos)
         {
@@ -554,7 +591,6 @@ void PathBuilder::setFileExtension(string_cref_t extension)
         _pathElements.back() = buffer;
     }
 }
-
 
 //! @brief Overwrites the object with the full path to the module which was
 //! used to create the current process.
@@ -988,7 +1024,6 @@ bool PathBuilder::isElementEqual(string_cref_t lhs, string_cref_t rhs) const
 {
     return _schema->isCaseSensitive() ? (lhs == rhs) :
                                         (lhs.compareIgnoreCase(rhs) == 0);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1095,9 +1130,9 @@ Path::Path(const Path &parent, string_cref_t fileName) :
         _source = buffer;
     }
 
-    auto dotPos = fileName.reverseFind(U'.');
+    auto dotPos = fileName.find(U'.');
 
-    if (dotPos != fileName.end())
+    if ((dotPos != fileName.begin()) && (dotPos != fileName.end()))
     {
         ++dotPos;
 
@@ -1447,6 +1482,19 @@ bool Path::tryParse(string_cref_t filePath, Path &result, String &error,
 {
     return result.innerParse(filePath, error,
                              (schema == nullptr) ? getNativeSchema() : schema);
+}
+
+//! @brief Creates a new path from the current one with a different file extension.
+//! @param[in] newExt The new file extension, optionally with a leading period.
+//! @param[in] last True to only replace the extension after the last period, false
+//! to replace the entire extension after the first non-leading period.
+//! @return A path based on the current one but with a different file extension.
+Path Path::changeFileExtension(string_cref_t newExt, bool last /*= false*/) const
+{
+    PathBuilder builder(*this);
+    builder.setFileExtension(newExt, last);
+
+    return Path(builder);
 }
 
 //! @brief Creates an absolute path resolved using the current working folder.
@@ -1965,9 +2013,9 @@ void Path::assignBuilder(const PathBuilder &builder)
             string_cref_t filename = builder.getFileName();
             _fileNameLength = filename.getUtf8Length();
 
-            auto dotPos = filename.reverseFind(U'.');
+            auto dotPos = filename.find(U'.');
 
-            if (dotPos != filename.end())
+            if ((dotPos != filename.begin()) && (dotPos != filename.end()))
             {
                 ++dotPos;
                 _fileExtLength = filename.getUtf8Length() - dotPos.getOffset();
@@ -2006,7 +2054,7 @@ void Path::refreshFilenameInfo()
             // Create a view of the filename excluding the first character so
             // that we don't count a leading period as defining an extension.
             std::string_view name(_source.getUtf8Bytes() + fileNameOffset + 1);
-            auto dotPos = name.find('.');
+            auto dotPos = name.find('.', 1);
 
             if (dotPos != std::string_view::npos)
             {
@@ -2017,10 +2065,6 @@ void Path::refreshFilenameInfo()
         }
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Global Function Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 }} // namespace Ag::Fs
 ////////////////////////////////////////////////////////////////////////////////

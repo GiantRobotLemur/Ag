@@ -1,7 +1,7 @@
 //! @file Ag/Core/FsPath.hpp
 //! @brief The declaration of an object representing a file path.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2023
+//! @date 2022-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -140,7 +140,8 @@ public:
     String toString(PathUsage usage = PathUsage::Display) const;
     std::wstring toWideString(PathUsage usage = PathUsage::Display) const;
     String getFileExtension() const;
-    void setFileExtension(string_cref_t extension);
+    String getLastExtension() const;
+    void setFileExtension(string_cref_t extension, bool last = false);
 
     // Operations
     void assignProgramFile();
@@ -210,6 +211,7 @@ public:
                          PathSchemaID schema = nullptr);
     static bool tryParse(string_cref_t filePath, Path &result, String &error,
                          PathSchemaID schema = nullptr);
+    Path changeFileExtension(string_cref_t newExt, bool last = false) const;
     Path convertToAbsolute() const;
     Path convertToAbsolute(const Path &basePath) const;
     Path convertToAbsolute(const PathBuilder &basePath) const;

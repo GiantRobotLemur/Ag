@@ -1,7 +1,7 @@
 //! @file Ag/Core/StackTrace.hpp
 //! @brief The declaration of a class used to gather a stack trace.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -53,7 +53,6 @@ struct FullStackTraceEntry
     size_t ModuleId;
     uintptr_t Offset;
 };
-
 
 //! @brief A raw function activation record captured from a call stack.
 //! @details Initially under Linux the ModuleBase will be 0 and the Offset will

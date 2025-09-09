@@ -74,12 +74,17 @@ ag_add_library(AgCore SOURCES   PreCompiledHeader.hpp
                                 cpp.hint
                     POSIX_SOURCES PosixAPI.hpp
                                   PosixAPI.cpp
+                    PRIVATE_LIBS bz2_ObjLib
                     HEADERS     ${AG_INCLUDE_DIR}/Ag/Core.hpp
                                 ${AG_INCLUDE_DIR}/Ag/GTest_Core.hpp
                     FOLDER      Core)
 
 target_precompile_headers(AgCore PRIVATE [["PreCompiledHeader.hpp"]])
-target_include_directories(AgCore PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# It seems simply linking to bz_ObjLib does not bring through the include
+# directories, so we have to do it manually here.
+target_include_directories(AgCore PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+                                          "${BZIP2_INCLUDE_DIRECTORY}")
 target_include_directories(AgCore PUBLIC "${AG_INCLUDE_DIR}")
 
 list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -183,7 +188,6 @@ source_group("Framework" FILES
     ${AG_INCLUDE_DIR}/Ag/Core/App.hpp
 )
 
-
 # Define the unit test harness.
 ag_add_test_app(Core_Tests TEST_LIB AgCore
                            SOURCES  Test_Binary.cpp
@@ -193,6 +197,7 @@ ag_add_test_app(Core_Tests TEST_LIB AgCore
                                     Test_LinearSortedMap.cpp
                                     Test_Utf.cpp
                                     Test_String.cpp
+                                    Test_Bz2Stream.cpp
                                     Test_StackTrace.cpp
                                     Test_Exception.cpp
                                     Test_PackedFieldHelper.cpp
@@ -209,4 +214,5 @@ ag_add_test_app(Core_Tests TEST_LIB AgCore
 
 target_precompile_headers(Core_Tests PRIVATE <gtest/gtest.h>
                                              [["PreCompiledHeader.hpp"]])
-target_include_directories(Core_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(Core_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+                                              "${BZIP2_INCLUDE_DIRECTORY}")

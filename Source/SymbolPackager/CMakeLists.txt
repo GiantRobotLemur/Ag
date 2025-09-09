@@ -7,13 +7,14 @@ else()
     set(TARGET_ARCH "${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif()
 
-
 if ("${TARGET_ARCH}" STREQUAL "${CMAKE_HOST_SYSTEM_PROCESSOR}")
     # Only build the symbol packager if it can be run on the host platform.
     add_executable(SymbolPackager
                    Main.cpp
                    Utils.hpp
                    Utils.cpp
+                   CompressionStream.cpp
+                   CompressionStream.hpp
                    LineTokeniser.cpp
                    LineTokeniser.hpp
                    CommandLine.hpp
@@ -32,7 +33,13 @@ if ("${TARGET_ARCH}" STREQUAL "${CMAKE_HOST_SYSTEM_PROCESSOR}")
                    SymbolFileReader.hpp
                    ${AG_INCLUDE_DIR}/Ag/Private/SymbolEncoding.hpp)
 
-    target_include_directories(SymbolPackager PRIVATE "${AG_INCLUDE_DIR}")
+    target_link_libraries(SymbolPackager PRIVATE bz2_ObjLib)
+
+    # It seems simply linking to bz_ObjLib does not bring through the include
+    # directories, so we have to do it manually here.
+    target_include_directories(SymbolPackager
+                               PRIVATE "${AG_INCLUDE_DIR}"
+                                       "${BZIP2_INCLUDE_DIRECTORY}")
 
     set_target_properties(SymbolPackager PROPERTIES FOLDER Tools)
 endif()
