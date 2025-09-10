@@ -1,0 +1,30 @@
+//! @file ObjectGL/ProgramBuilder.cpp
+//! @brief The definition of a tool to help construct and compile OpenGL
+//! shader programs.
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2022-2025
+//! @copyright This file is part of the Silver (Ag) project which is released
+//! under LGPL 3 license. See LICENSE file at the repository root or go to
+//! https://github.com/GiantRobotLemur/Ag for full license details.
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// Header File Includes
+////////////////////////////////////////////////////////////////////////////////
+#include "Ag/ObjectGL/ProgramBuilder.hpp"
+
+namespace gl {
+
+////////////////////////////////////////////////////////////////////////////////
+// ProgramBuilder Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Constructs an object which can build OpenGL program resources.
+//! @param[in] api A reference to the API resolved for use in the current context.
+ProgramBuilder::ProgramBuilder(const GLAPI &api) :
+    _api(api)
+{
+}
+
+} // namespace gl
+////////////////////////////////////////////////////////////////////////////////
+

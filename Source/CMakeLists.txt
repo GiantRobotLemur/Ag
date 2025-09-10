@@ -17,6 +17,10 @@ if ("${Qt6_FOUND}" AND AG_CONFIG_QT)
     add_subdirectory(QtInterop)
 endif()
 
+if (AG_CONFIG_GL)
+    add_subdirectory(ObjectGL)
+endif()
+
 if (AG_CONFIG_SDL3)
     add_subdirectory(Sdl3Tools)
 endif()

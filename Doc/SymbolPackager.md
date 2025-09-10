@@ -5,7 +5,9 @@ being cross-compiled, can be provided as an external pre-built binary.
 
 The `SymbolPackager` tool creates a .sym file with the same base name as
 the target binary. For a shared object or executable binary, it can be
-created using the CMake function `ag_enable_stacktrace(target)`.
+created using the CMake function `ag_enable_stacktrace(target)`. The
+symbols within the file are compressed so that its size is a fraction of
+the corresponding PDB file or binary symbol section.
 
 If a binary is accompanied by its .sym file, the file will be read at
 runtime to resolve symbols in stack traces. Stack traces are always
