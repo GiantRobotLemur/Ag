@@ -18,14 +18,14 @@ annotated with Doxygen comments, although could benefit from more detailed
 explanation about various topics.
 
 * [Core](Doc/Core.md) - A base runtime library providing components missing
-in C/C++ runtime.
+  in C/C++ runtime.
 * [Symbol Packager](Doc/SymbolPackager.md) - A stand-alone tools to extract
-symbols from binaries and packages them for use at runtime to create readable
-stack traces by the Core library.
+  symbols from binaries and packages them for use at runtime to create readable
+  stack traces by the Core library.
 * QtInterop - A library which integrates Core with Qt6.
 * [Geometry](Doc/Geometry.md) - A 2D geometry library which implements
-primitives and low-complexity algorithms for line intersection, polygon/hole
-tracing and decomposition of polygons into triangle.
+  primitives and low-complexity algorithms for line intersection, polygon/hole
+  tracing and decomposition of polygons into triangle.
 * WriteGlyphGeometry - A Win32 tool to extract the geometry of glyphs from
   a font to use in the unit tests for the Geometry library.
 * [Win32Base](Doc/Win32Base.md) - A library which provides basic tools for
@@ -33,6 +33,8 @@ tracing and decomposition of polygons into triangle.
   such as COM interface wrappers.
 * [Sdl3Tools](Doc/Sdl3Tools.md) - C++ wrappers for the SDL 3 library, focusing
   on its GPU framework.
+* [ObjectGL](Doc/ObjectGL.md) - C++ wrappers for the OpenGL API, including
+  entry point resolution and built-in error checking.
 
 This repository has been created so that it can be a git sub-module within
 another. It provides not only C++ libraries, but also CMake utilities which

@@ -42,6 +42,33 @@ struct LessThanKeyComparer
     }
 };
 
+//! @brief Performs a less-than comparison on the first and then second members
+//! of a standard pair.
+//! @tparam TKey The data type of the first member of the pair - to be compared.
+//! @tparam TValue The data type of the second member of the pair.
+//! @tparam TKeyComp The data type of a binary function which performs the
+//! less-than comparison on the TKey values.
+//! @tparam TValueComp The data type of a binary function which performs the
+//! less-than comparison on the TValue values.
+//! @remarks This functor can be useful when using the standard algorithms
+//! std::sort(), std::lower_bound(), std::upper_bound() and std::equal_range()
+//! on keyed pairs.
+template<typename TKey, typename TValue,
+         typename TKeyComp = std::less<TKey>,
+         typename TValueComp = std::less<TValue>>
+struct LessThanPairComparer
+{
+    bool operator()(const std::pair<TKey, TValue> &lhs,
+                    const std::pair<TKey, TValue> &rhs) const
+    {
+        TKeyComp KeyComparer;
+        TValueComp ValueComparer;
+
+        return KeyComparer(lhs.first, rhs.first) ||
+            (!KeyComparer(rhs.first, lhs.first) && ValueComparer(lhs.second, rhs.second));
+    }
+};
+
 //! @brief Performs an equality comparison using only the first member of a pair.
 //! @tparam TKey The data type of the first member of the pair - to be compared.
 //! @tparam TValue The data type of the second member of the pair.
@@ -85,7 +112,6 @@ struct EqualToPairComparer
                ValueComp(lhs.second, rhs.second);
     }
 };
-
 
 //! @brief Creates an immutable static mapping from constant data.
 //! @tparam TKey The data type of keys used to look up values.

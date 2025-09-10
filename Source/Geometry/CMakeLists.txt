@@ -65,6 +65,10 @@ ag_add_library(Geometry FOLDER      Geometry
 target_precompile_headers(Geometry PRIVATE [["PreCompiledHeader.hpp"]])
 target_include_directories(Geometry PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
+list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
+                     "${AG_INCLUDE_DIR}/Ag/Geometry.hpp"
+                     "${AG_INCLUDE_DIR}/Ag/Geometry")
+
 # Define the unit test harness.
 ag_add_test_app(Geometry_Tests  TEST_LIB    Geometry
                                 SOURCES     Geometry_TestsPCH.hpp

@@ -1,0 +1,58 @@
+//! @file Ag/ObjectGL/DisplayContext.hpp
+//! @brief The declaration of an object representing a context in which OpenGL
+//! resources exist in order to be used by render contexts.
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2022-2025
+//! @copyright This file is part of the Silver (Ag) project which is released
+//! under LGPL 3 license. See LICENSE file at the repository root or go to
+//! https://github.com/GiantRobotLemur/Ag for full license details.
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef __AG_OBJECT_GL_DISPLAY_CONTEXT_HPP__
+#define __AG_OBJECT_GL_DISPLAY_CONTEXT_HPP__
+
+////////////////////////////////////////////////////////////////////////////////
+// Dependant Header Files
+////////////////////////////////////////////////////////////////////////////////
+#include <cstdint>
+
+#include <memory>
+
+#include "RenderContext.hpp"
+#include "Ag/Core/Version.hpp"
+
+namespace gl {
+
+////////////////////////////////////////////////////////////////////////////////
+// Class Declarations
+////////////////////////////////////////////////////////////////////////////////
+class DisplayContextPrivate;
+class ContextOptions;
+
+//! @brief An object representing a context in which OpenGL resources exist in
+//! order to be used by render contexts.
+class DisplayContext
+{
+protected:
+    // Construction/Destruction
+    DisplayContext(const std::shared_ptr<DisplayContextPrivate> &context);
+public:
+    DisplayContext() = default;
+    ~DisplayContext() = default;
+
+    // Accessors
+    bool isBound() const;
+    Ag::Version getMaxSupportedVersion() const;
+
+    // Operations
+    RenderContext createRenderer(uintptr_t drawable,
+                                 const ContextOptions &options);
+private:
+    // Internal Fields
+    std::shared_ptr<DisplayContextPrivate> _context;
+};
+
+} // namespace gl
+
+#endif // Header guard
+////////////////////////////////////////////////////////////////////////////////
