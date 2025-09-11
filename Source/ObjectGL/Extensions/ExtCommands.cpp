@@ -1156,8 +1156,8 @@ void EXTDirectStateAccessAPI::bindMultiTexture(TextureUnit texunit,
 }
 
 // Calls glCheckNamedFramebufferStatusEXT().
-FramebufferStatus EXTDirectStateAccessAPI::checkNamedFramebufferStatus(FramebufferName framebuffer,
-                                                                       FramebufferTarget target) const
+FrameBufferStatus EXTDirectStateAccessAPI::checkNamedFramebufferStatus(FrameBufferName framebuffer,
+                                                                       FrameBufferTarget target) const
 {
     static const char *fnName = "glCheckNamedFramebufferStatusEXT";
 
@@ -1166,7 +1166,7 @@ FramebufferStatus EXTDirectStateAccessAPI::checkNamedFramebufferStatus(Framebuff
                                                        toScalar(target));
     afterCommand(fnName);
 
-    return static_cast<FramebufferStatus>(result);
+    return static_cast<FrameBufferStatus>(result);
 }
 
 // Calls glClearNamedBufferDataEXT().
@@ -1740,7 +1740,7 @@ void EXTDirectStateAccessAPI::flushMappedNamedBufferRange(BufferName buffer,
 }
 
 // Calls glFramebufferDrawBufferEXT().
-void EXTDirectStateAccessAPI::framebufferDrawBuffer(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::framebufferDrawBuffer(FrameBufferName framebuffer,
                                                     DrawBufferMode mode) const
 {
     static const char *fnName = "glFramebufferDrawBufferEXT";
@@ -1751,7 +1751,7 @@ void EXTDirectStateAccessAPI::framebufferDrawBuffer(FramebufferName framebuffer,
 }
 
 // Calls glFramebufferDrawBuffersEXT().
-void EXTDirectStateAccessAPI::framebufferDrawBuffers(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::framebufferDrawBuffers(FrameBufferName framebuffer,
                                                      GLsizei n,
                                                      const DrawBufferMode *bufs) const
 {
@@ -1763,7 +1763,7 @@ void EXTDirectStateAccessAPI::framebufferDrawBuffers(FramebufferName framebuffer
 }
 
 // Calls glFramebufferReadBufferEXT().
-void EXTDirectStateAccessAPI::framebufferReadBuffer(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::framebufferReadBuffer(FrameBufferName framebuffer,
                                                     ReadBufferMode mode) const
 {
     static const char *fnName = "glFramebufferReadBufferEXT";
@@ -1796,7 +1796,7 @@ void EXTDirectStateAccessAPI::generateTextureMipmap(TextureName texture,
 }
 
 // Calls glGetBooleanIndexedvEXT().
-void EXTDirectStateAccessAPI::getBooleanIndexedv(BufferTargetARB target,
+void EXTDirectStateAccessAPI::getBooleanIndexedv(BufferTarget target,
                                                  GLuint index, Boolean *data) const
 {
     static const char *fnName = "glGetBooleanIndexedvEXT";
@@ -1876,7 +1876,7 @@ void EXTDirectStateAccessAPI::getFloatIV(GetPName pname, GLuint index,
 }
 
 // Calls glGetFramebufferParameterivEXT().
-void EXTDirectStateAccessAPI::getFramebufferParameterIV(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::getFramebufferParameterIV(FrameBufferName framebuffer,
                                                         GetFramebufferParameter pname,
                                                         GLint *params) const
 {
@@ -2060,7 +2060,7 @@ void EXTDirectStateAccessAPI::getMultiTexParameterIV(TextureUnit texunit,
 
 // Calls glGetNamedBufferParameterivEXT().
 void EXTDirectStateAccessAPI::getNamedBufferParameterIV(BufferName buffer,
-                                                        BufferPNameARB pname,
+                                                        BufferPName pname,
                                                         GLint *params) const
 {
     static const char *fnName = "glGetNamedBufferParameterivEXT";
@@ -2072,7 +2072,7 @@ void EXTDirectStateAccessAPI::getNamedBufferParameterIV(BufferName buffer,
 
 // Calls glGetNamedBufferPointervEXT().
 void EXTDirectStateAccessAPI::getNamedBufferPointerV(BufferName buffer,
-                                                     BufferPointerNameARB pname,
+                                                     BufferPointerName pname,
                                                      void **params) const
 {
     static const char *fnName = "glGetNamedBufferPointervEXT";
@@ -2095,9 +2095,9 @@ void EXTDirectStateAccessAPI::getNamedBufferSubData(BufferName buffer,
 }
 
 // Calls glGetNamedFramebufferAttachmentParameterivEXT().
-void EXTDirectStateAccessAPI::getNamedFramebufferAttachmentParameterIV(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::getNamedFramebufferAttachmentParameterIV(FrameBufferName framebuffer,
                                                                        FramebufferAttachment attachment,
-                                                                       FramebufferAttachmentParameterName pname,
+                                                                       FrameBufferAttachmentParameterName pname,
                                                                        GLint *params) const
 {
     static const char *fnName = "glGetNamedFramebufferAttachmentParameterivEXT";
@@ -2110,7 +2110,7 @@ void EXTDirectStateAccessAPI::getNamedFramebufferAttachmentParameterIV(Framebuff
 }
 
 // Calls glGetNamedFramebufferParameterivEXT().
-void EXTDirectStateAccessAPI::getNamedFramebufferParameterIV(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::getNamedFramebufferParameterIV(FrameBufferName framebuffer,
                                                              GetFramebufferParameter pname,
                                                              GLint *params) const
 {
@@ -2195,7 +2195,7 @@ void EXTDirectStateAccessAPI::getNamedProgramString(ProgramName program,
 // Calls glGetNamedProgramivEXT().
 void EXTDirectStateAccessAPI::getNamedProgramIV(ProgramName program,
                                                 ProgramTarget target,
-                                                ProgramPropertyARB pname,
+                                                ProgramProperty pname,
                                                 GLint *params) const
 {
     static const char *fnName = "glGetNamedProgramivEXT";
@@ -2207,8 +2207,8 @@ void EXTDirectStateAccessAPI::getNamedProgramIV(ProgramName program,
 }
 
 // Calls glGetNamedRenderbufferParameterivEXT().
-void EXTDirectStateAccessAPI::getNamedRenderbufferParameterIV(RenderbufferName renderbuffer,
-                                                              RenderbufferParameterName pname,
+void EXTDirectStateAccessAPI::getNamedRenderbufferParameterIV(RenderBufferName renderbuffer,
+                                                              RenderBufferParameterName pname,
                                                               GLint *params) const
 {
     static const char *fnName = "glGetNamedRenderbufferParameterivEXT";
@@ -2405,7 +2405,7 @@ Boolean EXTDirectStateAccessAPI::isEnabledIndexed(EnableCap target, GLuint index
 
 // Calls glMapNamedBufferEXT().
 void *EXTDirectStateAccessAPI::mapNamedBuffer(BufferName buffer,
-                                              BufferAccessARB access) const
+                                              BufferAccess access) const
 {
     static const char *fnName = "glMapNamedBufferEXT";
 
@@ -2921,7 +2921,7 @@ void EXTDirectStateAccessAPI::multiTexParameterIV(TextureUnit texunit,
 // Calls glMultiTexRenderbufferEXT().
 void EXTDirectStateAccessAPI::multiTexRenderbuffer(TextureUnit texunit,
                                                    TextureTarget target,
-                                                   RenderbufferName renderbuffer) const
+                                                   RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glMultiTexRenderbufferEXT";
 
@@ -3042,8 +3042,8 @@ void EXTDirectStateAccessAPI::namedCopyBufferSubData(BufferName readBuffer,
 }
 
 // Calls glNamedFramebufferParameteriEXT().
-void EXTDirectStateAccessAPI::namedFramebufferParameterI(FramebufferName framebuffer,
-                                                         FramebufferParameterName pname,
+void EXTDirectStateAccessAPI::namedFramebufferParameterI(FrameBufferName framebuffer,
+                                                         FrameBufferParameterName pname,
                                                          GLint param) const
 {
     static const char *fnName = "glNamedFramebufferParameteriEXT";
@@ -3054,10 +3054,10 @@ void EXTDirectStateAccessAPI::namedFramebufferParameterI(FramebufferName framebu
 }
 
 // Calls glNamedFramebufferRenderbufferEXT().
-void EXTDirectStateAccessAPI::namedFramebufferRenderbuffer(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::namedFramebufferRenderbuffer(FrameBufferName framebuffer,
                                                            FramebufferAttachment attachment,
-                                                           RenderbufferTarget renderbuffertarget,
-                                                           RenderbufferName renderbuffer) const
+                                                           RenderBufferTarget renderbuffertarget,
+                                                           RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glNamedFramebufferRenderbufferEXT";
 
@@ -3069,7 +3069,7 @@ void EXTDirectStateAccessAPI::namedFramebufferRenderbuffer(FramebufferName frame
 }
 
 // Calls glNamedFramebufferTexture1DEXT().
-void EXTDirectStateAccessAPI::namedFramebufferTexture1D(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::namedFramebufferTexture1D(FrameBufferName framebuffer,
                                                         FramebufferAttachment attachment,
                                                         TextureTarget textarget,
                                                         TextureName texture,
@@ -3084,7 +3084,7 @@ void EXTDirectStateAccessAPI::namedFramebufferTexture1D(FramebufferName framebuf
 }
 
 // Calls glNamedFramebufferTexture2DEXT().
-void EXTDirectStateAccessAPI::namedFramebufferTexture2D(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::namedFramebufferTexture2D(FrameBufferName framebuffer,
                                                         FramebufferAttachment attachment,
                                                         TextureTarget textarget,
                                                         TextureName texture,
@@ -3099,7 +3099,7 @@ void EXTDirectStateAccessAPI::namedFramebufferTexture2D(FramebufferName framebuf
 }
 
 // Calls glNamedFramebufferTexture3DEXT().
-void EXTDirectStateAccessAPI::namedFramebufferTexture3D(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::namedFramebufferTexture3D(FrameBufferName framebuffer,
                                                         FramebufferAttachment attachment,
                                                         TextureTarget textarget,
                                                         TextureName texture,
@@ -3116,7 +3116,7 @@ void EXTDirectStateAccessAPI::namedFramebufferTexture3D(FramebufferName framebuf
 }
 
 // Calls glNamedFramebufferTextureEXT().
-void EXTDirectStateAccessAPI::namedFramebufferTexture(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::namedFramebufferTexture(FrameBufferName framebuffer,
                                                       FramebufferAttachment attachment,
                                                       TextureName texture,
                                                       GLint level) const
@@ -3130,7 +3130,7 @@ void EXTDirectStateAccessAPI::namedFramebufferTexture(FramebufferName framebuffe
 }
 
 // Calls glNamedFramebufferTextureFaceEXT().
-void EXTDirectStateAccessAPI::namedFramebufferTextureFace(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::namedFramebufferTextureFace(FrameBufferName framebuffer,
                                                           FramebufferAttachment attachment,
                                                           TextureName texture,
                                                           GLint level,
@@ -3145,7 +3145,7 @@ void EXTDirectStateAccessAPI::namedFramebufferTextureFace(FramebufferName frameb
 }
 
 // Calls glNamedFramebufferTextureLayerEXT().
-void EXTDirectStateAccessAPI::namedFramebufferTextureLayer(FramebufferName framebuffer,
+void EXTDirectStateAccessAPI::namedFramebufferTextureLayer(FrameBufferName framebuffer,
                                                            FramebufferAttachment attachment,
                                                            TextureName texture,
                                                            GLint level,
@@ -3337,7 +3337,7 @@ void EXTDirectStateAccessAPI::namedProgramString(ProgramName program,
 }
 
 // Calls glNamedRenderbufferStorageEXT().
-void EXTDirectStateAccessAPI::namedRenderbufferStorage(RenderbufferName renderbuffer,
+void EXTDirectStateAccessAPI::namedRenderbufferStorage(RenderBufferName renderbuffer,
                                                        InternalFormat internalformat,
                                                        GLsizei width,
                                                        GLsizei height) const
@@ -3351,7 +3351,7 @@ void EXTDirectStateAccessAPI::namedRenderbufferStorage(RenderbufferName renderbu
 }
 
 // Calls glNamedRenderbufferStorageMultisampleCoverageEXT().
-void EXTDirectStateAccessAPI::namedRenderbufferStorageMultisampleCoverage(RenderbufferName renderbuffer,
+void EXTDirectStateAccessAPI::namedRenderbufferStorageMultisampleCoverage(RenderBufferName renderbuffer,
                                                                           GLsizei coverageSamples,
                                                                           GLsizei colorSamples,
                                                                           InternalFormat internalformat,
@@ -3370,7 +3370,7 @@ void EXTDirectStateAccessAPI::namedRenderbufferStorageMultisampleCoverage(Render
 }
 
 // Calls glNamedRenderbufferStorageMultisampleEXT().
-void EXTDirectStateAccessAPI::namedRenderbufferStorageMultisample(RenderbufferName renderbuffer,
+void EXTDirectStateAccessAPI::namedRenderbufferStorageMultisample(RenderBufferName renderbuffer,
                                                                   GLsizei samples,
                                                                   InternalFormat internalformat,
                                                                   GLsizei width,
@@ -4233,7 +4233,7 @@ void EXTDirectStateAccessAPI::textureParameterIV(TextureName texture,
 // Calls glTextureRenderbufferEXT().
 void EXTDirectStateAccessAPI::textureRenderbuffer(TextureName texture,
                                                   TextureTarget target,
-                                                  RenderbufferName renderbuffer) const
+                                                  RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glTextureRenderbufferEXT";
 
@@ -5017,7 +5017,7 @@ void EXTFramebufferMultisampleAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glRenderbufferStorageMultisampleEXT().
-void EXTFramebufferMultisampleAPI::renderbufferStorageMultisample(RenderbufferTarget target,
+void EXTFramebufferMultisampleAPI::renderbufferStorageMultisample(RenderBufferTarget target,
                                                                   GLsizei samples,
                                                                   InternalFormat internalformat,
                                                                   GLsizei width,
@@ -5060,8 +5060,8 @@ void EXTFramebufferObjectAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glBindFramebufferEXT().
-void EXTFramebufferObjectAPI::bindFramebuffer(FramebufferTarget target,
-                                              FramebufferName framebuffer) const
+void EXTFramebufferObjectAPI::bindFramebuffer(FrameBufferTarget target,
+                                              FrameBufferName framebuffer) const
 {
     static const char *fnName = "glBindFramebufferEXT";
 
@@ -5071,8 +5071,8 @@ void EXTFramebufferObjectAPI::bindFramebuffer(FramebufferTarget target,
 }
 
 // Calls glBindRenderbufferEXT().
-void EXTFramebufferObjectAPI::bindRenderbuffer(RenderbufferTarget target,
-                                               RenderbufferName renderbuffer) const
+void EXTFramebufferObjectAPI::bindRenderbuffer(RenderBufferTarget target,
+                                               RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glBindRenderbufferEXT";
 
@@ -5082,7 +5082,7 @@ void EXTFramebufferObjectAPI::bindRenderbuffer(RenderbufferTarget target,
 }
 
 // Calls glCheckFramebufferStatusEXT().
-FramebufferStatus EXTFramebufferObjectAPI::checkFramebufferStatus(FramebufferTarget target) const
+FrameBufferStatus EXTFramebufferObjectAPI::checkFramebufferStatus(FrameBufferTarget target) const
 {
     static const char *fnName = "glCheckFramebufferStatusEXT";
 
@@ -5090,12 +5090,12 @@ FramebufferStatus EXTFramebufferObjectAPI::checkFramebufferStatus(FramebufferTar
     GLenum result = _api.glCheckFramebufferStatus(toScalar(target));
     afterCommand(fnName);
 
-    return static_cast<FramebufferStatus>(result);
+    return static_cast<FrameBufferStatus>(result);
 }
 
 // Calls glDeleteFramebuffersEXT().
 void EXTFramebufferObjectAPI::deleteFramebuffers(GLsizei n,
-                                                 const FramebufferName *framebuffers) const
+                                                 const FrameBufferName *framebuffers) const
 {
     static const char *fnName = "glDeleteFramebuffersEXT";
 
@@ -5106,7 +5106,7 @@ void EXTFramebufferObjectAPI::deleteFramebuffers(GLsizei n,
 
 // Calls glDeleteRenderbuffersEXT().
 void EXTFramebufferObjectAPI::deleteRenderbuffers(GLsizei n,
-                                                  const RenderbufferName *renderbuffers) const
+                                                  const RenderBufferName *renderbuffers) const
 {
     static const char *fnName = "glDeleteRenderbuffersEXT";
 
@@ -5117,10 +5117,10 @@ void EXTFramebufferObjectAPI::deleteRenderbuffers(GLsizei n,
 }
 
 // Calls glFramebufferRenderbufferEXT().
-void EXTFramebufferObjectAPI::framebufferRenderbuffer(FramebufferTarget target,
+void EXTFramebufferObjectAPI::framebufferRenderbuffer(FrameBufferTarget target,
                                                       FramebufferAttachment attachment,
-                                                      RenderbufferTarget renderbuffertarget,
-                                                      RenderbufferName renderbuffer) const
+                                                      RenderBufferTarget renderbuffertarget,
+                                                      RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glFramebufferRenderbufferEXT";
 
@@ -5131,7 +5131,7 @@ void EXTFramebufferObjectAPI::framebufferRenderbuffer(FramebufferTarget target,
 }
 
 // Calls glFramebufferTexture1DEXT().
-void EXTFramebufferObjectAPI::framebufferTexture1D(FramebufferTarget target,
+void EXTFramebufferObjectAPI::framebufferTexture1D(FrameBufferTarget target,
                                                    FramebufferAttachment attachment,
                                                    TextureTarget textarget,
                                                    TextureName texture,
@@ -5146,7 +5146,7 @@ void EXTFramebufferObjectAPI::framebufferTexture1D(FramebufferTarget target,
 }
 
 // Calls glFramebufferTexture2DEXT().
-void EXTFramebufferObjectAPI::framebufferTexture2D(FramebufferTarget target,
+void EXTFramebufferObjectAPI::framebufferTexture2D(FrameBufferTarget target,
                                                    FramebufferAttachment attachment,
                                                    TextureTarget textarget,
                                                    TextureName texture,
@@ -5161,7 +5161,7 @@ void EXTFramebufferObjectAPI::framebufferTexture2D(FramebufferTarget target,
 }
 
 // Calls glFramebufferTexture3DEXT().
-void EXTFramebufferObjectAPI::framebufferTexture3D(FramebufferTarget target,
+void EXTFramebufferObjectAPI::framebufferTexture3D(FrameBufferTarget target,
                                                    FramebufferAttachment attachment,
                                                    TextureTarget textarget,
                                                    TextureName texture,
@@ -5177,7 +5177,7 @@ void EXTFramebufferObjectAPI::framebufferTexture3D(FramebufferTarget target,
 
 // Calls glGenFramebuffersEXT().
 void EXTFramebufferObjectAPI::genFramebuffers(GLsizei n,
-                                              FramebufferName *framebuffers) const
+                                              FrameBufferName *framebuffers) const
 {
     static const char *fnName = "glGenFramebuffersEXT";
 
@@ -5188,7 +5188,7 @@ void EXTFramebufferObjectAPI::genFramebuffers(GLsizei n,
 
 // Calls glGenRenderbuffersEXT().
 void EXTFramebufferObjectAPI::genRenderbuffers(GLsizei n,
-                                               RenderbufferName *renderbuffers) const
+                                               RenderBufferName *renderbuffers) const
 {
     static const char *fnName = "glGenRenderbuffersEXT";
 
@@ -5208,9 +5208,9 @@ void EXTFramebufferObjectAPI::generateMipmap(TextureTarget target) const
 }
 
 // Calls glGetFramebufferAttachmentParameterivEXT().
-void EXTFramebufferObjectAPI::getFramebufferAttachmentParameterIV(FramebufferTarget target,
+void EXTFramebufferObjectAPI::getFramebufferAttachmentParameterIV(FrameBufferTarget target,
                                                                   FramebufferAttachment attachment,
-                                                                  FramebufferAttachmentParameterName pname,
+                                                                  FrameBufferAttachmentParameterName pname,
                                                                   GLint *params) const
 {
     static const char *fnName = "glGetFramebufferAttachmentParameterivEXT";
@@ -5223,8 +5223,8 @@ void EXTFramebufferObjectAPI::getFramebufferAttachmentParameterIV(FramebufferTar
 }
 
 // Calls glGetRenderbufferParameterivEXT().
-void EXTFramebufferObjectAPI::getRenderbufferParameterIV(RenderbufferTarget target,
-                                                         RenderbufferParameterName pname,
+void EXTFramebufferObjectAPI::getRenderbufferParameterIV(RenderBufferTarget target,
+                                                         RenderBufferParameterName pname,
                                                          GLint *params) const
 {
     static const char *fnName = "glGetRenderbufferParameterivEXT";
@@ -5235,7 +5235,7 @@ void EXTFramebufferObjectAPI::getRenderbufferParameterIV(RenderbufferTarget targ
 }
 
 // Calls glIsFramebufferEXT().
-Boolean EXTFramebufferObjectAPI::isFramebuffer(FramebufferName framebuffer) const
+Boolean EXTFramebufferObjectAPI::isFramebuffer(FrameBufferName framebuffer) const
 {
     static const char *fnName = "glIsFramebufferEXT";
 
@@ -5247,7 +5247,7 @@ Boolean EXTFramebufferObjectAPI::isFramebuffer(FramebufferName framebuffer) cons
 }
 
 // Calls glIsRenderbufferEXT().
-Boolean EXTFramebufferObjectAPI::isRenderbuffer(RenderbufferName renderbuffer) const
+Boolean EXTFramebufferObjectAPI::isRenderbuffer(RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glIsRenderbufferEXT";
 
@@ -5259,7 +5259,7 @@ Boolean EXTFramebufferObjectAPI::isRenderbuffer(RenderbufferName renderbuffer) c
 }
 
 // Calls glRenderbufferStorageEXT().
-void EXTFramebufferObjectAPI::renderbufferStorage(RenderbufferTarget target,
+void EXTFramebufferObjectAPI::renderbufferStorage(RenderBufferTarget target,
                                                   InternalFormat internalformat,
                                                   GLsizei width, GLsizei height) const
 {
@@ -6050,7 +6050,7 @@ void EXTMemoryObjectAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glBufferStorageMemEXT().
-void EXTMemoryObjectAPI::bufferStorageMem(BufferTargetARB target,
+void EXTMemoryObjectAPI::bufferStorageMem(BufferTarget target,
                                           GLsizeiptr size, GLuint memory,
                                           GLuint64 offset) const
 {
@@ -7433,7 +7433,7 @@ void EXTShaderImageLoadStoreAPI::bindImageTexture(GLuint index,
                                                   TextureName texture,
                                                   GLint level, Boolean layered,
                                                   GLint layer,
-                                                  BufferAccessARB access,
+                                                  BufferAccess access,
                                                   GLint format) const
 {
     static const char *fnName = "glBindImageTextureEXT";
@@ -7671,7 +7671,7 @@ void EXTTextureArrayAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glFramebufferTextureLayerEXT().
-void EXTTextureArrayAPI::framebufferTextureLayer(FramebufferTarget target,
+void EXTTextureArrayAPI::framebufferTextureLayer(FrameBufferTarget target,
                                                  FramebufferAttachment attachment,
                                                  TextureName texture,
                                                  GLint level, GLint layer) const
@@ -8111,7 +8111,7 @@ void EXTTransformFeedbackAPI::beginTransformFeedback(PrimitiveType primitiveMode
 }
 
 // Calls glBindBufferBaseEXT().
-void EXTTransformFeedbackAPI::bindBufferBase(BufferTargetARB target,
+void EXTTransformFeedbackAPI::bindBufferBase(BufferTarget target,
                                              GLuint index, BufferName buffer) const
 {
     static const char *fnName = "glBindBufferBaseEXT";
@@ -8122,7 +8122,7 @@ void EXTTransformFeedbackAPI::bindBufferBase(BufferTargetARB target,
 }
 
 // Calls glBindBufferOffsetEXT().
-void EXTTransformFeedbackAPI::bindBufferOffset(BufferTargetARB target,
+void EXTTransformFeedbackAPI::bindBufferOffset(BufferTarget target,
                                                GLuint index, BufferName buffer,
                                                GLintptr offset) const
 {
@@ -8134,7 +8134,7 @@ void EXTTransformFeedbackAPI::bindBufferOffset(BufferTargetARB target,
 }
 
 // Calls glBindBufferRangeEXT().
-void EXTTransformFeedbackAPI::bindBufferRange(BufferTargetARB target,
+void EXTTransformFeedbackAPI::bindBufferRange(BufferTarget target,
                                               GLuint index, BufferName buffer,
                                               GLintptr offset, GLsizeiptr size) const
 {

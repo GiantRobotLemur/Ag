@@ -361,7 +361,7 @@ void mapPixelFormatProperties(const DisplayFormat &format,
 
     intProps.push_back(wgl::Global::DrawToWindow);
     intProps.push_back(TRUE);
-    intProps.push_back(wgl::Global::SupportOpengl);
+    intProps.push_back(wgl::Global::SupportOpenGL);
     intProps.push_back(TRUE);
     intProps.push_back(wgl::Global::PixelType);
     intProps.push_back(wgl::Global::TypeRGBA);

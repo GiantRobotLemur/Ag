@@ -91,13 +91,13 @@ public:
     const AMDFramebufferMultisampleAdvanced &getRawAPI() const;
 
     // Operations
-    void namedRenderbufferStorageMultisampleAdvanced(RenderbufferName renderbuffer,
+    void namedRenderbufferStorageMultisampleAdvanced(RenderBufferName renderbuffer,
                                                      GLsizei samples,
                                                      GLsizei storageSamples,
                                                      InternalFormat internalformat,
                                                      GLsizei width,
                                                      GLsizei height) const;
-    void renderbufferStorageMultisampleAdvanced(RenderbufferTarget target,
+    void renderbufferStorageMultisampleAdvanced(RenderBufferTarget target,
                                                 GLsizei samples,
                                                 GLsizei storageSamples,
                                                 InternalFormat internalformat,
@@ -121,18 +121,18 @@ public:
     const AMDFramebufferSamplePositions &getRawAPI() const;
 
     // Operations
-    void framebufferSamplePositionsFV(FramebufferTarget target,
+    void framebufferSamplePositionsFV(FrameBufferTarget target,
                                       GLuint numsamples, GLuint pixelindex,
                                       const GLfloat *values) const;
-    void getFramebufferParameterFV(FramebufferTarget target,
-                                   FramebufferAttachmentParameterName pname,
+    void getFramebufferParameterFV(FrameBufferTarget target,
+                                   FrameBufferAttachmentParameterName pname,
                                    GLuint numsamples, GLuint pixelindex,
                                    GLsizei size, GLfloat *values) const;
-    void getNamedFramebufferParameterFV(FramebufferName framebuffer,
+    void getNamedFramebufferParameterFV(FrameBufferName framebuffer,
                                         GLenum pname, GLuint numsamples,
                                         GLuint pixelindex, GLsizei size,
                                         GLfloat *values) const;
-    void namedFramebufferSamplePositionsFV(FramebufferName framebuffer,
+    void namedFramebufferSamplePositionsFV(FrameBufferName framebuffer,
                                            GLuint numsamples, GLuint pixelindex,
                                            const GLfloat *values) const;
 

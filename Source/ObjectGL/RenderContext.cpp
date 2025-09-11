@@ -93,17 +93,99 @@ Shader RenderContext::createShader(ShaderType type)
     return AssignableShader(resource);
 }
 
+//! @brief Creates a shader program using the current context.
+//! @return An object wrapping the newly created program.
+Program RenderContext::createProgram()
+{
+    const auto &api = verifyAccess("createProgram()");
+
+    ProgramName name = api.createProgram();
+    auto resource = std::make_shared<ProgramResource>(_context->getDisplay(),
+                                                     name);
+
+    return AssignableProgram(resource);
+}
+
+//! @brief Creates a buffer used to hold vertex indices using the
+//! current context.
+//! @return An object wrapping a newly created buffer.
+IndexBuffer RenderContext::createIndexBuffer()
+{
+    const auto &api = verifyAccess("createIndexBuffer()");
+
+    BufferName bufferName;
+
+    // Allocate a name for the buffer.
+    api.createBuffers(1, &bufferName);
+
+    // Wrap it in a resource object.
+    auto resource = std::make_shared<IndexBufferResource>(_context->getDisplay(),
+                                                          bufferName);
+
+    // Wrap the resource in a management object.
+    return AssignableIndexBuffer(resource);
+}
+
+//! @brief Creates a buffer used to hold vertices using the current context.
+//! @return An object wrapping a newly created buffer.
+VertexBuffer RenderContext::createVertexBuffer()
+{
+    const auto &api = verifyAccess("createVertexBuffer()");
+
+    BufferName bufferName;
+
+    // Allocate a name for the buffer.
+    api.createBuffers(1, &bufferName);
+
+    // Wrap it in a resource object.
+    auto resource = std::make_shared<VertexBufferResource>(_context->getDisplay(),
+                                                           bufferName);
+
+    // Wrap the resource in a management object.
+    return AssignableVertexBuffer(resource);
+}
+
+//! @brief Creates a Vertex Array Object in the current OpenGL context.
+VertexArrayObject RenderContext::createVertexArray()
+{
+    const auto &api = verifyAccess("createVertexArray()");
+
+    VertexArrayName vaoName;
+
+    // Allocate a new VAO in the current context.
+    api.genVertexArrays(1, &vaoName);
+
+    // Create an object to track the lifetime of the resource.
+    auto vaoResource = std::make_shared<VAOResource>(_context->getDisplay(),
+                                                     vaoName);
+
+    // Wrap the resource in a management object.
+    return AssignableVAO(vaoResource);
+}
+
+//! @brief Disposes of any OpenGL resources queued for disposal since the
+//! last flush.
+void RenderContext::flushResources()
+{
+    verifyAccess("flushResources()");
+
+    _context->getDisplay()->flushResources();
+}
+
 //! @brief Throws an exception if the object is in an unbound state.
 //! @param[in] fnName The name of the function which the program was attempting
 //! to perform.
+//! @returns A reference to the resolve API if no exception was thrown.
 //! @throws Ag::ObjectNotBoundException If the object is not bound to a valid
 //! RenderContext resource.
-void RenderContext::verifyAccess(const char *fnName) const
+const GLAPI &RenderContext::verifyAccess(const char *fnName) const
 {
     if (!_context)
     {
         throw Ag::ObjectNotBoundException("Render Context", fnName);
     }
+
+    return _context->getAPI();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

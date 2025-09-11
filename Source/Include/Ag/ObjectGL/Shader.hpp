@@ -46,12 +46,13 @@ public:
     bool isCompiled() const;
     Ag::String getSource() const;
     void setSource(const char *source);
+    void setSource(const std::string_view &source);
     void setSource(const char *source, size_t length);
     void setSource(const Ag::String &source);
     Ag::String getCompilationLog() const;
 
     // Operations
-    void compile();
+    bool compile();
 private:
     // Internal Types
 

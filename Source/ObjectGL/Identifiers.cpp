@@ -85,27 +85,27 @@ ShaderName::ShaderName(GLuint id) :
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FramebufferName Member Function Definitions
+// FrameBufferName Member Function Definitions
 ////////////////////////////////////////////////////////////////////////////////
-FramebufferName::FramebufferName() :
+FrameBufferName::FrameBufferName() :
     ID(0)
 {
 }
 
-FramebufferName::FramebufferName(GLuint id) :
+FrameBufferName::FrameBufferName(GLuint id) :
     ID(id)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderbufferName Member Function Definitions
+// RenderBufferName Member Function Definitions
 ////////////////////////////////////////////////////////////////////////////////
-RenderbufferName::RenderbufferName() :
+RenderBufferName::RenderBufferName() :
     ID(0)
 {
 }
 
-RenderbufferName::RenderbufferName(GLuint id) :
+RenderBufferName::RenderBufferName(GLuint id) :
     ID(id)
 {
 }

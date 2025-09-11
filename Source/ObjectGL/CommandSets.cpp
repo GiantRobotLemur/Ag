@@ -32,12 +32,46 @@ const GL &GLAPI::getRawAPI() const
     return _api;
 }
 
+//! @brief Gets the version of the API detected, this maybe an empty value if
+//! the API has not yet been resolved.
+const Ag::Version &GLAPI::getAPIVersion() const
+{
+    return _version;
+}
+
+//! @brief Verifies the API is advanced enough to support a specific function.
+//! @param[in] minRequired The minimum required function for the feature.
+//! @param[in] feature Text describing the feature used to annotate an exception
+//! message should the function fail.
+//! @throws Ag::NotSupportedException If the API version is less than the minimum
+//! required API version.
+void GLAPI::verifyAPIVersion(const Ag::Version &minRequired, const char *feature) const
+{
+    if (_version < minRequired)
+    {
+        std::string message("In OpenGL version ");
+        Ag::appendAgString(message, _version.toString(2, false));
+        message.push_back(' ');
+        message.append(feature);
+
+        throw Ag::NotSupportedException(message.c_str());
+    }
+}
+
 // Resolve core API entry points.
 void GLAPI::resolve(const APIResolver* resolver)
 {
     if (resolver != nullptr)
     {
+        _version.clear();
         _api.resolveEntryPoints(resolver);
+        auto versionText = getString(StringName::Version);
+
+        if ((versionText == nullptr) ||
+            (_version.tryParse(reinterpret_cast<const char *>(versionText)) == false))
+        {
+            throw Ag::OperationException("Failed to obtain OpenGL API version.");
+        }
 
         // Call the base class.
         BaseAPI::resolve(resolver);
@@ -987,7 +1021,7 @@ void GLAPI::beginQuery(QueryTarget target, QueryName id) const
 }
 
 // Calls glBindBuffer().
-void GLAPI::bindBuffer(BufferTargetARB target, BufferName buffer) const
+void GLAPI::bindBuffer(BufferTarget target, BufferName buffer) const
 {
     static const char *fnName = "glBindBuffer";
 
@@ -997,8 +1031,8 @@ void GLAPI::bindBuffer(BufferTargetARB target, BufferName buffer) const
 }
 
 // Calls glBufferData().
-void GLAPI::bufferData(BufferTargetARB target, GLsizeiptr size, const void *data,
-                       BufferUsageARB usage) const
+void GLAPI::bufferData(BufferTarget target, GLsizeiptr size, const void *data,
+                       BufferUsage usage) const
 {
     static const char *fnName = "glBufferData";
 
@@ -1008,7 +1042,7 @@ void GLAPI::bufferData(BufferTargetARB target, GLsizeiptr size, const void *data
 }
 
 // Calls glBufferSubData().
-void GLAPI::bufferSubData(BufferTargetARB target, GLintptr offset,
+void GLAPI::bufferSubData(BufferTarget target, GLintptr offset,
                           GLsizeiptr size, const void *data) const
 {
     static const char *fnName = "glBufferSubData";
@@ -1069,7 +1103,7 @@ void GLAPI::genQueries(GLsizei n, QueryName *ids) const
 }
 
 // Calls glGetBufferParameteriv().
-void GLAPI::getBufferParameterIV(BufferTargetARB target, BufferPNameARB pname,
+void GLAPI::getBufferParameterIV(BufferTarget target, BufferPName pname,
                                  GLint *params) const
 {
     static const char *fnName = "glGetBufferParameteriv";
@@ -1080,7 +1114,7 @@ void GLAPI::getBufferParameterIV(BufferTargetARB target, BufferPNameARB pname,
 }
 
 // Calls glGetBufferPointerv().
-void GLAPI::getBufferPointerV(BufferTargetARB target, BufferPointerNameARB pname,
+void GLAPI::getBufferPointerV(BufferTarget target, BufferPointerName pname,
                               void **params) const
 {
     static const char *fnName = "glGetBufferPointerv";
@@ -1091,7 +1125,7 @@ void GLAPI::getBufferPointerV(BufferTargetARB target, BufferPointerNameARB pname
 }
 
 // Calls glGetBufferSubData().
-void GLAPI::getBufferSubData(BufferTargetARB target, GLintptr offset,
+void GLAPI::getBufferSubData(BufferTarget target, GLintptr offset,
                              GLsizeiptr size, void *data) const
 {
     static const char *fnName = "glGetBufferSubData";
@@ -1159,7 +1193,7 @@ Boolean GLAPI::isQuery(QueryName id) const
 }
 
 // Calls glMapBuffer().
-void *GLAPI::mapBuffer(BufferTargetARB target, BufferAccessARB access) const
+void *GLAPI::mapBuffer(BufferTarget target, BufferAccess access) const
 {
     static const char *fnName = "glMapBuffer";
 
@@ -1171,7 +1205,7 @@ void *GLAPI::mapBuffer(BufferTargetARB target, BufferAccessARB access) const
 }
 
 // Calls glUnmapBuffer().
-Boolean GLAPI::unmapBuffer(BufferTargetARB target) const
+Boolean GLAPI::unmapBuffer(BufferTarget target) const
 {
     static const char *fnName = "glUnmapBuffer";
 
@@ -1370,7 +1404,7 @@ void GLAPI::getProgramInfoLog(ProgramName program, GLsizei bufSize,
 }
 
 // Calls glGetProgramiv().
-void GLAPI::getProgramIV(ProgramName program, ProgramPropertyARB pname,
+void GLAPI::getProgramIV(ProgramName program, ProgramProperty pname,
                          GLint *params) const
 {
     static const char *fnName = "glGetProgramiv";
@@ -2246,7 +2280,7 @@ void GLAPI::beginTransformFeedback(PrimitiveType primitiveMode) const
 }
 
 // Calls glBindBufferBase().
-void GLAPI::bindBufferBase(BufferTargetARB target, GLuint index,
+void GLAPI::bindBufferBase(BufferTarget target, GLuint index,
                            BufferName buffer) const
 {
     static const char *fnName = "glBindBufferBase";
@@ -2257,7 +2291,7 @@ void GLAPI::bindBufferBase(BufferTargetARB target, GLuint index,
 }
 
 // Calls glBindBufferRange().
-void GLAPI::bindBufferRange(BufferTargetARB target, GLuint index,
+void GLAPI::bindBufferRange(BufferTarget target, GLuint index,
                             BufferName buffer, GLintptr offset, GLsizeiptr size) const
 {
     static const char *fnName = "glBindBufferRange";
@@ -2279,8 +2313,8 @@ void GLAPI::bindFragDataLocation(ProgramName program, GLuint color,
 }
 
 // Calls glBindFramebuffer().
-void GLAPI::bindFramebuffer(FramebufferTarget target,
-                            FramebufferName framebuffer) const
+void GLAPI::bindFramebuffer(FrameBufferTarget target,
+                            FrameBufferName framebuffer) const
 {
     static const char *fnName = "glBindFramebuffer";
 
@@ -2290,8 +2324,8 @@ void GLAPI::bindFramebuffer(FramebufferTarget target,
 }
 
 // Calls glBindRenderbuffer().
-void GLAPI::bindRenderbuffer(RenderbufferTarget target,
-                             RenderbufferName renderbuffer) const
+void GLAPI::bindRenderbuffer(RenderBufferTarget target,
+                             RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glBindRenderbuffer";
 
@@ -2325,7 +2359,7 @@ void GLAPI::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
 }
 
 // Calls glCheckFramebufferStatus().
-FramebufferStatus GLAPI::checkFramebufferStatus(FramebufferTarget target) const
+FrameBufferStatus GLAPI::checkFramebufferStatus(FrameBufferTarget target) const
 {
     static const char *fnName = "glCheckFramebufferStatus";
 
@@ -2333,7 +2367,7 @@ FramebufferStatus GLAPI::checkFramebufferStatus(FramebufferTarget target) const
     GLenum result = _api.glCheckFramebufferStatus(toScalar(target));
     afterCommand(fnName);
 
-    return static_cast<FramebufferStatus>(result);
+    return static_cast<FrameBufferStatus>(result);
 }
 
 // Calls glClampColor().
@@ -2401,7 +2435,7 @@ void GLAPI::colorMaskI(GLuint index, Boolean r, Boolean g, Boolean b, Boolean a)
 }
 
 // Calls glDeleteFramebuffers().
-void GLAPI::deleteFramebuffers(GLsizei n, const FramebufferName *framebuffers) const
+void GLAPI::deleteFramebuffers(GLsizei n, const FrameBufferName *framebuffers) const
 {
     static const char *fnName = "glDeleteFramebuffers";
 
@@ -2411,7 +2445,7 @@ void GLAPI::deleteFramebuffers(GLsizei n, const FramebufferName *framebuffers) c
 }
 
 // Calls glDeleteRenderbuffers().
-void GLAPI::deleteRenderbuffers(GLsizei n, const RenderbufferName *renderbuffers) const
+void GLAPI::deleteRenderbuffers(GLsizei n, const RenderBufferName *renderbuffers) const
 {
     static const char *fnName = "glDeleteRenderbuffers";
 
@@ -2472,7 +2506,7 @@ void GLAPI::endTransformFeedback() const
 }
 
 // Calls glFlushMappedBufferRange().
-void GLAPI::flushMappedBufferRange(BufferTargetARB target, GLintptr offset,
+void GLAPI::flushMappedBufferRange(BufferTarget target, GLintptr offset,
                                    GLsizeiptr length) const
 {
     static const char *fnName = "glFlushMappedBufferRange";
@@ -2483,10 +2517,10 @@ void GLAPI::flushMappedBufferRange(BufferTargetARB target, GLintptr offset,
 }
 
 // Calls glFramebufferRenderbuffer().
-void GLAPI::framebufferRenderbuffer(FramebufferTarget target,
+void GLAPI::framebufferRenderbuffer(FrameBufferTarget target,
                                     FramebufferAttachment attachment,
-                                    RenderbufferTarget renderbuffertarget,
-                                    RenderbufferName renderbuffer) const
+                                    RenderBufferTarget renderbuffertarget,
+                                    RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glFramebufferRenderbuffer";
 
@@ -2497,7 +2531,7 @@ void GLAPI::framebufferRenderbuffer(FramebufferTarget target,
 }
 
 // Calls glFramebufferTexture1D().
-void GLAPI::framebufferTexture1D(FramebufferTarget target,
+void GLAPI::framebufferTexture1D(FrameBufferTarget target,
                                  FramebufferAttachment attachment,
                                  TextureTarget textarget, TextureName texture,
                                  GLint level) const
@@ -2511,7 +2545,7 @@ void GLAPI::framebufferTexture1D(FramebufferTarget target,
 }
 
 // Calls glFramebufferTexture2D().
-void GLAPI::framebufferTexture2D(FramebufferTarget target,
+void GLAPI::framebufferTexture2D(FrameBufferTarget target,
                                  FramebufferAttachment attachment,
                                  TextureTarget textarget, TextureName texture,
                                  GLint level) const
@@ -2525,7 +2559,7 @@ void GLAPI::framebufferTexture2D(FramebufferTarget target,
 }
 
 // Calls glFramebufferTexture3D().
-void GLAPI::framebufferTexture3D(FramebufferTarget target,
+void GLAPI::framebufferTexture3D(FrameBufferTarget target,
                                  FramebufferAttachment attachment,
                                  TextureTarget textarget, TextureName texture,
                                  GLint level, GLint zoffset) const
@@ -2539,7 +2573,7 @@ void GLAPI::framebufferTexture3D(FramebufferTarget target,
 }
 
 // Calls glFramebufferTextureLayer().
-void GLAPI::framebufferTextureLayer(FramebufferTarget target,
+void GLAPI::framebufferTextureLayer(FrameBufferTarget target,
                                     FramebufferAttachment attachment,
                                     TextureName texture, GLint level,
                                     GLint layer) const
@@ -2553,7 +2587,7 @@ void GLAPI::framebufferTextureLayer(FramebufferTarget target,
 }
 
 // Calls glGenFramebuffers().
-void GLAPI::genFramebuffers(GLsizei n, FramebufferName *framebuffers) const
+void GLAPI::genFramebuffers(GLsizei n, FrameBufferName *framebuffers) const
 {
     static const char *fnName = "glGenFramebuffers";
 
@@ -2563,7 +2597,7 @@ void GLAPI::genFramebuffers(GLsizei n, FramebufferName *framebuffers) const
 }
 
 // Calls glGenRenderbuffers().
-void GLAPI::genRenderbuffers(GLsizei n, RenderbufferName *renderbuffers) const
+void GLAPI::genRenderbuffers(GLsizei n, RenderBufferName *renderbuffers) const
 {
     static const char *fnName = "glGenRenderbuffers";
 
@@ -2593,7 +2627,7 @@ void GLAPI::generateMipmap(TextureTarget target) const
 }
 
 // Calls glGetBooleani_v().
-void GLAPI::getBooleanIV(BufferTargetARB target, GLuint index, Boolean *data) const
+void GLAPI::getBooleanIV(BufferTarget target, GLuint index, Boolean *data) const
 {
     static const char *fnName = "glGetBooleani_v";
 
@@ -2615,9 +2649,9 @@ GLint GLAPI::getFragDataLocation(ProgramName program, const GLchar *name) const
 }
 
 // Calls glGetFramebufferAttachmentParameteriv().
-void GLAPI::getFramebufferAttachmentParameterIV(FramebufferTarget target,
+void GLAPI::getFramebufferAttachmentParameterIV(FrameBufferTarget target,
                                                 FramebufferAttachment attachment,
-                                                FramebufferAttachmentParameterName pname,
+                                                FrameBufferAttachmentParameterName pname,
                                                 GLint *params) const
 {
     static const char *fnName = "glGetFramebufferAttachmentParameteriv";
@@ -2640,8 +2674,8 @@ void GLAPI::getIntegerIV(GetPName target, GLuint index, GLint *data) const
 }
 
 // Calls glGetRenderbufferParameteriv().
-void GLAPI::getRenderbufferParameterIV(RenderbufferTarget target,
-                                       RenderbufferParameterName pname,
+void GLAPI::getRenderbufferParameterIV(RenderBufferTarget target,
+                                       RenderBufferParameterName pname,
                                        GLint *params) const
 {
     static const char *fnName = "glGetRenderbufferParameteriv";
@@ -2744,7 +2778,7 @@ Boolean GLAPI::isEnabledI(EnableCap target, GLuint index) const
 }
 
 // Calls glIsFramebuffer().
-Boolean GLAPI::isFramebuffer(FramebufferName framebuffer) const
+Boolean GLAPI::isFramebuffer(FrameBufferName framebuffer) const
 {
     static const char *fnName = "glIsFramebuffer";
 
@@ -2756,7 +2790,7 @@ Boolean GLAPI::isFramebuffer(FramebufferName framebuffer) const
 }
 
 // Calls glIsRenderbuffer().
-Boolean GLAPI::isRenderbuffer(RenderbufferName renderbuffer) const
+Boolean GLAPI::isRenderbuffer(RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glIsRenderbuffer";
 
@@ -2780,7 +2814,7 @@ Boolean GLAPI::isVertexArray(VertexArrayName array) const
 }
 
 // Calls glMapBufferRange().
-void *GLAPI::mapBufferRange(BufferTargetARB target, GLintptr offset,
+void *GLAPI::mapBufferRange(BufferTarget target, GLintptr offset,
                             GLsizeiptr length,
                             GLbitfield  /* MapBufferAccessMask */ access) const
 {
@@ -2795,7 +2829,7 @@ void *GLAPI::mapBufferRange(BufferTargetARB target, GLintptr offset,
 }
 
 // Calls glRenderbufferStorage().
-void GLAPI::renderbufferStorage(RenderbufferTarget target,
+void GLAPI::renderbufferStorage(RenderBufferTarget target,
                                 InternalFormat internalformat, GLsizei width,
                                 GLsizei height) const
 {
@@ -2808,7 +2842,7 @@ void GLAPI::renderbufferStorage(RenderbufferTarget target,
 }
 
 // Calls glRenderbufferStorageMultisample().
-void GLAPI::renderbufferStorageMultisample(RenderbufferTarget target,
+void GLAPI::renderbufferStorageMultisample(RenderBufferTarget target,
                                            GLsizei samples,
                                            InternalFormat internalformat,
                                            GLsizei width, GLsizei height) const
@@ -3379,7 +3413,7 @@ SyncName GLAPI::fenceSync(SyncCondition condition, SyncBehaviorFlags flags) cons
 }
 
 // Calls glFramebufferTexture().
-void GLAPI::framebufferTexture(FramebufferTarget target,
+void GLAPI::framebufferTexture(FrameBufferTarget target,
                                FramebufferAttachment attachment,
                                TextureName texture, GLint level) const
 {
@@ -3392,7 +3426,7 @@ void GLAPI::framebufferTexture(FramebufferTarget target,
 }
 
 // Calls glGetBufferParameteri64v().
-void GLAPI::getBufferParameterI64V(BufferTargetARB target, BufferPNameARB pname,
+void GLAPI::getBufferParameterI64V(BufferTarget target, BufferPName pname,
                                    GLint64 *params) const
 {
     static const char *fnName = "glGetBufferParameteri64v";
@@ -5332,7 +5366,7 @@ void GLAPI::viewportIndexedFV(GLuint index, const GLfloat *v) const
 // Calls glBindImageTexture().
 void GLAPI::bindImageTexture(GLuint unit, TextureName texture, GLint level,
                              Boolean layered, GLint layer,
-                             BufferAccessARB access, InternalFormat format) const
+                             BufferAccess access, InternalFormat format) const
 {
     static const char *fnName = "glBindImageTexture";
 
@@ -5517,7 +5551,7 @@ void GLAPI::clearBufferData(BufferStorageTarget target,
 }
 
 // Calls glClearBufferSubData().
-void GLAPI::clearBufferSubData(BufferTargetARB target,
+void GLAPI::clearBufferSubData(BufferTarget target,
                                SizedInternalFormat internalformat,
                                GLintptr offset, GLsizeiptr size,
                                PixelFormat format, PixelType type,
@@ -5606,8 +5640,8 @@ void GLAPI::dispatchComputeIndirect(GLintptr indirect) const
 }
 
 // Calls glFramebufferParameteri().
-void GLAPI::framebufferParameterI(FramebufferTarget target,
-                                  FramebufferParameterName pname, GLint param) const
+void GLAPI::framebufferParameterI(FrameBufferTarget target,
+                                  FrameBufferParameterName pname, GLint param) const
 {
     static const char *fnName = "glFramebufferParameteri";
 
@@ -5636,8 +5670,8 @@ GLuint GLAPI::getDebugMessageLog(GLuint count, GLsizei bufSize,
 }
 
 // Calls glGetFramebufferParameteriv().
-void GLAPI::getFramebufferParameterIV(FramebufferTarget target,
-                                      FramebufferAttachmentParameterName pname,
+void GLAPI::getFramebufferParameterIV(FrameBufferTarget target,
+                                      FrameBufferAttachmentParameterName pname,
                                       GLint *params) const
 {
     static const char *fnName = "glGetFramebufferParameteriv";
@@ -5806,7 +5840,7 @@ void GLAPI::invalidateBufferSubData(BufferName buffer, GLintptr offset,
 }
 
 // Calls glInvalidateFramebuffer().
-void GLAPI::invalidateFramebuffer(FramebufferTarget target,
+void GLAPI::invalidateFramebuffer(FrameBufferTarget target,
                                   GLsizei numAttachments,
                                   const InvalidateFramebufferAttachment *attachments) const
 {
@@ -5819,7 +5853,7 @@ void GLAPI::invalidateFramebuffer(FramebufferTarget target,
 }
 
 // Calls glInvalidateSubFramebuffer().
-void GLAPI::invalidateSubFramebuffer(FramebufferTarget target,
+void GLAPI::invalidateSubFramebuffer(FrameBufferTarget target,
                                      GLsizei numAttachments,
                                      const InvalidateFramebufferAttachment *attachments,
                                      GLint x, GLint y, GLsizei width,
@@ -6050,7 +6084,7 @@ void GLAPI::vertexBindingDivisor(GLuint bindingindex, GLuint divisor) const
 }
 
 // Calls glBindBuffersBase().
-void GLAPI::bindBuffersBase(BufferTargetARB target, GLuint first, GLsizei count,
+void GLAPI::bindBuffersBase(BufferTarget target, GLuint first, GLsizei count,
                             const BufferName *buffers) const
 {
     static const char *fnName = "glBindBuffersBase";
@@ -6062,7 +6096,7 @@ void GLAPI::bindBuffersBase(BufferTargetARB target, GLuint first, GLsizei count,
 }
 
 // Calls glBindBuffersRange().
-void GLAPI::bindBuffersRange(BufferTargetARB target, GLuint first, GLsizei count,
+void GLAPI::bindBuffersRange(BufferTarget target, GLuint first, GLsizei count,
                              const BufferName *buffers, const GLintptr *offsets,
                              const GLsizeiptr *sizes) const
 {
@@ -6173,8 +6207,8 @@ void GLAPI::bindTextureUnit(GLuint unit, TextureName texture) const
 }
 
 // Calls glBlitNamedFramebuffer().
-void GLAPI::blitNamedFramebuffer(FramebufferName readFramebuffer,
-                                 FramebufferName drawFramebuffer, GLint srcX0,
+void GLAPI::blitNamedFramebuffer(FrameBufferName readFramebuffer,
+                                 FrameBufferName drawFramebuffer, GLint srcX0,
                                  GLint srcY0, GLint srcX1, GLint srcY1,
                                  GLint dstX0, GLint dstY0, GLint dstX1,
                                  GLint dstY1,
@@ -6191,8 +6225,8 @@ void GLAPI::blitNamedFramebuffer(FramebufferName readFramebuffer,
 }
 
 // Calls glCheckNamedFramebufferStatus().
-FramebufferStatus GLAPI::checkNamedFramebufferStatus(FramebufferName framebuffer,
-                                                     FramebufferTarget target) const
+FrameBufferStatus GLAPI::checkNamedFramebufferStatus(FrameBufferName framebuffer,
+                                                     FrameBufferTarget target) const
 {
     static const char *fnName = "glCheckNamedFramebufferStatus";
 
@@ -6201,7 +6235,7 @@ FramebufferStatus GLAPI::checkNamedFramebufferStatus(FramebufferName framebuffer
                                                        toScalar(target));
     afterCommand(fnName);
 
-    return static_cast<FramebufferStatus>(result);
+    return static_cast<FrameBufferStatus>(result);
 }
 
 // Calls glClearNamedBufferData().
@@ -6234,7 +6268,7 @@ void GLAPI::clearNamedBufferSubData(BufferName buffer,
 }
 
 // Calls glClearNamedFramebufferfi().
-void GLAPI::clearNamedFramebufferFI(FramebufferName framebuffer,
+void GLAPI::clearNamedFramebufferFI(FrameBufferName framebuffer,
                                     BufferEnum buffer, GLint drawbuffer,
                                     GLfloat depth, GLint stencil) const
 {
@@ -6247,7 +6281,7 @@ void GLAPI::clearNamedFramebufferFI(FramebufferName framebuffer,
 }
 
 // Calls glClearNamedFramebufferfv().
-void GLAPI::clearNamedFramebufferFV(FramebufferName framebuffer,
+void GLAPI::clearNamedFramebufferFV(FrameBufferName framebuffer,
                                     BufferEnum buffer, GLint drawbuffer,
                                     const GLfloat *value) const
 {
@@ -6260,7 +6294,7 @@ void GLAPI::clearNamedFramebufferFV(FramebufferName framebuffer,
 }
 
 // Calls glClearNamedFramebufferiv().
-void GLAPI::clearNamedFramebufferIV(FramebufferName framebuffer,
+void GLAPI::clearNamedFramebufferIV(FrameBufferName framebuffer,
                                     BufferEnum buffer, GLint drawbuffer,
                                     const GLint *value) const
 {
@@ -6273,7 +6307,7 @@ void GLAPI::clearNamedFramebufferIV(FramebufferName framebuffer,
 }
 
 // Calls glClearNamedFramebufferuiv().
-void GLAPI::clearNamedFramebufferUIV(FramebufferName framebuffer,
+void GLAPI::clearNamedFramebufferUIV(FrameBufferName framebuffer,
                                      BufferEnum buffer, GLint drawbuffer,
                                      const GLuint *value) const
 {
@@ -6404,7 +6438,7 @@ void GLAPI::createBuffers(GLsizei n, BufferName *buffers) const
 }
 
 // Calls glCreateFramebuffers().
-void GLAPI::createFramebuffers(GLsizei n, FramebufferName *framebuffers) const
+void GLAPI::createFramebuffers(GLsizei n, FrameBufferName *framebuffers) const
 {
     static const char *fnName = "glCreateFramebuffers";
 
@@ -6434,7 +6468,7 @@ void GLAPI::createQueries(QueryTarget target, GLsizei n, QueryName *ids) const
 }
 
 // Calls glCreateRenderbuffers().
-void GLAPI::createRenderbuffers(GLsizei n, RenderbufferName *renderbuffers) const
+void GLAPI::createRenderbuffers(GLsizei n, RenderBufferName *renderbuffers) const
 {
     static const char *fnName = "glCreateRenderbuffers";
 
@@ -6566,7 +6600,7 @@ GraphicsResetStatus GLAPI::getGraphicsResetStatus() const
 }
 
 // Calls glGetNamedBufferParameteri64v().
-void GLAPI::getNamedBufferParameterI64V(BufferName buffer, BufferPNameARB pname,
+void GLAPI::getNamedBufferParameterI64V(BufferName buffer, BufferPName pname,
                                         GLint64 *params) const
 {
     static const char *fnName = "glGetNamedBufferParameteri64v";
@@ -6577,7 +6611,7 @@ void GLAPI::getNamedBufferParameterI64V(BufferName buffer, BufferPNameARB pname,
 }
 
 // Calls glGetNamedBufferParameteriv().
-void GLAPI::getNamedBufferParameterIV(BufferName buffer, BufferPNameARB pname,
+void GLAPI::getNamedBufferParameterIV(BufferName buffer, BufferPName pname,
                                       GLint *params) const
 {
     static const char *fnName = "glGetNamedBufferParameteriv";
@@ -6588,7 +6622,7 @@ void GLAPI::getNamedBufferParameterIV(BufferName buffer, BufferPNameARB pname,
 }
 
 // Calls glGetNamedBufferPointerv().
-void GLAPI::getNamedBufferPointerV(BufferName buffer, BufferPointerNameARB pname,
+void GLAPI::getNamedBufferPointerV(BufferName buffer, BufferPointerName pname,
                                    void **params) const
 {
     static const char *fnName = "glGetNamedBufferPointerv";
@@ -6610,9 +6644,9 @@ void GLAPI::getNamedBufferSubData(BufferName buffer, GLintptr offset,
 }
 
 // Calls glGetNamedFramebufferAttachmentParameteriv().
-void GLAPI::getNamedFramebufferAttachmentParameterIV(FramebufferName framebuffer,
+void GLAPI::getNamedFramebufferAttachmentParameterIV(FrameBufferName framebuffer,
                                                      FramebufferAttachment attachment,
-                                                     FramebufferAttachmentParameterName pname,
+                                                     FrameBufferAttachmentParameterName pname,
                                                      GLint *params) const
 {
     static const char *fnName = "glGetNamedFramebufferAttachmentParameteriv";
@@ -6625,7 +6659,7 @@ void GLAPI::getNamedFramebufferAttachmentParameterIV(FramebufferName framebuffer
 }
 
 // Calls glGetNamedFramebufferParameteriv().
-void GLAPI::getNamedFramebufferParameterIV(FramebufferName framebuffer,
+void GLAPI::getNamedFramebufferParameterIV(FrameBufferName framebuffer,
                                            GetFramebufferParameter pname,
                                            GLint *param) const
 {
@@ -6637,8 +6671,8 @@ void GLAPI::getNamedFramebufferParameterIV(FramebufferName framebuffer,
 }
 
 // Calls glGetNamedRenderbufferParameteriv().
-void GLAPI::getNamedRenderbufferParameterIV(RenderbufferName renderbuffer,
-                                            RenderbufferParameterName pname,
+void GLAPI::getNamedRenderbufferParameterIV(RenderBufferName renderbuffer,
+                                            RenderBufferParameterName pname,
                                             GLint *params) const
 {
     static const char *fnName = "glGetNamedRenderbufferParameteriv";
@@ -6927,7 +6961,7 @@ void GLAPI::getnUniformUIV(ProgramName program, GLint location, GLsizei bufSize,
 }
 
 // Calls glInvalidateNamedFramebufferData().
-void GLAPI::invalidateNamedFramebufferData(FramebufferName framebuffer,
+void GLAPI::invalidateNamedFramebufferData(FrameBufferName framebuffer,
                                            GLsizei numAttachments,
                                            const FramebufferAttachment *attachments) const
 {
@@ -6940,7 +6974,7 @@ void GLAPI::invalidateNamedFramebufferData(FramebufferName framebuffer,
 }
 
 // Calls glInvalidateNamedFramebufferSubData().
-void GLAPI::invalidateNamedFramebufferSubData(FramebufferName framebuffer,
+void GLAPI::invalidateNamedFramebufferSubData(FrameBufferName framebuffer,
                                               GLsizei numAttachments,
                                               const FramebufferAttachment *attachments,
                                               GLint x, GLint y, GLsizei width,
@@ -6956,7 +6990,7 @@ void GLAPI::invalidateNamedFramebufferSubData(FramebufferName framebuffer,
 }
 
 // Calls glMapNamedBuffer().
-void *GLAPI::mapNamedBuffer(BufferName buffer, BufferAccessARB access) const
+void *GLAPI::mapNamedBuffer(BufferName buffer, BufferAccess access) const
 {
     static const char *fnName = "glMapNamedBuffer";
 
@@ -7026,7 +7060,7 @@ void GLAPI::namedBufferSubData(BufferName buffer, GLintptr offset,
 }
 
 // Calls glNamedFramebufferDrawBuffer().
-void GLAPI::namedFramebufferDrawBuffer(FramebufferName framebuffer,
+void GLAPI::namedFramebufferDrawBuffer(FrameBufferName framebuffer,
                                        ColorBuffer buf) const
 {
     static const char *fnName = "glNamedFramebufferDrawBuffer";
@@ -7037,7 +7071,7 @@ void GLAPI::namedFramebufferDrawBuffer(FramebufferName framebuffer,
 }
 
 // Calls glNamedFramebufferDrawBuffers().
-void GLAPI::namedFramebufferDrawBuffers(FramebufferName framebuffer, GLsizei n,
+void GLAPI::namedFramebufferDrawBuffers(FrameBufferName framebuffer, GLsizei n,
                                         const ColorBuffer *bufs) const
 {
     static const char *fnName = "glNamedFramebufferDrawBuffers";
@@ -7048,8 +7082,8 @@ void GLAPI::namedFramebufferDrawBuffers(FramebufferName framebuffer, GLsizei n,
 }
 
 // Calls glNamedFramebufferParameteri().
-void GLAPI::namedFramebufferParameterI(FramebufferName framebuffer,
-                                       FramebufferParameterName pname,
+void GLAPI::namedFramebufferParameterI(FrameBufferName framebuffer,
+                                       FrameBufferParameterName pname,
                                        GLint param) const
 {
     static const char *fnName = "glNamedFramebufferParameteri";
@@ -7060,7 +7094,7 @@ void GLAPI::namedFramebufferParameterI(FramebufferName framebuffer,
 }
 
 // Calls glNamedFramebufferReadBuffer().
-void GLAPI::namedFramebufferReadBuffer(FramebufferName framebuffer,
+void GLAPI::namedFramebufferReadBuffer(FrameBufferName framebuffer,
                                        ColorBuffer src) const
 {
     static const char *fnName = "glNamedFramebufferReadBuffer";
@@ -7071,10 +7105,10 @@ void GLAPI::namedFramebufferReadBuffer(FramebufferName framebuffer,
 }
 
 // Calls glNamedFramebufferRenderbuffer().
-void GLAPI::namedFramebufferRenderbuffer(FramebufferName framebuffer,
+void GLAPI::namedFramebufferRenderbuffer(FrameBufferName framebuffer,
                                          FramebufferAttachment attachment,
-                                         RenderbufferTarget renderbuffertarget,
-                                         RenderbufferName renderbuffer) const
+                                         RenderBufferTarget renderbuffertarget,
+                                         RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glNamedFramebufferRenderbuffer";
 
@@ -7086,7 +7120,7 @@ void GLAPI::namedFramebufferRenderbuffer(FramebufferName framebuffer,
 }
 
 // Calls glNamedFramebufferTexture().
-void GLAPI::namedFramebufferTexture(FramebufferName framebuffer,
+void GLAPI::namedFramebufferTexture(FrameBufferName framebuffer,
                                     FramebufferAttachment attachment,
                                     TextureName texture, GLint level) const
 {
@@ -7099,7 +7133,7 @@ void GLAPI::namedFramebufferTexture(FramebufferName framebuffer,
 }
 
 // Calls glNamedFramebufferTextureLayer().
-void GLAPI::namedFramebufferTextureLayer(FramebufferName framebuffer,
+void GLAPI::namedFramebufferTextureLayer(FrameBufferName framebuffer,
                                          FramebufferAttachment attachment,
                                          TextureName texture, GLint level,
                                          GLint layer) const
@@ -7113,7 +7147,7 @@ void GLAPI::namedFramebufferTextureLayer(FramebufferName framebuffer,
 }
 
 // Calls glNamedRenderbufferStorage().
-void GLAPI::namedRenderbufferStorage(RenderbufferName renderbuffer,
+void GLAPI::namedRenderbufferStorage(RenderBufferName renderbuffer,
                                      InternalFormat internalformat,
                                      GLsizei width, GLsizei height) const
 {
@@ -7126,7 +7160,7 @@ void GLAPI::namedRenderbufferStorage(RenderbufferName renderbuffer,
 }
 
 // Calls glNamedRenderbufferStorageMultisample().
-void GLAPI::namedRenderbufferStorageMultisample(RenderbufferName renderbuffer,
+void GLAPI::namedRenderbufferStorageMultisample(RenderBufferName renderbuffer,
                                                 GLsizei samples,
                                                 InternalFormat internalformat,
                                                 GLsizei width, GLsizei height) const

@@ -94,7 +94,7 @@ public:
 
     // Operations
     void bufferParameterI(GLenum target, GLenum pname, GLint param) const;
-    void flushMappedBufferRange(BufferTargetARB target, GLintptr offset,
+    void flushMappedBufferRange(BufferTarget target, GLintptr offset,
                                 GLsizeiptr size) const;
 
     // Overrides

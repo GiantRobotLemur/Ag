@@ -22,6 +22,10 @@
 #include "Ag/ObjectGL/Buffer.hpp"
 #include "Ag/ObjectGL/Program.hpp"
 #include "Ag/ObjectGL/Shader.hpp"
+#include "Ag/ObjectGL/IndexBuffer.hpp"
+#include "Ag/ObjectGL/VertexSchema.hpp"
+#include "Ag/ObjectGL/VertexBuffer.hpp"
+#include "Ag/ObjectGL/VertexArrayObject.hpp"
 #include "DisplayContextPrivate.hpp"
 
 namespace gl {
@@ -39,7 +43,7 @@ public:
     //! @brief Constructs a shareable object to represent a named resource.
     //! @param[in] display The display which owns the resource.
     //! @param[in] name The identifier of the resource to wrap.
-    BaseResource(DisplayContextPrivateSPtr display, const TName &name) :
+    BaseResource(const DisplayContextPrivateSPtr &display, const TName &name) :
         _display(display),
         _name(name)
     {
@@ -77,86 +81,144 @@ private:
 };
 
 //! @brief A shareable object wrapping an OpenGL shader resource.
-class ShaderResource : public BaseResource<ShaderName>
+class ShaderResource : public BaseResource<gl::ShaderName>
 {
 public:
     // Construction/Destruction
-    //! @brief Constructs a shareable object to represent a shader component.
-    //! @param[in] display A reference to the display the resource belongs to.
-    //! @param[in] name The identifier of the resource.
-    ShaderResource::ShaderResource(DisplayContextPrivateSPtr display,
-                                   const ShaderName &name) :
-        BaseResource(display, name)
-    {
-    }
-
+    ShaderResource(const DisplayContextPrivateSPtr &display,
+                   const gl::ShaderName &name);
     ~ShaderResource() = default;
 };
 
-//! @brief A class derived from Shader which can be initialised with a resource.
+//! @brief A class derived from Shader which can be initialised
+//! with a resource.
 class AssignableShader : public Shader
 {
 public:
-    AssignableShader(const std::shared_ptr<ShaderResource> &resource) :
-        Shader(resource)
-    {
-    }
+    AssignableShader(const std::shared_ptr<ShaderResource> &resource);
+    ~AssignableShader() = default;
 };
 
 //! @brief A shareable object wrapping an OpenGL Program resource.
-class ProgramResource : public BaseResource<ProgramName>
+class ProgramResource : public BaseResource<gl::ProgramName>
 {
 public:
     // Construction/Destruction
-    //! @brief Constructs a shareable object to represent a Program component.
-    //! @param[in] display A reference to the display the resource belongs to.
-    //! @param[in] name The identifier of the resource.
-    ProgramResource::ProgramResource(DisplayContextPrivateSPtr display,
-                                     const ProgramName &name) :
-        BaseResource(display, name)
-    {
-    }
-
+    ProgramResource(const DisplayContextPrivateSPtr &display,
+                    const gl::ProgramName &name);
     ~ProgramResource() = default;
 };
 
-//! @brief A class derived from Program which can be initialised with a resource.
+//! @brief A class derived from Program which can be initialised
+//! with a resource.
 class AssignableProgram : public Program
 {
 public:
-    AssignableProgram(const std::shared_ptr<ProgramResource> &resource) :
-        Program(resource)
-    {
-    }
+    AssignableProgram(const std::shared_ptr<ProgramResource> &resource);
+    ~AssignableProgram() = default;
 };
 
 //! @brief A shareable object wrapping an OpenGL Buffer resource.
-class BufferResource : public BaseResource<BufferName>
+class BufferResource : public BaseResource<gl::BufferName>
 {
 public:
     // Construction/Destruction
-    //! @brief Constructs a shareable object to represent a Program component.
-    //! @param[in] display A reference to the display the resource belongs to.
-    //! @param[in] name The identifier of the resource.
-    BufferResource::BufferResource(DisplayContextPrivateSPtr display,
-                                   const BufferName &name) :
-        BaseResource(display, name)
-    {
-    }
-
+    BufferResource(const DisplayContextPrivateSPtr &display,
+                   const gl::BufferName &name);
     ~BufferResource() = default;
 };
 
-//! @brief A class derived from Buffer which can be initialised with a resource.
+//! @brief A class derived from Buffer which can be initialised
+//! with a resource.
 class AssignableBuffer : public Buffer
 {
 public:
-    AssignableBuffer(const std::shared_ptr<BufferResource> &resource) :
-        Buffer(resource)
-    {
-    }
+    AssignableBuffer(const std::shared_ptr<BufferResource> &resource);
+    ~AssignableBuffer() = default;
 };
 
+//! @brief A buffer resource specifically intended to hold index data.
+class IndexBufferResource : public BufferResource
+{
+public:
+    IndexBufferResource(const DisplayContextPrivateSPtr &display,
+                        const gl::BufferName &name);
+    ~IndexBufferResource() = default;
+
+    // Accessors
+    gl::DrawElementsType getDataType() const;
+    void setDataType(gl::DrawElementsType dataType);
+    uint32_t getRestartIndex() const;
+    void setRestartIndex(uint32_t index);
+    bool usesPrimitiveRestart() const;
+    void setUsePrimitiveRestart(bool isEnabled);
+
+private:
+    // Internal Fields
+    uint32_t _restartIndex;
+    gl::DrawElementsType _dataType;
+    bool _usesPrimitiveRestart;
+};
+
+//! @brief A class derived from IndexBuffer which can be initialised
+//! with a resource.
+class AssignableIndexBuffer : public IndexBuffer
+{
+public:
+    AssignableIndexBuffer(const std::shared_ptr<IndexBufferResource> &buffer);
+    ~AssignableIndexBuffer() = default;
+};
+
+//! @brief A buffer resource specifically intended to hold index data.
+class VertexBufferResource : public BufferResource
+{
+public:
+    // Construction/Destruction
+    VertexBufferResource(const DisplayContextPrivateSPtr &display,
+                         const gl::BufferName &name);
+    ~VertexBufferResource() = default;
+
+    // Accessors
+    const VertexSchema &getSchema() const;
+    void setSchema(const VertexSchema &schema);
+    void setSchema(VertexSchema &&schema);
+
+private:
+    // Internal Fields
+    VertexSchema _schema;
+};
+
+//! @brief A class derived from VertexBuffer which can be initialised
+//! with a resource.
+class AssignableVertexBuffer : public VertexBuffer
+{
+public:
+    AssignableVertexBuffer(const std::shared_ptr<VertexBufferResource> &buffer);
+    ~AssignableVertexBuffer() = default;
+};
+
+//! @brief A class which manages a Vertex Array Object resource.
+class VAOResource : public BaseResource<gl::VertexArrayName>
+{
+public:
+    // Construction/Destruction
+    VAOResource(const DisplayContextPrivateSPtr &display,
+                const gl::VertexArrayName &name);
+    ~VAOResource() = default;
+};
+
+//! @brief An object derived from VertexArrayObject which can be bound to
+//! a VAO resource.
+class AssignableVAO : public VertexArrayObject
+{
+public:
+    AssignableVAO(const std::shared_ptr<VAOResource> &vao) :
+        VertexArrayObject(vao)
+    {
+    }
+
+    ~AssignableVAO() = default;
+};
 } // namespace gl
 
 #endif // Header guard

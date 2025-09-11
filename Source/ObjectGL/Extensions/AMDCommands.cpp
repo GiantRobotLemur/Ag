@@ -204,7 +204,7 @@ void AMDFramebufferMultisampleAdvancedAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glNamedRenderbufferStorageMultisampleAdvancedAMD().
-void AMDFramebufferMultisampleAdvancedAPI::namedRenderbufferStorageMultisampleAdvanced(RenderbufferName renderbuffer,
+void AMDFramebufferMultisampleAdvancedAPI::namedRenderbufferStorageMultisampleAdvanced(RenderBufferName renderbuffer,
                                                                                        GLsizei samples,
                                                                                        GLsizei storageSamples,
                                                                                        InternalFormat internalformat,
@@ -222,7 +222,7 @@ void AMDFramebufferMultisampleAdvancedAPI::namedRenderbufferStorageMultisampleAd
 }
 
 // Calls glRenderbufferStorageMultisampleAdvancedAMD().
-void AMDFramebufferMultisampleAdvancedAPI::renderbufferStorageMultisampleAdvanced(RenderbufferTarget target,
+void AMDFramebufferMultisampleAdvancedAPI::renderbufferStorageMultisampleAdvanced(RenderBufferTarget target,
                                                                                   GLsizei samples,
                                                                                   GLsizei storageSamples,
                                                                                   InternalFormat internalformat,
@@ -267,7 +267,7 @@ void AMDFramebufferSamplePositionsAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glFramebufferSamplePositionsfvAMD().
-void AMDFramebufferSamplePositionsAPI::framebufferSamplePositionsFV(FramebufferTarget target,
+void AMDFramebufferSamplePositionsAPI::framebufferSamplePositionsFV(FrameBufferTarget target,
                                                                     GLuint numsamples,
                                                                     GLuint pixelindex,
                                                                     const GLfloat *values) const
@@ -281,8 +281,8 @@ void AMDFramebufferSamplePositionsAPI::framebufferSamplePositionsFV(FramebufferT
 }
 
 // Calls glGetFramebufferParameterfvAMD().
-void AMDFramebufferSamplePositionsAPI::getFramebufferParameterFV(FramebufferTarget target,
-                                                                 FramebufferAttachmentParameterName pname,
+void AMDFramebufferSamplePositionsAPI::getFramebufferParameterFV(FrameBufferTarget target,
+                                                                 FrameBufferAttachmentParameterName pname,
                                                                  GLuint numsamples,
                                                                  GLuint pixelindex,
                                                                  GLsizei size,
@@ -297,7 +297,7 @@ void AMDFramebufferSamplePositionsAPI::getFramebufferParameterFV(FramebufferTarg
 }
 
 // Calls glGetNamedFramebufferParameterfvAMD().
-void AMDFramebufferSamplePositionsAPI::getNamedFramebufferParameterFV(FramebufferName framebuffer,
+void AMDFramebufferSamplePositionsAPI::getNamedFramebufferParameterFV(FrameBufferName framebuffer,
                                                                       GLenum pname,
                                                                       GLuint numsamples,
                                                                       GLuint pixelindex,
@@ -313,7 +313,7 @@ void AMDFramebufferSamplePositionsAPI::getNamedFramebufferParameterFV(Framebuffe
 }
 
 // Calls glNamedFramebufferSamplePositionsfvAMD().
-void AMDFramebufferSamplePositionsAPI::namedFramebufferSamplePositionsFV(FramebufferName framebuffer,
+void AMDFramebufferSamplePositionsAPI::namedFramebufferSamplePositionsFV(FrameBufferName framebuffer,
                                                                          GLuint numsamples,
                                                                          GLuint pixelindex,
                                                                          const GLfloat *values) const

@@ -47,13 +47,20 @@ ag_add_library(ObjectGL FOLDER      Graphics
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/Buffer.hpp
                                     BufferSchema.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/BufferSchema.hpp
+                                    VertexSchema.cpp
+                                    ${AG_INCLUDE_DIR}/Ag/ObjectGL/VertexSchema.hpp
+                                    VertexBuffer.cpp
+                                    ${AG_INCLUDE_DIR}/Ag/ObjectGL/VertexBuffer.hpp
+                                    IndexBuffer.cpp
+                                    ${AG_INCLUDE_DIR}/Ag/ObjectGL/IndexBuffer.hpp
+                                    VertexArrayObject.cpp
+                                    ${AG_INCLUDE_DIR}/Ag/ObjectGL/VertexArrayObject.hpp
                         WIN_SOURCES ${AG_INCLUDE_DIR}/Ag/ObjectGL/WGL_Types.hpp
                                     WGL_API.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/WGL_API.hpp
                                     WGL_CommandSets.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/WGL_CommandSets.hpp
-                        #POSIX_SOURCES
-                                    ${AG_INCLUDE_DIR}/Ag/ObjectGL/GLX_Types.hpp
+                        POSIX_SOURCES ${AG_INCLUDE_DIR}/Ag/ObjectGL/GLX_Types.hpp
                                     GLX_API.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/GLX_API.hpp
                                     GLX_CommandSets.cpp
@@ -177,4 +184,12 @@ source_group("Resources" FILES
     ${AG_INCLUDE_DIR}/Ag/ObjectGL/Buffer.hpp
     BufferSchema.cpp
     ${AG_INCLUDE_DIR}/Ag/ObjectGL/BufferSchema.hpp
+    VertexSchema.cpp
+    ${AG_INCLUDE_DIR}/Ag/ObjectGL/VertexSchema.hpp
+    VertexBuffer.cpp
+    ${AG_INCLUDE_DIR}/Ag/ObjectGL/VertexBuffer.hpp
+    IndexBuffer.cpp
+    ${AG_INCLUDE_DIR}/Ag/ObjectGL/IndexBuffer.hpp
+    VertexArrayObject.cpp
+    ${AG_INCLUDE_DIR}/Ag/ObjectGL/VertexArrayObject.hpp
 )

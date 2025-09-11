@@ -581,7 +581,7 @@ public:
     void getMultisampleFV(GetMultisamplePNameNV pname, GLuint index,
                           GLfloat *val) const;
     void sampleMaskIndexed(GLuint index, GLbitfield mask) const;
-    void texRenderbuffer(TextureTarget target, RenderbufferName renderbuffer) const;
+    void texRenderbuffer(TextureTarget target, RenderBufferName renderbuffer) const;
 
     // Overrides
     virtual void resolve(const APIResolver *resolver) override;
@@ -702,7 +702,7 @@ public:
     const NVFramebufferMultisampleCoverage &getRawAPI() const;
 
     // Operations
-    void renderbufferStorageMultisampleCoverage(RenderbufferTarget target,
+    void renderbufferStorageMultisampleCoverage(RenderBufferTarget target,
                                                 GLsizei coverageSamples,
                                                 GLsizei colorSamples,
                                                 InternalFormat internalformat,
@@ -726,10 +726,10 @@ public:
     const NVGeometryPROGRAM4 &getRawAPI() const;
 
     // Operations
-    void framebufferTexture(FramebufferTarget target,
+    void framebufferTexture(FrameBufferTarget target,
                             FramebufferAttachment attachment,
                             TextureName texture, GLint level) const;
-    void framebufferTextureFace(FramebufferTarget target,
+    void framebufferTextureFace(FrameBufferTarget target,
                                 FramebufferAttachment attachment,
                                 TextureName texture, GLint level,
                                 TextureTarget face) const;
@@ -775,7 +775,7 @@ public:
                                    GLint dstZ, GLsizei srcWidth,
                                    GLsizei srcHeight, GLsizei srcDepth) const;
     void multicastFramebufferSampleLocationsFV(GLuint gpu,
-                                               FramebufferName framebuffer,
+                                               FrameBufferName framebuffer,
                                                GLuint start, GLsizei count,
                                                const GLfloat *v) const;
     void multicastGetQueryObjectI64V(GLuint gpu, GLuint id, GLenum pname,
@@ -971,7 +971,7 @@ public:
     const NVMemoryAttachment &getRawAPI() const;
 
     // Operations
-    void bufferAttachMemory(BufferTargetARB target, GLuint memory,
+    void bufferAttachMemory(BufferTarget target, GLuint memory,
                             GLuint64 offset) const;
     void getMemoryObjectDetachedResourcesuiv(GLuint memory, GLenum pname,
                                              GLint first, GLsizei count,
@@ -1490,9 +1490,9 @@ public:
     const NVSampleLocations &getRawAPI() const;
 
     // Operations
-    void framebufferSampleLocationsFV(FramebufferTarget target, GLuint start,
+    void framebufferSampleLocationsFV(FrameBufferTarget target, GLuint start,
                                       GLsizei count, const GLfloat *v) const;
-    void namedFramebufferSampleLocationsFV(FramebufferName framebuffer,
+    void namedFramebufferSampleLocationsFV(FrameBufferName framebuffer,
                                            GLuint start, GLsizei count,
                                            const GLfloat *v) const;
     void resolveDepthValues() const;
@@ -1536,10 +1536,10 @@ public:
     const NVShaderBufferLoad &getRawAPI() const;
 
     // Operations
-    void getBufferParameterUI64(BufferTargetARB target, GLenum pname,
+    void getBufferParameterUI64(BufferTarget target, GLenum pname,
                                 GLuint64EXT *params) const;
     void getIntegerUI64(GLenum value, GLuint64EXT *result) const;
-    void getNamedBufferParameterUI64(BufferName buffer, BufferPNameARB pname,
+    void getNamedBufferParameterUI64(BufferName buffer, BufferPName pname,
                                      GLuint64EXT *params) const;
     Boolean isBufferResident(GLenum target) const;
     Boolean isNamedBufferResident(BufferName buffer) const;
@@ -1703,10 +1703,10 @@ public:
     // Operations
     void activeVarying(ProgramName program, const GLchar *name) const;
     void beginTransformFeedback(PrimitiveType primitiveMode) const;
-    void bindBufferBase(BufferTargetARB target, GLuint index, BufferName buffer) const;
-    void bindBufferOffset(BufferTargetARB target, GLuint index,
+    void bindBufferBase(BufferTarget target, GLuint index, BufferName buffer) const;
+    void bindBufferOffset(BufferTarget target, GLuint index,
                           BufferName buffer, GLintptr offset) const;
-    void bindBufferRange(BufferTargetARB target, GLuint index, BufferName buffer,
+    void bindBufferRange(BufferTarget target, GLuint index, BufferName buffer,
                          GLintptr offset, GLsizeiptr size) const;
     void endTransformFeedback() const;
     void getActiveVarying(ProgramName program, GLuint index, GLsizei bufSize,
@@ -1742,7 +1742,7 @@ public:
     const NVTransformFeedback2 &getRawAPI() const;
 
     // Operations
-    void bindTransformFeedback(BufferTargetARB target, TransformFeedbackName id) const;
+    void bindTransformFeedback(BufferTarget target, TransformFeedbackName id) const;
     void deleteTransformFeedbacks(GLsizei n, const TransformFeedbackName *ids) const;
     void drawTransformFeedback(PrimitiveType mode, TransformFeedbackName id) const;
     void genTransformFeedbacks(GLsizei n, TransformFeedbackName *ids) const;

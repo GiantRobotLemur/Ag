@@ -52,7 +52,7 @@ size_t Program::getActiveAttribCount() const
 
         GLint count = 0;
         api.getProgramIV(_program->getName(),
-                         ProgramPropertyARB::ActiveAttributes, &count);
+                         ProgramProperty::ActiveAttributes, &count);
 
         if (count > 0)
         {
@@ -77,7 +77,7 @@ void Program::getActiveAttrib(size_t index, ProgramAttribInfo &info) const
     // Organise a buffer to receive the name.
     auto &api = verifyAccess("getActiveAttrib()");
     ProgramName id = _program->getName();
-    const size_t BufferSize = 256;
+    constexpr size_t BufferSize = 256;
     char buffer[BufferSize];
     std::vector<char> expandingBuffer;
 
@@ -86,7 +86,7 @@ void Program::getActiveAttrib(size_t index, ProgramAttribInfo &info) const
 
     GLint maxSize = 0;
 
-    api.getProgramIV(id, ProgramPropertyARB::ActiveAttributeMaxLength, &maxSize);
+    api.getProgramIV(id, ProgramProperty::ActiveAttributeMaxLength, &maxSize);
 
     if ((maxSize > 0) && (static_cast<size_t>(maxSize) > BufferSize))
     {
@@ -116,7 +116,7 @@ ProgramAttribCollection Program::getActiveAttribs() const
     ProgramName id = _program->getName();
     GLint value = 0;
 
-    api.getProgramIV(id, ProgramPropertyARB::ActiveAttributes, &value);
+    api.getProgramIV(id, ProgramProperty::ActiveAttributes, &value);
 
     ProgramAttribCollection attribs;
 
@@ -127,7 +127,7 @@ ProgramAttribCollection Program::getActiveAttribs() const
         attribs.reserve(static_cast<size_t>(count));
 
         // Gets the maximum size of any attribute name.
-        api.getProgramIV(id, ProgramPropertyARB::ActiveAttributeMaxLength, &value);
+        api.getProgramIV(id, ProgramProperty::ActiveAttributeMaxLength, &value);
 
         nameBuffer.resize((value > 0) ? static_cast<size_t>(value) : 256u, '\0');
 
@@ -164,7 +164,7 @@ size_t Program::getActiveUniformCount() const
         ProgramName id = _program->getName();
         GLint value = 0;
 
-        api.getProgramIV(id, ProgramPropertyARB::ActiveUniforms, &value);
+        api.getProgramIV(id, ProgramProperty::ActiveUniforms, &value);
 
         if (value > 0)
         {
@@ -198,7 +198,7 @@ void Program::getActiveUniform(size_t index, ProgramUniformInfo &info) const
 
     GLint maxSize = 0;
 
-    api.getProgramIV(id, ProgramPropertyARB::ActiveUniformMaxLength, &maxSize);
+    api.getProgramIV(id, ProgramProperty::ActiveUniformMaxLength, &maxSize);
 
     if ((maxSize > 0) && (static_cast<size_t>(maxSize) > BufferSize))
     {
@@ -227,7 +227,7 @@ ProgramUniformCollection Program::getActiveUniforms() const
     ProgramName id = _program->getName();
     GLint value = 0;
 
-    api.getProgramIV(id, ProgramPropertyARB::ActiveUniforms, &value);
+    api.getProgramIV(id, ProgramProperty::ActiveUniforms, &value);
 
     ProgramUniformCollection uniforms;
 
@@ -238,7 +238,7 @@ ProgramUniformCollection Program::getActiveUniforms() const
         uniforms.reserve(static_cast<size_t>(count));
 
         // Gets the maximum size of any uniform name.
-        api.getProgramIV(id, ProgramPropertyARB::ActiveUniformMaxLength, &value);
+        api.getProgramIV(id, ProgramProperty::ActiveUniformMaxLength, &value);
 
         nameBuffer.resize((value > 0) ? static_cast<size_t>(value) : 256u, '\0');
 
@@ -273,7 +273,7 @@ Ag::String Program::getInfoLog() const
         GLint length = 0;
 
         ProgramName id = _program->getName();
-        api.getProgramIV(id, ProgramPropertyARB::InfoLogLength, &length);
+        api.getProgramIV(id, ProgramProperty::InfoLogLength, &length);
 
         if (length > 0)
         {
@@ -308,7 +308,7 @@ bool Program::link()
     api.linkProgram(id);
 
     GLint linkStatus = 0;
-    api.getProgramIV(id, ProgramPropertyARB::LinkStatus, &linkStatus);
+    api.getProgramIV(id, ProgramProperty::LinkStatus, &linkStatus);
 
     return linkStatus != 0;
 }
@@ -323,7 +323,7 @@ void Program::select()
 //! @brief De-selects the program for use, i.e. glUseProgram(0).
 void Program::deselect()
 {
-    auto &api = verifyAccess("select()");
+    auto &api = verifyAccess("deselect()");
 
     ProgramName empty;
     api.useProgram(empty);
@@ -334,7 +334,7 @@ void Program::deselect()
 //! @param[in] shader The shader to attach.
 void Program::attachShader(const Shader &shader)
 {
-    if (shader.isBound())
+    if (shader.isBound() == false)
     {
         throw Ag::ArgumentException("shader");
     }
@@ -348,7 +348,7 @@ void Program::attachShader(const Shader &shader)
 //! @param[in] shader The shader to detach.
 void Program::detachShader(const Shader &shader)
 {
-    if (shader.isBound())
+    if (shader.isBound() == false)
     {
         throw Ag::ArgumentException("shader");
     }
@@ -356,6 +356,64 @@ void Program::detachShader(const Shader &shader)
     auto &api = verifyAccess("detachShader()");
 
     api.detachShader(_program->getName(), shader.getName());
+}
+
+//! @brief Creates a mapping of attributes named in the program to attributes
+//! described in the schema of a vertex.
+//! @param[in] schema A description of the vertex format.
+//! @return A mapping of vertex attribute index from the schema to program attribute.
+VertexAttribMapping Program::createAttribMapping(const VertexSchema &schema) const
+{
+    VertexAttribMapping mappings;
+    const auto &api = verifyAccess("getActiveAttribs()");
+    ProgramName progName = _program->getName();
+    GLint value = 0;
+
+    api.getProgramIV(progName, ProgramProperty::ActiveAttributes, &value);
+
+    ProgramAttribCollection attribs;
+
+    if (value > 0)
+    {
+        GLint count = value;
+        std::vector<char> nameBuffer;
+        mappings.reserve(static_cast<size_t>(value));
+
+        // Gets the maximum size of any attribute name.
+        api.getProgramIV(progName, ProgramProperty::ActiveAttributeMaxLength, &value);
+        nameBuffer.resize((value > 0) ? static_cast<size_t>(value) : 256u, '\0');
+
+        for (GLint i = 0; i < count; ++i)
+        {
+            GLsizei nameLength = 0;
+            GLint attribSize;
+            AttributeType dataType;
+
+            api.getActiveAttrib(progName, i, static_cast<GLsizei>(nameBuffer.size()),
+                                &nameLength, &attribSize, &dataType,
+                                nameBuffer.data());
+
+            if (nameLength > 0)
+            {
+                Ag::String name(nameBuffer.data(), static_cast<size_t>(nameLength));
+                size_t attribIndex;
+
+                if (schema.tryFindAttributeByName(name, attribIndex))
+                {
+                    GLint attribLocation = api.getAttribLocation(progName, nameBuffer.data());
+
+                    if (attribLocation >= 0)
+                    {
+                        mappings.push_back(attribIndex, attribLocation);
+                    }
+                }
+            }
+        }
+
+        mappings.reindex();
+    }
+
+    return mappings;
 }
 
 //! @brief Verifies that the object is associated with a valid resource and

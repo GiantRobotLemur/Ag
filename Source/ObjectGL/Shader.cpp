@@ -131,6 +131,19 @@ void Shader::setSource(const char *source)
 }
 
 //! @brief Associates source code with the shader program stage.
+//! @param[in] source A bounded UTF-8 encoded string containing the
+//! source code of the shader.
+void Shader::setSource(const std::string_view &source)
+{
+    if (source.empty())
+    {
+        throw Ag::ArgumentException("source");
+    }
+
+    setSource(source.data(), source.length());
+}
+
+//! @brief Associates source code with the shader program stage.
 //! @param[in] source A bounded UTF-8 encoded string containing the source code
 //! of the shader.
 //! @param[in] length The count of bytes in source, excluding any terminating
@@ -203,11 +216,18 @@ Ag::String Shader::getCompilationLog() const
 }
 
 //! @brief Compiles the shader component.
-void Shader::compile()
+//! @return A boolean value indicating whether compilation was successful.
+bool Shader::compile()
 {
     auto &api = verifyAccess("compile()");
 
     api.compileShader(_shader->getName());
+
+    GLint result;
+    api.getShaderIV(_shader->getName(),
+                    gl::ShaderParameterName::CompileStatus, &result);
+
+    return (result != 0);
 }
 
 //! @brief Verifies that the object is associated with a valid resource and

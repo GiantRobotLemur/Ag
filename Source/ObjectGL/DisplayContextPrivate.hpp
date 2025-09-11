@@ -60,8 +60,8 @@ struct QueryName;
 struct BufferName;
 struct ProgramName;
 struct ShaderName;
-struct FramebufferName;
-struct RenderbufferName;
+struct FrameBufferName;
+struct RenderBufferName;
 struct VertexArrayName;
 struct SamplerName;
 struct TransformFeedbackName;
@@ -86,8 +86,8 @@ public:
     void dispose(const BufferName &resource);
     void dispose(const ProgramName &resource);
     void dispose(const ShaderName &resource);
-    void dispose(const FramebufferName &resource);
-    void dispose(const RenderbufferName &resource);
+    void dispose(const FrameBufferName &resource);
+    void dispose(const RenderBufferName &resource);
     void dispose(const VertexArrayName &resource);
     void dispose(const SamplerName &resource);
     void dispose(const TransformFeedbackName &resource);
@@ -95,6 +95,12 @@ public:
     void flushResources();
 
     // Overrides
+    //! @brief Creates an implementation of RenderContextPrivate compatible
+    //! with the current display.
+    //! @param[in] drawable A reference to an object, probably something visual
+    //! required to create the OpenGL context against.
+    //! @param[in] options Specifies attributes of the context to create.
+    //! @note On failure, an Ag::Exception of some type will be thrown.
     virtual std::shared_ptr<RenderContextPrivate> createContext(uintptr_t drawable,
                                                                 const ContextOptions &option) = 0;
 
@@ -102,12 +108,16 @@ protected:
     void initialiseAPI();
 
 private:
+    // Internal Types
+    using TaggedResourceCollection = std::vector<TaggedResource>;
+    using TaggedResourceIter = TaggedResourceCollection::iterator;
+
     // Internal Functions
     void dispose(ResourceType type, GLuint id);
 
     // Internal Fields
     std::mutex _disposalLock;
-    std::vector<TaggedResource> _resourcesForDisposal;
+    TaggedResourceCollection _resourcesForDisposal;
     GLAPI _api;
     Ag::Version _maxVersion;
 };

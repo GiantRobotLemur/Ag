@@ -16,6 +16,7 @@
 #include <SDL3/SDL.h>
 
 #include "Ag/Core/Exception.hpp"
+#include "Ag/Core/Utils.hpp"
 #include "Ag/ObjectGL/BaseTypes.hpp"
 #include "Ag/ObjectGL/DisplayFormat.hpp"
 #include "Ag/ObjectGL/ContextOptions.hpp"
@@ -117,7 +118,7 @@ struct GLContext
     //! @brief De-selects any OpenGL context on the current thread.
     void doneCurrent() const
     {
-        int result = SDL_GL_MakeCurrent(nullptr, nullptr);
+        int result = SDL_GL_MakeCurrent(Window, nullptr);
 
         if (result != 0)
         {
@@ -219,6 +220,8 @@ public:
     SDL3RenderContext(const DisplayContextPrivateSPtr &display, const GLContext &context);
     virtual ~SDL3RenderContext();
 
+    // Operations
+
     // Overrides
     virtual void makeCurrent() override;
     virtual void doneCurrent() override;
@@ -237,6 +240,13 @@ public:
     SDL3DisplayContext(const DisplayFormat &format);
     virtual ~SDL3DisplayContext();
 
+    // Accessors
+    GLContext &getRootContext() { return _rootContext; }
+
+    // Operations
+    void ensureRootContextCreated(const ContextOptions &options,
+                                  bool ignoreVersion);
+
     // Overrides
     // Inherited from DisplayContextPrivate.
     virtual const APIResolver *getResolver() const override;
@@ -244,11 +254,11 @@ public:
     // Inherited from DisplayContextPrivate.
     virtual std::shared_ptr<RenderContextPrivate> createContext(uintptr_t drawable,
                                                                 const ContextOptions &options) override;
-private:
-    // Internal Functions
-    void setContextAttributes(const ContextOptions &options,
-                              bool ignoreVersion) const;
 
+    static void setContextAttributes(const ContextOptions &options,
+                                     const DisplayFormat &format,
+                                     bool ignoreVersion);
+private:
     // Internal Fields
     DisplayFormat _format;
     SDL3PrivateResolver _resolver;
@@ -272,12 +282,12 @@ void setSDLProperty(T id, SDL_GLAttr attrib, const U &format)
 template<typename T, typename U>
 void setSDLFlag(T id, SDL_GLAttr attrib, const U &format)
 {
-    uint32_t value;
+    bool value;
 
-    if (format.tryGetProperty(id, value))
+    if (format.tryGetTypedProperty(id, value))
     {
-        // Ensure the value set is either 0 or 1, no matter what the encoding.
-        SDL_GL_SetAttribute(attrib, (value == 0) ? 0 : 1);
+        SDL_GL_SetAttribute(attrib, value ? /* SDL_TRUE =  */ 1 :
+                                            /* SDL_FALSE = */ 0);
     }
 }
 
@@ -294,45 +304,29 @@ SDL3DisplayContext::SDL3DisplayContext(const DisplayFormat &format) :
 //! @brief Ensures that any root GL context and window is disposed of.
 SDL3DisplayContext::~SDL3DisplayContext()
 {
+    // Get a copy of the root context hidden window before it gets blanked.
     SDL_Window *rootWindow = _rootContext.Window;
 
+    // De-select and delete the OpenGL context.
     _rootContext.dispose();
 
+    // Dispose of the window.
     if (rootWindow != nullptr)
     {
         SDL_DestroyWindow(rootWindow);
     }
 }
 
-// Inherited from DisplayContextPrivate.
-const APIResolver *SDL3DisplayContext::getResolver() const
+void SDL3DisplayContext::ensureRootContextCreated(const ContextOptions &options,
+                                                  bool ignoreVersion)
 {
-    return nullptr;
-}
-
-// Inherited from DisplayContextPrivate.
-std::shared_ptr<RenderContextPrivate> SDL3DisplayContext::createContext(uintptr_t drawable,
-                                                                        const ContextOptions &options)
-{
-    // The drawable parameter should be a pointer to a valid SDL_Window structure.
-    if (drawable == 0)
-    {
-        throw Ag::ArgumentException("drawable");
-    }
-
-    SDL_Window *drawableWindow = reinterpret_cast<SDL_Window *>(drawable);
-
-    ContextScope contextState;
-
     if (_rootContext.isValid() == false)
     {
         // Create a root context to be shared by the one we return.
         int width = 256;
         int height = 256;
 
-        // Create a hidden window like the drawable specified.
-        SDL_GetWindowSize(drawableWindow, &width, &height);
-
+        // Create a hidden window.
         _rootContext.Window = SDL_CreateWindow("Hidden Window", width, height,
                                                SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL);
 
@@ -341,10 +335,9 @@ std::shared_ptr<RenderContextPrivate> SDL3DisplayContext::createContext(uintptr_
             throw SDL3_GL_Exception("SDL_CreateWindow(SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL)");
         }
 
-        // Create a root OpenGL context with no version specified to get the
-        // highest one supported.
-        setContextAttributes(options, true);
-        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+        // Create a root OpenGL context from which resources will be shared.
+        setContextAttributes(options, _format, ignoreVersion);
+        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, /* SDL_FALSE = */ 0);
 
         _rootContext.Renderer = SDL_GL_CreateContext(_rootContext.Window);
 
@@ -369,15 +362,36 @@ std::shared_ptr<RenderContextPrivate> SDL3DisplayContext::createContext(uintptr_
         // Initialise the underlying API.
         initialiseAPI();
     }
-    else
+}
+
+// Inherited from DisplayContextPrivate.
+const APIResolver *SDL3DisplayContext::getResolver() const
+{
+    return &_resolver;
+}
+
+// Inherited from DisplayContextPrivate.
+std::shared_ptr<RenderContextPrivate> SDL3DisplayContext::createContext(uintptr_t drawable,
+                                                                        const ContextOptions &options)
+{
+    // The drawable parameter should be a pointer to a valid SDL_Window structure.
+    if (drawable == 0)
     {
-        _rootContext.makeCurrent();
+        throw Ag::ArgumentException("drawable");
     }
+
+    SDL_Window *drawableWindow = reinterpret_cast<SDL_Window *>(drawable);
+
+    ContextScope contextState;
+
+    ensureRootContextCreated(options, true);
+
+    _rootContext.makeCurrent();
 
     // Ensure the newly created context can share resources with the
     // root context.
-    setContextAttributes(options, false);
-    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+    setContextAttributes(options, _format, false);
+    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, /* SDL_TRUE = */ 1);
 
     GLContext context(drawableWindow, SDL_GL_CreateContext(drawableWindow));
 
@@ -397,21 +411,22 @@ std::shared_ptr<RenderContextPrivate> SDL3DisplayContext::createContext(uintptr_
 //! @param[in] ignoreVersion True to not set GL major/minor version requirements
 //! in order to get the highest possible version.
 void SDL3DisplayContext::setContextAttributes(const ContextOptions &options,
-                                              bool ignoreVersion) const
+                                              const DisplayFormat &format,
+                                              bool ignoreVersion)
 {
     // Reset any previously set attributes.
     SDL_GL_ResetAttributes();
 
     // Set the render format properties.
-    setSDLProperty(DisplayPropertyID::RedBitCount, SDL_GL_RED_SIZE, _format);
-    setSDLProperty(DisplayPropertyID::GreenBitCount, SDL_GL_GREEN_SIZE, _format);
-    setSDLProperty(DisplayPropertyID::BlueBitCount, SDL_GL_BLUE_SIZE, _format);
-    setSDLProperty(DisplayPropertyID::AlphaBitCount, SDL_GL_ALPHA_SIZE, _format);
-    setSDLProperty(DisplayPropertyID::ColourBitCount, SDL_GL_BUFFER_SIZE, _format);
-    setSDLProperty(DisplayPropertyID::DepthBitCount, SDL_GL_DEPTH_SIZE, _format);
-    setSDLProperty(DisplayPropertyID::StencilBitCount, SDL_GL_STENCIL_SIZE, _format);
-    setSDLFlag(DisplayPropertyID::HasDoubleBuffer, SDL_GL_DOUBLEBUFFER, _format);
-    setSDLFlag(DisplayPropertyID::HasHardwareAcceleration, SDL_GL_ACCELERATED_VISUAL, _format);
+    setSDLProperty(DisplayPropertyID::RedBitCount, SDL_GL_RED_SIZE, format);
+    setSDLProperty(DisplayPropertyID::GreenBitCount, SDL_GL_GREEN_SIZE, format);
+    setSDLProperty(DisplayPropertyID::BlueBitCount, SDL_GL_BLUE_SIZE, format);
+    setSDLProperty(DisplayPropertyID::AlphaBitCount, SDL_GL_ALPHA_SIZE, format);
+    setSDLProperty(DisplayPropertyID::ColourBitCount, SDL_GL_BUFFER_SIZE, format);
+    setSDLProperty(DisplayPropertyID::DepthBitCount, SDL_GL_DEPTH_SIZE, format);
+    setSDLProperty(DisplayPropertyID::StencilBitCount, SDL_GL_STENCIL_SIZE, format);
+    setSDLFlag(DisplayPropertyID::HasDoubleBuffer, SDL_GL_DOUBLEBUFFER, format);
+    setSDLFlag(DisplayPropertyID::HasHardwareAcceleration, SDL_GL_ACCELERATED_VISUAL, format);
 
     // Set context requirements.
     if (ignoreVersion == false)
@@ -422,28 +437,29 @@ void SDL3DisplayContext::setContextAttributes(const ContextOptions &options,
 
     uint32_t contextFlags = 0;
 
-    contextFlags |=
-        options.getProperty(ContextPropertyID::EnableDebugging, false) ? SDL_GL_CONTEXT_DEBUG_FLAG :
-                                                                         0;
-    contextFlags |=
-        options.getProperty(ContextPropertyID::UseForwardCompatiblity, false) ? SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG :
-                                                                                0;
+    contextFlags |= options.getProperty(ContextPropertyID::EnableDebugging,
+                                        false) ? SDL_GL_CONTEXT_DEBUG_FLAG :
+                                                 0;
+
+    contextFlags |= options.getProperty(ContextPropertyID::UseForwardCompatiblity,
+                                        false) ? SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG :
+                                                 0;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, static_cast<int>(contextFlags));
 
     uint32_t profileFlags = 0;
 
-    profileFlags |=
-        options.getProperty(ContextPropertyID::UseCompatabilityProfile, false) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY :
-                                                                                 0;
+    profileFlags |= options.getProperty(ContextPropertyID::UseCompatabilityProfile,
+                                        false) ? SDL_GL_CONTEXT_PROFILE_COMPATIBILITY :
+                                                 0;
 
-    profileFlags |=
-        options.getProperty(ContextPropertyID::UseCoreProfile, false) ? SDL_GL_CONTEXT_PROFILE_CORE :
-                                                                        0;
+    profileFlags |= options.getProperty(ContextPropertyID::UseCoreProfile,
+                                        false) ? SDL_GL_CONTEXT_PROFILE_CORE :
+                                                 0;
 
-    profileFlags |=
-        options.getProperty(ContextPropertyID::UseESProfile, false) ? SDL_GL_CONTEXT_PROFILE_ES :
-                                                                      0;
+    profileFlags |= options.getProperty(ContextPropertyID::UseESProfile,
+                                        false) ? SDL_GL_CONTEXT_PROFILE_ES :
+                                                 0;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, static_cast<int>(profileFlags));
 }
@@ -456,6 +472,9 @@ SDL3RenderContext::SDL3RenderContext(const DisplayContextPrivateSPtr &display,
     RenderContextPrivate(display),
     _context(context)
 {
+    _context.makeCurrent();
+    getAPIInternal().resolve(display->getResolver());
+    _context.doneCurrent();
 }
 
 //! @brief Disposes of the OpenGL context the object wrapped.
@@ -487,6 +506,15 @@ void SDL3RenderContext::swapBuffers()
 ////////////////////////////////////////////////////////////////////////////////
 // SDL3Driver Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
+Ag::Version SDL3Driver::getMaxSupportedVersion(const ContextOptions &options,
+                                               const DisplayFormat &format) const
+{
+    auto display = std::make_shared<SDL3DisplayContext>(format);
+    display->ensureRootContextCreated(options, true);
+
+    return display->getMaxSupportedVersion();
+}
+
 DisplayContext SDL3Driver::createDisplayDevice(const DisplayFormat &format) const
 {
     std::shared_ptr<SDL3DisplayContext> context = std::make_shared<SDL3DisplayContext>(format);
@@ -496,4 +524,3 @@ DisplayContext SDL3Driver::createDisplayDevice(const DisplayFormat &format) cons
 
 } // namespace gl
 ////////////////////////////////////////////////////////////////////////////////
-

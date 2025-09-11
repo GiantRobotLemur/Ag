@@ -24,37 +24,10 @@ namespace gl {
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Local Data
+// Local Data Types
 ////////////////////////////////////////////////////////////////////////////////
-//struct ResourceComparer
-//{
-//    bool operator()(const TaggedResource &lhs, const TaggedResource &rhs) const
-//    {
-//        bool isLess = false;
-//
-//        if (lhs.first == rhs.first)
-//        {
-//            isLess = (lhs.second < rhs.second);
-//        }
-//        else
-//        {
-//            isLess = lhs.first < rhs.first;
-//        }
-//
-//        return isLess;
-//    }
-//};
-
 using ResourceComparer = Ag::LessThanKeyComparer<ResourceType, GLuint>;
 using GroupByType = Ag::LessThanPairComparer<ResourceType, GLuint>;
-
-//struct GroupByType
-//{
-//    bool operator()(const TaggedResource &lhs, const TaggedResource &rhs) const
-//    {
-//        return lhs.first < rhs.first;
-//    }
-//};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
@@ -67,16 +40,16 @@ using GroupByType = Ag::LessThanPairComparer<ResourceType, GLuint>;
 //! to extract an identifier from.
 //! @param[out] ids A collection to append the identifiers to.
 template<typename T, typename U>
-void extractResourceIDs(const T &begin, const T &end,
+void extractResourceIDs(const Ag::IteratorRange<T> &range,
                         std::vector<U> &ids)
 {
-    if (begin == end)
+    if (range.isEmpty())
     {
         return;
     }
 
     // Minimise the amount of memory reallocation in the vector.
-    size_t count = std::distance(begin, end);
+    size_t count = range.getCount();
     size_t totalSize = ids.size() + count;
 
     if (totalSize > ids.capacity())
@@ -84,19 +57,17 @@ void extractResourceIDs(const T &begin, const T &end,
         ids.reserve(totalSize);
     }
 
-    // Extract the identifiers.
-    bool isFirst = true;
-    unsigned int previousId = begin->second;
+    // Extract unique identifiers.
+    unsigned int previousId = range.Begin->second;
+    ids.emplace_back(previousId);
 
-    for (auto pos = begin; pos != end; ++pos)
+    for (const TaggedResource &resource : range)
     {
-        // Filter out any duplicate IDs, which should be
-        // consecutive.
-        if (isFirst || (pos->second != previousId))
+        // Filter out any duplicate IDs, which should be consecutive.
+        if (resource.second != previousId)
         {
-            isFirst = false;
-            previousId = pos->second;
-            ids.emplace_back(pos->second);
+            previousId = resource.second;
+            ids.emplace_back(previousId);
         }
     }
 }
@@ -175,7 +146,7 @@ void DisplayContextPrivate::dispose(const ShaderName &resource)
 //! @param[in] resource The identifier of the resource to schedule for disposal.
 //! @note Disposal maybe deferred until an appropriate render context is
 //! selected on a running thread.
-void DisplayContextPrivate::dispose(const FramebufferName &resource)
+void DisplayContextPrivate::dispose(const FrameBufferName &resource)
 {
     dispose(ResourceType::FrameBuffer, resource.ID);
 }
@@ -184,7 +155,7 @@ void DisplayContextPrivate::dispose(const FramebufferName &resource)
 //! @param[in] resource The identifier of the resource to schedule for disposal.
 //! @note Disposal maybe deferred until an appropriate render context is
 //! selected on a running thread.
-void DisplayContextPrivate::dispose(const RenderbufferName &resource)
+void DisplayContextPrivate::dispose(const RenderBufferName &resource)
 {
     dispose(ResourceType::RenderBuffer, resource.ID);
 }
@@ -240,102 +211,102 @@ void DisplayContextPrivate::flushResources()
     std::sort(_resourcesForDisposal.begin(), _resourcesForDisposal.end(),
               ResourceComparer());
 
-  // Group the resources by type for disposal.
-    auto groupStart = _resourcesForDisposal.begin();
+    // Group the resources by type for disposal.
     GroupByType groupPredicate;
+    Ag::IteratorRange<TaggedResourceIter> group;
 
-    while (groupStart != _resourcesForDisposal.end())
+    if (getFirstGroup(_resourcesForDisposal.begin(),
+                      _resourcesForDisposal.end(),
+                      group, groupPredicate))
     {
-        // Find the end of the group.
-        auto groupEnd = std::upper_bound(groupStart,
-                                         _resourcesForDisposal.end(),
-                                         *groupStart, groupPredicate);
-
-        switch (groupStart->first)
+        do
         {
-        case ResourceType::Texture: {
-            std::vector<TextureName> names;
-
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteTextures(static_cast<GLsizei>(names.size()),
-                                names.data());
-        } break;
-
-        case ResourceType::Query: {
-            std::vector<QueryName> names;
-
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteQueries(static_cast<GLsizei>(names.size()), names.data());
-        } break;
-
-        case ResourceType::Buffer: {
-            std::vector<BufferName> names;
-
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteBuffers(static_cast<GLsizei>(names.size()), names.data());
-        } break;
-
-        case ResourceType::Program:
-            // The API for managing program resources doesn't work on groups :-(
-            for (auto program = groupStart; program != groupEnd; ++program)
+            switch (group.Begin->first)
             {
-                _api.deleteProgram(program->second);
-            }
-            break;
+            case ResourceType::Texture: {
+                std::vector<TextureName> names;
 
-        case ResourceType::Shader:
-            // The API for managing shader resources doesn't work on groups :-(
-            for (auto shader = groupStart; shader != groupEnd; ++shader)
-            {
-                _api.deleteShader(shader->second);
-            }
-            break;
+                extractResourceIDs(group, names);
+                _api.deleteTextures(static_cast<GLsizei>(names.size()),
+                                    names.data());
+            } break;
 
-        case ResourceType::FrameBuffer: {
-            std::vector<FramebufferName> names;
+            case ResourceType::Query: {
+                std::vector<QueryName> names;
 
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteFramebuffers(static_cast<GLsizei>(names.size()), names.data());
-        } break;
+                extractResourceIDs(group, names);
+                _api.deleteQueries(static_cast<GLsizei>(names.size()), names.data());
+            } break;
 
-        case ResourceType::RenderBuffer: {
-            std::vector<RenderbufferName> names;
+            case ResourceType::Buffer: {
+                std::vector<BufferName> names;
 
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteRenderbuffers(static_cast<GLsizei>(names.size()), names.data());
-        } break;
+                extractResourceIDs(group, names);
+                _api.deleteBuffers(static_cast<GLsizei>(names.size()), names.data());
+            } break;
 
-        case ResourceType::VertexArray: {
-            std::vector<VertexArrayName> names;
+            case ResourceType::Program:
+                // The API for managing program resources doesn't work on groups :-(
+                for (const auto &taggedProgram : group)
+                {
+                    _api.deleteProgram(taggedProgram.second);
+                }
+                break;
 
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteVertexArrays(static_cast<GLsizei>(names.size()), names.data());
-        } break;
+            case ResourceType::Shader:
+                // The API for managing shader resources doesn't work on groups :-(
+                for (const auto &shader : group)
+                {
+                    _api.deleteShader(shader.second);
+                }
+                break;
 
-        case ResourceType::Sampler: {
-            std::vector<SamplerName> names;
+            case ResourceType::FrameBuffer: {
+                std::vector<FrameBufferName> names;
 
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteSamplers(static_cast<GLsizei>(names.size()), names.data());
-        } break;
+                extractResourceIDs(group, names);
+                _api.deleteFramebuffers(static_cast<GLsizei>(names.size()), names.data());
+            } break;
+
+            case ResourceType::RenderBuffer: {
+                std::vector<RenderBufferName> names;
+
+                extractResourceIDs(group, names);
+                _api.deleteRenderbuffers(static_cast<GLsizei>(names.size()), names.data());
+            } break;
+
+            case ResourceType::VertexArray: {
+                std::vector<VertexArrayName> names;
+
+                extractResourceIDs(group, names);
+                _api.deleteVertexArrays(static_cast<GLsizei>(names.size()), names.data());
+            } break;
+
+            case ResourceType::Sampler: {
+                std::vector<SamplerName> names;
+
+                extractResourceIDs(group, names);
+                _api.deleteSamplers(static_cast<GLsizei>(names.size()), names.data());
+            } break;
 
         case ResourceType::TransformFeedback: {
             std::vector<TransformFeedbackName> names;
 
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteTransformFeedbacks(static_cast<GLsizei>(names.size()),
-                                          names.data());
-        } break;
+                extractResourceIDs(group, names);
+                _api.deleteTransformFeedbacks(static_cast<GLsizei>(names.size()),
+                                              names.data());
+            } break;
 
         case ResourceType::ProgramPipeline: {
             std::vector<ProgramPipelineName> names;
 
-            extractResourceIDs(groupStart, groupEnd, names);
-            _api.deleteProgramPipelines(static_cast<GLsizei>(names.size()),
-                                        names.data());
-        } break;
+                extractResourceIDs(group, names);
+                _api.deleteProgramPipelines(static_cast<GLsizei>(names.size()),
+                                            names.data());
+            } break;
 
-        }
+            } // switch (ResourceType)
+        } while (getNextGroup(_resourcesForDisposal.end(), group, groupPredicate));
     }
 }
 
