@@ -38,10 +38,10 @@ public:
     const MESAFramebufferFlipY &getRawAPI() const;
 
     // Operations
-    void framebufferParameterI(FramebufferTarget target,
-                               FramebufferParameterName pname, GLint param) const;
-    void getFramebufferParameterIV(FramebufferTarget target,
-                                   FramebufferAttachmentParameterName pname,
+    void framebufferParameterI(FrameBufferTarget target,
+                               FrameBufferParameterName pname, GLint param) const;
+    void getFramebufferParameterIV(FrameBufferTarget target,
+                                   FrameBufferAttachmentParameterName pname,
                                    GLint *params) const;
 
     // Overrides

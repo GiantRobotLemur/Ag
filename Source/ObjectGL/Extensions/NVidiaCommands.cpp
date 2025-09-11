@@ -1584,7 +1584,7 @@ void NVExplicitMultisampleAPI::sampleMaskIndexed(GLuint index, GLbitfield mask) 
 
 // Calls glTexRenderbufferNV().
 void NVExplicitMultisampleAPI::texRenderbuffer(TextureTarget target,
-                                               RenderbufferName renderbuffer) const
+                                               RenderBufferName renderbuffer) const
 {
     static const char *fnName = "glTexRenderbufferNV";
 
@@ -1922,7 +1922,7 @@ void NVFramebufferMultisampleCoverageAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glRenderbufferStorageMultisampleCoverageNV().
-void NVFramebufferMultisampleCoverageAPI::renderbufferStorageMultisampleCoverage(RenderbufferTarget target,
+void NVFramebufferMultisampleCoverageAPI::renderbufferStorageMultisampleCoverage(RenderBufferTarget target,
                                                                                  GLsizei coverageSamples,
                                                                                  GLsizei colorSamples,
                                                                                  InternalFormat internalformat,
@@ -1967,7 +1967,7 @@ void NVGeometryPROGRAM4API::resolve(const APIResolver *resolver)
 }
 
 // Calls glFramebufferTextureEXT().
-void NVGeometryPROGRAM4API::framebufferTexture(FramebufferTarget target,
+void NVGeometryPROGRAM4API::framebufferTexture(FrameBufferTarget target,
                                                FramebufferAttachment attachment,
                                                TextureName texture, GLint level) const
 {
@@ -1980,7 +1980,7 @@ void NVGeometryPROGRAM4API::framebufferTexture(FramebufferTarget target,
 }
 
 // Calls glFramebufferTextureFaceEXT().
-void NVGeometryPROGRAM4API::framebufferTextureFace(FramebufferTarget target,
+void NVGeometryPROGRAM4API::framebufferTextureFace(FrameBufferTarget target,
                                                    FramebufferAttachment attachment,
                                                    TextureName texture,
                                                    GLint level,
@@ -2116,7 +2116,7 @@ void NVGPUMulticastAPI::multicastCopyImageSubData(GLuint srcGpu,
 
 // Calls glMulticastFramebufferSampleLocationsfvNV().
 void NVGPUMulticastAPI::multicastFramebufferSampleLocationsFV(GLuint gpu,
-                                                              FramebufferName framebuffer,
+                                                              FrameBufferName framebuffer,
                                                               GLuint start,
                                                               GLsizei count,
                                                               const GLfloat *v) const
@@ -3024,7 +3024,7 @@ void NVMemoryAttachmentAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glBufferAttachMemoryNV().
-void NVMemoryAttachmentAPI::bufferAttachMemory(BufferTargetARB target,
+void NVMemoryAttachmentAPI::bufferAttachMemory(BufferTarget target,
                                                GLuint memory, GLuint64 offset) const
 {
     static const char *fnName = "glBufferAttachMemoryNV";
@@ -4874,7 +4874,7 @@ void NVSampleLocationsAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glFramebufferSampleLocationsfvNV().
-void NVSampleLocationsAPI::framebufferSampleLocationsFV(FramebufferTarget target,
+void NVSampleLocationsAPI::framebufferSampleLocationsFV(FrameBufferTarget target,
                                                         GLuint start,
                                                         GLsizei count,
                                                         const GLfloat *v) const
@@ -4887,7 +4887,7 @@ void NVSampleLocationsAPI::framebufferSampleLocationsFV(FramebufferTarget target
 }
 
 // Calls glNamedFramebufferSampleLocationsfvNV().
-void NVSampleLocationsAPI::namedFramebufferSampleLocationsFV(FramebufferName framebuffer,
+void NVSampleLocationsAPI::namedFramebufferSampleLocationsFV(FrameBufferName framebuffer,
                                                              GLuint start,
                                                              GLsizei count,
                                                              const GLfloat *v) const
@@ -4986,7 +4986,7 @@ void NVShaderBufferLoadAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glGetBufferParameterui64vNV().
-void NVShaderBufferLoadAPI::getBufferParameterUI64(BufferTargetARB target,
+void NVShaderBufferLoadAPI::getBufferParameterUI64(BufferTarget target,
                                                    GLenum pname,
                                                    GLuint64EXT *params) const
 {
@@ -5009,7 +5009,7 @@ void NVShaderBufferLoadAPI::getIntegerUI64(GLenum value, GLuint64EXT *result) co
 
 // Calls glGetNamedBufferParameterui64vNV().
 void NVShaderBufferLoadAPI::getNamedBufferParameterUI64(BufferName buffer,
-                                                        BufferPNameARB pname,
+                                                        BufferPName pname,
                                                         GLuint64EXT *params) const
 {
     static const char *fnName = "glGetNamedBufferParameterui64vNV";
@@ -5527,7 +5527,7 @@ void NVTransformFeedbackAPI::beginTransformFeedback(PrimitiveType primitiveMode)
 }
 
 // Calls glBindBufferBaseNV().
-void NVTransformFeedbackAPI::bindBufferBase(BufferTargetARB target, GLuint index,
+void NVTransformFeedbackAPI::bindBufferBase(BufferTarget target, GLuint index,
                                             BufferName buffer) const
 {
     static const char *fnName = "glBindBufferBaseNV";
@@ -5538,7 +5538,7 @@ void NVTransformFeedbackAPI::bindBufferBase(BufferTargetARB target, GLuint index
 }
 
 // Calls glBindBufferOffsetNV().
-void NVTransformFeedbackAPI::bindBufferOffset(BufferTargetARB target,
+void NVTransformFeedbackAPI::bindBufferOffset(BufferTarget target,
                                               GLuint index, BufferName buffer,
                                               GLintptr offset) const
 {
@@ -5550,7 +5550,7 @@ void NVTransformFeedbackAPI::bindBufferOffset(BufferTargetARB target,
 }
 
 // Calls glBindBufferRangeNV().
-void NVTransformFeedbackAPI::bindBufferRange(BufferTargetARB target,
+void NVTransformFeedbackAPI::bindBufferRange(BufferTarget target,
                                              GLuint index, BufferName buffer,
                                              GLintptr offset, GLsizeiptr size) const
 {
@@ -5677,7 +5677,7 @@ void NVTransformFeedback2API::resolve(const APIResolver *resolver)
 }
 
 // Calls glBindTransformFeedbackNV().
-void NVTransformFeedback2API::bindTransformFeedback(BufferTargetARB target,
+void NVTransformFeedback2API::bindTransformFeedback(BufferTarget target,
                                                     TransformFeedbackName id) const
 {
     static const char *fnName = "glBindTransformFeedbackNV";

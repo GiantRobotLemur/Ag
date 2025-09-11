@@ -26,6 +26,7 @@ namespace gl {
 class GLAPI;
 class ProgramResource;
 class Shader;
+class VertexSchema;
 
 //! @brief Describes an attribute within a linked shader program.
 struct ProgramAttribInfo
@@ -46,6 +47,10 @@ struct ProgramAttribInfo
 //! @brief An alias for a vector of ProgramAttribInfo structures.
 using ProgramAttribCollection = std::vector<ProgramAttribInfo>;
 
+//! @brief An alias for an optimised map of the index of a VertexAttribute
+//! in a schema to its index as referenced in a vertex shader program.
+using VertexAttribMapping = Ag::LinearSortedMap<size_t, uint32_t>;
+
 //! @brief Describes an uniform within a linked shader program.
 struct ProgramUniformInfo
 {
@@ -65,7 +70,7 @@ struct ProgramUniformInfo
 
 using ProgramUniformCollection = std::vector<ProgramUniformInfo>;
 
-//! @brief An object wrapping an OpenGL program resource.
+//! @brief An object wrapping a compiled OpenGL program resource.
 class Program
 {
 protected:
@@ -92,6 +97,7 @@ public:
     void deselect();
     void attachShader(const Shader &shader);
     void detachShader(const Shader &shader);
+    VertexAttribMapping createAttribMapping(const VertexSchema &schema) const;
 private:
     // Internal Functions
     const GLAPI &verifyAccess(const char *operation) const;

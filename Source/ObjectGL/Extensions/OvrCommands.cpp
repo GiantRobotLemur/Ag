@@ -47,7 +47,7 @@ void OvrMultiviewAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glFramebufferTextureMultiviewOVR().
-void OvrMultiviewAPI::framebufferTextureMultiviewOvr(FramebufferTarget target,
+void OvrMultiviewAPI::framebufferTextureMultiviewOvr(FrameBufferTarget target,
                                                      FramebufferAttachment attachment,
                                                      TextureName texture,
                                                      GLint level,

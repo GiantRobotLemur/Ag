@@ -765,7 +765,7 @@ void ARBFragmentProgramAPI::getProgramString(ProgramTarget target,
 
 // Calls glGetProgramivARB().
 void ARBFragmentProgramAPI::getProgramIV(ProgramTarget target,
-                                         ProgramPropertyARB pname, GLint *params) const
+                                         ProgramProperty pname, GLint *params) const
 {
     static const char *fnName = "glGetProgramivARB";
 
@@ -926,7 +926,7 @@ void ARBGeometrySHADER4API::resolve(const APIResolver *resolver)
 }
 
 // Calls glFramebufferTextureARB().
-void ARBGeometrySHADER4API::framebufferTexture(FramebufferTarget target,
+void ARBGeometrySHADER4API::framebufferTexture(FrameBufferTarget target,
                                                FramebufferAttachment attachment,
                                                TextureName texture, GLint level) const
 {
@@ -939,7 +939,7 @@ void ARBGeometrySHADER4API::framebufferTexture(FramebufferTarget target,
 }
 
 // Calls glFramebufferTextureFaceARB().
-void ARBGeometrySHADER4API::framebufferTextureFace(FramebufferTarget target,
+void ARBGeometrySHADER4API::framebufferTextureFace(FrameBufferTarget target,
                                                    FramebufferAttachment attachment,
                                                    TextureName texture,
                                                    GLint level,
@@ -954,7 +954,7 @@ void ARBGeometrySHADER4API::framebufferTextureFace(FramebufferTarget target,
 }
 
 // Calls glFramebufferTextureLayerARB().
-void ARBGeometrySHADER4API::framebufferTextureLayer(FramebufferTarget target,
+void ARBGeometrySHADER4API::framebufferTextureLayer(FrameBufferTarget target,
                                                     FramebufferAttachment attachment,
                                                     TextureName texture,
                                                     GLint level, GLint layer) const
@@ -2403,7 +2403,7 @@ void ARBSampleLocationsAPI::evaluateDepthValues() const
 }
 
 // Calls glFramebufferSampleLocationsfvARB().
-void ARBSampleLocationsAPI::framebufferSampleLocationsFV(FramebufferTarget target,
+void ARBSampleLocationsAPI::framebufferSampleLocationsFV(FrameBufferTarget target,
                                                          GLuint start,
                                                          GLsizei count,
                                                          const GLfloat *v) const
@@ -2416,7 +2416,7 @@ void ARBSampleLocationsAPI::framebufferSampleLocationsFV(FramebufferTarget targe
 }
 
 // Calls glNamedFramebufferSampleLocationsfvARB().
-void ARBSampleLocationsAPI::namedFramebufferSampleLocationsFV(FramebufferName framebuffer,
+void ARBSampleLocationsAPI::namedFramebufferSampleLocationsFV(FrameBufferName framebuffer,
                                                               GLuint start,
                                                               GLsizei count,
                                                               const GLfloat *v) const
@@ -3547,7 +3547,7 @@ void ARBVertexBufferObjectAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glBindBufferARB().
-void ARBVertexBufferObjectAPI::bindBuffer(BufferTargetARB target,
+void ARBVertexBufferObjectAPI::bindBuffer(BufferTarget target,
                                           BufferName buffer) const
 {
     static const char *fnName = "glBindBufferARB";
@@ -3558,9 +3558,9 @@ void ARBVertexBufferObjectAPI::bindBuffer(BufferTargetARB target,
 }
 
 // Calls glBufferDataARB().
-void ARBVertexBufferObjectAPI::bufferData(BufferTargetARB target,
+void ARBVertexBufferObjectAPI::bufferData(BufferTarget target,
                                           GLsizeiptrARB size, const void *data,
-                                          BufferUsageARB usage) const
+                                          BufferUsage usage) const
 {
     static const char *fnName = "glBufferDataARB";
 
@@ -3570,7 +3570,7 @@ void ARBVertexBufferObjectAPI::bufferData(BufferTargetARB target,
 }
 
 // Calls glBufferSubDataARB().
-void ARBVertexBufferObjectAPI::bufferSubData(BufferTargetARB target,
+void ARBVertexBufferObjectAPI::bufferSubData(BufferTarget target,
                                              GLintptrARB offset,
                                              GLsizeiptrARB size,
                                              const void *data) const
@@ -3604,8 +3604,8 @@ void ARBVertexBufferObjectAPI::genBuffers(GLsizei n, BufferName *buffers) const
 }
 
 // Calls glGetBufferParameterivARB().
-void ARBVertexBufferObjectAPI::getBufferParameterIV(BufferTargetARB target,
-                                                    BufferPNameARB pname,
+void ARBVertexBufferObjectAPI::getBufferParameterIV(BufferTarget target,
+                                                    BufferPName pname,
                                                     GLint *params) const
 {
     static const char *fnName = "glGetBufferParameterivARB";
@@ -3616,8 +3616,8 @@ void ARBVertexBufferObjectAPI::getBufferParameterIV(BufferTargetARB target,
 }
 
 // Calls glGetBufferPointervARB().
-void ARBVertexBufferObjectAPI::getBufferPointerV(BufferTargetARB target,
-                                                 BufferPointerNameARB pname,
+void ARBVertexBufferObjectAPI::getBufferPointerV(BufferTarget target,
+                                                 BufferPointerName pname,
                                                  void **params) const
 {
     static const char *fnName = "glGetBufferPointervARB";
@@ -3628,7 +3628,7 @@ void ARBVertexBufferObjectAPI::getBufferPointerV(BufferTargetARB target,
 }
 
 // Calls glGetBufferSubDataARB().
-void ARBVertexBufferObjectAPI::getBufferSubData(BufferTargetARB target,
+void ARBVertexBufferObjectAPI::getBufferSubData(BufferTarget target,
                                                 GLintptrARB offset,
                                                 GLsizeiptrARB size, void *data) const
 {
@@ -3652,8 +3652,8 @@ Boolean ARBVertexBufferObjectAPI::isBuffer(BufferName buffer) const
 }
 
 // Calls glMapBufferARB().
-void *ARBVertexBufferObjectAPI::mapBuffer(BufferTargetARB target,
-                                          BufferAccessARB access) const
+void *ARBVertexBufferObjectAPI::mapBuffer(BufferTarget target,
+                                          BufferAccess access) const
 {
     static const char *fnName = "glMapBufferARB";
 
@@ -3665,7 +3665,7 @@ void *ARBVertexBufferObjectAPI::mapBuffer(BufferTargetARB target,
 }
 
 // Calls glUnmapBufferARB().
-Boolean ARBVertexBufferObjectAPI::unmapBuffer(BufferTargetARB target) const
+Boolean ARBVertexBufferObjectAPI::unmapBuffer(BufferTarget target) const
 {
     static const char *fnName = "glUnmapBufferARB";
 

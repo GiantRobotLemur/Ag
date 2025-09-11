@@ -97,6 +97,10 @@ namespace gl {
 // A value type representing and entry point to resolve
 using EntryOffset = std::pair<size_t, const char *>;
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Class Type Declarations
+////////////////////////////////////////////////////////////////////////////////
 //! @brief A base class for functors which access API function pointers within
 //! an API data structure.
 struct PerEntryPoint

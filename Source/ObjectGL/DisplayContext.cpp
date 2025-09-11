@@ -62,6 +62,16 @@ RenderContext DisplayContext::createRenderer(uintptr_t drawable,
     }
 }
 
+//! @brief Disposes of any OpenGL resources queued for disposal since the
+//! last flush.
+void DisplayContext::flushResources()
+{
+    if (_context)
+    {
+        _context->flushResources();
+    }
+}
+
 } // namespace gl
 ////////////////////////////////////////////////////////////////////////////////
 

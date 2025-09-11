@@ -260,7 +260,7 @@ void APPLEFlushBufferRangeAPI::bufferParameterI(GLenum target, GLenum pname,
 }
 
 // Calls glFlushMappedBufferRangeAPPLE().
-void APPLEFlushBufferRangeAPI::flushMappedBufferRange(BufferTargetARB target,
+void APPLEFlushBufferRangeAPI::flushMappedBufferRange(BufferTarget target,
                                                       GLintptr offset,
                                                       GLsizeiptr size) const
 {

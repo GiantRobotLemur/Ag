@@ -15,6 +15,7 @@
 // Dependant Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include "CommandSets.hpp"
+#include "RenderContext.hpp"
 
 namespace gl {
 
@@ -25,6 +26,22 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
+class ShaderCompilationException : public Ag::Exception
+{
+public:
+    static const char *Domain;
+
+    ShaderCompilationException(gl::ShaderType type, const std::string_view &errors);
+};
+
+class ProgramLinkException : public Ag::Exception
+{
+public:
+    static const char *Domain;
+
+    ProgramLinkException(const std::string_view &errors);
+};
+
 //! @brief A tool to help construct and compile OpenGL shader programs.
 class ProgramBuilder
 {
@@ -36,19 +53,21 @@ public:
     ProgramBuilder &operator=(const ProgramBuilder &) = delete;
     ProgramBuilder &operator=(ProgramBuilder &&) = delete;
 
-    ProgramBuilder(const GLAPI &api);
-
-    // Accessors
+    ProgramBuilder(const RenderContext &context);
 
     // Operations
+    size_t addShader(gl::ShaderType type,
+                     const std::string_view &sourceCode);
 
+    Program create();
+    bool tryCreate(Program &program, Ag::string_ref_t &errors);
 private:
     // Internal Types
-
-    // Internal Functions
+    using ShaderResourceCollection = std::vector<Shader>;
 
     // Internal Fields
-    const GLAPI &_api;
+    RenderContext _parentContext;
+    ShaderResourceCollection _shaders;
 };
 
 } // namespace gl

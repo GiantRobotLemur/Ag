@@ -77,8 +77,8 @@ namespace AttribMask {
     static const GLenum DepthBuffer        = 0x00000100; // GL_DEPTH_BUFFER_BIT
     static const GLenum StencilBuffer      = 0x00000400; // GL_STENCIL_BUFFER_BIT
     static const GLenum ColorBuffer        = 0x00004000; // GL_COLOR_BUFFER_BIT
-    static const GLenum MultisampleBit3Dfx = 0x20000000; // GL_MULTISAMPLE_BIT_3DFX
-    static const GLenum Multisample        = 0x20000000; // GL_MULTISAMPLE_BIT_ARB
+    static const GLenum MultiSampleBit3DFX = 0x20000000; // GL_MULTISAMPLE_BIT_3DFX
+    static const GLenum MultiSample        = 0x20000000; // GL_MULTISAMPLE_BIT_ARB
 } // namespace AttribMask
 
 enum class AttributeType : GLenum {
@@ -169,8 +169,8 @@ enum class AttributeType : GLenum {
     Image1DArray                         = 0x9052, // GL_IMAGE_1D_ARRAY
     Image2DArray                         = 0x9053, // GL_IMAGE_2D_ARRAY
     ImageCubeMapArray                    = 0x9054, // GL_IMAGE_CUBE_MAP_ARRAY
-    Image2DMultisample                   = 0x9055, // GL_IMAGE_2D_MULTISAMPLE
-    Image2DMultisampleArray              = 0x9056, // GL_IMAGE_2D_MULTISAMPLE_ARRAY
+    Image2DMultiSample                   = 0x9055, // GL_IMAGE_2D_MULTISAMPLE
+    Image2DMultiSampleArray              = 0x9056, // GL_IMAGE_2D_MULTISAMPLE_ARRAY
     IntImage1D                           = 0x9057, // GL_INT_IMAGE_1D
     IntImage2D                           = 0x9058, // GL_INT_IMAGE_2D
     IntImage3D                           = 0x9059, // GL_INT_IMAGE_3D
@@ -180,8 +180,8 @@ enum class AttributeType : GLenum {
     IntImage1DArray                      = 0x905D, // GL_INT_IMAGE_1D_ARRAY
     IntImage2DArray                      = 0x905E, // GL_INT_IMAGE_2D_ARRAY
     IntImageCubeMapArray                 = 0x905F, // GL_INT_IMAGE_CUBE_MAP_ARRAY
-    IntImage2DMultisample                = 0x9060, // GL_INT_IMAGE_2D_MULTISAMPLE
-    IntImage2DMultisampleArray           = 0x9061, // GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY
+    IntImage2DMultiSample                = 0x9060, // GL_INT_IMAGE_2D_MULTISAMPLE
+    IntImage2DMultiSampleArray           = 0x9061, // GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY
     UnsignedIntImage1D                   = 0x9062, // GL_UNSIGNED_INT_IMAGE_1D
     UnsignedIntImage2D                   = 0x9063, // GL_UNSIGNED_INT_IMAGE_2D
     UnsignedIntImage3D                   = 0x9064, // GL_UNSIGNED_INT_IMAGE_3D
@@ -191,14 +191,14 @@ enum class AttributeType : GLenum {
     UnsignedIntImage1DArray              = 0x9068, // GL_UNSIGNED_INT_IMAGE_1D_ARRAY
     UnsignedIntImage2DArray              = 0x9069, // GL_UNSIGNED_INT_IMAGE_2D_ARRAY
     UnsignedIntImageCubeMapArray         = 0x906A, // GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY
-    UnsignedIntImage2DMultisample        = 0x906B, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE
-    UnsignedIntImage2DMultisampleArray   = 0x906C, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY
-    Sampler2DMultisample                 = 0x9108, // GL_SAMPLER_2D_MULTISAMPLE
-    IntSampler2DMultisample              = 0x9109, // GL_INT_SAMPLER_2D_MULTISAMPLE
-    UnsignedIntSampler2DMultisample      = 0x910A, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE
-    Sampler2DMultisampleArray            = 0x910B, // GL_SAMPLER_2D_MULTISAMPLE_ARRAY
-    IntSampler2DMultisampleArray         = 0x910C, // GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
-    UnsignedIntSampler2DMultisampleArray = 0x910D, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+    UnsignedIntImage2DMultiSample        = 0x906B, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE
+    UnsignedIntImage2DMultiSampleArray   = 0x906C, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY
+    Sampler2DMultiSample                 = 0x9108, // GL_SAMPLER_2D_MULTISAMPLE
+    IntSampler2DMultiSample              = 0x9109, // GL_INT_SAMPLER_2D_MULTISAMPLE
+    UnsignedIntSampler2DMultiSample      = 0x910A, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE
+    Sampler2DMultiSampleArray            = 0x910B, // GL_SAMPLER_2D_MULTISAMPLE_ARRAY
+    IntSampler2DMultiSampleArray         = 0x910C, // GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+    UnsignedIntSampler2DMultiSampleArray = 0x910D, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
 }; // enum class AttributeType
 
 enum class BindTransformFeedbackTarget : GLenum {
@@ -239,8 +239,8 @@ enum class BlendingFactor : GLenum {
     OneMinusConstantColor = 0x8002, // GL_ONE_MINUS_CONSTANT_COLOR
     ConstantAlpha         = 0x8003, // GL_CONSTANT_ALPHA
     OneMinusConstantAlpha = 0x8004, // GL_ONE_MINUS_CONSTANT_ALPHA
-    SRC1Alpha             = 0x8589, // GL_SRC1_ALPHA
-    SRC1Color             = 0x88F9, // GL_SRC1_COLOR
+    Src1Alpha             = 0x8589, // GL_SRC1_ALPHA
+    Src1Color             = 0x88F9, // GL_SRC1_COLOR
     OneMinusSRC1Color     = 0x88FA, // GL_ONE_MINUS_SRC1_COLOR
     OneMinusSRC1Alpha     = 0x88FB, // GL_ONE_MINUS_SRC1_ALPHA
 }; // enum class BlendingFactor
@@ -261,13 +261,13 @@ enum class BufferEnum : GLenum {
     Stencil = 0x1802, // GL_STENCIL
 }; // enum class BufferEnum
 
-enum class BufferAccessARB : GLenum {
+enum class BufferAccess : GLenum {
     ReadOnly  = 0x88B8, // GL_READ_ONLY
     WriteOnly = 0x88B9, // GL_WRITE_ONLY
     ReadWrite = 0x88BA, // GL_READ_WRITE
-}; // enum class BufferAccessARB
+}; // enum class BufferAccess
 
-enum class BufferPNameARB : GLenum {
+enum class BufferPName : GLenum {
     BufferImmutableStorage = 0x821F, // GL_BUFFER_IMMUTABLE_STORAGE
     BufferStorageFlags     = 0x8220, // GL_BUFFER_STORAGE_FLAGS
     BufferSize             = 0x8764, // GL_BUFFER_SIZE
@@ -277,24 +277,24 @@ enum class BufferPNameARB : GLenum {
     BufferAccessFlags      = 0x911F, // GL_BUFFER_ACCESS_FLAGS
     BufferMapLength        = 0x9120, // GL_BUFFER_MAP_LENGTH
     BufferMapOffset        = 0x9121, // GL_BUFFER_MAP_OFFSET
-}; // enum class BufferPNameARB
+}; // enum class BufferPName
 
-enum class BufferPointerNameARB : GLenum {
+enum class BufferPointerName : GLenum {
     BufferMapPointer = 0x88BD, // GL_BUFFER_MAP_POINTER
-}; // enum class BufferPointerNameARB
+}; // enum class BufferPointerName
 
 // GL_MAP_{COHERENT,PERSISTENT,READ,WRITE}_{BIT,BIT_EXT} also lie in this namespace
-namespace BufferStorageMask {
-    static const GLbitfield MapRead             = 0x0001; // GL_MAP_READ_BIT
-    static const GLbitfield MapWrite            = 0x0002; // GL_MAP_WRITE_BIT
-    static const GLbitfield MapPersistent       = 0x0040; // GL_MAP_PERSISTENT_BIT
-    static const GLbitfield MapCoherent         = 0x0080; // GL_MAP_COHERENT_BIT
-    static const GLbitfield DynamicStorage      = 0x0100; // GL_DYNAMIC_STORAGE_BIT
-    static const GLbitfield ClientStorage       = 0x0200; // GL_CLIENT_STORAGE_BIT
-    static const GLbitfield SparseStorage       = 0x0400; // GL_SPARSE_STORAGE_BIT_ARB
-    static const GLbitfield LgpuSeparateStorage = 0x0800; // GL_LGPU_SEPARATE_STORAGE_BIT_NVX
-    static const GLbitfield PerGPUStorage       = 0x0800; // GL_PER_GPU_STORAGE_BIT_NV
-} // namespace BufferStorageMask
+struct BufferStorageMask {
+    static constexpr GLbitfield MapRead             = 0x0001; // GL_MAP_READ_BIT
+    static constexpr GLbitfield MapWrite            = 0x0002; // GL_MAP_WRITE_BIT
+    static constexpr GLbitfield MapPersistent       = 0x0040; // GL_MAP_PERSISTENT_BIT
+    static constexpr GLbitfield MapCoherent         = 0x0080; // GL_MAP_COHERENT_BIT
+    static constexpr GLbitfield DynamicStorage      = 0x0100; // GL_DYNAMIC_STORAGE_BIT
+    static constexpr GLbitfield ClientStorage       = 0x0200; // GL_CLIENT_STORAGE_BIT
+    static constexpr GLbitfield SparseStorage       = 0x0400; // GL_SPARSE_STORAGE_BIT_ARB
+    static constexpr GLbitfield LGPUSeparateStorage = 0x0800; // GL_LGPU_SEPARATE_STORAGE_BIT_NVX
+    static constexpr GLbitfield PerGPUStorage       = 0x0800; // GL_PER_GPU_STORAGE_BIT_NV
+}; // struct BufferStorageMask
 
 enum class BufferStorageTarget : GLenum {
     ArrayBuffer             = 0x8892, // GL_ARRAY_BUFFER
@@ -313,7 +313,7 @@ enum class BufferStorageTarget : GLenum {
     AtomicCounterBuffer     = 0x92C0, // GL_ATOMIC_COUNTER_BUFFER
 }; // enum class BufferStorageTarget
 
-enum class BufferTargetARB : GLenum {
+enum class BufferTarget : GLenum {
     ParameterBuffer         = 0x80EE, // GL_PARAMETER_BUFFER
     ArrayBuffer             = 0x8892, // GL_ARRAY_BUFFER
     ElementArrayBuffer      = 0x8893, // GL_ELEMENT_ARRAY_BUFFER
@@ -329,9 +329,9 @@ enum class BufferTargetARB : GLenum {
     DispatchIndirectBuffer  = 0x90EE, // GL_DISPATCH_INDIRECT_BUFFER
     QueryBuffer             = 0x9192, // GL_QUERY_BUFFER
     AtomicCounterBuffer     = 0x92C0, // GL_ATOMIC_COUNTER_BUFFER
-}; // enum class BufferTargetARB
+}; // enum class BufferTarget
 
-enum class BufferUsageARB : GLenum {
+enum class BufferUsage : GLenum {
     StreamDraw  = 0x88E0, // GL_STREAM_DRAW
     StreamRead  = 0x88E1, // GL_STREAM_READ
     StreamCopy  = 0x88E2, // GL_STREAM_COPY
@@ -341,12 +341,12 @@ enum class BufferUsageARB : GLenum {
     DynamicDraw = 0x88E8, // GL_DYNAMIC_DRAW
     DynamicRead = 0x88E9, // GL_DYNAMIC_READ
     DynamicCopy = 0x88EA, // GL_DYNAMIC_COPY
-}; // enum class BufferUsageARB
+}; // enum class BufferUsage
 
 enum class CheckFramebufferStatusTarget : GLenum {
-    ReadFramebuffer = 0x8CA8, // GL_READ_FRAMEBUFFER
-    DrawFramebuffer = 0x8CA9, // GL_DRAW_FRAMEBUFFER
-    Framebuffer     = 0x8D40, // GL_FRAMEBUFFER
+    ReadFrameBuffer = 0x8CA8, // GL_READ_FRAMEBUFFER
+    DrawFrameBuffer = 0x8CA9, // GL_DRAW_FRAMEBUFFER
+    FrameBuffer     = 0x8D40, // GL_FRAMEBUFFER
 }; // enum class CheckFramebufferStatusTarget
 
 enum class ClampColorModeARB : GLenum {
@@ -362,11 +362,11 @@ enum class ClampColorTargetARB : GLenum {
 }; // enum class ClampColorTargetARB
 
 // GL_{DEPTH,ACCUM,STENCIL,COLOR}_BUFFER_BIT also lie in this namespace
-namespace ClearBufferMask {
-    static const GLbitfield DepthBuffer   = 0x00000100; // GL_DEPTH_BUFFER_BIT
-    static const GLbitfield StencilBuffer = 0x00000400; // GL_STENCIL_BUFFER_BIT
-    static const GLbitfield ColorBuffer   = 0x00004000; // GL_COLOR_BUFFER_BIT
-} // namespace ClearBufferMask
+struct ClearBufferMask {
+    static constexpr GLbitfield DepthBuffer   = 0x00000100; // GL_DEPTH_BUFFER_BIT
+    static constexpr GLbitfield StencilBuffer = 0x00000400; // GL_STENCIL_BUFFER_BIT
+    static constexpr GLbitfield ColorBuffer   = 0x00004000; // GL_COLOR_BUFFER_BIT
+}; // struct ClearBufferMask
 
 enum class ClipControlDepth : GLenum {
     NegativeOneToOne = 0x935E, // GL_NEGATIVE_ONE_TO_ONE
@@ -581,17 +581,17 @@ enum class ContainerType : GLenum {
 }; // enum class ContainerType
 
 // Should be shared with WGL/GLX, but aren't since the FORWARD_COMPATIBLE and DEBUG values are swapped vs. WGL/GLX.
-namespace ContextFlagMask {
-    static const GLenum ContextFlagForwardCompatible = 0x00000001; // GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT
-    static const GLenum ContextFlagDebug             = 0x00000002; // GL_CONTEXT_FLAG_DEBUG_BIT
-    static const GLenum ContextFlagRobustAccess      = 0x00000004; // GL_CONTEXT_FLAG_ROBUST_ACCESS_BIT
-    static const GLenum ContextFlagNoError           = 0x00000008; // GL_CONTEXT_FLAG_NO_ERROR_BIT
-} // namespace ContextFlagMask
+struct ContextFlagMask {
+    static constexpr GLenum ContextFlagForwardCompatible = 0x00000001; // GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT
+    static constexpr GLenum ContextFlagDebug             = 0x00000002; // GL_CONTEXT_FLAG_DEBUG_BIT
+    static constexpr GLenum ContextFlagRobustAccess      = 0x00000004; // GL_CONTEXT_FLAG_ROBUST_ACCESS_BIT
+    static constexpr GLenum ContextFlagNoError           = 0x00000008; // GL_CONTEXT_FLAG_NO_ERROR_BIT
+}; // struct ContextFlagMask
 
-namespace ContextProfileMask {
-    static const GLenum ContextCoreProfile          = 0x00000001; // GL_CONTEXT_CORE_PROFILE_BIT
-    static const GLenum ContextCompatibilityProfile = 0x00000002; // GL_CONTEXT_COMPATIBILITY_PROFILE_BIT
-} // namespace ContextProfileMask
+struct ContextProfileMask {
+    static constexpr GLenum ContextCoreProfile          = 0x00000001; // GL_CONTEXT_CORE_PROFILE_BIT
+    static constexpr GLenum ContextCompatibilityProfile = 0x00000002; // GL_CONTEXT_COMPATIBILITY_PROFILE_BIT
+}; // struct ContextProfileMask
 
 enum class ConvolutionBorderModeEXT : GLenum {
     Reduce = 0x8016, // GL_REDUCE_EXT
@@ -633,10 +633,10 @@ enum class CopyImageSubDataTarget : GLenum {
     TextureCubeMap            = 0x8513, // GL_TEXTURE_CUBE_MAP
     Texture1DArray            = 0x8C18, // GL_TEXTURE_1D_ARRAY
     Texture2DArray            = 0x8C1A, // GL_TEXTURE_2D_ARRAY
-    Renderbuffer              = 0x8D41, // GL_RENDERBUFFER
+    RenderBuffer              = 0x8D41, // GL_RENDERBUFFER
     TextureCubeMapArray       = 0x9009, // GL_TEXTURE_CUBE_MAP_ARRAY
-    Texture2DMultisample      = 0x9100, // GL_TEXTURE_2D_MULTISAMPLE
-    Texture2DMultisampleArray = 0x9102, // GL_TEXTURE_2D_MULTISAMPLE_ARRAY
+    Texture2DMultiSample      = 0x9100, // GL_TEXTURE_2D_MULTISAMPLE
+    Texture2DMultiSampleArray = 0x9102, // GL_TEXTURE_2D_MULTISAMPLE_ARRAY
 }; // enum class CopyImageSubDataTarget
 
 enum class CullFaceMode : GLenum {
@@ -793,7 +793,7 @@ enum class EnableCap : GLenum {
     Texture3D                    = 0x806F, // GL_TEXTURE_3D_EXT
     VertexArray                  = 0x8074, // GL_VERTEX_ARRAY
     Interlace                    = 0x8094, // GL_INTERLACE_SGIX
-    Multisample                  = 0x809D, // GL_MULTISAMPLE
+    MultiSample                  = 0x809D, // GL_MULTISAMPLE
     SampleAlphaToCoverage        = 0x809E, // GL_SAMPLE_ALPHA_TO_COVERAGE
     SampleAlphaToOne             = 0x809F, // GL_SAMPLE_ALPHA_TO_ONE
     SampleCoverage               = 0x80A0, // GL_SAMPLE_COVERAGE
@@ -834,7 +834,7 @@ enum class EnableCap : GLenum {
     SampleShading                = 0x8C36, // GL_SAMPLE_SHADING
     RasterizerDiscard            = 0x8C89, // GL_RASTERIZER_DISCARD
     PrimitiveRestartFixedIndex   = 0x8D69, // GL_PRIMITIVE_RESTART_FIXED_INDEX
-    FramebufferSRGB              = 0x8DB9, // GL_FRAMEBUFFER_SRGB
+    FrameBufferSRGB              = 0x8DB9, // GL_FRAMEBUFFER_SRGB
     SampleMask                   = 0x8E51, // GL_SAMPLE_MASK
     PrimitiveRestart             = 0x8F9D, // GL_PRIMITIVE_RESTART
     DebugOutput                  = 0x92E0, // GL_DEBUG_OUTPUT
@@ -879,10 +879,10 @@ enum class FenceParameterNameNV : GLenum {
     FenceCondition = 0x84F4, // GL_FENCE_CONDITION_NV
 }; // enum class FenceParameterNameNV
 
-namespace FfdMaskSGIX {
-    static const GLbitfield TextureDeformation  = 0x00000001; // GL_TEXTURE_DEFORMATION_BIT_SGIX
-    static const GLbitfield GeometryDeformation = 0x00000002; // GL_GEOMETRY_DEFORMATION_BIT_SGIX
-} // namespace FfdMaskSGIX
+struct FfdMaskSGIX {
+    static constexpr GLbitfield TextureDeformation  = 0x00000001; // GL_TEXTURE_DEFORMATION_BIT_SGIX
+    static constexpr GLbitfield GeometryDeformation = 0x00000002; // GL_GEOMETRY_DEFORMATION_BIT_SGIX
+}; // struct FfdMaskSGIX
 
 enum class FfdTargetSGIX : GLenum {
     GeometryDeformation = 0x8194, // GL_GEOMETRY_DEFORMATION_SGIX
@@ -945,27 +945,27 @@ enum class FragmentOpATI : GLenum {
     Dot2Add = 0x896C, // GL_DOT2_ADD_ATI
 }; // enum class FragmentOpATI
 
-namespace FragmentShaderColorModMaskATI {
-    static const GLenum Comp   = 0x00000002; // GL_COMP_BIT_ATI
-    static const GLenum Negate = 0x00000004; // GL_NEGATE_BIT_ATI
-    static const GLenum Bias   = 0x00000008; // GL_BIAS_BIT_ATI
-} // namespace FragmentShaderColorModMaskATI
+struct FragmentShaderColorModMaskATI {
+    static constexpr GLenum Comp   = 0x00000002; // GL_COMP_BIT_ATI
+    static constexpr GLenum Negate = 0x00000004; // GL_NEGATE_BIT_ATI
+    static constexpr GLenum Bias   = 0x00000008; // GL_BIAS_BIT_ATI
+}; // struct FragmentShaderColorModMaskATI
 
-namespace FragmentShaderDestMaskATI {
-    static const GLenum Red   = 0x00000001; // GL_RED_BIT_ATI
-    static const GLenum Green = 0x00000002; // GL_GREEN_BIT_ATI
-    static const GLenum Blue  = 0x00000004; // GL_BLUE_BIT_ATI
-} // namespace FragmentShaderDestMaskATI
+struct FragmentShaderDestMaskATI {
+    static constexpr GLenum Red   = 0x00000001; // GL_RED_BIT_ATI
+    static constexpr GLenum Green = 0x00000002; // GL_GREEN_BIT_ATI
+    static constexpr GLenum Blue  = 0x00000004; // GL_BLUE_BIT_ATI
+}; // struct FragmentShaderDestMaskATI
 
-namespace FragmentShaderDestModMaskATI {
-    static const GLenum _2X      = 0x00000001; // GL_2X_BIT_ATI
-    static const GLenum _4X      = 0x00000002; // GL_4X_BIT_ATI
-    static const GLenum _8X      = 0x00000004; // GL_8X_BIT_ATI
-    static const GLenum Half     = 0x00000008; // GL_HALF_BIT_ATI
-    static const GLenum Quarter  = 0x00000010; // GL_QUARTER_BIT_ATI
-    static const GLenum Eighth   = 0x00000020; // GL_EIGHTH_BIT_ATI
-    static const GLenum Saturate = 0x00000040; // GL_SATURATE_BIT_ATI
-} // namespace FragmentShaderDestModMaskATI
+struct FragmentShaderDestModMaskATI {
+    static constexpr GLenum _2X      = 0x00000001; // GL_2X_BIT_ATI
+    static constexpr GLenum _4X      = 0x00000002; // GL_4X_BIT_ATI
+    static constexpr GLenum _8X      = 0x00000004; // GL_8X_BIT_ATI
+    static constexpr GLenum Half     = 0x00000008; // GL_HALF_BIT_ATI
+    static constexpr GLenum Quarter  = 0x00000010; // GL_QUARTER_BIT_ATI
+    static constexpr GLenum Eighth   = 0x00000020; // GL_EIGHTH_BIT_ATI
+    static constexpr GLenum Saturate = 0x00000040; // GL_SATURATE_BIT_ATI
+}; // struct FragmentShaderDestModMaskATI
 
 enum class FramebufferAttachment : GLenum {
     DepthStencilAttachment = 0x821A, // GL_DEPTH_STENCIL_ATTACHMENT
@@ -1005,50 +1005,50 @@ enum class FramebufferAttachment : GLenum {
     StencilAttachment      = 0x8D20, // GL_STENCIL_ATTACHMENT
 }; // enum class FramebufferAttachment
 
-enum class FramebufferAttachmentParameterName : GLenum {
-    FramebufferAttachmentColorEncoding           = 0x8210, // GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING
-    FramebufferAttachmentComponentType           = 0x8211, // GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE
-    FramebufferAttachmentRedSize                 = 0x8212, // GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE
-    FramebufferAttachmentGreenSize               = 0x8213, // GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE
-    FramebufferAttachmentBlueSize                = 0x8214, // GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE
-    FramebufferAttachmentAlphaSize               = 0x8215, // GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE
-    FramebufferAttachmentDepthSize               = 0x8216, // GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE
-    FramebufferAttachmentStencilSize             = 0x8217, // GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE
-    FramebufferAttachmentObjectType              = 0x8CD0, // GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE
-    FramebufferAttachmentObjectName              = 0x8CD1, // GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME
-    FramebufferAttachmentTextureLevel            = 0x8CD2, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL
-    FramebufferAttachmentTextureCubeMapFace      = 0x8CD3, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE
-    FramebufferAttachmentTexture3DZoffset        = 0x8CD4, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_3D_ZOFFSET_EXT
-    FramebufferAttachmentLayered                 = 0x8DA7, // GL_FRAMEBUFFER_ATTACHMENT_LAYERED
-    FramebufferAttachmentTextureNumViewsOvr      = 0x9630, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR
-    FramebufferAttachmentTextureBaseViewIndexOvr = 0x9632, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR
-}; // enum class FramebufferAttachmentParameterName
+enum class FrameBufferAttachmentParameterName : GLenum {
+    FrameBufferAttachmentColorEncoding           = 0x8210, // GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING
+    FrameBufferAttachmentComponentType           = 0x8211, // GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE
+    FrameBufferAttachmentRedSize                 = 0x8212, // GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE
+    FrameBufferAttachmentGreenSize               = 0x8213, // GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE
+    FrameBufferAttachmentBlueSize                = 0x8214, // GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE
+    FrameBufferAttachmentAlphaSize               = 0x8215, // GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE
+    FrameBufferAttachmentDepthSize               = 0x8216, // GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE
+    FrameBufferAttachmentStencilSize             = 0x8217, // GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE
+    FrameBufferAttachmentObjectType              = 0x8CD0, // GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE
+    FrameBufferAttachmentObjectName              = 0x8CD1, // GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME
+    FrameBufferAttachmentTextureLevel            = 0x8CD2, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL
+    FrameBufferAttachmentTextureCubeMapFace      = 0x8CD3, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE
+    FrameBufferAttachmentTexture3DZoffset        = 0x8CD4, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_3D_ZOFFSET_EXT
+    FrameBufferAttachmentLayered                 = 0x8DA7, // GL_FRAMEBUFFER_ATTACHMENT_LAYERED
+    FrameBufferAttachmentTextureNumViewsOvr      = 0x9630, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR
+    FrameBufferAttachmentTextureBaseViewIndexOvr = 0x9632, // GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR
+}; // enum class FrameBufferAttachmentParameterName
 
-enum class FramebufferParameterName : GLenum {
-    FramebufferDefaultWidth                = 0x9310, // GL_FRAMEBUFFER_DEFAULT_WIDTH
-    FramebufferDefaultHeight               = 0x9311, // GL_FRAMEBUFFER_DEFAULT_HEIGHT
-    FramebufferDefaultLayers               = 0x9312, // GL_FRAMEBUFFER_DEFAULT_LAYERS
-    FramebufferDefaultSamples              = 0x9313, // GL_FRAMEBUFFER_DEFAULT_SAMPLES
-    FramebufferDefaultFixedSampleLocations = 0x9314, // GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS
-}; // enum class FramebufferParameterName
+enum class FrameBufferParameterName : GLenum {
+    FrameBufferDefaultWidth                = 0x9310, // GL_FRAMEBUFFER_DEFAULT_WIDTH
+    FrameBufferDefaultHeight               = 0x9311, // GL_FRAMEBUFFER_DEFAULT_HEIGHT
+    FrameBufferDefaultLayers               = 0x9312, // GL_FRAMEBUFFER_DEFAULT_LAYERS
+    FrameBufferDefaultSamples              = 0x9313, // GL_FRAMEBUFFER_DEFAULT_SAMPLES
+    FrameBufferDefaultFixedSampleLocations = 0x9314, // GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS
+}; // enum class FrameBufferParameterName
 
-enum class FramebufferStatus : GLenum {
-    FramebufferUndefined                   = 0x8219, // GL_FRAMEBUFFER_UNDEFINED
-    FramebufferComplete                    = 0x8CD5, // GL_FRAMEBUFFER_COMPLETE
-    FramebufferIncompleteAttachment        = 0x8CD6, // GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
-    FramebufferIncompleteMissingAttachment = 0x8CD7, // GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
-    FramebufferIncompleteDrawBuffer        = 0x8CDB, // GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
-    FramebufferIncompleteReadBuffer        = 0x8CDC, // GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
-    FramebufferUnsupported                 = 0x8CDD, // GL_FRAMEBUFFER_UNSUPPORTED
-    FramebufferIncompleteMultisample       = 0x8D56, // GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
-    FramebufferIncompleteLayerTargets      = 0x8DA8, // GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
-}; // enum class FramebufferStatus
+enum class FrameBufferStatus : GLenum {
+    FrameBufferUndefined                   = 0x8219, // GL_FRAMEBUFFER_UNDEFINED
+    FrameBufferComplete                    = 0x8CD5, // GL_FRAMEBUFFER_COMPLETE
+    FrameBufferIncompleteAttachment        = 0x8CD6, // GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
+    FrameBufferIncompleteMissingAttachment = 0x8CD7, // GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
+    FrameBufferIncompleteDrawBuffer        = 0x8CDB, // GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
+    FrameBufferIncompleteReadBuffer        = 0x8CDC, // GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
+    FrameBufferUnsupported                 = 0x8CDD, // GL_FRAMEBUFFER_UNSUPPORTED
+    FrameBufferIncompleteMultisample       = 0x8D56, // GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
+    FrameBufferIncompleteLayerTargets      = 0x8DA8, // GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
+}; // enum class FrameBufferStatus
 
-enum class FramebufferTarget : GLenum {
-    ReadFramebuffer = 0x8CA8, // GL_READ_FRAMEBUFFER
-    DrawFramebuffer = 0x8CA9, // GL_DRAW_FRAMEBUFFER
-    Framebuffer     = 0x8D40, // GL_FRAMEBUFFER
-}; // enum class FramebufferTarget
+enum class FrameBufferTarget : GLenum {
+    ReadFrameBuffer = 0x8CA8, // GL_READ_FRAMEBUFFER
+    DrawFrameBuffer = 0x8CA9, // GL_DRAW_FRAMEBUFFER
+    FrameBuffer     = 0x8D40, // GL_FRAMEBUFFER
+}; // enum class FrameBufferTarget
 
 enum class FrontFaceDirection : GLenum {
     CW  = 0x0900, // GL_CW
@@ -1080,17 +1080,17 @@ enum class GetConvolutionParameter : GLenum {
 }; // enum class GetConvolutionParameter
 
 enum class GetFramebufferParameter : GLenum {
-    Doublebuffer                           = 0x0C32, // GL_DOUBLEBUFFER
+    DoubleBuffer                           = 0x0C32, // GL_DOUBLEBUFFER
     Stereo                                 = 0x0C33, // GL_STEREO
     SampleBuffers                          = 0x80A8, // GL_SAMPLE_BUFFERS
     Samples                                = 0x80A9, // GL_SAMPLES
     ImplementationColorReadType            = 0x8B9A, // GL_IMPLEMENTATION_COLOR_READ_TYPE
     ImplementationColorReadFormat          = 0x8B9B, // GL_IMPLEMENTATION_COLOR_READ_FORMAT
-    FramebufferDefaultWidth                = 0x9310, // GL_FRAMEBUFFER_DEFAULT_WIDTH
-    FramebufferDefaultHeight               = 0x9311, // GL_FRAMEBUFFER_DEFAULT_HEIGHT
-    FramebufferDefaultLayers               = 0x9312, // GL_FRAMEBUFFER_DEFAULT_LAYERS
-    FramebufferDefaultSamples              = 0x9313, // GL_FRAMEBUFFER_DEFAULT_SAMPLES
-    FramebufferDefaultFixedSampleLocations = 0x9314, // GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS
+    FrameBufferDefaultWidth                = 0x9310, // GL_FRAMEBUFFER_DEFAULT_WIDTH
+    FrameBufferDefaultHeight               = 0x9311, // GL_FRAMEBUFFER_DEFAULT_HEIGHT
+    FrameBufferDefaultLayers               = 0x9312, // GL_FRAMEBUFFER_DEFAULT_LAYERS
+    FrameBufferDefaultSamples              = 0x9313, // GL_FRAMEBUFFER_DEFAULT_SAMPLES
+    FrameBufferDefaultFixedSampleLocations = 0x9314, // GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS
 }; // enum class GetFramebufferParameter
 
 enum class GetHistogramParameterPNameEXT : GLenum {
@@ -1157,7 +1157,7 @@ enum class GetPName : GLenum {
     ScissorTest                           = 0x0C11, // GL_SCISSOR_TEST
     ColorClearValue                       = 0x0C22, // GL_COLOR_CLEAR_VALUE
     ColorWritemask                        = 0x0C23, // GL_COLOR_WRITEMASK
-    Doublebuffer                          = 0x0C32, // GL_DOUBLEBUFFER
+    DoubleBuffer                          = 0x0C32, // GL_DOUBLEBUFFER
     Stereo                                = 0x0C33, // GL_STEREO
     LineSmoothHint                        = 0x0C52, // GL_LINE_SMOOTH_HINT
     PolygonSmoothHint                     = 0x0C53, // GL_POLYGON_SMOOTH_HINT
@@ -1221,7 +1221,7 @@ enum class GetPName : GLenum {
     EdgeFlagArrayCount                    = 0x808D, // GL_EDGE_FLAG_ARRAY_COUNT_EXT
     Interlace                             = 0x8094, // GL_INTERLACE_SGIX
     DetailTexture2DBinding                = 0x8096, // GL_DETAIL_TEXTURE_2D_BINDING_SGIS
-    Multisample                           = 0x809D, // GL_MULTISAMPLE_SGIS
+    MultiSample                           = 0x809D, // GL_MULTISAMPLE_SGIS
     SampleAlphaToMask                     = 0x809E, // GL_SAMPLE_ALPHA_TO_MASK_SGIS
     SampleAlphaToOne                      = 0x809F, // GL_SAMPLE_ALPHA_TO_ONE_SGIS
     SampleMask                            = 0x80A0, // GL_SAMPLE_MASK_SGIS
@@ -1614,7 +1614,7 @@ enum class Global : GLenum {
     TextureCoordArrayType                      =  0x8089, // GL_TEXTURE_COORD_ARRAY_TYPE_EXT
     TextureCoordArrayStride                    =  0x808A, // GL_TEXTURE_COORD_ARRAY_STRIDE_EXT
     EdgeFlagArrayStride                        =  0x808C, // GL_EDGE_FLAG_ARRAY_STRIDE_EXT
-    Multisample                                =  0x809D, // GL_MULTISAMPLE_ARB
+    MultiSample                                =  0x809D, // GL_MULTISAMPLE_ARB
     SampleAlphaToCoverage                      =  0x809E, // GL_SAMPLE_ALPHA_TO_COVERAGE_ARB
     SampleAlphaToOne                           =  0x809F, // GL_SAMPLE_ALPHA_TO_ONE_ARB
     SampleCoverage                             =  0x80A0, // GL_SAMPLE_COVERAGE_ARB
@@ -1809,7 +1809,7 @@ enum class Global : GLenum {
     PerfqueryFlush                             =  0x83FA, // GL_PERFQUERY_FLUSH_INTEL
     PerfqueryWait                              =  0x83FB, // GL_PERFQUERY_WAIT_INTEL
     BlackholeRender                            =  0x83FC, // GL_BLACKHOLE_RENDER_INTEL
-    ConservativeRasterizationINTEL             =  0x83FE, // GL_CONSERVATIVE_RASTERIZATION_INTEL
+    ConservativeRasterization                  =  0x83FE, // GL_CONSERVATIVE_RASTERIZATION_INTEL
     TextureMemoryLayout                        =  0x83FF, // GL_TEXTURE_MEMORY_LAYOUT_INTEL
     CurrentRasterNormal                        =  0x8406, // GL_CURRENT_RASTER_NORMAL_SGIX
     TangentArray                               =  0x8439, // GL_TANGENT_ARRAY_EXT
@@ -1895,14 +1895,14 @@ enum class Global : GLenum {
     TextureFilterControl                       =  0x8500, // GL_TEXTURE_FILTER_CONTROL_EXT
     TextureLODBias                             =  0x8501, // GL_TEXTURE_LOD_BIAS_EXT
     Modelview1StackDepth                       =  0x8502, // GL_MODELVIEW1_STACK_DEPTH_EXT
-    COMBINE4                                   =  0x8503, // GL_COMBINE4_NV
+    Combine4                                   =  0x8503, // GL_COMBINE4_NV
     MaxShininess                               =  0x8504, // GL_MAX_SHININESS_NV
     MaxSpotExponent                            =  0x8505, // GL_MAX_SPOT_EXPONENT_NV
     Modelview1Matrix                           =  0x8506, // GL_MODELVIEW1_MATRIX_EXT
     IncrWrap                                   =  0x8507, // GL_INCR_WRAP_EXT
     DecrWrap                                   =  0x8508, // GL_DECR_WRAP_EXT
     VertexWeighting                            =  0x8509, // GL_VERTEX_WEIGHTING_EXT
-    Modelview1                                 =  0x850A, // GL_MODELVIEW1_ARB
+    ModelView1                                 =  0x850A, // GL_MODELVIEW1_ARB
     CurrentVertexWeight                        =  0x850B, // GL_CURRENT_VERTEX_WEIGHT_EXT
     VertexWeightArray                          =  0x850C, // GL_VERTEX_WEIGHT_ARRAY_EXT
     VertexWeightArraySize                      =  0x850D, // GL_VERTEX_WEIGHT_ARRAY_SIZE_EXT
@@ -2000,14 +2000,14 @@ enum class Global : GLenum {
     InverseTranspose                           =  0x862D, // GL_INVERSE_TRANSPOSE_NV
     MaxProgramMatrixStackDepth                 =  0x862E, // GL_MAX_PROGRAM_MATRIX_STACK_DEPTH_ARB
     MaxProgramMatrices                         =  0x862F, // GL_MAX_PROGRAM_MATRICES_ARB
-    Matrix0NV                                  =  0x8630, // GL_MATRIX0_NV
-    Matrix1NV                                  =  0x8631, // GL_MATRIX1_NV
-    Matrix2NV                                  =  0x8632, // GL_MATRIX2_NV
-    Matrix3NV                                  =  0x8633, // GL_MATRIX3_NV
-    Matrix4NV                                  =  0x8634, // GL_MATRIX4_NV
-    Matrix5NV                                  =  0x8635, // GL_MATRIX5_NV
-    Matrix6NV                                  =  0x8636, // GL_MATRIX6_NV
-    Matrix7NV                                  =  0x8637, // GL_MATRIX7_NV
+    Matrix0                                    =  0x8630, // GL_MATRIX0_NV
+    Matrix1                                    =  0x8631, // GL_MATRIX1_NV
+    Matrix2                                    =  0x8632, // GL_MATRIX2_NV
+    Matrix3                                    =  0x8633, // GL_MATRIX3_NV
+    Matrix4                                    =  0x8634, // GL_MATRIX4_NV
+    Matrix5                                    =  0x8635, // GL_MATRIX5_NV
+    Matrix6                                    =  0x8636, // GL_MATRIX6_NV
+    Matrix7                                    =  0x8637, // GL_MATRIX7_NV
     CurrentMatrixStackDepth                    =  0x8640, // GL_CURRENT_MATRIX_STACK_DEPTH_ARB
     CurrentMatrix                              =  0x8641, // GL_CURRENT_MATRIX_ARB
     ProgramPointSize                           =  0x8642, // GL_PROGRAM_POINT_SIZE_ARB
@@ -2139,11 +2139,11 @@ enum class Global : GLenum {
     DotProductDiffuseCubeMap                   =  0x86F1, // GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV
     DotProductReflectCubeMap                   =  0x86F2, // GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV
     DotProductConstEyeReflectCubeMap           =  0x86F3, // GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV
-    Hilo                                       =  0x86F4, // GL_HILO_NV
+    HiLo                                       =  0x86F4, // GL_HILO_NV
     Dsdt                                       =  0x86F5, // GL_DSDT_NV
     DsdtMag                                    =  0x86F6, // GL_DSDT_MAG_NV
     DsdtMagVib                                 =  0x86F7, // GL_DSDT_MAG_VIB_NV
-    HILO16                                     =  0x86F8, // GL_HILO16_NV
+    HiLo16                                     =  0x86F8, // GL_HILO16_NV
     SignedHilo                                 =  0x86F9, // GL_SIGNED_HILO_NV
     SignedHILO16                               =  0x86FA, // GL_SIGNED_HILO16_NV
     SignedRGBA                                 =  0x86FB, // GL_SIGNED_RGBA_NV
@@ -2165,7 +2165,7 @@ enum class Global : GLenum {
     DSDT8MAG8Intensity8                        =  0x870B, // GL_DSDT8_MAG8_INTENSITY8_NV
     SignedRGBUnsignedAlpha                     =  0x870C, // GL_SIGNED_RGB_UNSIGNED_ALPHA_NV
     SignedRGB8UnsignedAlpha8                   =  0x870D, // GL_SIGNED_RGB8_UNSIGNED_ALPHA8_NV
-    HIScale                                    =  0x870E, // GL_HI_SCALE_NV
+    HiScale                                    =  0x870E, // GL_HI_SCALE_NV
     LoScale                                    =  0x870F, // GL_LO_SCALE_NV
     DsScale                                    =  0x8710, // GL_DS_SCALE_NV
     DtScale                                    =  0x8711, // GL_DT_SCALE_NV
@@ -2213,8 +2213,8 @@ enum class Global : GLenum {
     Modelview29                                =  0x873D, // GL_MODELVIEW29_ARB
     Modelview30                                =  0x873E, // GL_MODELVIEW30_ARB
     Modelview31                                =  0x873F, // GL_MODELVIEW31_ARB
-    Dot3RGBEXT                                 =  0x8740, // GL_DOT3_RGB_EXT
-    Dot3RGBAEXT                                =  0x8741, // GL_DOT3_RGBA_EXT
+    Dot3RGB                                    =  0x8740, // GL_DOT3_RGB_EXT
+    Dot3RGBA                                   =  0x8741, // GL_DOT3_RGBA_EXT
     MirrorClamp                                =  0x8742, // GL_MIRROR_CLAMP_ATI
     MirrorClampToEdge                          =  0x8743, // GL_MIRROR_CLAMP_TO_EDGE
     ModulateAdd                                =  0x8744, // GL_MODULATE_ADD_ATI
@@ -2381,18 +2381,18 @@ enum class Global : GLenum {
     OffsetProjectiveTexture2DScale             =  0x8851, // GL_OFFSET_PROJECTIVE_TEXTURE_2D_SCALE_NV
     OffsetProjectiveTextureRectangle           =  0x8852, // GL_OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_NV
     OffsetProjectiveTextureRectangleScale      =  0x8853, // GL_OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_SCALE_NV
-    OffsetHiloTexture2D                        =  0x8854, // GL_OFFSET_HILO_TEXTURE_2D_NV
-    OffsetHiloTextureRectangle                 =  0x8855, // GL_OFFSET_HILO_TEXTURE_RECTANGLE_NV
-    OffsetHiloProjectiveTexture2D              =  0x8856, // GL_OFFSET_HILO_PROJECTIVE_TEXTURE_2D_NV
-    OffsetHiloProjectiveTextureRectangle       =  0x8857, // GL_OFFSET_HILO_PROJECTIVE_TEXTURE_RECTANGLE_NV
+    OffsetHiLoTexture2D                        =  0x8854, // GL_OFFSET_HILO_TEXTURE_2D_NV
+    OffsetHiLoTextureRectangle                 =  0x8855, // GL_OFFSET_HILO_TEXTURE_RECTANGLE_NV
+    OffsetHiLoProjectiveTexture2D              =  0x8856, // GL_OFFSET_HILO_PROJECTIVE_TEXTURE_2D_NV
+    OffsetHiLoProjectiveTextureRectangle       =  0x8857, // GL_OFFSET_HILO_PROJECTIVE_TEXTURE_RECTANGLE_NV
     DependentHiloTexture2D                     =  0x8858, // GL_DEPENDENT_HILO_TEXTURE_2D_NV
     DependentRGBTexture3D                      =  0x8859, // GL_DEPENDENT_RGB_TEXTURE_3D_NV
     DependentRGBTextureCubeMap                 =  0x885A, // GL_DEPENDENT_RGB_TEXTURE_CUBE_MAP_NV
     DotProductPassThrough                      =  0x885B, // GL_DOT_PRODUCT_PASS_THROUGH_NV
     DotProductTexture1D                        =  0x885C, // GL_DOT_PRODUCT_TEXTURE_1D_NV
     DotProductAffineDepthReplace               =  0x885D, // GL_DOT_PRODUCT_AFFINE_DEPTH_REPLACE_NV
-    HILO8                                      =  0x885E, // GL_HILO8_NV
-    SignedHILO8                                =  0x885F, // GL_SIGNED_HILO8_NV
+    HiLo8                                      =  0x885E, // GL_HILO8_NV
+    SignedHiLo8                                =  0x885F, // GL_SIGNED_HILO8_NV
     ForceBlueToOne                             =  0x8860, // GL_FORCE_BLUE_TO_ONE_NV
     PointSprite                                =  0x8861, // GL_POINT_SPRITE_ARB
     CoordReplace                               =  0x8862, // GL_COORD_REPLACE_ARB
@@ -2699,7 +2699,7 @@ enum class Global : GLenum {
     TileRasterOrderIncreasingY                 =  0x8BBA, // GL_TILE_RASTER_ORDER_INCREASING_Y_MESA
     FramebufferFlipY                           =  0x8BBB, // GL_FRAMEBUFFER_FLIP_Y_MESA
     FramebufferFlipX                           =  0x8BBC, // GL_FRAMEBUFFER_FLIP_X_MESA
-    FramebufferSwapXy                          =  0x8BBD, // GL_FRAMEBUFFER_SWAP_XY_MESA
+    FramebufferSwapXY                          =  0x8BBD, // GL_FRAMEBUFFER_SWAP_XY_MESA
     CounterType                                =  0x8BC0, // GL_COUNTER_TYPE_AMD
     CounterRange                               =  0x8BC1, // GL_COUNTER_RANGE_AMD
     UnsignedInt64                              =  0x8BC2, // GL_UNSIGNED_INT64_AMD
@@ -2729,7 +2729,7 @@ enum class Global : GLenum {
     TextureBufferFormat                        =  0x8C2E, // GL_TEXTURE_BUFFER_FORMAT_ARB
     SampleShading                              =  0x8C36, // GL_SAMPLE_SHADING_ARB
     MinSampleShadingValue                      =  0x8C37, // GL_MIN_SAMPLE_SHADING_VALUE
-    UnsignedInt10F11F11FRev                    =  0x8C3B, // GL_UNSIGNED_INT_10F_11F_11F_REV_EXT
+    UnsignedInt10F_11F_11F_Rev                 =  0x8C3B, // GL_UNSIGNED_INT_10F_11F_11F_REV_EXT
     RGBASignedComponents                       =  0x8C3C, // GL_RGBA_SIGNED_COMPONENTS_EXT
     UnsignedInt5_9_9_9Rev                      =  0x8C3E, // GL_UNSIGNED_INT_5_9_9_9_REV
     TextureSharedSize                          =  0x8C3F, // GL_TEXTURE_SHARED_SIZE
@@ -2776,20 +2776,20 @@ enum class Global : GLenum {
     PointSpriteCoordOrigin                     =  0x8CA0, // GL_POINT_SPRITE_COORD_ORIGIN
     DrawFramebufferBinding                     =  0x8CA6, // GL_DRAW_FRAMEBUFFER_BINDING_EXT
     RenderbufferBinding                        =  0x8CA7, // GL_RENDERBUFFER_BINDING_EXT
-    ReadFramebuffer                            =  0x8CA8, // GL_READ_FRAMEBUFFER_EXT
-    DrawFramebuffer                            =  0x8CA9, // GL_DRAW_FRAMEBUFFER_EXT
+    ReadFrameBuffer                            =  0x8CA8, // GL_READ_FRAMEBUFFER_EXT
+    DrawFrameBuffer                            =  0x8CA9, // GL_DRAW_FRAMEBUFFER_EXT
     ReadFramebufferBinding                     =  0x8CAA, // GL_READ_FRAMEBUFFER_BINDING_EXT
-    FramebufferComplete                        =  0x8CD5, // GL_FRAMEBUFFER_COMPLETE_EXT
-    FramebufferIncompleteAttachment            =  0x8CD6, // GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT
-    FramebufferIncompleteMissingAttachment     =  0x8CD7, // GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT
-    FramebufferIncompleteDimensions            =  0x8CD9, // GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT
-    FramebufferIncompleteFormats               =  0x8CDA, // GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT
-    FramebufferIncompleteDrawBuffer            =  0x8CDB, // GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT
-    FramebufferIncompleteReadBuffer            =  0x8CDC, // GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT
-    FramebufferUnsupported                     =  0x8CDD, // GL_FRAMEBUFFER_UNSUPPORTED_EXT
-    Framebuffer                                =  0x8D40, // GL_FRAMEBUFFER_EXT
-    Renderbuffer                               =  0x8D41, // GL_RENDERBUFFER_EXT
-    FramebufferIncompleteMultisample           =  0x8D56, // GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT
+    FrameBufferComplete                        =  0x8CD5, // GL_FRAMEBUFFER_COMPLETE_EXT
+    FrameBufferIncompleteAttachment            =  0x8CD6, // GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT
+    FrameBufferIncompleteMissingAttachment     =  0x8CD7, // GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT
+    FrameBufferIncompleteDimensions            =  0x8CD9, // GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT
+    FrameBufferIncompleteFormats               =  0x8CDA, // GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT
+    FrameBufferIncompleteDrawBuffer            =  0x8CDB, // GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT
+    FrameBufferIncompleteReadBuffer            =  0x8CDC, // GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT
+    FrameBufferUnsupported                     =  0x8CDD, // GL_FRAMEBUFFER_UNSUPPORTED_EXT
+    FrameBuffer                                =  0x8D40, // GL_FRAMEBUFFER_EXT
+    RenderBuffer                               =  0x8D41, // GL_RENDERBUFFER_EXT
+    FrameBufferIncompleteMultisample           =  0x8D56, // GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT
     MaxSamples                                 =  0x8D57, // GL_MAX_SAMPLES
     RedInteger                                 =  0x8D94, // GL_RED_INTEGER_EXT
     GreenInteger                               =  0x8D95, // GL_GREEN_INTEGER_EXT
@@ -2809,14 +2809,14 @@ enum class Global : GLenum {
     FragmentProgramParameterBuffer             =  0x8DA4, // GL_FRAGMENT_PROGRAM_PARAMETER_BUFFER_NV
     MaxProgramGenericAttribs                   =  0x8DA5, // GL_MAX_PROGRAM_GENERIC_ATTRIBS_NV
     MaxProgramGenericResults                   =  0x8DA6, // GL_MAX_PROGRAM_GENERIC_RESULTS_NV
-    FramebufferIncompleteLayerTargets          =  0x8DA8, // GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_ARB
-    FramebufferIncompleteLayerCount            =  0x8DA9, // GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT_ARB
+    FrameBufferIncompleteLayerTargets          =  0x8DA8, // GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_ARB
+    FrameBufferIncompleteLayerCount            =  0x8DA9, // GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT_ARB
     Layer                                      =  0x8DAA, // GL_LAYER_NV
     Float32UnsignedInt24_8Rev                  =  0x8DAD, // GL_FLOAT_32_UNSIGNED_INT_24_8_REV
     ShaderInclude                              =  0x8DAE, // GL_SHADER_INCLUDE_ARB
     DepthBufferFloatMode                       =  0x8DAF, // GL_DEPTH_BUFFER_FLOAT_MODE_NV
-    FramebufferSRGB                            =  0x8DB9, // GL_FRAMEBUFFER_SRGB_EXT
-    FramebufferSRGBCapable                     =  0x8DBA, // GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
+    FrameBufferSRGB                            =  0x8DB9, // GL_FRAMEBUFFER_SRGB_EXT
+    FrameBufferSRGBCapable                     =  0x8DBA, // GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
     Sampler1DArray                             =  0x8DC0, // GL_SAMPLER_1D_ARRAY_EXT
     Sampler2DArray                             =  0x8DC1, // GL_SAMPLER_2D_ARRAY_EXT
     SamplerBufferEXT                           =  0x8DC2, // GL_SAMPLER_BUFFER_EXT
@@ -2896,12 +2896,12 @@ enum class Global : GLenum {
     SampleLocation                             =  0x8E50, // GL_SAMPLE_LOCATION_NV
     SampleMask                                 =  0x8E51, // GL_SAMPLE_MASK_NV
     SampleMaskValue                            =  0x8E52, // GL_SAMPLE_MASK_VALUE
-    TextureBindingRenderbuffer                 =  0x8E53, // GL_TEXTURE_BINDING_RENDERBUFFER_NV
-    TextureRenderbufferDataStoreBinding        =  0x8E54, // GL_TEXTURE_RENDERBUFFER_DATA_STORE_BINDING_NV
-    TextureRenderbuffer                        =  0x8E55, // GL_TEXTURE_RENDERBUFFER_NV
-    SamplerRenderbuffer                        =  0x8E56, // GL_SAMPLER_RENDERBUFFER_NV
-    IntSamplerRenderbuffer                     =  0x8E57, // GL_INT_SAMPLER_RENDERBUFFER_NV
-    UnsignedIntSamplerRenderbuffer             =  0x8E58, // GL_UNSIGNED_INT_SAMPLER_RENDERBUFFER_NV
+    TextureBindingRenderBuffer                 =  0x8E53, // GL_TEXTURE_BINDING_RENDERBUFFER_NV
+    TextureRenderBufferDataStoreBinding        =  0x8E54, // GL_TEXTURE_RENDERBUFFER_DATA_STORE_BINDING_NV
+    TextureRenderBuffer                        =  0x8E55, // GL_TEXTURE_RENDERBUFFER_NV
+    SamplerRenderBuffer                        =  0x8E56, // GL_SAMPLER_RENDERBUFFER_NV
+    IntSamplerRenderBuffer                     =  0x8E57, // GL_INT_SAMPLER_RENDERBUFFER_NV
+    UnsignedIntSamplerRenderBuffer             =  0x8E58, // GL_UNSIGNED_INT_SAMPLER_RENDERBUFFER_NV
     MaxSampleMaskWords                         =  0x8E59, // GL_MAX_SAMPLE_MASK_WORDS_NV
     MaxGeometryProgramInvocations              =  0x8E5A, // GL_MAX_GEOMETRY_PROGRAM_INVOCATIONS_NV
     MinFragmentInterpolationOffset             =  0x8E5B, // GL_MIN_FRAGMENT_INTERPOLATION_OFFSET
@@ -3109,8 +3109,8 @@ enum class Global : GLenum {
     Image1DArray                               =  0x9052, // GL_IMAGE_1D_ARRAY_EXT
     Image2DArray                               =  0x9053, // GL_IMAGE_2D_ARRAY_EXT
     ImageCubeMapArray                          =  0x9054, // GL_IMAGE_CUBE_MAP_ARRAY_EXT
-    Image2DMultisample                         =  0x9055, // GL_IMAGE_2D_MULTISAMPLE_EXT
-    Image2DMultisampleArray                    =  0x9056, // GL_IMAGE_2D_MULTISAMPLE_ARRAY_EXT
+    Image2DMultiSample                         =  0x9055, // GL_IMAGE_2D_MULTISAMPLE_EXT
+    Image2DMultiSampleArray                    =  0x9056, // GL_IMAGE_2D_MULTISAMPLE_ARRAY_EXT
     IntImage1D                                 =  0x9057, // GL_INT_IMAGE_1D_EXT
     IntImage2D                                 =  0x9058, // GL_INT_IMAGE_2D_EXT
     IntImage3D                                 =  0x9059, // GL_INT_IMAGE_3D_EXT
@@ -3120,8 +3120,8 @@ enum class Global : GLenum {
     IntImage1DArray                            =  0x905D, // GL_INT_IMAGE_1D_ARRAY_EXT
     IntImage2DArray                            =  0x905E, // GL_INT_IMAGE_2D_ARRAY_EXT
     IntImageCubeMapArray                       =  0x905F, // GL_INT_IMAGE_CUBE_MAP_ARRAY_EXT
-    IntImage2DMultisample                      =  0x9060, // GL_INT_IMAGE_2D_MULTISAMPLE_EXT
-    IntImage2DMultisampleArray                 =  0x9061, // GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY_EXT
+    IntImage2DMultiSample                      =  0x9060, // GL_INT_IMAGE_2D_MULTISAMPLE_EXT
+    IntImage2DMultiSampleArray                 =  0x9061, // GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY_EXT
     UnsignedIntImage1D                         =  0x9062, // GL_UNSIGNED_INT_IMAGE_1D_EXT
     UnsignedIntImage2D                         =  0x9063, // GL_UNSIGNED_INT_IMAGE_2D_EXT
     UnsignedIntImage3D                         =  0x9064, // GL_UNSIGNED_INT_IMAGE_3D_EXT
@@ -3131,8 +3131,8 @@ enum class Global : GLenum {
     UnsignedIntImage1DArray                    =  0x9068, // GL_UNSIGNED_INT_IMAGE_1D_ARRAY_EXT
     UnsignedIntImage2DArray                    =  0x9069, // GL_UNSIGNED_INT_IMAGE_2D_ARRAY_EXT
     UnsignedIntImageCubeMapArray               =  0x906A, // GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY_EXT
-    UnsignedIntImage2DMultisample              =  0x906B, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_EXT
-    UnsignedIntImage2DMultisampleArray         =  0x906C, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY_EXT
+    UnsignedIntImage2DMultiSample              =  0x906B, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_EXT
+    UnsignedIntImage2DMultiSampleArray         =  0x906C, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY_EXT
     MaxImageSamples                            =  0x906D, // GL_MAX_IMAGE_SAMPLES
     ImageBindingFormat                         =  0x906E, // GL_IMAGE_BINDING_FORMAT
     Square                                     =  0x90A3, // GL_SQUARE_NV
@@ -3150,8 +3150,8 @@ enum class Global : GLenum {
     PathStencilFunc                            =  0x90B7, // GL_PATH_STENCIL_FUNC_NV
     PathStencilRef                             =  0x90B8, // GL_PATH_STENCIL_REF_NV
     PathStencilValueMask                       =  0x90B9, // GL_PATH_STENCIL_VALUE_MASK_NV
-    ScaleDResolveFastest                       =  0x90BA, // GL_SCALED_RESOLVE_FASTEST_EXT
-    ScaleDResolveNicest                        =  0x90BB, // GL_SCALED_RESOLVE_NICEST_EXT
+    ScaledResolveFastest                       =  0x90BA, // GL_SCALED_RESOLVE_FASTEST_EXT
+    ScaledResolveNicest                        =  0x90BB, // GL_SCALED_RESOLVE_NICEST_EXT
     PathStencilDepthOffsetFactor               =  0x90BD, // GL_PATH_STENCIL_DEPTH_OFFSET_FACTOR_NV
     PathStencilDepthOffsetUnits                =  0x90BE, // GL_PATH_STENCIL_DEPTH_OFFSET_UNITS_NV
     PathCoverDepthFunc                         =  0x90BF, // GL_PATH_COVER_DEPTH_FUNC_NV
@@ -3198,7 +3198,7 @@ enum class Global : GLenum {
     DebugCategoryShaderCompiler                =  0x914E, // GL_DEBUG_CATEGORY_SHADER_COMPILER_AMD
     DebugCategoryApplication                   =  0x914F, // GL_DEBUG_CATEGORY_APPLICATION_AMD
     DebugCategoryOther                         =  0x9150, // GL_DEBUG_CATEGORY_OTHER_AMD
-    BufferObjectEXT                            =  0x9151, // GL_BUFFER_OBJECT_EXT
+    BufferObject                               =  0x9151, // GL_BUFFER_OBJECT_EXT
     PerformanceMonitor                         =  0x9152, // GL_PERFORMANCE_MONITOR_AMD
     QueryObject                                =  0x9153, // GL_QUERY_OBJECT_AMD
     VertexArrayObject                          =  0x9154, // GL_VERTEX_ARRAY_OBJECT_AMD
@@ -3603,8 +3603,8 @@ enum class GlslTypeToken : GLenum {
     Image1DArray                         = 0x9052, // GL_IMAGE_1D_ARRAY
     Image2DArray                         = 0x9053, // GL_IMAGE_2D_ARRAY
     ImageCubeMapArray                    = 0x9054, // GL_IMAGE_CUBE_MAP_ARRAY
-    Image2DMultisample                   = 0x9055, // GL_IMAGE_2D_MULTISAMPLE
-    Image2DMultisampleArray              = 0x9056, // GL_IMAGE_2D_MULTISAMPLE_ARRAY
+    Image2DMultiSample                   = 0x9055, // GL_IMAGE_2D_MULTISAMPLE
+    Image2DMultiSampleArray              = 0x9056, // GL_IMAGE_2D_MULTISAMPLE_ARRAY
     IntImage1D                           = 0x9057, // GL_INT_IMAGE_1D
     IntImage2D                           = 0x9058, // GL_INT_IMAGE_2D
     IntImage3D                           = 0x9059, // GL_INT_IMAGE_3D
@@ -3614,8 +3614,8 @@ enum class GlslTypeToken : GLenum {
     IntImage1DArray                      = 0x905D, // GL_INT_IMAGE_1D_ARRAY
     IntImage2DArray                      = 0x905E, // GL_INT_IMAGE_2D_ARRAY
     IntImageCubeMapArray                 = 0x905F, // GL_INT_IMAGE_CUBE_MAP_ARRAY
-    IntImage2DMultisample                = 0x9060, // GL_INT_IMAGE_2D_MULTISAMPLE
-    IntImage2DMultisampleArray           = 0x9061, // GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY
+    IntImage2DMultiSample                = 0x9060, // GL_INT_IMAGE_2D_MULTISAMPLE
+    IntImage2DMultiSampleArray           = 0x9061, // GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY
     UnsignedIntImage1D                   = 0x9062, // GL_UNSIGNED_INT_IMAGE_1D
     UnsignedIntImage2D                   = 0x9063, // GL_UNSIGNED_INT_IMAGE_2D
     UnsignedIntImage3D                   = 0x9064, // GL_UNSIGNED_INT_IMAGE_3D
@@ -3625,14 +3625,14 @@ enum class GlslTypeToken : GLenum {
     UnsignedIntImage1DArray              = 0x9068, // GL_UNSIGNED_INT_IMAGE_1D_ARRAY
     UnsignedIntImage2DArray              = 0x9069, // GL_UNSIGNED_INT_IMAGE_2D_ARRAY
     UnsignedIntImageCubeMapArray         = 0x906A, // GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY
-    UnsignedIntImage2DMultisample        = 0x906B, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE
-    UnsignedIntImage2DMultisampleArray   = 0x906C, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY
-    Sampler2DMultisample                 = 0x9108, // GL_SAMPLER_2D_MULTISAMPLE
-    IntSampler2DMultisample              = 0x9109, // GL_INT_SAMPLER_2D_MULTISAMPLE
-    UnsignedIntSampler2DMultisample      = 0x910A, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE
-    Sampler2DMultisampleArray            = 0x910B, // GL_SAMPLER_2D_MULTISAMPLE_ARRAY
-    IntSampler2DMultisampleArray         = 0x910C, // GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
-    UnsignedIntSampler2DMultisampleArray = 0x910D, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+    UnsignedIntImage2DMultiSample        = 0x906B, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE
+    UnsignedIntImage2DMultiSampleArray   = 0x906C, // GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY
+    Sampler2DMultiSample                 = 0x9108, // GL_SAMPLER_2D_MULTISAMPLE
+    IntSampler2DMultiSample              = 0x9109, // GL_INT_SAMPLER_2D_MULTISAMPLE
+    UnsignedIntSampler2DMultiSample      = 0x910A, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE
+    Sampler2DMultiSampleArray            = 0x910B, // GL_SAMPLER_2D_MULTISAMPLE_ARRAY
+    IntSampler2DMultiSampleArray         = 0x910C, // GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+    UnsignedIntSampler2DMultiSampleArray = 0x910D, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
     UnsignedIntAtomicCounter             = 0x92DB, // GL_UNSIGNED_INT_ATOMIC_COUNTER
 }; // enum class GlslTypeToken
 
@@ -3665,7 +3665,7 @@ enum class HintTarget : GLenum {
     VertexPreclipHint            =  0x83EF, // GL_VERTEX_PRECLIP_HINT_SGIX
     TextureCompressionHint       =  0x84EF, // GL_TEXTURE_COMPRESSION_HINT
     VertexArrayStorageHint       =  0x851F, // GL_VERTEX_ARRAY_STORAGE_HINT_APPLE
-    MultisampleFilterHint        =  0x8534, // GL_MULTISAMPLE_FILTER_HINT_NV
+    MultiSampleFilterHint        =  0x8534, // GL_MULTISAMPLE_FILTER_HINT_NV
     TransformHint                =  0x85B1, // GL_TRANSFORM_HINT_APPLE
     TextureStorageHint           =  0x85BC, // GL_TEXTURE_STORAGE_HINT_APPLE
     FragmentShaderDerivativeHint =  0x8B8B, // GL_FRAGMENT_SHADER_DERIVATIVE_HINT
@@ -4146,16 +4146,16 @@ enum class MapAttribParameterNV : GLenum {
     MapAttribVOrder = 0x86C4, // GL_MAP_ATTRIB_V_ORDER_NV
 }; // enum class MapAttribParameterNV
 
-namespace MapBufferAccessMask {
-    static const GLbitfield MapRead             = 0x0001; // GL_MAP_READ_BIT
-    static const GLbitfield MapWrite            = 0x0002; // GL_MAP_WRITE_BIT
-    static const GLbitfield MapInvalidateRange  = 0x0004; // GL_MAP_INVALIDATE_RANGE_BIT
-    static const GLbitfield MapInvalidateBuffer = 0x0008; // GL_MAP_INVALIDATE_BUFFER_BIT
-    static const GLbitfield MapFlushExplicit    = 0x0010; // GL_MAP_FLUSH_EXPLICIT_BIT
-    static const GLbitfield MapUnsynchronized   = 0x0020; // GL_MAP_UNSYNCHRONIZED_BIT
-    static const GLbitfield MapPersistent       = 0x0040; // GL_MAP_PERSISTENT_BIT
-    static const GLbitfield MapCoherent         = 0x0080; // GL_MAP_COHERENT_BIT
-} // namespace MapBufferAccessMask
+struct MapBufferAccessMask {
+    static constexpr GLbitfield MapRead             = 0x0001; // GL_MAP_READ_BIT
+    static constexpr GLbitfield MapWrite            = 0x0002; // GL_MAP_WRITE_BIT
+    static constexpr GLbitfield MapInvalidateRange  = 0x0004; // GL_MAP_INVALIDATE_RANGE_BIT
+    static constexpr GLbitfield MapInvalidateBuffer = 0x0008; // GL_MAP_INVALIDATE_BUFFER_BIT
+    static constexpr GLbitfield MapFlushExplicit    = 0x0010; // GL_MAP_FLUSH_EXPLICIT_BIT
+    static constexpr GLbitfield MapUnsynchronized   = 0x0020; // GL_MAP_UNSYNCHRONIZED_BIT
+    static constexpr GLbitfield MapPersistent       = 0x0040; // GL_MAP_PERSISTENT_BIT
+    static constexpr GLbitfield MapCoherent         = 0x0080; // GL_MAP_COHERENT_BIT
+}; // struct MapBufferAccessMask
 
 enum class MapParameterNV : GLenum {
     MapTessellation = 0x86C2, // GL_MAP_TESSELLATION_NV
@@ -4195,25 +4195,25 @@ enum class MatrixMode : GLenum {
     Texture    = 0x1702, // GL_TEXTURE
 }; // enum class MatrixMode
 
-namespace MemoryBarrierMask {
-    static const GLbitfield VertexAttribArrayBarrier  = 0x00000001; // GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
-    static const GLbitfield ElementArrayBarrier       = 0x00000002; // GL_ELEMENT_ARRAY_BARRIER_BIT
-    static const GLbitfield UniformBarrier            = 0x00000004; // GL_UNIFORM_BARRIER_BIT
-    static const GLbitfield TextureFetchBarrier       = 0x00000008; // GL_TEXTURE_FETCH_BARRIER_BIT
-    static const GLbitfield ShaderGlobalAccessBarrier = 0x00000010; // GL_SHADER_GLOBAL_ACCESS_BARRIER_BIT_NV
-    static const GLbitfield ShaderImageAccessBarrier  = 0x00000020; // GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
-    static const GLbitfield CommandBarrier            = 0x00000040; // GL_COMMAND_BARRIER_BIT
-    static const GLbitfield PixelBufferBarrier        = 0x00000080; // GL_PIXEL_BUFFER_BARRIER_BIT
-    static const GLbitfield TextureUpdateBarrier      = 0x00000100; // GL_TEXTURE_UPDATE_BARRIER_BIT
-    static const GLbitfield BufferUpdateBarrier       = 0x00000200; // GL_BUFFER_UPDATE_BARRIER_BIT
-    static const GLbitfield FramebufferBarrier        = 0x00000400; // GL_FRAMEBUFFER_BARRIER_BIT
-    static const GLbitfield TransformFeedbackBarrier  = 0x00000800; // GL_TRANSFORM_FEEDBACK_BARRIER_BIT
-    static const GLbitfield AtomicCounterBarrier      = 0x00001000; // GL_ATOMIC_COUNTER_BARRIER_BIT
-    static const GLbitfield ShaderStorageBarrier      = 0x00002000; // GL_SHADER_STORAGE_BARRIER_BIT
-    static const GLbitfield ClientMappedBufferBarrier = 0x00004000; // GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT
-    static const GLbitfield QueryBufferBarrier        = 0x00008000; // GL_QUERY_BUFFER_BARRIER_BIT
-    static const GLbitfield AllBarrierBits            = 0xFFFFFFFF; // GL_ALL_BARRIER_BITS
-} // namespace MemoryBarrierMask
+struct MemoryBarrierMask {
+    static constexpr GLbitfield VertexAttribArrayBarrier  = 0x00000001; // GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
+    static constexpr GLbitfield ElementArrayBarrier       = 0x00000002; // GL_ELEMENT_ARRAY_BARRIER_BIT
+    static constexpr GLbitfield UniformBarrier            = 0x00000004; // GL_UNIFORM_BARRIER_BIT
+    static constexpr GLbitfield TextureFetchBarrier       = 0x00000008; // GL_TEXTURE_FETCH_BARRIER_BIT
+    static constexpr GLbitfield ShaderGlobalAccessBarrier = 0x00000010; // GL_SHADER_GLOBAL_ACCESS_BARRIER_BIT_NV
+    static constexpr GLbitfield ShaderImageAccessBarrier  = 0x00000020; // GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+    static constexpr GLbitfield CommandBarrier            = 0x00000040; // GL_COMMAND_BARRIER_BIT
+    static constexpr GLbitfield PixelBufferBarrier        = 0x00000080; // GL_PIXEL_BUFFER_BARRIER_BIT
+    static constexpr GLbitfield TextureUpdateBarrier      = 0x00000100; // GL_TEXTURE_UPDATE_BARRIER_BIT
+    static constexpr GLbitfield BufferUpdateBarrier       = 0x00000200; // GL_BUFFER_UPDATE_BARRIER_BIT
+    static constexpr GLbitfield FrameBufferBarrier        = 0x00000400; // GL_FRAMEBUFFER_BARRIER_BIT
+    static constexpr GLbitfield TransformFeedbackBarrier  = 0x00000800; // GL_TRANSFORM_FEEDBACK_BARRIER_BIT
+    static constexpr GLbitfield AtomicCounterBarrier      = 0x00001000; // GL_ATOMIC_COUNTER_BARRIER_BIT
+    static constexpr GLbitfield ShaderStorageBarrier      = 0x00002000; // GL_SHADER_STORAGE_BARRIER_BIT
+    static constexpr GLbitfield ClientMappedBufferBarrier = 0x00004000; // GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT
+    static constexpr GLbitfield QueryBufferBarrier        = 0x00008000; // GL_QUERY_BUFFER_BARRIER_BIT
+    static constexpr GLbitfield AllBarrierBits            = 0xFFFFFFFF; // GL_ALL_BARRIER_BITS
+}; // struct MemoryBarrierMask
 
 enum class MemoryObjectParameterName : GLenum {
     DedicatedMemoryObject = 0x9581, // GL_DEDICATED_MEMORY_OBJECT_EXT
@@ -4252,8 +4252,8 @@ enum class ObjectIdentifier : GLenum {
     Query             = 0x82E3, // GL_QUERY
     ProgramPipeline   = 0x82E4, // GL_PROGRAM_PIPELINE
     Sampler           = 0x82E6, // GL_SAMPLER
-    Framebuffer       = 0x8D40, // GL_FRAMEBUFFER
-    Renderbuffer      = 0x8D41, // GL_RENDERBUFFER
+    FrameBuffer       = 0x8D40, // GL_FRAMEBUFFER
+    RenderBuffer      = 0x8D41, // GL_RENDERBUFFER
     TransformFeedback = 0x8E22, // GL_TRANSFORM_FEEDBACK
 }; // enum class ObjectIdentifier
 
@@ -4262,13 +4262,13 @@ enum class ObjectTypeAPPLE : GLenum {
     Fence      = 0x8A0B, // GL_FENCE_APPLE
 }; // enum class ObjectTypeAPPLE
 
-namespace OcclusionQueryEventMaskAMD {
-    static const GLuint QueryDepthPassEvent       = 0x00000001; // GL_QUERY_DEPTH_PASS_EVENT_BIT_AMD
-    static const GLuint QueryDepthFailEvent       = 0x00000002; // GL_QUERY_DEPTH_FAIL_EVENT_BIT_AMD
-    static const GLuint QueryStencilFailEvent     = 0x00000004; // GL_QUERY_STENCIL_FAIL_EVENT_BIT_AMD
-    static const GLuint QueryDepthBoundsFailEvent = 0x00000008; // GL_QUERY_DEPTH_BOUNDS_FAIL_EVENT_BIT_AMD
-    static const GLuint QueryAllEventBits         = 0xFFFFFFFF; // GL_QUERY_ALL_EVENT_BITS_AMD
-} // namespace OcclusionQueryEventMaskAMD
+struct OcclusionQueryEventMaskAMD {
+    static constexpr GLuint QueryDepthPassEvent       = 0x00000001; // GL_QUERY_DEPTH_PASS_EVENT_BIT_AMD
+    static constexpr GLuint QueryDepthFailEvent       = 0x00000002; // GL_QUERY_DEPTH_FAIL_EVENT_BIT_AMD
+    static constexpr GLuint QueryStencilFailEvent     = 0x00000004; // GL_QUERY_STENCIL_FAIL_EVENT_BIT_AMD
+    static constexpr GLuint QueryDepthBoundsFailEvent = 0x00000008; // GL_QUERY_DEPTH_BOUNDS_FAIL_EVENT_BIT_AMD
+    static constexpr GLuint QueryAllEventBits         = 0xFFFFFFFF; // GL_QUERY_ALL_EVENT_BITS_AMD
+}; // struct OcclusionQueryEventMaskAMD
 
 enum class OcclusionQueryParameterNameNV : GLenum {
     PixelCount          = 0x8866, // GL_PIXEL_COUNT_NV
@@ -4365,11 +4365,11 @@ enum class PathFillMode : GLenum {
     CountDown    = 0x9089, // GL_COUNT_DOWN_NV
 }; // enum class PathFillMode
 
-namespace PathFontStyle {
-    static const GLbitfield None   =    0; // GL_NONE
-    static const GLbitfield Bold   = 0x01; // GL_BOLD_BIT_NV
-    static const GLbitfield Italic = 0x02; // GL_ITALIC_BIT_NV
-} // namespace PathFontStyle
+struct PathFontStyle {
+    static constexpr GLbitfield None   =    0; // GL_NONE
+    static constexpr GLbitfield Bold   = 0x01; // GL_BOLD_BIT_NV
+    static constexpr GLbitfield Italic = 0x02; // GL_ITALIC_BIT_NV
+}; // struct PathFontStyle
 
 enum class PathFontTarget : GLenum {
     StandardFontName = 0x9072, // GL_STANDARD_FONT_NAME_NV
@@ -4393,31 +4393,31 @@ enum class PathListMode : GLenum {
     FirstToRest        = 0x90AF, // GL_FIRST_TO_REST_NV
 }; // enum class PathListMode
 
-namespace PathMetricMask {
-    static const GLbitfield GlyphWidth                    =       0x01; // GL_GLYPH_WIDTH_BIT_NV
-    static const GLbitfield GlyphHeight                   =       0x02; // GL_GLYPH_HEIGHT_BIT_NV
-    static const GLbitfield GlyphHorizontalBearingX       =       0x04; // GL_GLYPH_HORIZONTAL_BEARING_X_BIT_NV
-    static const GLbitfield GlyphHorizontalBearingY       =       0x08; // GL_GLYPH_HORIZONTAL_BEARING_Y_BIT_NV
-    static const GLbitfield GlyphHorizontalBearingAdvance =       0x10; // GL_GLYPH_HORIZONTAL_BEARING_ADVANCE_BIT_NV
-    static const GLbitfield GlyphVerticalBearingX         =       0x20; // GL_GLYPH_VERTICAL_BEARING_X_BIT_NV
-    static const GLbitfield GlyphVerticalBearingY         =       0x40; // GL_GLYPH_VERTICAL_BEARING_Y_BIT_NV
-    static const GLbitfield GlyphVerticalBearingAdvance   =       0x80; // GL_GLYPH_VERTICAL_BEARING_ADVANCE_BIT_NV
-    static const GLbitfield GlyphHasKerning               =      0x100; // GL_GLYPH_HAS_KERNING_BIT_NV
-    static const GLbitfield FontXMinBounds                = 0x00010000; // GL_FONT_X_MIN_BOUNDS_BIT_NV
-    static const GLbitfield FontYMinBounds                = 0x00020000; // GL_FONT_Y_MIN_BOUNDS_BIT_NV
-    static const GLbitfield FontXMaxBounds                = 0x00040000; // GL_FONT_X_MAX_BOUNDS_BIT_NV
-    static const GLbitfield FontYMaxBounds                = 0x00080000; // GL_FONT_Y_MAX_BOUNDS_BIT_NV
-    static const GLbitfield FontUnitsPerEm                = 0x00100000; // GL_FONT_UNITS_PER_EM_BIT_NV
-    static const GLbitfield FontAscender                  = 0x00200000; // GL_FONT_ASCENDER_BIT_NV
-    static const GLbitfield FontDescender                 = 0x00400000; // GL_FONT_DESCENDER_BIT_NV
-    static const GLbitfield FontHeight                    = 0x00800000; // GL_FONT_HEIGHT_BIT_NV
-    static const GLbitfield FontMaxAdvanceWidth           = 0x01000000; // GL_FONT_MAX_ADVANCE_WIDTH_BIT_NV
-    static const GLbitfield FontMaxAdvanceHeight          = 0x02000000; // GL_FONT_MAX_ADVANCE_HEIGHT_BIT_NV
-    static const GLbitfield FontUnderlinePosition         = 0x04000000; // GL_FONT_UNDERLINE_POSITION_BIT_NV
-    static const GLbitfield FontUnderlineThickness        = 0x08000000; // GL_FONT_UNDERLINE_THICKNESS_BIT_NV
-    static const GLbitfield FontHasKerning                = 0x10000000; // GL_FONT_HAS_KERNING_BIT_NV
-    static const GLbitfield FontNumGlyphIndices           = 0x20000000; // GL_FONT_NUM_GLYPH_INDICES_BIT_NV
-} // namespace PathMetricMask
+struct PathMetricMask {
+    static constexpr GLbitfield GlyphWidth                    =       0x01; // GL_GLYPH_WIDTH_BIT_NV
+    static constexpr GLbitfield GlyphHeight                   =       0x02; // GL_GLYPH_HEIGHT_BIT_NV
+    static constexpr GLbitfield GlyphHorizontalBearingX       =       0x04; // GL_GLYPH_HORIZONTAL_BEARING_X_BIT_NV
+    static constexpr GLbitfield GlyphHorizontalBearingY       =       0x08; // GL_GLYPH_HORIZONTAL_BEARING_Y_BIT_NV
+    static constexpr GLbitfield GlyphHorizontalBearingAdvance =       0x10; // GL_GLYPH_HORIZONTAL_BEARING_ADVANCE_BIT_NV
+    static constexpr GLbitfield GlyphVerticalBearingX         =       0x20; // GL_GLYPH_VERTICAL_BEARING_X_BIT_NV
+    static constexpr GLbitfield GlyphVerticalBearingY         =       0x40; // GL_GLYPH_VERTICAL_BEARING_Y_BIT_NV
+    static constexpr GLbitfield GlyphVerticalBearingAdvance   =       0x80; // GL_GLYPH_VERTICAL_BEARING_ADVANCE_BIT_NV
+    static constexpr GLbitfield GlyphHasKerning               =      0x100; // GL_GLYPH_HAS_KERNING_BIT_NV
+    static constexpr GLbitfield FontXMinBounds                = 0x00010000; // GL_FONT_X_MIN_BOUNDS_BIT_NV
+    static constexpr GLbitfield FontYMinBounds                = 0x00020000; // GL_FONT_Y_MIN_BOUNDS_BIT_NV
+    static constexpr GLbitfield FontXMaxBounds                = 0x00040000; // GL_FONT_X_MAX_BOUNDS_BIT_NV
+    static constexpr GLbitfield FontYMaxBounds                = 0x00080000; // GL_FONT_Y_MAX_BOUNDS_BIT_NV
+    static constexpr GLbitfield FontUnitsPerEm                = 0x00100000; // GL_FONT_UNITS_PER_EM_BIT_NV
+    static constexpr GLbitfield FontAscender                  = 0x00200000; // GL_FONT_ASCENDER_BIT_NV
+    static constexpr GLbitfield FontDescender                 = 0x00400000; // GL_FONT_DESCENDER_BIT_NV
+    static constexpr GLbitfield FontHeight                    = 0x00800000; // GL_FONT_HEIGHT_BIT_NV
+    static constexpr GLbitfield FontMaxAdvanceWidth           = 0x01000000; // GL_FONT_MAX_ADVANCE_WIDTH_BIT_NV
+    static constexpr GLbitfield FontMaxAdvanceHeight          = 0x02000000; // GL_FONT_MAX_ADVANCE_HEIGHT_BIT_NV
+    static constexpr GLbitfield FontUnderlinePosition         = 0x04000000; // GL_FONT_UNDERLINE_POSITION_BIT_NV
+    static constexpr GLbitfield FontUnderlineThickness        = 0x08000000; // GL_FONT_UNDERLINE_THICKNESS_BIT_NV
+    static constexpr GLbitfield FontHasKerning                = 0x10000000; // GL_FONT_HAS_KERNING_BIT_NV
+    static constexpr GLbitfield FontNumGlyphIndices           = 0x20000000; // GL_FONT_NUM_GLYPH_INDICES_BIT_NV
+}; // struct PathMetricMask
 
 enum class PathParameter : GLenum {
     PathStrokeWidth       = 0x9075, // GL_PATH_STROKE_WIDTH_NV
@@ -4463,10 +4463,10 @@ enum class PathTransformType : GLenum {
     TransposeAffine3D = 0x9098, // GL_TRANSPOSE_AFFINE_3D_NV
 }; // enum class PathTransformType
 
-namespace PerformanceQueryCapsMaskINTEL {
-    static const GLenum PerfquerySingleContext = 0x00000000; // GL_PERFQUERY_SINGLE_CONTEXT_INTEL
-    static const GLenum PerfqueryGlobalContext = 0x00000001; // GL_PERFQUERY_GLOBAL_CONTEXT_INTEL
-} // namespace PerformanceQueryCapsMaskINTEL
+struct PerformanceQueryCapsMask {
+    static constexpr GLenum PerfQuerySingleContext = 0x00000000; // GL_PERFQUERY_SINGLE_CONTEXT_INTEL
+    static constexpr GLenum PerfQueryGlobalContext = 0x00000001; // GL_PERFQUERY_GLOBAL_CONTEXT_INTEL
+}; // struct PerformanceQueryCapsMask
 
 enum class PipelineParameterName : GLenum {
     ActiveProgram        = 0x8259, // GL_ACTIVE_PROGRAM
@@ -4715,7 +4715,7 @@ enum class ProgramParameterPName : GLenum {
     ProgramSeparable             = 0x8258, // GL_PROGRAM_SEPARABLE
 }; // enum class ProgramParameterPName
 
-enum class ProgramPropertyARB : GLenum {
+enum class ProgramProperty : GLenum {
     ComputeWorkGroupSize              = 0x8267, // GL_COMPUTE_WORK_GROUP_SIZE
     ProgramBinaryLength               = 0x8741, // GL_PROGRAM_BINARY_LENGTH
     GeometryVerticesOut               = 0x8916, // GL_GEOMETRY_VERTICES_OUT
@@ -4736,7 +4736,7 @@ enum class ProgramPropertyARB : GLenum {
     TransformFeedbackBufferMode       = 0x8C7F, // GL_TRANSFORM_FEEDBACK_BUFFER_MODE
     TransformFeedbackVaryings         = 0x8C83, // GL_TRANSFORM_FEEDBACK_VARYINGS
     ActiveAtomicCounterBuffers        = 0x92D9, // GL_ACTIVE_ATOMIC_COUNTER_BUFFERS
-}; // enum class ProgramPropertyARB
+}; // enum class ProgramProperty
 
 enum class ProgramResourceProperty : GLenum {
     NumCompatibleSubroutines         = 0x8E4A, // GL_NUM_COMPATIBLE_SUBROUTINES
@@ -4850,7 +4850,7 @@ enum class ReadBufferMode : GLenum {
     ColorAttachment15 = 0x8CEF, // GL_COLOR_ATTACHMENT15
 }; // enum class ReadBufferMode
 
-enum class RegisterCombinerPname : GLenum {
+enum class RegisterCombinerPName : GLenum {
     Combine       = 0x8570, // GL_COMBINE_ARB
     CombineRGB    = 0x8571, // GL_COMBINE_RGB_ARB
     CombineAlpha  = 0x8572, // GL_COMBINE_ALPHA_ARB
@@ -4876,26 +4876,26 @@ enum class RegisterCombinerPname : GLenum {
     Operand1Alpha = 0x8599, // GL_OPERAND1_ALPHA_ARB
     Operand2Alpha = 0x859A, // GL_OPERAND2_ALPHA_ARB
     Operand3Alpha = 0x859B, // GL_OPERAND3_ALPHA_NV
-}; // enum class RegisterCombinerPname
+}; // enum class RegisterCombinerPName
 
-enum class RenderbufferParameterName : GLenum {
-    RenderbufferCoverageSamples = 0x8CAB, // GL_RENDERBUFFER_COVERAGE_SAMPLES_NV
-    RenderbufferWidth           = 0x8D42, // GL_RENDERBUFFER_WIDTH
-    RenderbufferHeight          = 0x8D43, // GL_RENDERBUFFER_HEIGHT
-    RenderbufferInternalFormat  = 0x8D44, // GL_RENDERBUFFER_INTERNAL_FORMAT
-    RenderbufferRedSize         = 0x8D50, // GL_RENDERBUFFER_RED_SIZE
-    RenderbufferGreenSize       = 0x8D51, // GL_RENDERBUFFER_GREEN_SIZE
-    RenderbufferBlueSize        = 0x8D52, // GL_RENDERBUFFER_BLUE_SIZE
-    RenderbufferAlphaSize       = 0x8D53, // GL_RENDERBUFFER_ALPHA_SIZE
-    RenderbufferDepthSize       = 0x8D54, // GL_RENDERBUFFER_DEPTH_SIZE
-    RenderbufferStencilSize     = 0x8D55, // GL_RENDERBUFFER_STENCIL_SIZE
-    RenderbufferColorSamples    = 0x8E10, // GL_RENDERBUFFER_COLOR_SAMPLES_NV
-    RenderbufferStorageSamples  = 0x91B2, // GL_RENDERBUFFER_STORAGE_SAMPLES_AMD
-}; // enum class RenderbufferParameterName
+enum class RenderBufferParameterName : GLenum {
+    RenderBufferCoverageSamples = 0x8CAB, // GL_RENDERBUFFER_COVERAGE_SAMPLES_NV
+    RenderBufferWidth           = 0x8D42, // GL_RENDERBUFFER_WIDTH
+    RenderBufferHeight          = 0x8D43, // GL_RENDERBUFFER_HEIGHT
+    RenderBufferInternalFormat  = 0x8D44, // GL_RENDERBUFFER_INTERNAL_FORMAT
+    RenderBufferRedSize         = 0x8D50, // GL_RENDERBUFFER_RED_SIZE
+    RenderBufferGreenSize       = 0x8D51, // GL_RENDERBUFFER_GREEN_SIZE
+    RenderBufferBlueSize        = 0x8D52, // GL_RENDERBUFFER_BLUE_SIZE
+    RenderBufferAlphaSize       = 0x8D53, // GL_RENDERBUFFER_ALPHA_SIZE
+    RenderBufferDepthSize       = 0x8D54, // GL_RENDERBUFFER_DEPTH_SIZE
+    RenderBufferStencilSize     = 0x8D55, // GL_RENDERBUFFER_STENCIL_SIZE
+    RenderBufferColorSamples    = 0x8E10, // GL_RENDERBUFFER_COLOR_SAMPLES_NV
+    RenderBufferStorageSamples  = 0x91B2, // GL_RENDERBUFFER_STORAGE_SAMPLES_AMD
+}; // enum class RenderBufferParameterName
 
-enum class RenderbufferTarget : GLenum {
-    Renderbuffer = 0x8D41, // GL_RENDERBUFFER
-}; // enum class RenderbufferTarget
+enum class RenderBufferTarget : GLenum {
+    RenderBuffer = 0x8D41, // GL_RENDERBUFFER
+}; // enum class RenderBufferTarget
 
 enum class ReplacementCodeTypeSUN : GLenum {
     UnsignedByte  = 0x1401, // GL_UNSIGNED_BYTE
@@ -5202,17 +5202,17 @@ enum class StringName : GLenum {
     ShadingLanguageVersion = 0x8B8C, // GL_SHADING_LANGUAGE_VERSION
 }; // enum class StringName
 
-namespace SubgroupSupportedFeatures {
-    static const GLenum SubgroupFeatureBasic           = 0x00000001; // GL_SUBGROUP_FEATURE_BASIC_BIT_KHR
-    static const GLenum SubgroupFeatureVote            = 0x00000002; // GL_SUBGROUP_FEATURE_VOTE_BIT_KHR
-    static const GLenum SubgroupFeatureArithmetic      = 0x00000004; // GL_SUBGROUP_FEATURE_ARITHMETIC_BIT_KHR
-    static const GLenum SubgroupFeatureBallot          = 0x00000008; // GL_SUBGROUP_FEATURE_BALLOT_BIT_KHR
-    static const GLenum SubgroupFeatureShuffle         = 0x00000010; // GL_SUBGROUP_FEATURE_SHUFFLE_BIT_KHR
-    static const GLenum SubgroupFeatureShuffleRelative = 0x00000020; // GL_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT_KHR
-    static const GLenum SubgroupFeatureClustered       = 0x00000040; // GL_SUBGROUP_FEATURE_CLUSTERED_BIT_KHR
-    static const GLenum SubgroupFeatureQuad            = 0x00000080; // GL_SUBGROUP_FEATURE_QUAD_BIT_KHR
-    static const GLenum SubgroupFeaturePartitioned     = 0x00000100; // GL_SUBGROUP_FEATURE_PARTITIONED_BIT_NV
-} // namespace SubgroupSupportedFeatures
+struct SubgroupSupportedFeatures {
+    static constexpr GLenum SubgroupFeatureBasic           = 0x00000001; // GL_SUBGROUP_FEATURE_BASIC_BIT_KHR
+    static constexpr GLenum SubgroupFeatureVote            = 0x00000002; // GL_SUBGROUP_FEATURE_VOTE_BIT_KHR
+    static constexpr GLenum SubgroupFeatureArithmetic      = 0x00000004; // GL_SUBGROUP_FEATURE_ARITHMETIC_BIT_KHR
+    static constexpr GLenum SubgroupFeatureBallot          = 0x00000008; // GL_SUBGROUP_FEATURE_BALLOT_BIT_KHR
+    static constexpr GLenum SubgroupFeatureShuffle         = 0x00000010; // GL_SUBGROUP_FEATURE_SHUFFLE_BIT_KHR
+    static constexpr GLenum SubgroupFeatureShuffleRelative = 0x00000020; // GL_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT_KHR
+    static constexpr GLenum SubgroupFeatureClustered       = 0x00000040; // GL_SUBGROUP_FEATURE_CLUSTERED_BIT_KHR
+    static constexpr GLenum SubgroupFeatureQuad            = 0x00000080; // GL_SUBGROUP_FEATURE_QUAD_BIT_KHR
+    static constexpr GLenum SubgroupFeaturePartitioned     = 0x00000100; // GL_SUBGROUP_FEATURE_PARTITIONED_BIT_NV
+}; // struct SubgroupSupportedFeatures
 
 enum class SubroutineParameterName : GLenum {
     UniformSize              = 0x8A38, // GL_UNIFORM_SIZE
@@ -5236,9 +5236,9 @@ enum class SyncCondition : GLenum {
     SyncGPUCommandsComplete = 0x9117, // GL_SYNC_GPU_COMMANDS_COMPLETE
 }; // enum class SyncCondition
 
-namespace SyncObjectMask {
-    static const GLbitfield SyncFlushCommands = 0x00000001; // GL_SYNC_FLUSH_COMMANDS_BIT
-} // namespace SyncObjectMask
+struct SyncObjectMask {
+    static constexpr GLbitfield SyncFlushCommands = 0x00000001; // GL_SYNC_FLUSH_COMMANDS_BIT
+}; // struct SyncObjectMask
 
 enum class SyncParameterName : GLenum {
     ObjectType    = 0x9112, // GL_OBJECT_TYPE
@@ -5411,9 +5411,9 @@ enum class TextureParameterName : GLenum {
     TextureTiling              = 0x9580, // GL_TEXTURE_TILING_EXT
 }; // enum class TextureParameterName
 
-namespace TextureStorageMaskAMD {
-    static const GLbitfield TextureStorageSparse = 0x00000001; // GL_TEXTURE_STORAGE_SPARSE_BIT_AMD
-} // namespace TextureStorageMaskAMD
+struct TextureStorageMaskAMD {
+    static constexpr GLbitfield TextureStorageSparse = 0x00000001; // GL_TEXTURE_STORAGE_SPARSE_BIT_AMD
+}; // struct TextureStorageMaskAMD
 
 enum class TextureSwizzle : GLenum {
     Zero  =      0, // GL_ZERO
@@ -5449,12 +5449,12 @@ enum class TextureTarget : GLenum {
     Texture2DArray                 = 0x8C1A, // GL_TEXTURE_2D_ARRAY
     ProxyTexture2DArray            = 0x8C1B, // GL_PROXY_TEXTURE_2D_ARRAY
     TextureBuffer                  = 0x8C2A, // GL_TEXTURE_BUFFER
-    Renderbuffer                   = 0x8D41, // GL_RENDERBUFFER
+    RenderBuffer                   = 0x8D41, // GL_RENDERBUFFER
     TextureCubeMapArray            = 0x9009, // GL_TEXTURE_CUBE_MAP_ARRAY
     ProxyTextureCubeMapArray       = 0x900B, // GL_PROXY_TEXTURE_CUBE_MAP_ARRAY
-    Texture2DMultisample           = 0x9100, // GL_TEXTURE_2D_MULTISAMPLE
+    Texture2DMultiSample           = 0x9100, // GL_TEXTURE_2D_MULTISAMPLE
     ProxyTexture2DMultisample      = 0x9101, // GL_PROXY_TEXTURE_2D_MULTISAMPLE
-    Texture2DMultisampleArray      = 0x9102, // GL_TEXTURE_2D_MULTISAMPLE_ARRAY
+    Texture2DMultiSampleArray      = 0x9102, // GL_TEXTURE_2D_MULTISAMPLE_ARRAY
     ProxyTexture2DMultisampleArray = 0x9103, // GL_PROXY_TEXTURE_2D_MULTISAMPLE_ARRAY
 }; // enum class TextureTarget
 
@@ -5628,25 +5628,25 @@ enum class UniformType : GLenum {
     SamplerCubeMapArrayShadow            = 0x900D, // GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW
     IntSamplerCubeMapArray               = 0x900E, // GL_INT_SAMPLER_CUBE_MAP_ARRAY
     UnsignedIntSamplerCubeMapArray       = 0x900F, // GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY
-    Sampler2DMultisample                 = 0x9108, // GL_SAMPLER_2D_MULTISAMPLE
-    IntSampler2DMultisample              = 0x9109, // GL_INT_SAMPLER_2D_MULTISAMPLE
-    UnsignedIntSampler2DMultisample      = 0x910A, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE
-    Sampler2DMultisampleArray            = 0x910B, // GL_SAMPLER_2D_MULTISAMPLE_ARRAY
-    IntSampler2DMultisampleArray         = 0x910C, // GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
-    UnsignedIntSampler2DMultisampleArray = 0x910D, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+    Sampler2DMultiSample                 = 0x9108, // GL_SAMPLER_2D_MULTISAMPLE
+    IntSampler2DMultiSample              = 0x9109, // GL_INT_SAMPLER_2D_MULTISAMPLE
+    UnsignedIntSampler2DMultiSample      = 0x910A, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE
+    Sampler2DMultiSampleArray            = 0x910B, // GL_SAMPLER_2D_MULTISAMPLE_ARRAY
+    IntSampler2DMultiSampleArray         = 0x910C, // GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
+    UnsignedIntSampler2DMultiSampleArray = 0x910D, // GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY
 }; // enum class UniformType
 
-namespace UseProgramStageMask {
-    static const GLbitfield VertexShader         = 0x00000001; // GL_VERTEX_SHADER_BIT
-    static const GLbitfield FragmentShader       = 0x00000002; // GL_FRAGMENT_SHADER_BIT
-    static const GLbitfield GeometryShader       = 0x00000004; // GL_GEOMETRY_SHADER_BIT
-    static const GLbitfield TessControlShader    = 0x00000008; // GL_TESS_CONTROL_SHADER_BIT
-    static const GLbitfield TessEvaluationShader = 0x00000010; // GL_TESS_EVALUATION_SHADER_BIT
-    static const GLbitfield ComputeShader        = 0x00000020; // GL_COMPUTE_SHADER_BIT
-    static const GLbitfield MeshShader           = 0x00000040; // GL_MESH_SHADER_BIT_NV
-    static const GLbitfield TaskShader           = 0x00000080; // GL_TASK_SHADER_BIT_NV
-    static const GLbitfield AllShaderBits        = 0xFFFFFFFF; // GL_ALL_SHADER_BITS
-} // namespace UseProgramStageMask
+struct UseProgramStageMask {
+    static constexpr GLbitfield VertexShader         = 0x00000001; // GL_VERTEX_SHADER_BIT
+    static constexpr GLbitfield FragmentShader       = 0x00000002; // GL_FRAGMENT_SHADER_BIT
+    static constexpr GLbitfield GeometryShader       = 0x00000004; // GL_GEOMETRY_SHADER_BIT
+    static constexpr GLbitfield TessControlShader    = 0x00000008; // GL_TESS_CONTROL_SHADER_BIT
+    static constexpr GLbitfield TessEvaluationShader = 0x00000010; // GL_TESS_EVALUATION_SHADER_BIT
+    static constexpr GLbitfield ComputeShader        = 0x00000020; // GL_COMPUTE_SHADER_BIT
+    static constexpr GLbitfield MeshShader           = 0x00000040; // GL_MESH_SHADER_BIT_NV
+    static constexpr GLbitfield TaskShader           = 0x00000080; // GL_TASK_SHADER_BIT_NV
+    static constexpr GLbitfield AllShaderBits        = 0xFFFFFFFF; // GL_ALL_SHADER_BITS
+}; // struct UseProgramStageMask
 
 enum class VariantCapEXT : GLenum {
     VariantArray = 0x87E8, // GL_VARIANT_ARRAY_EXT
@@ -5704,21 +5704,21 @@ enum class VertexAttribPointerPropertyARB : GLenum {
 }; // enum class VertexAttribPointerPropertyARB
 
 enum class VertexAttribPointerType : GLenum {
-    Byte                     = 0x1400, // GL_BYTE
-    UnsignedByte             = 0x1401, // GL_UNSIGNED_BYTE
-    Short                    = 0x1402, // GL_SHORT
-    UnsignedShort            = 0x1403, // GL_UNSIGNED_SHORT
-    Int                      = 0x1404, // GL_INT
-    UnsignedInt              = 0x1405, // GL_UNSIGNED_INT
-    Float                    = 0x1406, // GL_FLOAT
-    Double                   = 0x140A, // GL_DOUBLE
-    HalfFloat                = 0x140B, // GL_HALF_FLOAT
-    Fixed                    = 0x140C, // GL_FIXED
-    Int64                    = 0x140E, // GL_INT64_ARB
-    UnsignedInt64            = 0x140F, // GL_UNSIGNED_INT64_ARB
-    UnsignedInt2_10_10_10Rev = 0x8368, // GL_UNSIGNED_INT_2_10_10_10_REV
-    UnsignedInt10F11F11FRev  = 0x8C3B, // GL_UNSIGNED_INT_10F_11F_11F_REV
-    Int2_10_10_10Rev         = 0x8D9F, // GL_INT_2_10_10_10_REV
+    Byte                       = 0x1400, // GL_BYTE
+    UnsignedByte               = 0x1401, // GL_UNSIGNED_BYTE
+    Short                      = 0x1402, // GL_SHORT
+    UnsignedShort              = 0x1403, // GL_UNSIGNED_SHORT
+    Int                        = 0x1404, // GL_INT
+    UnsignedInt                = 0x1405, // GL_UNSIGNED_INT
+    Float                      = 0x1406, // GL_FLOAT
+    Double                     = 0x140A, // GL_DOUBLE
+    HalfFloat                  = 0x140B, // GL_HALF_FLOAT
+    Fixed                      = 0x140C, // GL_FIXED
+    Int64                      = 0x140E, // GL_INT64_ARB
+    UnsignedInt64              = 0x140F, // GL_UNSIGNED_INT64_ARB
+    UnsignedInt2_10_10_10_Rev  = 0x8368, // GL_UNSIGNED_INT_2_10_10_10_REV
+    UnsignedInt10F_11F_11F_Rev = 0x8C3B, // GL_UNSIGNED_INT_10F_11F_11F_REV
+    Int2_10_10_10_Rev          = 0x8D9F, // GL_INT_2_10_10_10_REV
 }; // enum class VertexAttribPointerType
 
 enum class VertexAttribPropertyARB : GLenum {
@@ -5747,9 +5747,9 @@ enum class VertexAttribType : GLenum {
     Double                   = 0x140A, // GL_DOUBLE
     HalfFloat                = 0x140B, // GL_HALF_FLOAT
     Fixed                    = 0x140C, // GL_FIXED
-    UnsignedInt2_10_10_10Rev = 0x8368, // GL_UNSIGNED_INT_2_10_10_10_REV
-    UnsignedInt10F11F11FRev  = 0x8C3B, // GL_UNSIGNED_INT_10F_11F_11F_REV
-    Int2_10_10_10Rev         = 0x8D9F, // GL_INT_2_10_10_10_REV
+    UnsignedInt2_10_10_10_Rev = 0x8368, // GL_UNSIGNED_INT_2_10_10_10_REV
+    UnsignedInt10F_11F_11F_Rev  = 0x8C3B, // GL_UNSIGNED_INT_10F_11F_11F_REV
+    Int2_10_10_10_Rev         = 0x8D9F, // GL_INT_2_10_10_10_REV
 }; // enum class VertexAttribType
 
 enum class VertexBufferObjectParameter : GLenum {
@@ -5776,26 +5776,26 @@ enum class VertexBufferObjectUsage : GLenum {
     DynamicCopy = 0x88EA, // GL_DYNAMIC_COPY
 }; // enum class VertexBufferObjectUsage
 
-namespace VertexHintsMaskPGI {
-    static const GLenum Vertex23             = 0x00000004; // GL_VERTEX23_BIT_PGI
-    static const GLenum Vertex4              = 0x00000008; // GL_VERTEX4_BIT_PGI
-    static const GLenum Color3               = 0x00010000; // GL_COLOR3_BIT_PGI
-    static const GLenum Color4               = 0x00020000; // GL_COLOR4_BIT_PGI
-    static const GLenum Edgeflag             = 0x00040000; // GL_EDGEFLAG_BIT_PGI
-    static const GLenum Index                = 0x00080000; // GL_INDEX_BIT_PGI
-    static const GLenum MatAmbient           = 0x00100000; // GL_MAT_AMBIENT_BIT_PGI
-    static const GLenum MatAmbientAndDiffuse = 0x00200000; // GL_MAT_AMBIENT_AND_DIFFUSE_BIT_PGI
-    static const GLenum MatDiffuse           = 0x00400000; // GL_MAT_DIFFUSE_BIT_PGI
-    static const GLenum MatEmission          = 0x00800000; // GL_MAT_EMISSION_BIT_PGI
-    static const GLenum MatColorIndexes      = 0x01000000; // GL_MAT_COLOR_INDEXES_BIT_PGI
-    static const GLenum MatShininess         = 0x02000000; // GL_MAT_SHININESS_BIT_PGI
-    static const GLenum MatSpecular          = 0x04000000; // GL_MAT_SPECULAR_BIT_PGI
-    static const GLenum Normal               = 0x08000000; // GL_NORMAL_BIT_PGI
-    static const GLenum Texcoord1            = 0x10000000; // GL_TEXCOORD1_BIT_PGI
-    static const GLenum Texcoord2            = 0x20000000; // GL_TEXCOORD2_BIT_PGI
-    static const GLenum Texcoord3            = 0x40000000; // GL_TEXCOORD3_BIT_PGI
-    static const GLenum Texcoord4            = 0x80000000; // GL_TEXCOORD4_BIT_PGI
-} // namespace VertexHintsMaskPGI
+struct VertexHintsMaskPGI {
+    static constexpr GLenum Vertex23             = 0x00000004; // GL_VERTEX23_BIT_PGI
+    static constexpr GLenum Vertex4              = 0x00000008; // GL_VERTEX4_BIT_PGI
+    static constexpr GLenum Color3               = 0x00010000; // GL_COLOR3_BIT_PGI
+    static constexpr GLenum Color4               = 0x00020000; // GL_COLOR4_BIT_PGI
+    static constexpr GLenum Edgeflag             = 0x00040000; // GL_EDGEFLAG_BIT_PGI
+    static constexpr GLenum Index                = 0x00080000; // GL_INDEX_BIT_PGI
+    static constexpr GLenum MatAmbient           = 0x00100000; // GL_MAT_AMBIENT_BIT_PGI
+    static constexpr GLenum MatAmbientAndDiffuse = 0x00200000; // GL_MAT_AMBIENT_AND_DIFFUSE_BIT_PGI
+    static constexpr GLenum MatDiffuse           = 0x00400000; // GL_MAT_DIFFUSE_BIT_PGI
+    static constexpr GLenum MatEmission          = 0x00800000; // GL_MAT_EMISSION_BIT_PGI
+    static constexpr GLenum MatColorIndexes      = 0x01000000; // GL_MAT_COLOR_INDEXES_BIT_PGI
+    static constexpr GLenum MatShininess         = 0x02000000; // GL_MAT_SHININESS_BIT_PGI
+    static constexpr GLenum MatSpecular          = 0x04000000; // GL_MAT_SPECULAR_BIT_PGI
+    static constexpr GLenum Normal               = 0x08000000; // GL_NORMAL_BIT_PGI
+    static constexpr GLenum Texcoord1            = 0x10000000; // GL_TEXCOORD1_BIT_PGI
+    static constexpr GLenum Texcoord2            = 0x20000000; // GL_TEXCOORD2_BIT_PGI
+    static constexpr GLenum Texcoord3            = 0x40000000; // GL_TEXCOORD3_BIT_PGI
+    static constexpr GLenum Texcoord4            = 0x80000000; // GL_TEXCOORD4_BIT_PGI
+}; // struct VertexHintsMaskPGI
 
 enum class VertexPointerType : GLenum {
     Short  = 0x1402, // GL_SHORT
@@ -5892,6 +5892,38 @@ enum class WeightPointerTypeARB : GLenum {
     Float         = 0x1406, // GL_FLOAT
     Double        = 0x140A, // GL_DOUBLE
 }; // enum class WeightPointerTypeARB
+
+////////////////////////////////////////////////////////////////////////////////
+// Templates
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Converts a scalar type into an OpenGL compatible boolean.
+//! @tparam T The data type of the input value.
+//! @param[in] scalar The scalar to convert.
+//! @return The value as an OpenGL compatible boolean.
+template<typename T>
+Boolean toBoolean(T scalar)
+{
+    static constexpr T TFalse = static_cast<T>(0);
+
+    return (scalar == TFalse) ? Boolean::False : Boolean::True;
+}
+
+//! @brief Converts one strongly typed OpenGL enumeration into another.
+//! @tparam TOutput The data type of the output enumeration.
+//! @tparam TInput The data type of the input enumeration (inferred).
+//! @param value The value to convert.
+//! @return The converted result, probably with the same numeric value.
+//! @note This operates on the principle that all enumeration values in OpenGL,
+//! no matter the type, have unique values, but the same underlying integer
+//! data type.
+template<typename TOutput, typename TInput>
+TOutput convertEnum(TInput value)
+{
+    using RawInput = std::underlying_type_t<TInput>;
+    using RawOutput = std::underlying_type_t<TOutput>;
+
+    return static_cast<TOutput>(static_cast<RawOutput>(static_cast<RawInput>(value)));
+}
 
 } // namespace gl
 

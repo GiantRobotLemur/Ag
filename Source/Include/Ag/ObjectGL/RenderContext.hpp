@@ -17,7 +17,11 @@
 #include <memory>
 
 #include "CommandSets.hpp"
+#include "Program.hpp"
 #include "Shader.hpp"
+#include "IndexBuffer.hpp"
+#include "VertexBuffer.hpp"
+#include "VertexArrayObject.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -49,10 +53,15 @@ public:
     void doneCurrent();
     void swapBuffers();
     Shader createShader(ShaderType type);
+    Program createProgram();
+    IndexBuffer createIndexBuffer();
+    VertexBuffer createVertexBuffer();
+    VertexArrayObject createVertexArray();
 
+    void flushResources();
 private:
     // Internal Functions
-    void verifyAccess(const char *fnName) const;
+    const GLAPI &verifyAccess(const char *fnName) const;
 
     // Internal Fields
     std::shared_ptr<RenderContextPrivate> _context;

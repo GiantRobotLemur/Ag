@@ -275,7 +275,7 @@ public:
                                     GLfloat *params) const;
     void getProgramString(ProgramTarget target, ProgramStringProperty pname,
                           void *string) const;
-    void getProgramIV(ProgramTarget target, ProgramPropertyARB pname,
+    void getProgramIV(ProgramTarget target, ProgramProperty pname,
                       GLint *params) const;
     Boolean isProgram(ProgramName program) const;
     void programEnvParameter4D(ProgramTarget target, GLuint index, GLdouble x,
@@ -315,14 +315,14 @@ public:
     const ARBGeometrySHADER4 &getRawAPI() const;
 
     // Operations
-    void framebufferTexture(FramebufferTarget target,
+    void framebufferTexture(FrameBufferTarget target,
                             FramebufferAttachment attachment,
                             TextureName texture, GLint level) const;
-    void framebufferTextureFace(FramebufferTarget target,
+    void framebufferTextureFace(FrameBufferTarget target,
                                 FramebufferAttachment attachment,
                                 TextureName texture, GLint level,
                                 TextureTarget face) const;
-    void framebufferTextureLayer(FramebufferTarget target,
+    void framebufferTextureLayer(FrameBufferTarget target,
                                  FramebufferAttachment attachment,
                                  TextureName texture, GLint level, GLint layer) const;
     void programParameterI(ProgramName program, ProgramParameterPName pname,
@@ -694,9 +694,9 @@ public:
 
     // Operations
     void evaluateDepthValues() const;
-    void framebufferSampleLocationsFV(FramebufferTarget target, GLuint start,
+    void framebufferSampleLocationsFV(FrameBufferTarget target, GLuint start,
                                       GLsizei count, const GLfloat *v) const;
-    void namedFramebufferSampleLocationsFV(FramebufferName framebuffer,
+    void namedFramebufferSampleLocationsFV(FrameBufferName framebuffer,
                                            GLuint start, GLsizei count,
                                            const GLfloat *v) const;
 
@@ -1000,22 +1000,22 @@ public:
     const ARBVertexBufferObject &getRawAPI() const;
 
     // Operations
-    void bindBuffer(BufferTargetARB target, BufferName buffer) const;
-    void bufferData(BufferTargetARB target, GLsizeiptrARB size, const void *data,
-                    BufferUsageARB usage) const;
-    void bufferSubData(BufferTargetARB target, GLintptrARB offset,
+    void bindBuffer(BufferTarget target, BufferName buffer) const;
+    void bufferData(BufferTarget target, GLsizeiptrARB size, const void *data,
+                    BufferUsage usage) const;
+    void bufferSubData(BufferTarget target, GLintptrARB offset,
                        GLsizeiptrARB size, const void *data) const;
     void deleteBuffers(GLsizei n, const BufferName *buffers) const;
     void genBuffers(GLsizei n, BufferName *buffers) const;
-    void getBufferParameterIV(BufferTargetARB target, BufferPNameARB pname,
+    void getBufferParameterIV(BufferTarget target, BufferPName pname,
                               GLint *params) const;
-    void getBufferPointerV(BufferTargetARB target, BufferPointerNameARB pname,
+    void getBufferPointerV(BufferTarget target, BufferPointerName pname,
                            void **params) const;
-    void getBufferSubData(BufferTargetARB target, GLintptrARB offset,
+    void getBufferSubData(BufferTarget target, GLintptrARB offset,
                           GLsizeiptrARB size, void *data) const;
     Boolean isBuffer(BufferName buffer) const;
-    void *mapBuffer(BufferTargetARB target, BufferAccessARB access) const;
-    Boolean unmapBuffer(BufferTargetARB target) const;
+    void *mapBuffer(BufferTarget target, BufferAccess access) const;
+    Boolean unmapBuffer(BufferTarget target) const;
 
     // Overrides
     virtual void resolve(const APIResolver *resolver) override;

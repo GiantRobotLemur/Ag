@@ -47,8 +47,8 @@ void MESAFramebufferFlipYAPI::resolve(const APIResolver *resolver)
 }
 
 // Calls glFramebufferParameteriMESA().
-void MESAFramebufferFlipYAPI::framebufferParameterI(FramebufferTarget target,
-                                                    FramebufferParameterName pname,
+void MESAFramebufferFlipYAPI::framebufferParameterI(FrameBufferTarget target,
+                                                    FrameBufferParameterName pname,
                                                     GLint param) const
 {
     static const char *fnName = "glFramebufferParameteriMESA";
@@ -59,8 +59,8 @@ void MESAFramebufferFlipYAPI::framebufferParameterI(FramebufferTarget target,
 }
 
 // Calls glGetFramebufferParameterivMESA().
-void MESAFramebufferFlipYAPI::getFramebufferParameterIV(FramebufferTarget target,
-                                                        FramebufferAttachmentParameterName pname,
+void MESAFramebufferFlipYAPI::getFramebufferParameterIV(FrameBufferTarget target,
+                                                        FrameBufferAttachmentParameterName pname,
                                                         GLint *params) const
 {
     static const char *fnName = "glGetFramebufferParameterivMESA";

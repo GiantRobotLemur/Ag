@@ -38,7 +38,7 @@ public:
     const OvrMultiview &getRawAPI() const;
 
     // Operations
-    void framebufferTextureMultiviewOvr(FramebufferTarget target,
+    void framebufferTextureMultiviewOvr(FrameBufferTarget target,
                                         FramebufferAttachment attachment,
                                         TextureName texture, GLint level,
                                         GLint baseViewIndex, GLsizei numViews) const;

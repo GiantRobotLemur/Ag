@@ -29,6 +29,8 @@ namespace gl {
 class DisplayContextPrivate;
 class ContextOptions;
 
+using DisplyContextPrivateSPtr = std::shared_ptr<DisplayContextPrivate>;
+
 //! @brief An object representing a context in which OpenGL resources exist in
 //! order to be used by render contexts.
 class DisplayContext
@@ -47,9 +49,10 @@ public:
     // Operations
     RenderContext createRenderer(uintptr_t drawable,
                                  const ContextOptions &options);
+    void flushResources();
 private:
     // Internal Fields
-    std::shared_ptr<DisplayContextPrivate> _context;
+    DisplyContextPrivateSPtr _context;
 };
 
 } // namespace gl

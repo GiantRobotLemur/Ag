@@ -71,21 +71,21 @@ struct ShaderName
 };
 
 // A structure aliasing GLuint values which represent frame buffers.
-struct FramebufferName
+struct FrameBufferName
 {
     GLuint ID;
 
-    FramebufferName();
-    FramebufferName(GLuint id);
+    FrameBufferName();
+    FrameBufferName(GLuint id);
 };
 
 // A structure aliasing GLuint values which represent render buffers.
-struct RenderbufferName
+struct RenderBufferName
 {
     GLuint ID;
 
-    RenderbufferName();
-    RenderbufferName(GLuint id);
+    RenderBufferName();
+    RenderBufferName(GLuint id);
 };
 
 // A structure aliasing GLuint values which represent vertex arrays.

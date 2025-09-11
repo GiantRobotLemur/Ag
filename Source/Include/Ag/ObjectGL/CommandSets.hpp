@@ -16,6 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
+#include "Ag/Core/Version.hpp"
 #include "APIs.hpp"
 #include "EnumTypes.hpp"
 #include "Identifiers.hpp"
@@ -36,9 +37,12 @@ public:
 
     // Accessors
     const GL &getRawAPI() const;
+    const Ag::Version &getAPIVersion() const;
 
     // Operations
+    void verifyAPIVersion(const Ag::Version &minRequired, const char *feature) const;
 
+#pragma region OpenGL Commands
 #pragma region Core GL 1.0
     // GL 1.0
     void blendFunc(BlendingFactor sfactor, BlendingFactor dfactor) const;
@@ -205,21 +209,21 @@ public:
 #pragma region Core GL 1.5
     // GL 1.5
     void beginQuery(QueryTarget target, QueryName id) const;
-    void bindBuffer(BufferTargetARB target, BufferName buffer) const;
-    void bufferData(BufferTargetARB target, GLsizeiptr size, const void *data,
-                    BufferUsageARB usage) const;
-    void bufferSubData(BufferTargetARB target, GLintptr offset, GLsizeiptr size,
+    void bindBuffer(BufferTarget target, BufferName buffer) const;
+    void bufferData(BufferTarget target, GLsizeiptr size, const void *data,
+                    BufferUsage usage) const;
+    void bufferSubData(BufferTarget target, GLintptr offset, GLsizeiptr size,
                        const void *data) const;
     void deleteBuffers(GLsizei n, const BufferName *buffers) const;
     void deleteQueries(GLsizei n, const QueryName *ids) const;
     void endQuery(QueryTarget target) const;
     void genBuffers(GLsizei n, BufferName *buffers) const;
     void genQueries(GLsizei n, QueryName *ids) const;
-    void getBufferParameterIV(BufferTargetARB target, BufferPNameARB pname,
+    void getBufferParameterIV(BufferTarget target, BufferPName pname,
                               GLint *params) const;
-    void getBufferPointerV(BufferTargetARB target, BufferPointerNameARB pname,
+    void getBufferPointerV(BufferTarget target, BufferPointerName pname,
                            void **params) const;
-    void getBufferSubData(BufferTargetARB target, GLintptr offset,
+    void getBufferSubData(BufferTarget target, GLintptr offset,
                           GLsizeiptr size, void *data) const;
     void getQueryObjectIV(QueryName id, QueryObjectParameterName pname,
                           GLint *params) const;
@@ -228,8 +232,8 @@ public:
     void getQueryIV(QueryTarget target, QueryParameterName pname, GLint *params) const;
     Boolean isBuffer(BufferName buffer) const;
     Boolean isQuery(QueryName id) const;
-    void *mapBuffer(BufferTargetARB target, BufferAccessARB access) const;
-    Boolean unmapBuffer(BufferTargetARB target) const;
+    void *mapBuffer(BufferTarget target, BufferAccess access) const;
+    Boolean unmapBuffer(BufferTarget target) const;
 #pragma endregion
 
 #pragma region Core GL 2.0
@@ -259,7 +263,7 @@ public:
     GLint getAttribLocation(ProgramName program, const GLchar *name) const;
     void getProgramInfoLog(ProgramName program, GLsizei bufSize, GLsizei *length,
                            GLchar *infoLog) const;
-    void getProgramIV(ProgramName program, ProgramPropertyARB pname,
+    void getProgramIV(ProgramName program, ProgramProperty pname,
                       GLint *params) const;
     void getShaderInfoLog(ShaderName shader, GLsizei bufSize, GLsizei *length,
                           GLchar *infoLog) const;
@@ -376,20 +380,20 @@ public:
     // GL 3.0
     void beginConditionalRender(GLuint id, ConditionalRenderMode mode) const;
     void beginTransformFeedback(PrimitiveType primitiveMode) const;
-    void bindBufferBase(BufferTargetARB target, GLuint index, BufferName buffer) const;
-    void bindBufferRange(BufferTargetARB target, GLuint index, BufferName buffer,
+    void bindBufferBase(BufferTarget target, GLuint index, BufferName buffer) const;
+    void bindBufferRange(BufferTarget target, GLuint index, BufferName buffer,
                          GLintptr offset, GLsizeiptr size) const;
     void bindFragDataLocation(ProgramName program, GLuint color,
                               const GLchar *name) const;
-    void bindFramebuffer(FramebufferTarget target, FramebufferName framebuffer) const;
-    void bindRenderbuffer(RenderbufferTarget target,
-                          RenderbufferName renderbuffer) const;
+    void bindFramebuffer(FrameBufferTarget target, FrameBufferName framebuffer) const;
+    void bindRenderbuffer(RenderBufferTarget target,
+                          RenderBufferName renderbuffer) const;
     void bindVertexArray(VertexArrayName array) const;
     void blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
                          GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
                          GLbitfield  /* ClearBufferMask */ mask,
                          BlitFramebufferFilter filter) const;
-    FramebufferStatus checkFramebufferStatus(FramebufferTarget target) const;
+    FrameBufferStatus checkFramebufferStatus(FrameBufferTarget target) const;
     void clampColor(ClampColorTargetARB target, ClampColorModeARB clamp) const;
     void clearBufferFI(BufferEnum buffer, GLint drawbuffer, GLfloat depth,
                        GLint stencil) const;
@@ -397,47 +401,47 @@ public:
     void clearBufferIV(BufferEnum buffer, GLint drawbuffer, const GLint *value) const;
     void clearBufferUIV(BufferEnum buffer, GLint drawbuffer, const GLuint *value) const;
     void colorMaskI(GLuint index, Boolean r, Boolean g, Boolean b, Boolean a) const;
-    void deleteFramebuffers(GLsizei n, const FramebufferName *framebuffers) const;
-    void deleteRenderbuffers(GLsizei n, const RenderbufferName *renderbuffers) const;
+    void deleteFramebuffers(GLsizei n, const FrameBufferName *framebuffers) const;
+    void deleteRenderbuffers(GLsizei n, const RenderBufferName *renderbuffers) const;
     void deleteVertexArrays(GLsizei n, const VertexArrayName *arrays) const;
     void disableI(EnableCap target, GLuint index) const;
     void enableI(EnableCap target, GLuint index) const;
     void endConditionalRender() const;
     void endTransformFeedback() const;
-    void flushMappedBufferRange(BufferTargetARB target, GLintptr offset,
+    void flushMappedBufferRange(BufferTarget target, GLintptr offset,
                                 GLsizeiptr length) const;
-    void framebufferRenderbuffer(FramebufferTarget target,
+    void framebufferRenderbuffer(FrameBufferTarget target,
                                  FramebufferAttachment attachment,
-                                 RenderbufferTarget renderbuffertarget,
-                                 RenderbufferName renderbuffer) const;
-    void framebufferTexture1D(FramebufferTarget target,
+                                 RenderBufferTarget renderbuffertarget,
+                                 RenderBufferName renderbuffer) const;
+    void framebufferTexture1D(FrameBufferTarget target,
                               FramebufferAttachment attachment,
                               TextureTarget textarget, TextureName texture,
                               GLint level) const;
-    void framebufferTexture2D(FramebufferTarget target,
+    void framebufferTexture2D(FrameBufferTarget target,
                               FramebufferAttachment attachment,
                               TextureTarget textarget, TextureName texture,
                               GLint level) const;
-    void framebufferTexture3D(FramebufferTarget target,
+    void framebufferTexture3D(FrameBufferTarget target,
                               FramebufferAttachment attachment,
                               TextureTarget textarget, TextureName texture,
                               GLint level, GLint zoffset) const;
-    void framebufferTextureLayer(FramebufferTarget target,
+    void framebufferTextureLayer(FrameBufferTarget target,
                                  FramebufferAttachment attachment,
                                  TextureName texture, GLint level, GLint layer) const;
-    void genFramebuffers(GLsizei n, FramebufferName *framebuffers) const;
-    void genRenderbuffers(GLsizei n, RenderbufferName *renderbuffers) const;
+    void genFramebuffers(GLsizei n, FrameBufferName *framebuffers) const;
+    void genRenderbuffers(GLsizei n, RenderBufferName *renderbuffers) const;
     void genVertexArrays(GLsizei n, VertexArrayName *arrays) const;
     void generateMipmap(TextureTarget target) const;
-    void getBooleanIV(BufferTargetARB target, GLuint index, Boolean *data) const;
+    void getBooleanIV(BufferTarget target, GLuint index, Boolean *data) const;
     GLint getFragDataLocation(ProgramName program, const GLchar *name) const;
-    void getFramebufferAttachmentParameterIV(FramebufferTarget target,
+    void getFramebufferAttachmentParameterIV(FrameBufferTarget target,
                                              FramebufferAttachment attachment,
-                                             FramebufferAttachmentParameterName pname,
+                                             FrameBufferAttachmentParameterName pname,
                                              GLint *params) const;
     void getIntegerIV(GetPName target, GLuint index, GLint *data) const;
-    void getRenderbufferParameterIV(RenderbufferTarget target,
-                                    RenderbufferParameterName pname,
+    void getRenderbufferParameterIV(RenderBufferTarget target,
+                                    RenderBufferParameterName pname,
                                     GLint *params) const;
     const GLubyte *getStringI(StringName name, GLuint index) const;
     void getTexParameterIIV(TextureTarget target, GetTextureParameter pname,
@@ -453,16 +457,16 @@ public:
     void getVertexAttribIUIV(GLuint index, VertexAttribEnum pname,
                              GLuint *params) const;
     Boolean isEnabledI(EnableCap target, GLuint index) const;
-    Boolean isFramebuffer(FramebufferName framebuffer) const;
-    Boolean isRenderbuffer(RenderbufferName renderbuffer) const;
+    Boolean isFramebuffer(FrameBufferName framebuffer) const;
+    Boolean isRenderbuffer(RenderBufferName renderbuffer) const;
     Boolean isVertexArray(VertexArrayName array) const;
-    void *mapBufferRange(BufferTargetARB target, GLintptr offset,
+    void *mapBufferRange(BufferTarget target, GLintptr offset,
                          GLsizeiptr length,
                          GLbitfield  /* MapBufferAccessMask */ access) const;
-    void renderbufferStorage(RenderbufferTarget target,
+    void renderbufferStorage(RenderBufferTarget target,
                              InternalFormat internalformat, GLsizei width,
                              GLsizei height) const;
-    void renderbufferStorageMultisample(RenderbufferTarget target,
+    void renderbufferStorageMultisample(RenderBufferTarget target,
                                         GLsizei samples,
                                         InternalFormat internalformat,
                                         GLsizei width, GLsizei height) const;
@@ -557,10 +561,10 @@ public:
                                      DrawElementsType type, const void *indices,
                                      GLint basevertex) const;
     SyncName fenceSync(SyncCondition condition, SyncBehaviorFlags flags) const;
-    void framebufferTexture(FramebufferTarget target,
+    void framebufferTexture(FrameBufferTarget target,
                             FramebufferAttachment attachment,
                             TextureName texture, GLint level) const;
-    void getBufferParameterI64V(BufferTargetARB target, BufferPNameARB pname,
+    void getBufferParameterI64V(BufferTarget target, BufferPName pname,
                                 GLint64 *params) const;
     void getInteger64IV(GetPName target, GLuint index, GLint64 *data) const;
     void getInteger64V(GetPName pname, GLint64 *data) const;
@@ -894,7 +898,7 @@ public:
 #pragma region Core GL 4.2
     // GL 4.2
     void bindImageTexture(GLuint unit, TextureName texture, GLint level,
-                          Boolean layered, GLint layer, BufferAccessARB access,
+                          Boolean layered, GLint layer, BufferAccess access,
                           InternalFormat format) const;
     void drawArraysInstancedBaseInstance(PrimitiveType mode, GLint first,
                                          GLsizei count, GLsizei instancecount,
@@ -942,7 +946,7 @@ public:
     void clearBufferData(BufferStorageTarget target,
                          SizedInternalFormat internalformat, PixelFormat format,
                          PixelType type, const void *data) const;
-    void clearBufferSubData(BufferTargetARB target,
+    void clearBufferSubData(BufferTarget target,
                             SizedInternalFormat internalformat, GLintptr offset,
                             GLsizeiptr size, PixelFormat format, PixelType type,
                             const void *data) const;
@@ -961,14 +965,14 @@ public:
     void dispatchCompute(GLuint num_groups_x, GLuint num_groups_y,
                          GLuint num_groups_z) const;
     void dispatchComputeIndirect(GLintptr indirect) const;
-    void framebufferParameterI(FramebufferTarget target,
-                               FramebufferParameterName pname, GLint param) const;
+    void framebufferParameterI(FrameBufferTarget target,
+                               FrameBufferParameterName pname, GLint param) const;
     GLuint getDebugMessageLog(GLuint count, GLsizei bufSize,
                               DebugSource *sources, DebugType *types,
                               GLuint *ids, DebugSeverity *severities,
                               GLsizei *lengths, GLchar *messageLog) const;
-    void getFramebufferParameterIV(FramebufferTarget target,
-                                   FramebufferAttachmentParameterName pname,
+    void getFramebufferParameterIV(FrameBufferTarget target,
+                                   FrameBufferAttachmentParameterName pname,
                                    GLint *params) const;
     void getInternalformatI64V(TextureTarget target,
                                InternalFormat internalformat,
@@ -1002,9 +1006,9 @@ public:
     void invalidateBufferData(BufferName buffer) const;
     void invalidateBufferSubData(BufferName buffer, GLintptr offset,
                                  GLsizeiptr length) const;
-    void invalidateFramebuffer(FramebufferTarget target, GLsizei numAttachments,
+    void invalidateFramebuffer(FrameBufferTarget target, GLsizei numAttachments,
                                const InvalidateFramebufferAttachment *attachments) const;
-    void invalidateSubFramebuffer(FramebufferTarget target,
+    void invalidateSubFramebuffer(FrameBufferTarget target,
                                   GLsizei numAttachments,
                                   const InvalidateFramebufferAttachment *attachments,
                                   GLint x, GLint y, GLsizei width,
@@ -1053,9 +1057,9 @@ public:
 
 #pragma region Core GL 4.4
     // GL 4.4
-    void bindBuffersBase(BufferTargetARB target, GLuint first, GLsizei count,
+    void bindBuffersBase(BufferTarget target, GLuint first, GLsizei count,
                          const BufferName *buffers) const;
-    void bindBuffersRange(BufferTargetARB target, GLuint first, GLsizei count,
+    void bindBuffersRange(BufferTarget target, GLuint first, GLsizei count,
                           const BufferName *buffers, const GLintptr *offsets,
                           const GLsizeiptr *sizes) const;
     void bindImageTextures(GLuint first, GLsizei count,
@@ -1077,14 +1081,14 @@ public:
 
     // GL 4.5
     void bindTextureUnit(GLuint unit, TextureName texture) const;
-    void blitNamedFramebuffer(FramebufferName readFramebuffer,
-                              FramebufferName drawFramebuffer, GLint srcX0,
+    void blitNamedFramebuffer(FrameBufferName readFramebuffer,
+                              FrameBufferName drawFramebuffer, GLint srcX0,
                               GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0,
                               GLint dstY0, GLint dstX1, GLint dstY1,
                               GLbitfield  /* ClearBufferMask */ mask,
                               BlitFramebufferFilter filter) const;
-    FramebufferStatus checkNamedFramebufferStatus(FramebufferName framebuffer,
-                                                  FramebufferTarget target) const;
+    FrameBufferStatus checkNamedFramebufferStatus(FrameBufferName framebuffer,
+                                                  FrameBufferTarget target) const;
     void clearNamedBufferData(BufferName buffer,
                               SizedInternalFormat internalformat,
                               PixelFormat format, PixelType type,
@@ -1094,13 +1098,13 @@ public:
                                  GLintptr offset, GLsizeiptr size,
                                  PixelFormat format, PixelType type,
                                  const void *data) const;
-    void clearNamedFramebufferFI(FramebufferName framebuffer, BufferEnum buffer,
+    void clearNamedFramebufferFI(FrameBufferName framebuffer, BufferEnum buffer,
                                  GLint drawbuffer, GLfloat depth, GLint stencil) const;
-    void clearNamedFramebufferFV(FramebufferName framebuffer, BufferEnum buffer,
+    void clearNamedFramebufferFV(FrameBufferName framebuffer, BufferEnum buffer,
                                  GLint drawbuffer, const GLfloat *value) const;
-    void clearNamedFramebufferIV(FramebufferName framebuffer, BufferEnum buffer,
+    void clearNamedFramebufferIV(FrameBufferName framebuffer, BufferEnum buffer,
                                  GLint drawbuffer, const GLint *value) const;
-    void clearNamedFramebufferUIV(FramebufferName framebuffer, BufferEnum buffer,
+    void clearNamedFramebufferUIV(FrameBufferName framebuffer, BufferEnum buffer,
                                   GLint drawbuffer, const GLuint *value) const;
     void clipControl(ClipControlOrigin origin, ClipControlDepth depth) const;
     void compressedTextureSubImage1D(TextureName texture, GLint level,
@@ -1128,10 +1132,10 @@ public:
                                GLint yoffset, GLint zoffset, GLint x, GLint y,
                                GLsizei width, GLsizei height) const;
     void createBuffers(GLsizei n, BufferName *buffers) const;
-    void createFramebuffers(GLsizei n, FramebufferName *framebuffers) const;
+    void createFramebuffers(GLsizei n, FrameBufferName *framebuffers) const;
     void createProgramPipelines(GLsizei n, ProgramPipelineName *pipelines) const;
     void createQueries(QueryTarget target, GLsizei n, QueryName *ids) const;
-    void createRenderbuffers(GLsizei n, RenderbufferName *renderbuffers) const;
+    void createRenderbuffers(GLsizei n, RenderBufferName *renderbuffers) const;
     void createSamplers(GLsizei n, SamplerName *samplers) const;
     void createTextures(TextureTarget target, GLsizei n, TextureName *textures) const;
     void createTransformFeedbacks(GLsizei n, TransformFeedbackName *ids) const;
@@ -1149,23 +1153,23 @@ public:
                                       GLsizei height, GLsizei depth,
                                       GLsizei bufSize, void *pixels) const;
     GraphicsResetStatus getGraphicsResetStatus() const;
-    void getNamedBufferParameterI64V(BufferName buffer, BufferPNameARB pname,
+    void getNamedBufferParameterI64V(BufferName buffer, BufferPName pname,
                                      GLint64 *params) const;
-    void getNamedBufferParameterIV(BufferName buffer, BufferPNameARB pname,
+    void getNamedBufferParameterIV(BufferName buffer, BufferPName pname,
                                    GLint *params) const;
-    void getNamedBufferPointerV(BufferName buffer, BufferPointerNameARB pname,
+    void getNamedBufferPointerV(BufferName buffer, BufferPointerName pname,
                                 void **params) const;
     void getNamedBufferSubData(BufferName buffer, GLintptr offset,
                                GLsizeiptr size, void *data) const;
-    void getNamedFramebufferAttachmentParameterIV(FramebufferName framebuffer,
+    void getNamedFramebufferAttachmentParameterIV(FrameBufferName framebuffer,
                                                   FramebufferAttachment attachment,
-                                                  FramebufferAttachmentParameterName pname,
+                                                  FrameBufferAttachmentParameterName pname,
                                                   GLint *params) const;
-    void getNamedFramebufferParameterIV(FramebufferName framebuffer,
+    void getNamedFramebufferParameterIV(FrameBufferName framebuffer,
                                         GetFramebufferParameter pname,
                                         GLint *param) const;
-    void getNamedRenderbufferParameterIV(RenderbufferName renderbuffer,
-                                         RenderbufferParameterName pname,
+    void getNamedRenderbufferParameterIV(RenderBufferName renderbuffer,
+                                         RenderBufferParameterName pname,
                                          GLint *params) const;
     void getQueryBufferObjectI64V(QueryName id, BufferName buffer,
                                   QueryObjectParameterName pname,
@@ -1221,15 +1225,15 @@ public:
                        GLint *params) const;
     void getnUniformUIV(ProgramName program, GLint location, GLsizei bufSize,
                         GLuint *params) const;
-    void invalidateNamedFramebufferData(FramebufferName framebuffer,
+    void invalidateNamedFramebufferData(FrameBufferName framebuffer,
                                         GLsizei numAttachments,
                                         const FramebufferAttachment *attachments) const;
-    void invalidateNamedFramebufferSubData(FramebufferName framebuffer,
+    void invalidateNamedFramebufferSubData(FrameBufferName framebuffer,
                                            GLsizei numAttachments,
                                            const FramebufferAttachment *attachments,
                                            GLint x, GLint y, GLsizei width,
                                            GLsizei height) const;
-    void *mapNamedBuffer(BufferName buffer, BufferAccessARB access) const;
+    void *mapNamedBuffer(BufferName buffer, BufferAccess access) const;
     void *mapNamedBufferRange(BufferName buffer, GLintptr offset,
                               GLsizeiptr length,
                               GLbitfield  /* MapBufferAccessMask */ access) const;
@@ -1240,27 +1244,27 @@ public:
                             GLbitfield  /* BufferStorageMask */ flags) const;
     void namedBufferSubData(BufferName buffer, GLintptr offset, GLsizeiptr size,
                             const void *data) const;
-    void namedFramebufferDrawBuffer(FramebufferName framebuffer, ColorBuffer buf) const;
-    void namedFramebufferDrawBuffers(FramebufferName framebuffer, GLsizei n,
+    void namedFramebufferDrawBuffer(FrameBufferName framebuffer, ColorBuffer buf) const;
+    void namedFramebufferDrawBuffers(FrameBufferName framebuffer, GLsizei n,
                                      const ColorBuffer *bufs) const;
-    void namedFramebufferParameterI(FramebufferName framebuffer,
-                                    FramebufferParameterName pname, GLint param) const;
-    void namedFramebufferReadBuffer(FramebufferName framebuffer, ColorBuffer src) const;
-    void namedFramebufferRenderbuffer(FramebufferName framebuffer,
+    void namedFramebufferParameterI(FrameBufferName framebuffer,
+                                    FrameBufferParameterName pname, GLint param) const;
+    void namedFramebufferReadBuffer(FrameBufferName framebuffer, ColorBuffer src) const;
+    void namedFramebufferRenderbuffer(FrameBufferName framebuffer,
                                       FramebufferAttachment attachment,
-                                      RenderbufferTarget renderbuffertarget,
-                                      RenderbufferName renderbuffer) const;
-    void namedFramebufferTexture(FramebufferName framebuffer,
+                                      RenderBufferTarget renderbuffertarget,
+                                      RenderBufferName renderbuffer) const;
+    void namedFramebufferTexture(FrameBufferName framebuffer,
                                  FramebufferAttachment attachment,
                                  TextureName texture, GLint level) const;
-    void namedFramebufferTextureLayer(FramebufferName framebuffer,
+    void namedFramebufferTextureLayer(FrameBufferName framebuffer,
                                       FramebufferAttachment attachment,
                                       TextureName texture, GLint level,
                                       GLint layer) const;
-    void namedRenderbufferStorage(RenderbufferName renderbuffer,
+    void namedRenderbufferStorage(RenderBufferName renderbuffer,
                                   InternalFormat internalformat, GLsizei width,
                                   GLsizei height) const;
-    void namedRenderbufferStorageMultisample(RenderbufferName renderbuffer,
+    void namedRenderbufferStorageMultisample(RenderBufferName renderbuffer,
                                              GLsizei samples,
                                              InternalFormat internalformat,
                                              GLsizei width, GLsizei height) const;
@@ -1356,12 +1360,13 @@ public:
                           const GLuint *pConstantIndex,
                           const GLuint *pConstantValue) const;
 #pragma endregion
-
+#pragma endregion
     // Overrides
     virtual void resolve(const APIResolver* resolver) override;
 
 private:
     GL _api;
+    Ag::Version _version;
 };
 
 } // namespace gl
