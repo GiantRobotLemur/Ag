@@ -65,10 +65,7 @@ public:
 //! @brief An implementation of DisplayContextPrivate which uses the WGL API.
 class WGLDisplayContextPrivate : public DisplayContextPrivate
 {
-friend class WGLRenderContextPrivate;
 private:
-    // Internal Types
-
     // Internal Fields
     wgl::WGLResolver _resolver;
     DisplayFormat _format;
@@ -107,15 +104,6 @@ public:
     virtual RenderContextPrivateSPtr createContext(uintptr_t drawable,
                                                    const ContextOptions &options) override;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// Local Data
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Local Functions
-////////////////////////////////////////////////////////////////////////////////
 
 } // Anonymous namespace
 

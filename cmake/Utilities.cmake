@@ -371,7 +371,7 @@ endfunction()
 function(ag_add_static_data target headerName)
     set(prefix data)
     set(noValues BINARY)
-    set(singleValues)
+    set(singleValues SOURCE_FOLDER CODE_FOLDER)
     set(multiValues SOURCES)
 
     cmake_parse_arguments("${prefix}"
@@ -385,8 +385,11 @@ function(ag_add_static_data target headerName)
     endif()
 
     foreach(dataFileName IN ITEMS ${data_SOURCES})
-        get_filename_component(fullName ${dataFileName} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-        get_filename_component(baseName ${fullName} NAME_WLE)
+        cmake_path(ABSOLUTE_PATH dataFileName
+                   BASE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                   NORMALIZE OUTPUT_VARIABLE fullName)
+
+        cmake_path(GET dataFileName STEM baseName)
 
         if (data_BINARY)
             string(APPEND declarations "const uint8_t *get${baseName}Data(size_t &byteCount);\n")
@@ -397,11 +400,15 @@ function(ag_add_static_data target headerName)
         list(APPEND inputFiles ${fullName})
     endforeach()
 
-    get_filename_component(fullHeaderPath ${headerName}
-                           ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-    get_filename_component(headerDir ${fullHeaderPath} DIRECTORY)
-    get_filename_component(headerBaseName ${fullHeaderPath} NAME_WLE)
-    set(fullSourceName "${headerDir}/${headerBaseName}.cpp")
+    cmake_path(ABSOLUTE_PATH headerName
+               BASE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+               NORMALIZE OUTPUT_VARIABLE fullHeaderPath)
+
+    cmake_path(GET fullHeaderPath PARENT_PATH headerDir)
+
+    cmake_path(GET fullHeaderPath STEM headerBaseName)
+
+    cmake_path(APPEND headerDir "${headerBaseName}.cpp" OUTPUT_VARIABLE fullSourceName)
 
     # Generate a UUID for the header guard macro.
     string(UUID headerGuardGuid
@@ -433,6 +440,14 @@ function(ag_add_static_data target headerName)
     target_sources(${target} PRIVATE ${fullHeaderPath} ${fullSourceName} ${inputFiles})
 
     target_include_directories(${target} PRIVATE ${headerDir})
+
+    if (data_SOURCE_FOLDER)
+        source_group("${data_SOURCE_FOLDER}" FILES ${inputFiles})
+    endif()
+
+    if (data_CODE_FOLDER)
+        source_group("${data_SOURCE_FOLDER}" FILES "${fullHeaderPath}" "${fullSourceName}")
+    endif()
 endfunction()
 
 # ag_copy_shared_lib(<destTarget> <shared_lib_targets...>)

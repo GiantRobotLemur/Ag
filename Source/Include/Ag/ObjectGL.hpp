@@ -92,9 +92,13 @@
 #include "ObjectGL/RenderContext.hpp"
 #include "ObjectGL/Driver.hpp"
 
-#ifdef _WIN32
+#ifdef AG_OBJECT_GL_WGL_DRIVER
 #include "ObjectGL/WGLDriver.hpp"
-#endif
+#endif // ifdef AG_OBJECT_GL_WGL_DRIVER
+
+#ifdef AG_OBJECT_GL_SDL3_DRIVER
+#include "ObjectGL/SDL3Driver.hpp"
+#endif // ifdef AG_OBJECT_GL_SDL3_DRIVER
 
 #include "ObjectGL/ProgramBuilder.hpp"
 #include "ObjectGL/Program.hpp"

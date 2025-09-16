@@ -109,7 +109,7 @@ struct GLContext
     {
         int result = SDL_GL_MakeCurrent(Window, Renderer);
 
-        if (result != 0)
+        if (SDL_GL_MakeCurrent(Window, Renderer) == false)
         {
             throw SDL3_GL_Exception("SDL_GL_MakeContext()", result);
         }
@@ -120,7 +120,7 @@ struct GLContext
     {
         int result = SDL_GL_MakeCurrent(Window, nullptr);
 
-        if (result != 0)
+        if (SDL_GL_MakeCurrent(Window, nullptr) == false)
         {
             throw SDL3_GL_Exception("SDL_GL_MakeContext(null)", result);
         }
@@ -213,14 +213,13 @@ public:
 
 //! @brief An implementation of RenderContextPrivate which uses SDL3 as its
 //! underlying platform.
-class SDL3RenderContext : public RenderContextPrivate
+class SDL3RenderContextPrivate : public RenderContextPrivate
 {
 public:
     // Construction/Destruction
-    SDL3RenderContext(const DisplayContextPrivateSPtr &display, const GLContext &context);
-    virtual ~SDL3RenderContext();
-
-    // Operations
+    SDL3RenderContextPrivate(const DisplayContextPrivateSPtr &display,
+                             const GLContext &context);
+    virtual ~SDL3RenderContextPrivate();
 
     // Overrides
     virtual void makeCurrent() override;
@@ -244,14 +243,11 @@ public:
     GLContext &getRootContext() { return _rootContext; }
 
     // Operations
-    void ensureRootContextCreated(const ContextOptions &options,
-                                  bool ignoreVersion);
+    void ensureRootContextCreated(const ContextOptions &options);
 
     // Overrides
-    // Inherited from DisplayContextPrivate.
+    virtual const Ag::Version &getMaxSupportedCoreVersion() const override;
     virtual const APIResolver *getResolver() const override;
-
-    // Inherited from DisplayContextPrivate.
     virtual std::shared_ptr<RenderContextPrivate> createContext(uintptr_t drawable,
                                                                 const ContextOptions &options) override;
 
@@ -263,6 +259,7 @@ private:
     DisplayFormat _format;
     SDL3PrivateResolver _resolver;
     GLContext _rootContext;
+    Ag::Version _maxCoreVersion;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -317,8 +314,7 @@ SDL3DisplayContext::~SDL3DisplayContext()
     }
 }
 
-void SDL3DisplayContext::ensureRootContextCreated(const ContextOptions &options,
-                                                  bool ignoreVersion)
+void SDL3DisplayContext::ensureRootContextCreated(const ContextOptions &options)
 {
     if (_rootContext.isValid() == false)
     {
@@ -336,7 +332,7 @@ void SDL3DisplayContext::ensureRootContextCreated(const ContextOptions &options,
         }
 
         // Create a root OpenGL context from which resources will be shared.
-        setContextAttributes(options, _format, ignoreVersion);
+        setContextAttributes(options, _format, /* ignoreVersion = */ true);
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, /* SDL_FALSE = */ 0);
 
         _rootContext.Renderer = SDL_GL_CreateContext(_rootContext.Window);
@@ -361,7 +357,15 @@ void SDL3DisplayContext::ensureRootContextCreated(const ContextOptions &options,
 
         // Initialise the underlying API.
         initialiseAPI();
+
+        _maxCoreVersion = getAPI().getAPIVersion();
     }
+}
+
+// Inherited from DisplayContextPrivate.
+const Ag::Version &SDL3DisplayContext::getMaxSupportedCoreVersion() const
+{
+    return _maxCoreVersion;
 }
 
 // Inherited from DisplayContextPrivate.
@@ -384,7 +388,7 @@ std::shared_ptr<RenderContextPrivate> SDL3DisplayContext::createContext(uintptr_
 
     ContextScope contextState;
 
-    ensureRootContextCreated(options, true);
+    ensureRootContextCreated(options);
 
     _rootContext.makeCurrent();
 
@@ -403,7 +407,13 @@ std::shared_ptr<RenderContextPrivate> SDL3DisplayContext::createContext(uintptr_
     // De-select the root context from the current thread.
     _rootContext.doneCurrent();
 
-    return std::make_shared<SDL3RenderContext>(shared_from_this(), context);
+    auto renderContext = std::make_shared<SDL3RenderContextPrivate>(shared_from_this(), context);
+
+    renderContext->makeCurrent();
+    renderContext->initialiseAPI(&_resolver);
+    renderContext->doneCurrent();
+
+    return renderContext;
 }
 
 //! @brief Maps preferred format and context to SDL GL attributes.
@@ -465,38 +475,35 @@ void SDL3DisplayContext::setContextAttributes(const ContextOptions &options,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SDL3RenderContext Member Definitions
+// SDL3RenderContextPrivate Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
-SDL3RenderContext::SDL3RenderContext(const DisplayContextPrivateSPtr &display,
+SDL3RenderContextPrivate::SDL3RenderContextPrivate(const DisplayContextPrivateSPtr &display,
                                      const GLContext &context) :
     RenderContextPrivate(display),
     _context(context)
 {
-    _context.makeCurrent();
-    getAPIInternal().resolve(display->getResolver());
-    _context.doneCurrent();
 }
 
 //! @brief Disposes of the OpenGL context the object wrapped.
-SDL3RenderContext::~SDL3RenderContext()
+SDL3RenderContextPrivate::~SDL3RenderContextPrivate()
 {
     _context.dispose();
 }
 
 // Inherited from RenderContextPrivate.
-void SDL3RenderContext::makeCurrent()
+void SDL3RenderContextPrivate::makeCurrent()
 {
     _context.makeCurrent();
 }
 
 // Inherited from RenderContextPrivate.
-void SDL3RenderContext::doneCurrent()
+void SDL3RenderContextPrivate::doneCurrent()
 {
     _context.doneCurrent();
 }
 
 // Inherited from RenderContextPrivate.
-void SDL3RenderContext::swapBuffers()
+void SDL3RenderContextPrivate::swapBuffers()
 {
     _context.swapBuffers();
 }
