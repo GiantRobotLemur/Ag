@@ -31,6 +31,7 @@ class WGLDriver : public IDriver
 {
 public:
     // Construction/Destruction
+    WGLDriver() = default;
     virtual ~WGLDriver() = default;
 
     // Operations

@@ -37,9 +37,15 @@ bool DisplayContext::isBound() const
 }
 
 //! @brief Gets the maximum supported version of the OpenGL API.
-Ag::Version DisplayContext::getMaxSupportedVersion() const
+Ag::Version DisplayContext::getMaxSupportedCoreVersion() const
 {
-    return (_context) ? _context->getMaxSupportedVersion() : Ag::Version();
+    return (_context) ? _context->getMaxSupportedCoreVersion() : Ag::Version();
+}
+
+//! @brief Resets the object to an unbound state.
+void DisplayContext::dispose()
+{
+    _context.reset();
 }
 
 //! @brief Creates an OpenGL context targeted at a specific drawable object.

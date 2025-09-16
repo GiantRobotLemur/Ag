@@ -259,6 +259,26 @@ VertexSchema::VertexSchema(const VertexAttribCollection &attributes,
     _stride = std::max<size_t>(preferredStride, totalSize);
 }
 
+//! @brief Determines if any attributes are defined in the vertex schema.
+//! @retval true At least one vertex attribute is defined.
+//! @retval false No vertex attributes are defined.
+bool VertexSchema::isEmpty() const
+{
+    return _attributes.empty();
+}
+
+//! @brief Gets the total size of the vertex structure, in bytes.
+size_t VertexSchema::getVertexSize() const noexcept
+{
+    return _stride;
+}
+
+//! @brief Gets the count of vertex attributes defined by the schema.
+size_t VertexSchema::getAttributeCount() const noexcept
+{
+    return _attributes.size();
+}
+
 //! @brief Attempts to look up the index of a vertex attribute from its name.
 //! @param[in] name The name to look up.
 //! @param[out] index Receives the internal index of the attribute.
@@ -281,43 +301,12 @@ bool VertexSchema::tryFindAttributeByName(Ag::string_cref_t name,
     }
 }
 
-//! @brief Defines the vertex type in the current OpenGL context.
-//! @param[in] api The API used to access the current context.
-//! @param[in] mappings The mappings of the index in the schema to
-//! the position of each vertex attribute in a shader program.
-void VertexSchema::define(const GLAPI &api,
-                          const VertexAttribMapping &mappings) const
+//! @brief Gets the attribute at the specified index.
+//! @param[in] index The 0-based index of the attribute to obtain.
+//! @return A read-only reference to the attribute.
+const VertexAttrib &VertexSchema::operator[](size_t index) const
 {
-    // Get the maximum number of vertex attributes supported.
-    GLint maxAttribs = 0;
-    api.getIntegerV(gl::GetPName::MaxVertexAttribs, &maxAttribs);
-
-    uint32_t maxSlots = static_cast<uint32_t>(maxAttribs);
-    uint32_t lastSlot = 0;
-
-    for (const auto &mapping : mappings)
-    {
-        const VertexAttrib &attrib = _attributes[mapping.first];
-
-        for (; lastSlot < mapping.second; ++lastSlot)
-        {
-            // Disable unused attributes.
-            api.disableVertexAttribArray(lastSlot);
-        }
-
-        // Enable the attribute we are about to define.
-        api.enableVertexAttribArray(mapping.second);
-        attrib.define(api, mapping.second, _stride);
-
-        // Move on to the next attribute.
-        lastSlot = mapping.second + 1;
-    }
-
-    // Disable all other attributes.
-    for (; lastSlot < maxSlots; ++lastSlot)
-    {
-        api.disableVertexAttribArray(lastSlot);
-    }
+    return _attributes[index];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

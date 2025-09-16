@@ -504,15 +504,6 @@ void SDL2RenderContext::swapBuffers()
 ////////////////////////////////////////////////////////////////////////////////
 // SDL2Driver Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
-Version SDL2Driver::getMaxSupportedVersion(const ContextOptions &options,
-                                           const DisplayFormat &format) const
-{
-    auto display = std::make_shared<SDL2DisplayContext>(format);
-    display->ensureRootContextCreated(options, true);
-
-    return display->getMaxSupportedVersion();
-}
-
 DisplayContext SDL2Driver::createDisplayDevice(const DisplayFormat &format) const
 {
     std::shared_ptr<SDL2DisplayContext> context = std::make_shared<SDL2DisplayContext>(format);

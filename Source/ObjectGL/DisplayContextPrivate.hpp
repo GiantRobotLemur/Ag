@@ -77,7 +77,7 @@ public:
 
     // Accessors
     const GLAPI &getAPI() const;
-    const Ag::Version &getMaxSupportedVersion() const;
+    virtual const Ag::Version &getMaxSupportedCoreVersion() const =0;
     virtual const APIResolver *getResolver() const = 0;
 
     // Operations
@@ -119,7 +119,6 @@ private:
     std::mutex _disposalLock;
     TaggedResourceCollection _resourcesForDisposal;
     GLAPI _api;
-    Ag::Version _maxVersion;
 };
 
 //! @brief An alias for a shared pointer to an inner Display Context.

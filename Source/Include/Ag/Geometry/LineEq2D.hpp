@@ -13,9 +13,6 @@
 
 namespace Ag {
 namespace Geom {
-////////////////////////////////////////////////////////////////////////////////
-// Data Type Declarations
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -53,7 +50,7 @@ public:
     bool isPerpendicular(const LineEq2D &rhs) const;
     double getAngleTo(const LineEq2D &rhs) const;
     double getAngleCosine(const LineEq2D &rhs) const;
-    double getDistanceToPoint(const Point2D &pt) const;
+    double getPerpDistanceToPoint(const Point2D &pt) const;
     bool tryCalculateIntersection(const LineEq2D &rhs, Point2D &intersection) const;
     LineEq2D calculatePerpThroughPoint(const Point2D &point) const;
     void toParametricForm(Line2D &parametricLine) const;

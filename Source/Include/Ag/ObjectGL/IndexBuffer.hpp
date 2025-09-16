@@ -57,12 +57,14 @@ public:
     // Operations
     void select() const;
     void deselect() const;
+    void dispose();
     void fill(const uint8_t *indices, size_t count, BufferUsage usage, bool hasRestarts = false);
     void fill(const uint16_t *indices, size_t count, BufferUsage usage, bool hasRestarts = false);
     void fill(const uint32_t *indices, size_t count, BufferUsage usage, bool hasRestarts = false);
     void fill(const IndicesCollection8 &indices, BufferUsage usage, bool hasRestarts = false);
     void fill(const IndicesCollection16 &indices, BufferUsage usage, bool hasRestarts = false);
     void fill(const IndicesCollection32 &indices, BufferUsage usage, bool hasRestarts = false);
+    void configurePrimitiveRestart() const;
 private:
     // Internal Functions
     const gl::GLAPI &verifyAccess(const char *operation) const;

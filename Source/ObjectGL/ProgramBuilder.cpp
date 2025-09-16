@@ -77,7 +77,7 @@ size_t ProgramBuilder::addShader(ShaderType type,
     Shader shader = _parentContext.createShader(type);
     shader.setSource(sourceCode);
 
-    if (shader.compile() == false)
+    if (shader.tryCompile() == false)
     {
         throw ShaderCompilationException(type,
                                          shader.getCompilationLog().toUtf8View());

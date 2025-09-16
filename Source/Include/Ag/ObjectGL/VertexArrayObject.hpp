@@ -43,6 +43,7 @@ public:
     // Operations
     void select() const;
     void deselect() const;
+    void dispose();
 private:
     // Internal Functions
     const GLAPI &verifyAccess(const char *operation) const;

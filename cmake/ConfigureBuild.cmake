@@ -38,7 +38,7 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         option(AG_STATIC_RUNTIME "Indicates whether libraries should link to static C/C++ runtime libraries" OFF)
         option(AG_CONFIG_QT "Indicates whether Qt-dependent components should be configured." OFF)
         option(AG_CONFIG_GFX "Indicates whether Graphics-related components should be configured." OFF)
-        #option(AG_CONFIG_GL "Indicates whether OpenGL-dependent components should be configured." OFF)
+        option(AG_CONFIG_OPEN_GL "Indicates whether OpenGL-dependent components should be configured." OFF)
         option(AG_CONFIG_SDL3 "Indicates whether lib SDL3-dependent components should be configured." OFF)
 
         include(FetchContent)

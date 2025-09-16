@@ -20,7 +20,7 @@ namespace gl {
 // RenderContextPrivate Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs a render context which is a child of a specified display.
-//! @param[in] display The inner pointer to the parent dispay.
+//! @param[in] display The inner pointer to the parent display.
 RenderContextPrivate::RenderContextPrivate(const std::shared_ptr<DisplayContextPrivate> &display) :
     _display(display)
 {
@@ -36,16 +36,17 @@ const std::shared_ptr<DisplayContextPrivate> &RenderContextPrivate::getDisplay()
     return _display;
 }
 
+//! @brief Ensures the internal API is initialised with function pointers.
+//! @param[in] resolver An object which can look up function pointers from
+//! function names.
+void RenderContextPrivate::initialiseAPI(const APIResolver *resolver)
+{
+    _api.resolve(resolver);
+}
+
 //! @brief Gets a read-only reference to the GL API resolved for the render 
 //! device the object represents.
 const GLAPI &RenderContextPrivate::getAPI() const
-{
-    return _api;
-}
-
-//! @brief Gets a writable reference to the GL API resolved for the render
-//! device the object represents.
-GLAPI &RenderContextPrivate::getAPIInternal()
 {
     return _api;
 }

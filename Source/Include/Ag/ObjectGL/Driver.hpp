@@ -34,8 +34,6 @@ public:
     virtual ~IDriver() = default;
 
     // Operations
-    virtual Ag::Version getMaxSupportedVersion(const ContextOptions &options,
-                                               const DisplayFormat &format) const =0;
     virtual DisplayContext createDisplayDevice(const DisplayFormat &format) const = 0;
 };
 

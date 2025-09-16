@@ -174,6 +174,7 @@ public:
     Node &addNode(const Point2D &realPosition);
     void removeNode(ID nodeID);
     size_t removeDisconnectedNodes(const EdgeTable &edges);
+    void resetNodeMapping();
 private:
     // Internal Functions
     void indexNode(NodePtr node);

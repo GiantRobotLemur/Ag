@@ -107,6 +107,13 @@ void IndexBuffer::deselect() const
     api.bindBuffer(BufferTarget::ElementArrayBuffer, BufferName());
 }
 
+//! @brief Resets the object to an unbound state, disposing of the
+//! underlying resource if necessary.
+void IndexBuffer::dispose()
+{
+    _buffer.reset();
+}
+
 //! @brief Sets the contents of the index buffer.
 //! @param[in] indices The source index data expressed as 8-bit unsigned values.
 //! @param[in] count The count of values in indices.
@@ -206,25 +213,29 @@ void IndexBuffer::fill(const uint32_t *indices, size_t count,
 
         // Annotate the buffer resource with the data type.
         _buffer->setDataType(DrawElementsType::UnsignedByte);
+        _buffer->setRestartIndex(static_cast<uint32_t>(PrimitiveEnd8));
     }
     else if (maxIndex < 0xFFFF)
     {
         // Convert to 16-bit words.
         IndicesCollection16 compressed = compressIndices<uint16_t>(indices, indices + count);
 
-        api.bufferData(BufferTarget::ElementArrayBuffer, count,
+        api.bufferData(BufferTarget::ElementArrayBuffer,
+                       count * sizeof(uint16_t),
                        compressed.data(), usage);
 
         // Annotate the buffer resource with the data type.
         _buffer->setDataType(DrawElementsType::UnsignedShort);
+        _buffer->setRestartIndex(static_cast<uint32_t>(PrimitiveEnd16));
     }
     else
     {
         api.bufferData(BufferTarget::ElementArrayBuffer,
-                       count * sizeof(uint16_t), indices, usage);
+                       count * sizeof(uint32_t), indices, usage);
 
         // Annotate the buffer resource with the data type.
         _buffer->setDataType(DrawElementsType::UnsignedShort);
+        _buffer->setRestartIndex(PrimitiveEnd32);
     }
 
     _buffer->setUsePrimitiveRestart(hasRestarts);
@@ -268,6 +279,23 @@ void IndexBuffer::fill(const IndicesCollection32 &indices,
                        BufferUsage usage, bool hasRestarts /*= false*/)
 {
     fill(indices.data(), indices.size(), usage, hasRestarts);
+}
+
+//! @brief Configures the current context with an appropriate primitive
+//! restart index.
+void IndexBuffer::configurePrimitiveRestart() const
+{
+    const auto &api = verifyAccess("configurePrimitiveRestart()");
+
+    if (_buffer->usesPrimitiveRestart())
+    {
+        api.enable(EnableCap::PrimitiveRestart);
+        api.primitiveRestartIndex(_buffer->getRestartIndex());
+    }
+    else
+    {
+        api.disable(EnableCap::PrimitiveRestart);
+    }
 }
 
 //! @brief Verifies that the object is associated with a valid resource and

@@ -44,9 +44,10 @@ public:
 
     // Accessors
     bool isBound() const;
-    Ag::Version getMaxSupportedVersion() const;
+    Ag::Version getMaxSupportedCoreVersion() const;
 
     // Operations
+    void dispose();
     RenderContext createRenderer(uintptr_t drawable,
                                  const ContextOptions &options);
     void flushResources();

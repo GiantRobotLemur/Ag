@@ -208,7 +208,7 @@ const double *LineEq2D::toVector() const
 bool LineEq2D::isColinear(const NumericDomain &domain, const LineEq2D &rhs) const
 {
     return isParallel(rhs) &&
-        domain.isNearZero(getDistanceToPoint(rhs.getOrigin()));
+        domain.isNearZero(getPerpDistanceToPoint(rhs.getOrigin()));
 }
 
 //! @brief Determines if a line is parallel to the current one.
@@ -261,7 +261,7 @@ double LineEq2D::getAngleCosine(const LineEq2D &rhs) const
 //! @param[in] pt The point to measure to.
 //! @return The distance to the line, the sign indicates the side of the line
 //! the point is on.
-double LineEq2D::getDistanceToPoint(const Point2D &pt) const
+double LineEq2D::getPerpDistanceToPoint(const Point2D &pt) const
 {
     return (_a * pt.getX()) + (_b * pt.getY()) + _c;
 }

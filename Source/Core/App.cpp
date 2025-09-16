@@ -2,7 +2,7 @@
 //! @brief The definition of an object which represents the root of an
 //! application object hierarchy.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -320,7 +320,7 @@ void App::reportException(const std::exception &error)
 }
 
 //! @brief Processes error message text.
-//! @param[in] errorText The null-terminated UTF-8 encoded text definging the,
+//! @param[in] errorText The null-terminated UTF-8 encoded text defining the,
 //! possibly multi-line, error output.
 //! @note The default implementation writes to stderr and the Windows debugger
 //! console if one is attached.

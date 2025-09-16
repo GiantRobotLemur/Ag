@@ -601,7 +601,7 @@ BadCastException::BadCastException(const char *targetTypeName)
 ////////////////////////////////////////////////////////////////////////////////
 const char *ObjectNotBoundException::Domain = "ObjectNotBoundException";
 static const char *objNotBoundMessage =
-"The program perform an operation on an object not bound to a valid underlying resource.";
+"The program could not perform an operation on an object not bound to a valid underlying resource.";
 
 //! @brief Constructs an exception throw when an attempt is made use a resource
 //! wrapper object not bound to an underlying resource.
@@ -611,7 +611,7 @@ ObjectNotBoundException::ObjectNotBoundException(const char *objectTypeName,
                                                  const char *operation)
 {
     std::string detail;
-    appendPrintf(detail, "An '%s' object could not perform the '%s' function"
+    appendPrintf(detail, "A '%s' object could not perform the '%s' function "
                  "as it was in an unbound state.",
                  objectTypeName, operation);
 

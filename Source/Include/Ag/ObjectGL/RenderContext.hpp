@@ -49,16 +49,17 @@ public:
     const APIResolver *getResolver() const;
 
     // Operations
+    void dispose();
     void makeCurrent();
     void doneCurrent();
     void swapBuffers();
-    Shader createShader(ShaderType type);
-    Program createProgram();
-    IndexBuffer createIndexBuffer();
-    VertexBuffer createVertexBuffer();
-    VertexArrayObject createVertexArray();
+    Shader createShader(ShaderType type) const;
+    Program createProgram() const;
+    IndexBuffer createIndexBuffer() const;
+    VertexBuffer createVertexBuffer() const;
+    VertexArrayObject createVertexArray() const;
 
-    void flushResources();
+    void flushResources() const;
 private:
     // Internal Functions
     const GLAPI &verifyAccess(const char *fnName) const;

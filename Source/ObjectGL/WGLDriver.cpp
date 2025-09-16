@@ -27,182 +27,184 @@
 namespace gl {
 
 namespace {
-
 ////////////////////////////////////////////////////////////////////////////////
 // Local Data Types
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief An object which ensures that a window, associated device context
-//! an OpenGL context are all handled with an exception safe guarantee.
-struct WindowResource
+class WGLDisplayContextPrivate;
+using WGLDisplayContextPrivateSPtr = std::shared_ptr<WGLDisplayContextPrivate>;
+
+//! @brief An implementation of RenderContextPrivate which uses the WGL API.
+class WGLRenderContextPrivate : public RenderContextPrivate
 {
-    // Public Data
-    HWND Window;
-    HDC Device;
-    HGLRC Context;
-    BOOL(WINAPI *MakeCurrent)(HDC, HGLRC);
-    BOOL(WINAPI *DeleteContext)(HGLRC);
-    bool _disposeOfWindow;
-
-    // Construction/Destruction
-    //! @brief Constructs a object to manage the lifetime of resources with a
-    //! guarantee of exception safety.
-    //! @param[in] window A handle to a window to destroy on destruction.
-    //! @param[in] disposeOfWindow Indicates whether the window should be disposed
-    //! of at destruction.
-    WindowResource(HWND window, bool disposeOfWindow) :
-        Window(window),
-        Device(nullptr),
-        Context(nullptr),
-        MakeCurrent(nullptr),
-        DeleteContext(nullptr),
-        _disposeOfWindow(disposeOfWindow)
-    {
-    }
-
-    //! @brief Disposes of all resources held by the object.
-    ~WindowResource()
-    {
-        releaseContext();
-        releaseDC();
-
-        if (_disposeOfWindow && (::IsWindow(Window) != FALSE))
-        {
-            ::DestroyWindow(Window);
-        }
-
-        Window = nullptr;
-    }
-
-    // Operations
-
-    //! @brief Gets a device context from the window, if not already obtained.
-    HDC getDC()
-    {
-        if (Device == nullptr)
-        {
-            Device = ::GetDC(Window);
-        }
-
-        return Device;
-    }
-
-    //! @brief Disposes of the device context, if it exists.
-    void releaseDC()
-    {
-
-        if (Device != nullptr)
-        {
-            // Ensure the OpenGL render context is disposed of first.
-            releaseContext();
-
-            ::ReleaseDC(Window, Device);
-            Device = nullptr;
-        }
-    }
-
-    //! @brief De-selects and disposes of the OpenGL context, if it exists.
-    void releaseContext()
-    {
-        if (Context != nullptr)
-        {
-            if (MakeCurrent != nullptr)
-            {
-                MakeCurrent(Device, nullptr);
-            }
-
-            if (DeleteContext != nullptr)
-            {
-                DeleteContext(Context);
-            }
-
-            Context = nullptr;
-        }
-    }
-};
-
-//! @brief An object representing a WGL-specific OpenGL context.
-class WGLContext
-{
-public:
-    // Construction
-    WGLContext(const wgl::WGL &api);
-    ~WGLContext();
-
-    // Accessors
-    bool hasContext() const;
-    HWND getWindow() const;
-    HDC getDevice() const;
-    HGLRC getContext() const;
-
-    // Operations
-    void initialise(HWND window, HDC device, HGLRC context);
-    void initialise(WindowResource &resource);
-    void makeCurrent();
-    void doneCurrent();
-    void swapBuffers();
-    void dispose();
-
 private:
     // Internal Fields
-    const wgl::WGL &_API;
     HWND _window;
     HDC _device;
-    HGLRC _context;
-};
+    HGLRC _glContext;
 
-//! @brief An implementation of DisplayContextPrivate which uses the WGL API to
-//! create an manage OpenGL contexts.
-class WGLDisplayContext : public DisplayContextPrivate
-{
+    // Internal Functions
+    WGLDisplayContextPrivateSPtr getParent();
 public:
     // Construction/Destruction
-    WGLDisplayContext(const DisplayFormat &format);
-    virtual ~WGLDisplayContext();
+    WGLRenderContextPrivate(const std::shared_ptr<DisplayContextPrivate> &display,
+                            HWND window, HDC device, HGLRC context);
+
+    virtual ~WGLRenderContextPrivate();
 
     // Accessors
-    const wgl::WGL &getWGLAPI() const;
-
-    // Overrides
-    const APIResolver *getResolver() const override;
-    virtual RenderContextPrivateSPtr createContext(uintptr_t drawable,
-                                                   const ContextOptions &options) override;
-private:
-    // Internal Functions
-    static LRESULT CALLBACK rootWindowProc(HWND handle, UINT id,
-                                           WPARAM wParam, LPARAM lParam);
-    void createRootContext(HWND original, const ContextOptions &options);
-
-    // Internal Fields
-    wgl::WGLResolver _resolver;
-    wgl::WGL _wglAPI;
-    wgl::ARBCreateContext _createContext;
-    wgl::ARBPixelFormat _pixelFormat;
-    DisplayFormat _format;
-    WGLContext _rootContext;
-    int _pixelFormatID;
-};
-
-//! @brief An implementation of RenderContextPrivate which uses Win32-specific
-//! APIs.
-class WGLRenderContext : public RenderContextPrivate
-{
-public:
-    // Construction/Destruction
-    WGLRenderContext(const DisplayContextPrivateSPtr &display,
-                     const WGLContext &context);
-    virtual ~WGLRenderContext();
+    HWND getWindow() const { return _window; }
+    HDC getDevice() const { return _device; }
+    HGLRC getContext() const { return _glContext; }
 
     // Overrides
     virtual void makeCurrent() override;
     virtual void doneCurrent() override;
     virtual void swapBuffers() override;
+};
+
+//! @brief An implementation of DisplayContextPrivate which uses the WGL API.
+class WGLDisplayContextPrivate : public DisplayContextPrivate
+{
+friend class WGLRenderContextPrivate;
 private:
+    // Internal Types
+
     // Internal Fields
-    WGLContext _context;
+    wgl::WGLResolver _resolver;
+    DisplayFormat _format;
+    std::shared_ptr<WGLRenderContextPrivate> _rootContext;
+    wgl::WGL _wglAPI;
+    gl::GL _glAPI;
+    wgl::ARBCreateContext _createContextAPI;
+    Ag::Version _maxSupportedVersion;
+    int _pixelFormatID;
+
+    // Internal Functions
+    static LRESULT CALLBACK primitiveGLWinProc(HWND handle, UINT id,
+                                               WPARAM wParam, LPARAM lParam);
+    static HWND createHiddenOpenGLWindow(bool allowErrors);
+    static void mapPixelFormatProperties(const DisplayFormat &format,
+                                         std::vector<int> &intProps);
+    static void mapContextProperties(const ContextOptions &options,
+                                     bool noVersion, std::vector<int> &intProps);
+    HGLRC WGLDisplayContextPrivate::createLegacyOpenGLContext(HDC device,
+                                                              const DisplayFormat &format) const;
+public:
+    // Construction/Destruction
+    WGLDisplayContextPrivate(const DisplayFormat &format);
+
+    virtual ~WGLDisplayContextPrivate() = default;
+
+    // Accessors
+    const wgl::WGL getWGL_API() const { return _wglAPI; }
+
+    // Operations
+    void initialiseRootContext();
+
+    // Overrides
+    virtual const Ag::Version &getMaxSupportedCoreVersion() const override { return _maxSupportedVersion; }
+    virtual const APIResolver *getResolver() const override { return &_resolver; }
+    virtual RenderContextPrivateSPtr createContext(uintptr_t drawable,
+                                                   const ContextOptions &options) override;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// Local Data
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
 // Local Functions
+////////////////////////////////////////////////////////////////////////////////
+
+} // Anonymous namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// WGLRenderContextPrivate Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Gets the parent WGL display.
+WGLDisplayContextPrivateSPtr WGLRenderContextPrivate::getParent()
+{
+    auto parent = getDisplay();
+
+    return std::dynamic_pointer_cast<WGLDisplayContextPrivate>(parent);
+}
+
+//! @brief Constructs an object encapsulating a modern WGL OpenGL context.
+//! @param[in] display The display object which owns the context.
+//! @param[in] window The window associated with the context.
+//! @param[in] device The GDI device associated with the context.
+//! @param[in] context The modern OpenGL context to manage.
+WGLRenderContextPrivate::WGLRenderContextPrivate(
+        const std::shared_ptr<DisplayContextPrivate> &display,
+        HWND window, HDC device, HGLRC context) :
+    RenderContextPrivate(display),
+    _window(window),
+    _device(device),
+    _glContext(context)
+{
+}
+
+//! @brief Ensures that the encapsulated OpenGL context is not selected and then
+//! properly disposed of, along with the associated device context.
+WGLRenderContextPrivate::~WGLRenderContextPrivate()
+{
+    auto parent = getParent();
+    const auto &wgl = parent->getWGL_API();
+
+    if (wgl.wglGetCurrentContext() == _glContext)
+    {
+        wgl.wglMakeCurrent(nullptr, nullptr);
+    }
+
+    wgl.wglDeleteContext(_glContext);
+    _glContext = nullptr;
+
+    if (_device != nullptr)
+    {
+        ::ReleaseDC(_window, _device);
+        _device = nullptr;
+    }
+}
+
+// Inherited from RenderContextPrivate.
+void WGLRenderContextPrivate::makeCurrent()
+{
+    const auto &wgl = getParent()->getWGL_API();
+
+    if (wgl.wglMakeCurrent(_device, _glContext) == FALSE)
+    {
+        throw Ag::Win32Exception("wglMakeCurrent(OpenGL Context)", ::GetLastError());
+    }
+}
+
+// Inherited from RenderContextPrivate.
+void WGLRenderContextPrivate::doneCurrent()
+{
+    const auto &wgl = getParent()->getWGL_API();
+
+    if (wgl.wglGetCurrentContext() == _glContext)
+    {
+        if (wgl.wglMakeCurrent(nullptr, nullptr) == FALSE)
+        {
+            throw Ag::Win32Exception("wglMakeCurrent(null)", ::GetLastError());
+        }
+    }
+}
+
+// Inherited from RenderContextPrivate.
+void WGLRenderContextPrivate::swapBuffers()
+{
+    const auto &wgl = getParent()->getWGL_API();
+
+    if (wgl.SwapBuffers(_device) == FALSE)
+    {
+        throw Ag::Win32Exception("SwapBuffers()", ::GetLastError());
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WGLDisplayContextPrivate Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief A call back function for a temporary window which does nothing.
 //! @param[in] handle The handle of the window to process messages for.
@@ -210,17 +212,19 @@ private:
 //! @param[in] wParam The word message parameter.
 //! @param[in] lParam The long message parameter.
 //! @return The result of processing the message.
-LRESULT CALLBACK primitiveGLWinProc(HWND handle, UINT id,
-                                    WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WGLDisplayContextPrivate::primitiveGLWinProc(
+    HWND handle, UINT id, WPARAM wParam, LPARAM lParam)
 {
     return ::DefWindowProcW(handle, id, wParam, lParam);
 }
 
-//! @brief Creates a temporary window which is not displayed and does nothing.
-//! @param[in] displayArea The are the window should cover in order to select the
-//! correct display device.
-//! @returns A handle to the window, which it is up to the caller to destroy.
-HWND createPrimitiveWindow(const RECT &displayArea)
+//! @brief Creates a temporary OpenGL-compatible window which is not displayed
+//! and does nothing.
+//! @param[in] allowErrors True to allow failures to throw an exception, otherwise
+//! errors will merely return nullptr.
+//! @returns A handle to the window, which it is up to the caller to destroy,
+//! or nullptr if creation fails and @p allowErrors is true.
+HWND WGLDisplayContextPrivate::createHiddenOpenGLWindow(bool allowErrors)
 {
     static ATOM windowClassId = 0;
 
@@ -239,24 +243,30 @@ HWND createPrimitiveWindow(const RECT &displayArea)
 
         if (windowClassId == 0)
         {
-            throw Ag::Win32Exception("RegisterClassEx(PrimitiveOpenGLWindow)",
-                                     ::GetLastError());
+            if (allowErrors)
+            {
+                throw Ag::Win32Exception("RegisterClassEx(PrimitiveOpenGLWindow)",
+                                         ::GetLastError());
+            }
+            else
+            {
+                return nullptr;
+            }
         }
     }
 
-    const DWORD Style = WS_OVERLAPPEDWINDOW;
-    const DWORD StyleEx = WS_EX_OVERLAPPEDWINDOW;
+    constexpr DWORD Style = WS_OVERLAPPEDWINDOW;
+    constexpr DWORD StyleEx = WS_EX_OVERLAPPEDWINDOW;
 
     HWND handle = ::CreateWindowExW(StyleEx,
                                     reinterpret_cast<LPCWSTR>(windowClassId),
                                     nullptr, Style,
-                                    displayArea.left, displayArea.top,
-                                    displayArea.right - displayArea.left,
-                                    displayArea.bottom - displayArea.top,
+                                    CW_USEDEFAULT, CW_USEDEFAULT,
+                                    100, 100,
                                     ::GetDesktopWindow(), nullptr,
                                     ::GetModuleHandleW(nullptr), nullptr);
 
-    if (handle == nullptr)
+    if ((handle == nullptr) && allowErrors)
     {
         throw Ag::Win32Exception("CreateWindowEx(PrimitiveOpenGLWindow)",
                                  ::GetLastError());
@@ -265,96 +275,12 @@ HWND createPrimitiveWindow(const RECT &displayArea)
     return handle;
 }
 
-//! @brief Creates a legacy OpenGL context which can be used to resolve entry
-//! points for creation of a more modern context.
-//! @param[in,out] resource An object to hold the window, device context and
-//! OpenGL context in order that they be properly disposed of.
-//! @param[in] api The WGL API exported by OpenGL32.dll.
-//! @param[in] format The preferred format to render to.
-//! @return The created legacy context, also embedded in the resource object.
-HGLRC createLegacyOpenGLContext(WindowResource &resource, const wgl::WGL &api,
-                                const DisplayFormat &format)
-{
-    PIXELFORMATDESCRIPTOR formatInfo;
-    Ag::zeroFill(formatInfo);
-    formatInfo.nSize = sizeof(formatInfo);
-    formatInfo.nVersion = 1;
-    formatInfo.iPixelType = PFD_TYPE_RGBA;
-    formatInfo.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
-    formatInfo.iLayerType = PFD_MAIN_PLANE;
-
-    if (format.tryGetTypedProperty(DisplayPropertyID::DepthBitCount,
-                                   formatInfo.cDepthBits) == false)
-    {
-        formatInfo.dwFlags |= PFD_DEPTH_DONTCARE;
-    }
-
-    formatInfo.dwFlags |= format.getProperty(DisplayPropertyID::HasHardwareAcceleration,
-                                             true) ? PFD_GENERIC_ACCELERATED : 0;
-
-    bool useDoubleBuffer = false;
-
-    if (format.tryGetTypedProperty(DisplayPropertyID::HasDoubleBuffer, useDoubleBuffer))
-    {
-        if (useDoubleBuffer)
-        {
-            formatInfo.dwFlags |= PFD_DOUBLEBUFFER;
-        }
-    }
-    else
-    {
-        formatInfo.dwFlags |= PFD_DOUBLEBUFFER_DONTCARE;
-    }
-
-    // Note: The following work because we know that the formatInfo fields start
-    // off as zero.
-    formatInfo.cColorBits = format.getTypedValue(DisplayPropertyID::ColourBitCount, formatInfo.cColorBits);
-
-    // Not required for ChoosePixelFormat();
-    //formatInfo.cRedBits = format.getTypedValue(DisplayPropertyID::ColourBitCount, formatInfo.cRedBits);
-    //formatInfo.cGreenBits = format.getTypedValue(DisplayPropertyID::ColourBitCount, formatInfo.cGreenBits);
-    //formatInfo.cBlueBits = format.getTypedValue(DisplayPropertyID::ColourBitCount, formatInfo.cBlueBits);
-    formatInfo.cAlphaBits = format.getTypedValue(DisplayPropertyID::ColourBitCount, formatInfo.cAlphaBits);
-    formatInfo.cDepthBits = format.getTypedValue(DisplayPropertyID::DepthBitCount, formatInfo.cDepthBits);
-    formatInfo.cStencilBits = format.getTypedValue(DisplayPropertyID::DepthBitCount, formatInfo.cStencilBits);
-
-    int formatId = api.ChoosePixelFormat(resource.getDC(), &formatInfo);
-
-    if (formatId == 0)
-    {
-        throw Ag::Win32Exception("ChoosePixelFormat()", ::GetLastError());
-    }
-
-    PIXELFORMATDESCRIPTOR chosenFormat;
-    Ag::zeroFill(chosenFormat);
-    chosenFormat.nSize = sizeof(chosenFormat);
-
-    if (api.DescribePixelFormat(resource.Device, formatId, sizeof(chosenFormat), &chosenFormat) == 0)
-    {
-        throw Ag::Win32Exception("DescribePixelFormat()", ::GetLastError());
-    }
-
-    if (api.SetPixelFormat(resource.Device, formatId, &chosenFormat) == FALSE)
-    {
-        throw Ag::Win32Exception("SetPixelFormat()", ::GetLastError());
-    }
-
-    resource.Context = api.wglCreateContext(resource.Device);
-
-    if (resource.Context == nullptr)
-    {
-        throw Ag::Win32Exception("CreateContext()", ::GetLastError());
-    }
-
-    return resource.Context;
-}
-
 //! @brief Maps generic display format properties to WGL-specific pixel format
 //! attributes.
 //! @param[in] format The set of generic properties to map.
 //! @param[out] intProps The collection to encode the property values in.
-void mapPixelFormatProperties(const DisplayFormat &format,
-                              std::vector<int> &intProps)
+void WGLDisplayContextPrivate::mapPixelFormatProperties(const DisplayFormat &format,
+                                                        std::vector<int> &intProps)
 {
     intProps.clear();
     intProps.reserve(32);
@@ -404,7 +330,6 @@ void mapPixelFormatProperties(const DisplayFormat &format,
         intProps.push_back(value);
     }
 
-
     if (format.tryGetTypedProperty(DisplayPropertyID::ColourBitCount, value))
     {
         intProps.push_back(wgl::Global::ColorBits);
@@ -432,8 +357,9 @@ void mapPixelFormatProperties(const DisplayFormat &format,
 //! @param[in] options The set of context requirements to map.
 //! @param[in] noVersion True to ignore any OpenGL version requirement properties.
 //! @param[out] intProps The collection to encode the property values in.
-void mapContextProperties(const ContextOptions &options, bool noVersion,
-                          std::vector<int> &intProps)
+void WGLDisplayContextPrivate::mapContextProperties(const ContextOptions &options,
+                                                    bool noVersion,
+                                                    std::vector<int> &intProps)
 {
     intProps.clear();
     intProps.reserve(8);
@@ -507,362 +433,159 @@ void mapContextProperties(const ContextOptions &options, bool noVersion,
     intProps.push_back(0);
 }
 
-} // Anonymous namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// WGLContext Member Definitions
-////////////////////////////////////////////////////////////////////////////////
-//! @brief Constructs an object which can manipulate an OpenGL context created
-//! using the WGL API.
-//! @param[in] api A reference to the resolved API used to manipulate the context.
-WGLContext::WGLContext(const wgl::WGL &api) :
-    _API(api),
-    _window(nullptr),
-    _device(nullptr),
-    _context(nullptr)
+//! @brief Creates a legacy OpenGL context which can be used to resolve entry
+//! points for creation of a more modern context.
+//! @param[in] device The context of the device to create the OpenGL context on.
+//! @param[in] format Details of the display format the OpenGL context should support.
+//! @return A handle to an OpenGL context.
+HGLRC WGLDisplayContextPrivate::createLegacyOpenGLContext(HDC device,
+                                                          const DisplayFormat &format) const
 {
-}
+    PIXELFORMATDESCRIPTOR formatInfo;
+    Ag::zeroFill(formatInfo);
+    formatInfo.nSize = sizeof(formatInfo);
+    formatInfo.nVersion = 1;
+    formatInfo.iPixelType = PFD_TYPE_RGBA;
+    formatInfo.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL;
+    formatInfo.iLayerType = PFD_MAIN_PLANE;
 
-//! @brief Does NOT dispose of the inner context.
-WGLContext::~WGLContext()
-{
-    _context = nullptr;
-    _device = nullptr;
-    _window = nullptr;
-}
-
-//! @brief Determines if the object contains a valid OpenGL context.
-bool WGLContext::hasContext() const { return _context != nullptr; }
-
-//! @brief Gets the window originally associated with the context.
-HWND WGLContext::getWindow() const { return _window; }
-
-//! @brief Gets the context of the device being rendered to.
-HDC WGLContext::getDevice() const { return _device; }
-
-//! @brief Gets a handle to the OpenGL render context.
-HGLRC WGLContext::getContext() const { return _context; }
-
-//! @brief Initialises the object with a live OpenGL context.
-//! @param[in] window A handle to the window being rendered to.
-//! @param[in] device The context of the device which renders to the window.
-//! @param[in] context The OpenGL context associated with the device.
-void WGLContext::initialise(HWND window, HDC device, HGLRC context)
-{
-    if (::IsWindow(window))
+    if (format.tryGetTypedProperty(DisplayPropertyID::DepthBitCount,
+                                   formatInfo.cDepthBits) == false)
     {
-        _window = window;
-        _device = device;
-        _context = context;
+        formatInfo.dwFlags |= PFD_DEPTH_DONTCARE;
     }
-    else
-    {
-        _window = nullptr;
-        _device = nullptr;
-        _context = nullptr;
-    }
-}
 
-//! @brief Initialises the object by transferring a live OpenGL context.
-//! @param[in] resource The object containing the window/DC/context to
-//! acquire. It will be reset to an empty state if resources are acquired.
-void WGLContext::initialise(WindowResource &resource)
-{
-    if (::IsWindow(resource.Window))
-    {
-        _window = resource.Window;
-        _device = resource.Device;
-        _context = resource.Context;
+    formatInfo.dwFlags |= format.getProperty(DisplayPropertyID::HasHardwareAcceleration,
+                                             true) ? PFD_GENERIC_ACCELERATED : 0;
 
-        resource.Context = nullptr;
-        resource.Device = nullptr;
-        resource.Window = nullptr;
-        resource._disposeOfWindow = false;
-    }
-    else
-    {
-        _window = nullptr;
-        _device = nullptr;
-        _context = nullptr;
-    }
-}
+    bool useDoubleBuffer = false;
 
-//! @brief Selects the context for use on the current thread.
-void WGLContext::makeCurrent()
-{
-    if (_API.wglMakeCurrent(_device, _context) == FALSE)
+    if (format.tryGetTypedProperty(DisplayPropertyID::HasDoubleBuffer, useDoubleBuffer))
     {
-        throw Ag::Win32Exception("wglMakeCurrent(OpenGL context)",
-                                 ::GetLastError());
-    }
-}
-
-//! @brief De-selects any OpenGL context on the current thread.
-void WGLContext::doneCurrent()
-{
-    if (_API.wglMakeCurrent(nullptr, nullptr) == FALSE)
-    {
-        throw Ag::Win32Exception("wglMakeCurrent(null)",
-                                 ::GetLastError());
-    }
-}
-
-//! @brief Swaps front and back buffers on the default frame buffer.
-void WGLContext::swapBuffers()
-{
-    if (_API.SwapBuffers(_device) == FALSE)
-    {
-        throw Ag::Win32Exception("SwapBuffers()", ::GetLastError());
-    }
-}
-
-//! @brief Disposes of the render context the object wraps.
-void WGLContext::dispose()
-{
-    if (_context != nullptr)
-    {
-        if (_API.wglGetCurrentContext() == _context)
+        if (useDoubleBuffer)
         {
-            // Ensure the context isn't current in this thread.
-            _API.wglMakeCurrent(nullptr, nullptr);
+            formatInfo.dwFlags |= PFD_DOUBLEBUFFER;
         }
-
-        _API.wglDeleteContext(_context);
-        _context = nullptr;
-        _device = nullptr;
-        _window = nullptr;
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WGLDisplayContext Member Definitions
-////////////////////////////////////////////////////////////////////////////////
-//! @brief Constructs an object representing a display device on which to
-//! create OpenGL contexts.
-//! @param[in] format The output format to render to.
-WGLDisplayContext::WGLDisplayContext(const DisplayFormat &format) :
-    _resolver(true),
-    _format(format),
-    _rootContext(_wglAPI),
-    _pixelFormatID(-1)
-{
-    // Resolve the entry points exported directly from OpenGL32.dll.
-    _wglAPI.resolveEntryPoints(&_resolver);
-}
-
-//! @brief Disposes of the root context, if one was created.
-WGLDisplayContext::~WGLDisplayContext()
-{
-    if (_rootContext.hasContext())
+    else
     {
-        _rootContext.dispose();
+        formatInfo.dwFlags |= PFD_DOUBLEBUFFER_DONTCARE;
     }
-}
 
-//! @brief Gets the Win32-specific API used for manipulating OpenGL contexts.
-const wgl::WGL &WGLDisplayContext::getWGLAPI() const
-{
-    return _wglAPI;
-}
+    // Note: The following work because we know that the formatInfo fields start
+    // off as zero.
+    int bpp = ::GetDeviceCaps(device, BITSPIXEL);
+    formatInfo.cColorBits = format.getTypedValue(DisplayPropertyID::ColourBitCount, static_cast<BYTE>(bpp));
+    formatInfo.cAlphaBits = format.getTypedValue(DisplayPropertyID::AlphaBitCount, static_cast<BYTE>(0));
 
-// Inherited from DisplayContextPrivate.
-const APIResolver *WGLDisplayContext::getResolver() const
-{
-    return &_resolver;
-}
+    // Not required for ChoosePixelFormat();
+    //formatInfo.cDepthBits = format.getTypedValue(DisplayPropertyID::DepthBitCount, formatInfo.cDepthBits);
+    //formatInfo.cStencilBits = format.getTypedValue(DisplayPropertyID::DepthBitCount, formatInfo.cStencilBits);
 
-// Inherited from DisplayContextPrivate.
-RenderContextPrivateSPtr WGLDisplayContext::createContext(uintptr_t drawable,
-                                                          const ContextOptions &options)
-{
-    WindowResource target(reinterpret_cast<HWND>(drawable), false);
+    int formatId = _wglAPI.ChoosePixelFormat(device, &formatInfo);
 
-    if (::IsWindow(target.Window) == FALSE)
+    if (formatId == 0)
     {
-        throw Ag::ArgumentException("drawable");
+        throw Ag::Win32Exception("ChoosePixelFormat()", ::GetLastError());
     }
 
-    if ((::GetClassLongW(target.Window, GCL_STYLE) & CS_OWNDC) == 0)
-    {
-        throw Ag::OperationException("Cannot create an OpenGL context on a window "
-                                     "which doesn't have the CS_OWNDC style.");
-    }
+    PIXELFORMATDESCRIPTOR chosenFormat;
+    Ag::zeroFill(chosenFormat);
+    chosenFormat.nSize = sizeof(chosenFormat);
 
-    if (_rootContext.hasContext() == false)
-    {
-        createRootContext(target.Window, options);
-    }
-
-    PIXELFORMATDESCRIPTOR format;
-    Ag::zeroFill(format);
-    format.nSize = sizeof(format);
-    format.nVersion = 1;
-
-    if (_wglAPI.DescribePixelFormat(target.getDC(), _pixelFormatID,
-                                    sizeof(format), &format) == 0)
+    if (_wglAPI.DescribePixelFormat(device, formatId, sizeof(chosenFormat), &chosenFormat) == 0)
     {
         throw Ag::Win32Exception("DescribePixelFormat()", ::GetLastError());
     }
 
-    if (_wglAPI.SetPixelFormat(target.Device, _pixelFormatID, &format) == FALSE)
+    if (_wglAPI.SetPixelFormat(device, formatId, &chosenFormat) == FALSE)
     {
         throw Ag::Win32Exception("SetPixelFormat()", ::GetLastError());
     }
 
-    // Create a context which shares resources with the root context.
-    std::vector<int> intProps;
-    mapContextProperties(options, false, intProps);
-    target.Context = _createContext.wglCreateContextAttribs(target.Device,
-                                                            _rootContext.getContext(),
-                                                            intProps.data());
+    HGLRC glContext = _wglAPI.wglCreateContext(device);
 
-    if (target.Context == nullptr)
+    if (glContext == nullptr)
     {
-        throw Ag::Win32Exception("wglCreateContextAttribsARB()",
-                                 ::GetLastError());
+        throw Ag::Win32Exception("wglCreateContext()", ::GetLastError());
     }
 
-    WGLContext renderContext(_wglAPI);
-    renderContext.initialise(target);
-
-    return std::make_shared<WGLRenderContext>(shared_from_this(), renderContext);
+    return glContext;
 }
 
-//! @brief Processes messages sent to the root context window.
-//! @param[in] handle The handle of the window.
-//! @param[in] id The identifier of the message, such as WM_CREATE.
-//! @param[in] wParam The word message parameter.
-//! @param[in] lParam The long message parameter.
-//! @return The result of processing the message.
-LRESULT CALLBACK WGLDisplayContext::rootWindowProc(HWND handle, UINT id,
-                                                   WPARAM wParam, LPARAM lParam)
+//! @brief Constructs an object which can create OpenGL contexts from a
+//! shared source.
+//! @param[in] format The display format required by the new context.
+WGLDisplayContextPrivate::WGLDisplayContextPrivate(const DisplayFormat &format) :
+    _resolver(true),
+    _format(format),
+    _pixelFormatID(0)
 {
-    WGLDisplayContext *instance = nullptr;
+}
 
-    if (id == WM_CREATE)
+//! @brief Ensures that a root context is initialised.
+void WGLDisplayContextPrivate::initialiseRootContext()
+{
+    if (_rootContext)
+        return;
+
+    // Create a window and device context with which to create a legacy OpenGL
+    // context (OpenGL 1.1).
+    HWND window = createHiddenOpenGLWindow(true);
+    Ag::AtScopeExit1 destroyLegacyWindow(DestroyWindow, window);
+    HDC legacyDevice = ::GetDC(window);
+    Ag::AtScopeExit2 releaseLegacyDC(::ReleaseDC, window, legacyDevice);
+
+    _wglAPI.resolveEntryPoints(&_resolver);
+
+    HGLRC legacyContext = createLegacyOpenGLContext(legacyDevice, _format);
+    Ag::AtScopeExit1 deleteLegacyContext(_wglAPI.wglDeleteContext, legacyContext);
+    wgl::ARBPixelFormat pixelFormatAPI;
+    auto makeCurrent = _wglAPI.wglMakeCurrent;
+
+    if (makeCurrent(legacyDevice, legacyContext) == FALSE)
     {
-        // Associate a display context with the window.
-        LPCREATESTRUCTW cs = reinterpret_cast<LPCREATESTRUCTW>(lParam);
+        throw Ag::Win32Exception("wglMakeCurrent(Legacy OpenGL Context)", ::GetLastError());
+    }
+    else
+    {
+        // Ensure we de-select the legacy context at scope exit.
+        Ag::AtScopeExit doneLegacyContext([makeCurrent]() {
+                                           makeCurrent(nullptr, nullptr); });
 
-        if (cs != nullptr)
+        _resolver.setDevice(legacyDevice);
+
+        if (_resolver.isExtensionPresent("WGL_ARB_create_context") &&
+            _resolver.isExtensionPresent("WGL_ARB_pixel_format"))
         {
-            ::SetWindowLongPtrW(handle, GWLP_USERDATA,
-                                reinterpret_cast<LONG_PTR>(cs->lpCreateParams));
-
-            instance = static_cast<WGLDisplayContext *>(cs->lpCreateParams);
+            _createContextAPI.resolveEntryPoints(&_resolver);
+            pixelFormatAPI.resolveEntryPoints(&_resolver);
+        }
+        else
+        {
+            throw Ag::NotSupportedException("Modern OpenGL context creation.");
         }
     }
 
-    if (instance != nullptr)
-    {
-        // TODO: Process top level messages?
-    }
+    // We can't create a modern context with the same Window/DC, so disposed of
+    // the old ones and create new ones.
+    deleteLegacyContext.exec();
+    releaseLegacyDC.exec();
+    destroyLegacyWindow.exec();
 
-    LRESULT result = ::DefWindowProcW(handle, id, wParam, lParam);
-
-    if (id == WM_DESTROY)
-    {
-        // Disassociate the window from the display context.
-        ::SetWindowLongPtrW(handle, GWLP_USERDATA, 0);
-    }
-
-    return result;
-}
-
-//! @brief Creates a hidden window associated with the context which can process
-//! top-level system messages and be used for OpenGL context creation.
-//! @param[in] original The window used copy certain properties.
-//! @param[in] options The options intended to create an OpenGL context.
-//! @return A handle to the newly created window.
-void WGLDisplayContext::createRootContext(HWND original, const ContextOptions &options)
-{
-    RECT outputArea;
-    ::GetWindowRect(original, &outputArea);
-
-    // Create a legacy OpenGL context on a dummy window so that we can use
-    // wglGetProcAddress() to get the interface to create a more modern context.
-    WindowResource primitiveWindow(createPrimitiveWindow(outputArea), true);
-
-    // Add the entry points required to select and dispose of an OpenGL context.
-    primitiveWindow.MakeCurrent = _wglAPI.wglMakeCurrent;
-    primitiveWindow.DeleteContext = _wglAPI.wglDeleteContext;
-    createLegacyOpenGLContext(primitiveWindow, _wglAPI, _format);
-
-    WGLContext legacyContext(_wglAPI);
-    legacyContext.initialise(primitiveWindow);
-
-    // Select the legacy context and use it to resolve entry points.
-    legacyContext.makeCurrent();
-    _resolver.setDevice(legacyContext.getDevice());
-
-    if ((_resolver.isExtensionPresent("WGL_ARB_create_context") == false) ||
-        (_resolver.isExtensionPresent("WGL_ARB_pixel_format") == false))
-    {
-        throw Ag::NotSupportedException("Creating modern OpenGL contexts on the selected display");
-    }
-
-    _createContext.resolveEntryPoints(&_resolver);
-    _pixelFormat.resolveEntryPoints(&_resolver);
-
-    DisplayContextPrivate::initialiseAPI();
-
-    // De-select and dispose of the legacy context so that we can create a
-    // modern context.
-    legacyContext.doneCurrent();
-    legacyContext.dispose();
-
-    // Create a window associated with this context to host a modern OpenGL context.
-    static ATOM classId = 0;
-
-    if (classId == 0)
-    {
-        WNDCLASSEXW wc;
-        Ag::zeroFill(wc);
-        wc.cbSize = sizeof(wc);
-        wc.hInstance = ::GetModuleHandleW(nullptr);
-        wc.style = CS_OWNDC;
-        wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
-        wc.lpszClassName = L"RootContextWindow";
-        wc.lpfnWndProc = rootWindowProc;
-
-        classId = ::RegisterClassExW(&wc);
-
-        if (classId == 0)
-        {
-            throw Ag::Win32Exception("RegisterClassEx(RootContextClass)",
-                                     ::GetLastError());
-        }
-    }
-
-    const DWORD Style = WS_OVERLAPPED;
-    const DWORD StyleEx = WS_EX_OVERLAPPEDWINDOW;
-
-    HWND rootWindow = ::CreateWindowExW(StyleEx, reinterpret_cast<LPWSTR>(classId),
-                                        L"ObjectGL Root WGL Window", Style,
-                                        outputArea.left, outputArea.top,
-                                        outputArea.right - outputArea.left,
-                                        outputArea.bottom - outputArea.top,
-                                        ::GetDesktopWindow(), nullptr,
-                                        ::GetModuleHandleW(nullptr), this);
-
-    if (rootWindow == nullptr)
-    {
-        throw Ag::Win32Exception("CreateWindowEx(Root WGL Window)",
-                                 ::GetLastError());
-    }
+    window = createHiddenOpenGLWindow(true);
+    Ag::AtScopeExit1 destroyRootWindow(::DestroyWindow, window);
+    HDC modernDevice = ::GetDC(window);
+    Ag::AtScopeExit2 releaseModernDC(::ReleaseDC, window, modernDevice);
 
     std::vector<int> intProps;
-
-    mapPixelFormatProperties(_format, intProps);
-
-    // Ensure the window and DC are destroyed if we throw an exception.
-    WindowResource root(rootWindow, true);
-
     int formatId = -1;
     UINT formatCount = 0;
 
-    if (_pixelFormat.wglChoosePixelFormat(root.getDC(), intProps.data(), nullptr,
-                                          1, &formatId, &formatCount) == FALSE)
+    mapPixelFormatProperties(_format, intProps);
+
+    if (pixelFormatAPI.wglChoosePixelFormat(modernDevice, intProps.data(), nullptr,
+                                            1, &formatId, &formatCount) == FALSE)
     {
         throw Ag::Win32Exception("wglChoosePixelFormatARB()", ::GetLastError());
     }
@@ -877,108 +600,167 @@ void WGLDisplayContext::createRootContext(HWND original, const ContextOptions &o
     formatInfo.nSize = sizeof(formatInfo);
     formatInfo.nVersion = 1;
 
-    if (_wglAPI.DescribePixelFormat(root.Device, formatId,
+    if (_wglAPI.DescribePixelFormat(modernDevice, formatId,
                                     sizeof(formatInfo), &formatInfo) == 0)
     {
         throw Ag::Win32Exception("DescribPixelFormat()", ::GetLastError());
     }
 
     // Set the pixel format on our root window/DC.
-    if (_wglAPI.SetPixelFormat(root.getDC(), formatId, &formatInfo) == FALSE)
+    if (_wglAPI.SetPixelFormat(modernDevice, formatId, &formatInfo) == FALSE)
     {
         throw Ag::Win32Exception("SetPixelFormat()", ::GetLastError());
     }
 
     // Create a context for the root window.
+    ContextOptions options;
+    options.enableCoreProfile(true);
+
     mapContextProperties(options, true, intProps);
-    root.Context = _createContext.wglCreateContextAttribs(root.Device, nullptr,
-                                                          intProps.data());
+    HGLRC modernContext = _createContextAPI.wglCreateContextAttribs(modernDevice, nullptr,
+                                                                    intProps.data());
 
-    if (root.Context == nullptr)
+    if (modernContext == nullptr)
     {
-        throw Ag::Win32Exception("wglCreateContextARB()", ::GetLastError());
+        throw Ag::Win32Exception("wglCreateContextAttribs()",
+                                 ::GetLastError());
     }
 
-    // If we get this far, we have succeeded, we don't want to dispose of
-    // anything, so transfer the window/DC/Context to a different object and
-    // prevent their automatic disposal when they go out of scope.
-    _rootContext.initialise(root);
+    Ag::AtScopeExit1 deleteModernContext(_wglAPI.wglDeleteContext, modernContext);
 
-    // Select the new context.
-    _rootContext.makeCurrent();
+    if (makeCurrent(modernDevice, modernContext) == FALSE)
+    {
+        throw Ag::Win32Exception("wglMakeCurrent(Modern OpenGL Context)",
+                                 ::GetLastError());
+    }
 
-    // Update all the entry points using a modern context.
+    // Ensure we de-select the current OpenGL context at exit.
+    Ag::AtScopeExit doneModernContext([makeCurrent]() { makeCurrent(nullptr, nullptr); });
+
     _pixelFormatID = formatId;
-    _resolver.setDevice(_rootContext.getDevice());
-    _createContext.resolveEntryPoints(&_resolver);
-    _pixelFormat.resolveEntryPoints(&_resolver);
+    _resolver.setDevice(modernDevice);
+    _createContextAPI.resolveEntryPoints(&_resolver);
 
-    // De-select the context again.
-    _rootContext.doneCurrent();
+    DisplayContextPrivate::initialiseAPI();
+
+    // Get the maximum version supported by the context.
+    auto &api = getAPI();
+    api.getAPIVersion();
+    GLint major = 0, minor = 0;
+    api.getIntegerV(GetPName::MajorVersion, &major);
+    api.getIntegerV(GetPName::MinorVersion, &minor);
+
+    // Try to retain the comment in the version.
+    _maxSupportedVersion = api.getAPIVersion();
+
+    if (major != 0)
+        _maxSupportedVersion.setMajor(static_cast<uint16_t>(major));
+
+    if (minor != 0)
+        _maxSupportedVersion.setMinor(static_cast<uint16_t>(minor));
+
+    deleteModernContext.cancel();
+    releaseModernDC.cancel();
+    destroyRootWindow.cancel();
+
+    _rootContext = std::make_shared<WGLRenderContextPrivate>(shared_from_this(),
+                                                             window,
+                                                             modernDevice,
+                                                             modernContext);
+
+    // Ensure the root context has a resolved API.
+    _rootContext->initialiseAPI(&_resolver);
+
+    // De-select the context and retain it for future use.
+    makeCurrent(nullptr, nullptr);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WGLRenderContext Member Definitions
-////////////////////////////////////////////////////////////////////////////////
-//! @brief Constructs an object to wrap a Win32-specific OpenGL context.
-//! @param[in] display The display which owns the renderer.
-//! @param[in] context The OpenGL context to wrap.
-WGLRenderContext::WGLRenderContext(const DisplayContextPrivateSPtr &display,
-                                   const WGLContext &context) :
-    RenderContextPrivate(display),
-    _context(context)
+// Inherited from DisplayContextPrivate.
+RenderContextPrivateSPtr WGLDisplayContextPrivate::createContext(uintptr_t drawable,
+                                                                 const ContextOptions &options)
 {
-    if (!display)
+    HWND drawableHandle = reinterpret_cast<HWND>(drawable);
+
+    if (::IsWindow(drawableHandle) == FALSE)
+        throw Ag::ArgumentException("The drawable value is not a valid window handle.",
+                                    "drawable");
+
+    if (!_rootContext)
+        throw Ag::OperationException("The display context has no root OpenGL context to share.");
+
+    HDC drawableDC = ::GetDC(drawableHandle);
+    Ag::AtScopeExit2 releaseDrawableDC(::ReleaseDC, drawableHandle, drawableDC);
+
+    std::vector<int> intProps;
+
+    mapPixelFormatProperties(_format, intProps);
+
+    // Get full details of the pixel format chosen.
+    PIXELFORMATDESCRIPTOR formatInfo;
+    Ag::zeroFill(formatInfo);
+    formatInfo.nSize = sizeof(formatInfo);
+    formatInfo.nVersion = 1;
+
+    if (_wglAPI.DescribePixelFormat(drawableDC, _pixelFormatID,
+                                    sizeof(formatInfo), &formatInfo) == 0)
     {
-        throw Ag::ArgumentException("display");
+        throw Ag::Win32Exception("DescribPixelFormat()", ::GetLastError());
     }
 
-    if (context.hasContext() == false)
+    // Set the pixel format on our root window/DC.
+    if (_wglAPI.SetPixelFormat(drawableDC, _pixelFormatID, &formatInfo) == FALSE)
     {
-        throw Ag::ArgumentException("context");
+        throw Ag::Win32Exception("SetPixelFormat()", ::GetLastError());
     }
 
-    makeCurrent();
-    getAPIInternal().resolve(display->getResolver());
-    doneCurrent();
-}
+    // Create a context for the root window.
+    mapContextProperties(options, false, intProps);
 
-//! @brief Ensures the OpenGL context is properly disposed of.
-WGLRenderContext::~WGLRenderContext()
-{
-    _context.dispose();
-}
+    HGLRC renderContext = _createContextAPI.wglCreateContextAttribs(drawableDC,
+                                                                    _rootContext->getContext(),
+                                                                    intProps.data());
 
-// Inherited from RenderContextPrivate.
-void WGLRenderContext::makeCurrent()
-{
-    _context.makeCurrent();
-}
+    if (renderContext == nullptr)
+    {
+        throw Ag::Win32Exception("wglCreateContextAttribs()",
+                                 ::GetLastError());
+    }
 
-// Inherited from RenderContextPrivate.
-void WGLRenderContext::doneCurrent()
-{
-    _context.doneCurrent();
-}
+    // Ensure the context is deleted if an exception is thrown creating the wrapper.
+    Ag::AtScopeExit1 deleteContext(_wglAPI.wglDeleteContext, renderContext);
 
-// Inherited from RenderContextPrivate.
-void WGLRenderContext::swapBuffers()
-{
-    _context.swapBuffers();
+    auto renderer = std::make_shared<WGLRenderContextPrivate>(shared_from_this(),
+                                                              drawableHandle,
+                                                              drawableDC,
+                                                              renderContext);
+
+    deleteContext.cancel();
+    releaseDrawableDC.cancel();
+
+    // Ensure the context has access to all appropriate functions.
+    renderer->makeCurrent();
+    renderer->initialiseAPI(&_resolver);
+    renderer->doneCurrent();
+
+    return renderer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // WGLDriver Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief Creates an object which can create OpenGL contexts to render to a
-//! specific output format.
+// Inherited from IDriver.
 DisplayContext WGLDriver::createDisplayDevice(const DisplayFormat &format) const
 {
-    std::shared_ptr<WGLDisplayContext> context = std::make_shared<WGLDisplayContext>(format);
+    std::shared_ptr<WGLDisplayContextPrivate> context = std::make_shared<WGLDisplayContextPrivate>(format);
+
+    // Has to be done as a second step after construction.
+    context->initialiseRootContext();
 
     return AssignableDisplayContext(context);
 }
 
 } // namespace gl
 ////////////////////////////////////////////////////////////////////////////////
+
+
 

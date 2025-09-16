@@ -634,8 +634,8 @@ EdgePtr handleRegularSweepVertex(const SweepEvent &currentEvent,
 
         if (associatedNode != nullptr)
         {
-            TRACE("  with buddy vertex #{0}",
-                  associatedNode->getID());
+            TRACE_SWEEP("  with buddy vertex #{0}",
+                        associatedNode->getID());
         }
 
         if (isMergeVertex(associatedNode))
@@ -773,7 +773,7 @@ void processMonotoneSweepEvents(SweepContext &context,
     // Sort the events so that they can be processed in sweep order.
     sortSweepEvents(context, sweepEvents);
 
-    TRACE("Sweep Events");
+    TRACE_SWEEP("Sweep Events");
 
     static const std::string_view nodeTypes[] = {
         "Split",

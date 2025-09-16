@@ -36,6 +36,7 @@ ag_add_library(ObjectGL FOLDER      Graphics
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/RenderContext.hpp
                                     # SDL2Driver.cpp
                                     # ${AG_INCLUDE_DIR}/Ag/ObjectGL/SDL2Driver.hpp
+                                    ResourceWrappers.cpp
                                     ResourceWrappers.hpp
                                     Shader.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/Shader.hpp
@@ -66,7 +67,7 @@ ag_add_library(ObjectGL FOLDER      Graphics
                                     GLX_CommandSets.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/GLX_CommandSets.hpp
                         HEADERS     ${AG_INCLUDE_DIR}/Ag/ObjectGL.hpp
-                        PUBLIC_LIBS AgCore glm)
+                        PUBLIC_LIBS AgCore)
 
 foreach(extName IN ITEMS 3DFX 3DLabs AMD Apple ARB ATI Ext
                          Gremedy HP IBM Ingr Intel Intense3D

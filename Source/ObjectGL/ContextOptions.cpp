@@ -21,7 +21,6 @@ namespace gl {
 //! @brief Constructs an empty set of OpenGL context requirements.
 ContextOptions::ContextOptions()
 {
-    _properties.reserve(static_cast<size_t>(ContextPropertyID::MaxID));
 }
 
 //! @brief Sets the preferred API version the context should implement.
@@ -81,9 +80,9 @@ void ContextOptions::reset()
 //! @return Either the property value or default value.
 uint32_t ContextOptions::getProperty(ContextPropertyID id, uint32_t defaultValue) const
 {
-    uint32_t value;
+    auto pos = _properties.find(id);
 
-    return _properties.tryFind(id, value) ? value : defaultValue;
+    return (pos == _properties.end()) ? defaultValue : pos->second;
 }
 
 //! @brief Gets the value of a boolean property, returning a default if it wasn't defined.
@@ -92,9 +91,9 @@ uint32_t ContextOptions::getProperty(ContextPropertyID id, uint32_t defaultValue
 //! @return Either the property value or default value.
 bool ContextOptions::getProperty(ContextPropertyID id, bool defaultValue) const
 {
-    uint32_t value;
+    auto pos = _properties.find(id);
 
-    return _properties.tryFind(id, value) ? (value != 0) : defaultValue;
+    return (pos == _properties.end()) ? defaultValue : (pos->second != 0);
 }
 
 //! @brief Attempts to get the value of a property.
@@ -105,7 +104,16 @@ bool ContextOptions::getProperty(ContextPropertyID id, bool defaultValue) const
 //! @retval false The property was not defined.
 bool ContextOptions::tryGetProperty(ContextPropertyID id, uint32_t &value) const
 {
-    return _properties.tryFind(id, value);
+    auto pos = _properties.find(id);
+
+    if (pos != _properties.end())
+    {
+        value = pos->second;
+        return true;
+    }
+
+    value = 0;
+    return false;
 }
 
 //! @brief Sets the value of a specific property.
@@ -113,16 +121,7 @@ bool ContextOptions::tryGetProperty(ContextPropertyID id, uint32_t &value) const
 //! @param[in] value The new value of the property.
 void ContextOptions::setProperty(ContextPropertyID id, uint32_t value)
 {
-    auto pos = _properties.find(id);
-
-    if (pos == _properties.end())
-    {
-        _properties.push_back(id, value);
-    }
-    else
-    {
-        pos->second = value;
-    }
+    _properties[id] = value;
 }
 
 } // namespace gl

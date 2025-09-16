@@ -97,7 +97,7 @@ public:
 
 private:
     // Internal Types
-    using PropertyMap = Ag::LinearSortedMap<ContextPropertyID, uint32_t>;
+    using PropertyMap = std::map<ContextPropertyID, uint32_t>;
 
     // Internal Functions
     void setProperty(ContextPropertyID id, uint32_t value);

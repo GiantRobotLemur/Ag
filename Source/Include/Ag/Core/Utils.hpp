@@ -83,6 +83,177 @@ public:
     ValueScope &operator=(ValueScope &&) = delete;
 };
 
+//! @brief An object which performs an operation when it is destroyed, generally
+//! by going out of scope.
+//! @tparam TFn The data type of the thing to execute.
+template<typename TFn>
+class AtScopeExit
+{
+private:
+    // Internal Fields
+    TFn _execAtExit;
+    bool _isCancelled;
+public:
+    // Construction/Destruction
+
+    //! @brief Constructs an object to perform an action upon destruction.
+    //! @param[in] execAtExit The action to perform.
+    AtScopeExit(TFn execAtExit) :
+        _execAtExit(execAtExit),
+        _isCancelled(false)
+    {
+    }
+
+    //! @brief Performs the action, if it hasn't been cancelled.
+    ~AtScopeExit()
+    {
+        exec();
+    }
+
+    // Accessors
+
+    //! @brief Determines of the operation has been cancelled or already executed.
+    //! @retval true The operation was cancelled or already executed.
+    //! @retval false The operation is still due to execute.
+    constexpr bool isCancelled() const noexcept { return _isCancelled; }
+
+    // Operations
+
+    //! @brief Executes the action explicitly and marks it as done.
+    void exec()
+    {
+        if (_isCancelled == false)
+        {
+            _isCancelled = true;
+            std::invoke(_execAtExit);
+        }
+    }
+
+    //! @brief Prevents the action from occurring.
+    void cancel()
+    {
+        _isCancelled = true;
+    }
+};
+
+//! @brief An object which performs an operation on a context when it is
+//! destroyed, generally by going out of scope.
+//! @tparam T The data type of the context to perform the operation on.
+//! @tparam TFn The data type of the thing to execute, passing in the context.
+template<typename T, typename TFn>
+class AtScopeExit1
+{
+private:
+    // Internal Fields
+    T _context;
+    TFn _execAtExit;
+    bool _isCancelled;
+public:
+    // Construction/Destruction
+
+    //! @brief Constructs an object to perform an action upon destruction.
+    //! @param[in] execAtExit The action to perform.
+    //! @param[in] context The object to pass to the action.
+    AtScopeExit1(TFn execAtExit, T context) :
+        _context(context),
+        _execAtExit(execAtExit),
+        _isCancelled(false)
+    {
+    }
+
+    //! @brief Performs the action, if it hasn't been cancelled.
+    ~AtScopeExit1()
+    {
+        exec();
+    }
+
+    // Accessors
+
+    //! @brief Determines of the operation has been cancelled or already executed.
+    //! @retval true The operation was cancelled or already executed.
+    //! @retval false The operation is still due to execute.
+    constexpr bool isCancelled() const noexcept { return _isCancelled; }
+
+    // Operations
+
+    //! @brief Executes the action explicitly and marks it as done.
+    void exec()
+    {
+        if (_isCancelled == false)
+        {
+            _isCancelled = true;
+            std::invoke(_execAtExit, _context);
+        }
+    }
+
+    //! @brief Prevents the action from occurring.
+    void cancel()
+    {
+        _isCancelled = true;
+    }
+};
+
+//! @brief An object which performs an operation on a two-parameter context
+//! when it is destroyed, generally by going out of scope.
+//! @tparam T The data type of the first context value to perform the operation on.
+//! @tparam U The data type of the second context value to perform the operation on.
+//! @tparam TFn The data type of the thing to execute, passing in the context.
+template<typename T, typename U, typename TFn>
+class AtScopeExit2
+{
+private:
+    // Internal Fields
+    T _context1;
+    U _context2;
+    TFn _execAtExit;
+    bool _isCancelled;
+public:
+    // Construction/Destruction
+
+    //! @brief Constructs an object to perform an action upon destruction.
+    //! @param[in] context1 The first object to pass to the action.
+    //! @param[in] context2 The second object to pass to the action.
+    //! @param[in] execAtExit The action to perform.
+    AtScopeExit2(TFn execAtExit, T context1, U context2) :
+        _context1(context1),
+        _context2(context2),
+        _execAtExit(execAtExit),
+        _isCancelled(false)
+    {
+    }
+
+    //! @brief Performs the action, if it hasn't been cancelled.
+    ~AtScopeExit2()
+    {
+        exec();
+    }
+
+    // Accessors
+
+    //! @brief Determines of the operation has been cancelled or already executed.
+    //! @retval true The operation was cancelled or already executed.
+    //! @retval false The operation is still due to execute.
+    constexpr bool isCancelled() const noexcept { return _isCancelled; }
+
+    // Operations
+
+    //! @brief Executes the action explicitly and marks it as done.
+    void exec()
+    {
+        if (_isCancelled == false)
+        {
+            _isCancelled = true;
+            std::invoke(_execAtExit, _context1, _context2);
+        }
+    }
+
+    //! @brief Prevents the action from occurring.
+    void cancel()
+    {
+        _isCancelled = true;
+    }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
 ////////////////////////////////////////////////////////////////////////////////
