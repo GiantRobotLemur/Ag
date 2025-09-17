@@ -34,8 +34,6 @@ public:
     virtual ~SDL3Driver() = default;
 
     // Overrides
-    virtual Ag::Version getMaxSupportedVersion(const ContextOptions &options,
-                                               const DisplayFormat &format) const override;
     virtual DisplayContext createDisplayDevice(const DisplayFormat &format) const override;
 };
 

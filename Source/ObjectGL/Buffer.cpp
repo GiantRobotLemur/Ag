@@ -35,6 +35,13 @@ BufferName Buffer::getName() const
     return (_buffer) ? _buffer->getName() : BufferName();
 }
 
+//! @brief Resets the object to an unbound state, disposing of the
+//! underlying resource if necessary.
+void Buffer::dispose()
+{
+    _buffer.reset();
+}
+
 } // namespace gl
 ////////////////////////////////////////////////////////////////////////////////
 

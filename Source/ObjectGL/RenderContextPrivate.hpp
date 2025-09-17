@@ -44,13 +44,12 @@ public:
     const GLAPI &getAPI() const;
 
     // Operations
+    void initialiseAPI(const APIResolver *resolver);
+
+    // Overrideable
     virtual void makeCurrent() =0;
     virtual void doneCurrent() =0;
     virtual void swapBuffers() =0;
-protected:
-    // Internal Functions
-    GLAPI &getAPIInternal();
-
 private:
     // Internal Fields
     std::shared_ptr<DisplayContextPrivate> _display;

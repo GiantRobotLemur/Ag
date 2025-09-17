@@ -52,7 +52,8 @@ public:
     Ag::String getCompilationLog() const;
 
     // Operations
-    bool compile();
+    bool tryCompile();
+    void dispose();
 private:
     // Internal Types
 

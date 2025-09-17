@@ -40,7 +40,7 @@ if (DEFINED AG_IS_ROOT)
     # Get Google Test
     ag_configure_gtest()
 
-    if(AG_CONFIG_GFX)
+    if(AG_CONFIG_GFX OR AG_CONFIG_OPEN_GL)
         # Get GLM.
         ag_configure_glm()
     endif()

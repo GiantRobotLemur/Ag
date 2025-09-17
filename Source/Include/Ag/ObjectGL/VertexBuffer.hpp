@@ -47,7 +47,7 @@ public:
     // Operations
     void select() const;
     void deselect() const;
-    void define(const VertexAttribMapping &mapping) const;
+    void dispose();
     void fill(const void *vertexData, size_t byteCount, gl::BufferUsage usage);
 private:
     // Internal Functions

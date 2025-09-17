@@ -36,6 +36,7 @@ ag_add_library(ObjectGL FOLDER      Graphics
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/RenderContext.hpp
                                     # SDL2Driver.cpp
                                     # ${AG_INCLUDE_DIR}/Ag/ObjectGL/SDL2Driver.hpp
+                                    ResourceWrappers.cpp
                                     ResourceWrappers.hpp
                                     Shader.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/Shader.hpp
@@ -66,7 +67,7 @@ ag_add_library(ObjectGL FOLDER      Graphics
                                     GLX_CommandSets.cpp
                                     ${AG_INCLUDE_DIR}/Ag/ObjectGL/GLX_CommandSets.hpp
                         HEADERS     ${AG_INCLUDE_DIR}/Ag/ObjectGL.hpp
-                        PUBLIC_LIBS AgCore glm)
+                        PUBLIC_LIBS AgCore)
 
 foreach(extName IN ITEMS 3DFX 3DLabs AMD Apple ARB ATI Ext
                          Gremedy HP IBM Ingr Intel Intense3D
@@ -85,6 +86,15 @@ endforeach()
 
 target_precompile_headers(ObjectGL PRIVATE [["PreCompiledHeader.hpp"]])
 target_include_directories(ObjectGL PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+if (AG_CONFIG_SDL2)
+    # Define the SDL2 integration driver.
+    target_compile_definitions(ObjectGL PUBLIC AG_OBJECT_GL_SDL2_DRIVER)
+    target_link_libraries(ObjectGL PUBLIC SDL2::SDL2)
+
+    target_sources(ObjectGL PRIVATE SDL2Driver.cpp
+                                    ${AG_INCLUDE_DIR}/Ag/ObjectGL/SDL2Driver.hpp)
+endif()
 
 if (AG_CONFIG_SDL3)
     # Define the SDL3 integration driver.
@@ -161,8 +171,8 @@ source_group("Drivers" FILES
     RenderContextPrivate.hpp
     RenderContext.cpp
     ${AG_INCLUDE_DIR}/Ag/ObjectGL/RenderContext.hpp
-    # SDL2Driver.cpp
-    # ${AG_INCLUDE_DIR}/Ag/ObjectGL/SDL2Driver.hpp
+    SDL2Driver.cpp
+    ${AG_INCLUDE_DIR}/Ag/ObjectGL/SDL2Driver.hpp
     SDL3Driver.cpp
     ${AG_INCLUDE_DIR}/Ag/ObjectGL/SDL3Driver.hpp
     WGL_Tools.cpp

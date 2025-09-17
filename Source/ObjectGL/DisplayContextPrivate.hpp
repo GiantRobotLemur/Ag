@@ -77,8 +77,6 @@ public:
 
     // Accessors
     const GLAPI &getAPI() const;
-    const Ag::Version &getMaxSupportedVersion() const;
-    virtual const APIResolver *getResolver() const = 0;
 
     // Operations
     void dispose(const TextureName &resource);
@@ -95,6 +93,13 @@ public:
     void flushResources();
 
     // Overrides
+    //! @brief Gets the maximum supported version of OpenGL in the Core profile.
+    virtual const Ag::Version &getMaxSupportedCoreVersion() const =0;
+
+    //! @brief Gets an object which can resolve OpenGL entry points in the
+    //! currently selected context.
+    virtual const APIResolver *getResolver() const = 0;
+
     //! @brief Creates an implementation of RenderContextPrivate compatible
     //! with the current display.
     //! @param[in] drawable A reference to an object, probably something visual
@@ -119,7 +124,6 @@ private:
     std::mutex _disposalLock;
     TaggedResourceCollection _resourcesForDisposal;
     GLAPI _api;
-    Ag::Version _maxVersion;
 };
 
 //! @brief An alias for a shared pointer to an inner Display Context.

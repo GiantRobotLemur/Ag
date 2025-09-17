@@ -38,7 +38,8 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         option(AG_STATIC_RUNTIME "Indicates whether libraries should link to static C/C++ runtime libraries" OFF)
         option(AG_CONFIG_QT "Indicates whether Qt-dependent components should be configured." OFF)
         option(AG_CONFIG_GFX "Indicates whether Graphics-related components should be configured." OFF)
-        #option(AG_CONFIG_GL "Indicates whether OpenGL-dependent components should be configured." OFF)
+        option(AG_CONFIG_OPEN_GL "Indicates whether OpenGL-dependent components should be configured." OFF)
+        option(AG_CONFIG_SDL2 "Indicates whether lib SDL2-dependent components should be configured." OFF)
         option(AG_CONFIG_SDL3 "Indicates whether lib SDL3-dependent components should be configured." OFF)
 
         include(FetchContent)
@@ -67,6 +68,10 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         FetchContent_Declare(glm
                              GIT_REPOSITORY https://github.com/g-truc/glm.git
                              GIT_TAG 1.0.1)
+
+        FetchContent_Declare(SDL2
+                             GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+                             GIT_TAG release-2.32.10)
 
         FetchContent_Declare(SDL3
                              GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -150,6 +155,31 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
                 endif()
             endif()
         endfunction()
+    endmacro()
+
+
+    macro(ag_configure_sdl2)
+        message(STATUS "Obtaining SDL 2...")
+
+        # Set SDL2 configuration options here as
+        #   FetchContent_Declare(CMAKE_CACHE_ARGS) has no effect.
+        if (AG_STATIC_RUNTIME)
+            #option(SDL_FORCE_STATIC_VCRT "Use Static MSVCRT" ON)
+            option(SDL_SHARED  "Build shared library" OFF)
+            option(SDL_STATIC "Build Static" ON)
+        else()
+            #option(SDL_FORCE_STATIC_VCRT "Use Static MSVCRT" OFF)
+            option(SDL_SHARED  "Build shared library" ON)
+            option(SDL_STATIC "Build Static" OFF)
+        endif()
+
+        option(SDL_TEST "Build the SDL2_test library" OFF)
+        option(SDL2_DISABLE_INSTALL "Disable installation of SDL2" ON)
+        option(SDL2_DISABLE_UNINSTALL  "Disable uninstallation of SDL2" ON)
+
+        FetchContent_MakeAvailable(SDL2)
+
+        ag_config_external_projects(SDL2 SDL2main sdl_headers_copy)
     endmacro()
 
     macro(ag_configure_sdl3)

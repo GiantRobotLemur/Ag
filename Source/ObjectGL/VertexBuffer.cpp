@@ -66,18 +66,11 @@ void VertexBuffer::deselect() const
     api.bindBuffer(BufferTarget::ArrayBuffer, BufferName());
 }
 
-//! @brief Binds the vertex buffer to the current context and defines
-//! its format.
-//! @param[in] mapping A mapping defining how logical vertex attributes
-//! in the buffer map to physical vertex attributes in a shader program.
-void VertexBuffer::define(const VertexAttribMapping &mapping) const
+//! @brief Resets the object to an unbound state, disposing of the
+//! underlying resource if necessary.
+void VertexBuffer::dispose()
 {
-    const auto &api = verifyAccess("define()");
-
-    // Bind the buffer in the vertex slot before defining its format.
-    api.bindBuffer(BufferTarget::ArrayBuffer, _buffer->getName());
-
-    _buffer->getSchema().define(api, mapping);
+    _buffer.reset();
 }
 
 //! @brief Transfers vertex data from system memory to GPU memory.

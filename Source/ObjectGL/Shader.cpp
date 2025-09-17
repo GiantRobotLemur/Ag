@@ -215,11 +215,11 @@ Ag::String Shader::getCompilationLog() const
     return Ag::String::Empty;
 }
 
-//! @brief Compiles the shader component.
+//! @brief Attempts to compile the shader component.
 //! @return A boolean value indicating whether compilation was successful.
-bool Shader::compile()
+bool Shader::tryCompile()
 {
-    auto &api = verifyAccess("compile()");
+    auto &api = verifyAccess("tryCompile()");
 
     api.compileShader(_shader->getName());
 
@@ -228,6 +228,13 @@ bool Shader::compile()
                     gl::ShaderParameterName::CompileStatus, &result);
 
     return (result != 0);
+}
+
+//! @brief Resets the object to an unbound state, disposing of the
+//! underlying resource if necessary.
+void Shader::dispose()
+{
+    _shader.reset();
 }
 
 //! @brief Verifies that the object is associated with a valid resource and

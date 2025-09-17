@@ -50,7 +50,7 @@ bool EventHandlers::dispatchEvent(SDL_Event &eventInfo)
 
     for (auto &node : handlerRange)
     {
-        result |= node.second.execute(&eventInfo);
+        result &= node.second.execute(&eventInfo);
     }
 
     return result;

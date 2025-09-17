@@ -115,13 +115,19 @@ void BaseAPI::afterCommand(const char *commandName) const
     // Accumulate error codes until all are cleared or we reach
     // the retry count - should never happen, but we don't want
     // to loop forever, do we?
-    do
-    {
-        errorCodes[errorCount++] = _getError();
-    } while ((errorCodes[errorCount - 1] != GL_NO_ERROR) &&
-             (errorCount < RetryCount));
+    int currentError = _getError();
+    int prevError = GL_NO_ERROR;
 
-    if (errorCount > 1)
+    while ((currentError != GL_NO_ERROR) &&
+           (currentError != prevError) &&
+           (errorCount < RetryCount))
+    {
+        errorCodes[errorCount++] = currentError;
+        prevError = currentError;
+        currentError = _getError();
+    }
+
+    if (errorCount > 0)
     {
         std::sort(errorCodes, errorCodes + errorCount);
         unsigned int *lastError = std::unique(errorCodes, errorCodes + errorCount);
@@ -137,13 +143,7 @@ void BaseAPI::afterCommand(const char *commandName) const
 
         if (firstError != lastError)
         {
-            std::string message;
-
-            message.assign("The command '");
-            message.append(commandName);
-            message.append("()' failed.");
-
-            throw OpenGLException(message.c_str(), firstError,
+            throw OpenGLException(commandName, firstError,
                                   static_cast<size_t>(lastError - firstError));
         }
     }

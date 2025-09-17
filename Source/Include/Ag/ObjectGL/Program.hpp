@@ -69,6 +69,7 @@ struct ProgramUniformInfo
 };
 
 using ProgramUniformCollection = std::vector<ProgramUniformInfo>;
+using ProgramUniformMap = std::unordered_map<Ag::String, ProgramUniformInfo>;
 
 //! @brief An object wrapping a compiled OpenGL program resource.
 class Program
@@ -95,9 +96,12 @@ public:
     bool link();
     void select();
     void deselect();
+    void dispose();
     void attachShader(const Shader &shader);
     void detachShader(const Shader &shader);
-    VertexAttribMapping createAttribMapping(const VertexSchema &schema) const;
+    void resetAttributeMappings();
+    ProgramUniformMap createUniformMapping() const;
+    size_t mapAttributes(const VertexSchema &schema) const;
 private:
     // Internal Functions
     const GLAPI &verifyAccess(const char *operation) const;

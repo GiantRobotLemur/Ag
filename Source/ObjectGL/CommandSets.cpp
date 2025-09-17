@@ -61,6 +61,9 @@ void GLAPI::verifyAPIVersion(const Ag::Version &minRequired, const char *feature
 // Resolve core API entry points.
 void GLAPI::resolve(const APIResolver* resolver)
 {
+    // Call the base class.
+    BaseAPI::resolve(resolver);
+
     if (resolver != nullptr)
     {
         _version.clear();
@@ -72,9 +75,6 @@ void GLAPI::resolve(const APIResolver* resolver)
         {
             throw Ag::OperationException("Failed to obtain OpenGL API version.");
         }
-
-        // Call the base class.
-        BaseAPI::resolve(resolver);
     }
 }
 

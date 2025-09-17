@@ -104,11 +104,13 @@ public:
     ~VertexSchema() = default;
 
     // Accessors
+    bool isEmpty() const;
+    size_t getVertexSize() const noexcept;
+    size_t getAttributeCount() const noexcept;
     bool tryFindAttributeByName(Ag::string_cref_t name, size_t &index) const;
 
     // Operations
-    void define(const gl::GLAPI &api,
-                const VertexAttribMapping &mappings) const;
+    const VertexAttrib &operator[](size_t index) const;
 private:
     // Internal Fields
     VertexAttribCollection _attributes;

@@ -253,6 +253,9 @@ ProgramUniformCollection Program::getActiveUniforms() const
 
             if (nameLength > 0)
             {
+                // Ensure the buffer is null-terminated.
+                nameBuffer[nameLength] = '\0';
+
                 item.Name = Ag::String(nameBuffer.data(),
                                        static_cast<size_t>(nameLength));
 
@@ -329,6 +332,12 @@ void Program::deselect()
     api.useProgram(empty);
 }
 
+//! @brief Resets the object to an unbound state, disposing of the
+//! underlying resource if necessary.
+void Program::dispose()
+{
+    _program.reset();
+}
 
 //! @brief Attaches a shader to the program so that it can be linked to it.
 //! @param[in] shader The shader to attach.
@@ -358,13 +367,77 @@ void Program::detachShader(const Shader &shader)
     api.detachShader(_program->getName(), shader.getName());
 }
 
-//! @brief Creates a mapping of attributes named in the program to attributes
-//! described in the schema of a vertex.
-//! @param[in] schema A description of the vertex format.
-//! @return A mapping of vertex attribute index from the schema to program attribute.
-VertexAttribMapping Program::createAttribMapping(const VertexSchema &schema) const
+//! @brief Disables all attributes so that they can be selectively enabled
+//! by mapping vertex schemas later.
+void Program::resetAttributeMappings()
 {
-    VertexAttribMapping mappings;
+    // Get the maximum number of vertex attributes supported.
+    auto &api = verifyAccess("resetAttributeMappings()");
+    GLint maxAttribs = 0;
+    api.getIntegerV(gl::GetPName::MaxVertexAttribs, &maxAttribs);
+
+    for (GLint attribId = 0; attribId < maxAttribs; ++attribId)
+    {
+        // Disable attribute input.
+        api.disableVertexAttribArray(attribId);
+    }
+}
+
+//! @brief Gets a mapping of uniform name to metadata for the current program.
+ProgramUniformMap Program::createUniformMapping() const
+{
+    ProgramUniformMap uniformMap;
+    auto &api = verifyAccess("getActiveUniforms()");
+    ProgramName id = _program->getName();
+    GLint value = 0;
+
+    api.getProgramIV(id, ProgramProperty::ActiveUniforms, &value);
+
+    if (value > 0)
+    {
+        GLint count = value;
+        std::vector<char> nameBuffer;
+
+        // Gets the maximum size of any uniform name.
+        api.getProgramIV(id, ProgramProperty::ActiveUniformMaxLength, &value);
+
+        nameBuffer.resize((value > 0) ? static_cast<size_t>(value) + 1 : 256u, '\0');
+        ProgramUniformInfo uniformInfo;
+
+        for (GLint i = 0; i < count; ++i)
+        {
+            GLsizei nameLength = 0;
+
+            api.getActiveUniform(id, i,
+                                 static_cast<GLsizei>(nameBuffer.size()),
+                                 &nameLength, &uniformInfo.Size,
+                                 &uniformInfo.DataType,
+                                 nameBuffer.data());
+
+            if (nameLength > 0)
+            {
+                // Ensure the buffer is null-terminated.
+                nameBuffer[nameLength] = '\0';
+
+                uniformInfo.Name = Ag::String(nameBuffer.data(),
+                                              static_cast<size_t>(nameLength));
+
+                uniformInfo.Location = api.getUniformLocation(id, nameBuffer.data());
+
+                uniformMap[uniformInfo.Name] = uniformInfo;
+            }
+        }
+    }
+
+    return uniformMap;
+}
+
+//! @brief Enables and defines and maps vertex attributes named in a schema
+//! to the corresponding attributes referenced by the shader program.
+//! @param[in] schema A description of the vertex format.
+//! @return The count of vertex attributes successfully mapped.
+size_t Program::mapAttributes(const VertexSchema &schema) const
+{
     const auto &api = verifyAccess("getActiveAttribs()");
     ProgramName progName = _program->getName();
     GLint value = 0;
@@ -372,12 +445,12 @@ VertexAttribMapping Program::createAttribMapping(const VertexSchema &schema) con
     api.getProgramIV(progName, ProgramProperty::ActiveAttributes, &value);
 
     ProgramAttribCollection attribs;
+    size_t mappedAttribCount = 0;
 
     if (value > 0)
     {
         GLint count = value;
         std::vector<char> nameBuffer;
-        mappings.reserve(static_cast<size_t>(value));
 
         // Gets the maximum size of any attribute name.
         api.getProgramIV(progName, ProgramProperty::ActiveAttributeMaxLength, &value);
@@ -404,16 +477,19 @@ VertexAttribMapping Program::createAttribMapping(const VertexSchema &schema) con
 
                     if (attribLocation >= 0)
                     {
-                        mappings.push_back(attribIndex, attribLocation);
+                        // Enable the attribute.
+                        api.enableVertexAttribArray(attribLocation);
+
+                        // Describe the attribute.
+                        schema[attribIndex].define(api, attribLocation, schema.getVertexSize());
+                        ++mappedAttribCount;
                     }
                 }
             }
         }
-
-        mappings.reindex();
     }
 
-    return mappings;
+    return mappedAttribCount;
 }
 
 //! @brief Verifies that the object is associated with a valid resource and

@@ -21,7 +21,6 @@ namespace gl {
 //! @brief Constructs an empty display format with no properties set.
 DisplayFormat::DisplayFormat()
 {
-    _properties.reserve(static_cast<size_t>(DisplayPropertyID::MaxID));
 }
 
 //! @brief Sets whether double buffering should be enabled.
@@ -105,11 +104,12 @@ void DisplayFormat::reset()
 //! @param[in] id The identifier of the property to get.
 //! @param[in] defaultValue The value to return if the property was not defined.
 //! @return Either the property value or default value.
-uint32_t DisplayFormat::getProperty(DisplayPropertyID id, uint32_t defaultValue) const
+uint32_t DisplayFormat::getProperty(DisplayPropertyID id,
+                                    uint32_t defaultValue) const
 {
-    uint32_t value;
+    auto pos = _properties.find(id);
 
-    return _properties.tryFind(id, value) ? value : defaultValue;
+    return (pos == _properties.end()) ? defaultValue : pos->second;
 }
 
 //! @brief Gets the value of a boolean property, returning a default if it wasn't defined.
@@ -118,9 +118,9 @@ uint32_t DisplayFormat::getProperty(DisplayPropertyID id, uint32_t defaultValue)
 //! @return Either the property value or default value.
 bool DisplayFormat::getProperty(DisplayPropertyID id, bool defaultValue) const
 {
-    uint32_t value;
+    auto pos = _properties.find(id);
 
-    return _properties.tryFind(id, value) ? (value != 0) : defaultValue;
+    return (pos == _properties.end()) ? defaultValue : (pos->second != 0);
 }
 
 //! @brief Attempts to get the value of a property.
@@ -129,9 +129,19 @@ bool DisplayFormat::getProperty(DisplayPropertyID id, bool defaultValue) const
 //! @param[out] value Receives the value of the property.
 //! @retval true The property was defined and its value returned.
 //! @retval false The property was not defined.
-bool DisplayFormat::tryGetProperty(DisplayPropertyID id, uint32_t &value) const
+bool DisplayFormat::tryGetProperty(DisplayPropertyID id,
+                                   uint32_t &value) const
 {
-    return _properties.tryFind(id, value);
+    auto pos = _properties.find(id);
+
+    if (pos != _properties.end())
+    {
+        value = pos->second;
+        return true;
+    }
+
+    value = 0;
+    return false;
 }
 
 //! @brief Sets the value of a specific property.
@@ -139,16 +149,7 @@ bool DisplayFormat::tryGetProperty(DisplayPropertyID id, uint32_t &value) const
 //! @param[in] value The new value of the property.
 void DisplayFormat::setProperty(DisplayPropertyID id, uint32_t value)
 {
-    auto pos = _properties.find(id);
-
-    if (pos == _properties.end())
-    {
-        _properties.push_back(id, value);
-    }
-    else
-    {
-        pos->second = value;
-    }
+    _properties[id] = value;
 }
 
 } // namespace gl

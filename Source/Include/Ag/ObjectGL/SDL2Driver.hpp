@@ -18,7 +18,6 @@
 
 namespace gl {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,8 +30,6 @@ public:
     virtual ~SDL2Driver() = default;
 
     // Overrides
-    virtual Version getMaxSupportedVersion(const ContextOptions &options,
-                                           const DisplayFormat &format) const override;
     virtual DisplayContext createDisplayDevice(const DisplayFormat &format) const override;
 };
 

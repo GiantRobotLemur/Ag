@@ -26,8 +26,8 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Local Data Types
 ////////////////////////////////////////////////////////////////////////////////
-using ResourceComparer = Ag::LessThanKeyComparer<ResourceType, GLuint>;
-using GroupByType = Ag::LessThanPairComparer<ResourceType, GLuint>;
+using ResourceComparer = Ag::LessThanPairComparer<ResourceType, GLuint>;
+using GroupByType = Ag::LessThanKeyComparer<ResourceType, GLuint>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
@@ -88,13 +88,6 @@ DisplayContextPrivate::DisplayContextPrivate()
 const GLAPI &DisplayContextPrivate::getAPI() const
 {
     return _api;
-}
-
-//! @brief Gets the maximum supported version of the OpenGL API supported by
-//! the current display.
-const Ag::Version &DisplayContextPrivate::getMaxSupportedVersion() const
-{
-    return _maxVersion;
 }
 
 //! @brief Disposes of a texture resource created on the current display.
@@ -207,6 +200,11 @@ void DisplayContextPrivate::flushResources()
 
     std::lock_guard guard(_disposalLock);
 
+    // Ensure the resource collection is cleared, even if an exception
+    // is thrown while disposing of the current contents.
+    Ag::AtScopeExit1 clearResources([](TaggedResourceCollection *resources)
+                                    { resources->clear(); }, &_resourcesForDisposal);
+
     // Sort the resources by type.
     std::sort(_resourcesForDisposal.begin(), _resourcesForDisposal.end(),
               ResourceComparer());
@@ -306,6 +304,7 @@ void DisplayContextPrivate::flushResources()
             } break;
 
             } // switch (ResourceType)
+
         } while (getNextGroup(_resourcesForDisposal.end(), group, groupPredicate));
     }
 }
@@ -316,14 +315,6 @@ void DisplayContextPrivate::flushResources()
 void DisplayContextPrivate::initialiseAPI()
 {
     _api.resolve(getResolver());
-
-    // Get the maximum version supported by the context.
-    GLint major = 0, minor = 0;
-    _api.getIntegerV(GetPName::MajorVersion, &major);
-    _api.getIntegerV(GetPName::MinorVersion, &minor);
-
-    _maxVersion.setMajor(static_cast<uint16_t>(major));
-    _maxVersion.setMinor(static_cast<uint16_t>(minor));
 }
 
 //! @brief Schedules a resource for disposal.
@@ -338,7 +329,6 @@ void DisplayContextPrivate::dispose(ResourceType type, GLuint id)
     _resourcesForDisposal.emplace_back(type, id);
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // AssignableDisplayContext Member Function Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,10 +339,6 @@ AssignableDisplayContext::AssignableDisplayContext(const DisplayContextPrivateSP
     DisplayContext(display)
 {
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// Global Function Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 } // namespace gl
 ////////////////////////////////////////////////////////////////////////////////

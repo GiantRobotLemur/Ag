@@ -38,7 +38,7 @@ public:
     BufferName getName() const;
 
     // Operations
-
+    void dispose();
 private:
     // Internal Fields
     std::shared_ptr<BufferResource> _buffer;

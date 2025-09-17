@@ -30,7 +30,7 @@ GTEST_TEST(LineEq2D, DefaultConstruct)
 {
     LineEq2D specimen;
 
-    EXPECT_NEAR(0.0, specimen.getDistanceToPoint(Point2D(0, 0)), 1e-8);
+    EXPECT_NEAR(0.0, specimen.getPerpDistanceToPoint(Point2D(0, 0)), 1e-8);
 }
 
 GTEST_TEST(LineEq2D, IsParallel)
@@ -66,9 +66,9 @@ GTEST_TEST(LineEq2D, GetDistanceToPoint)
     const double recipRoot2 = 1.0 / std::sqrt(2.0);
     LineEq2D specimen(Point2D(0, 0), Point2D(2, 2));
 
-    EXPECT_NEAR(specimen.getDistanceToPoint(Point2D(0, 1)), recipRoot2, 1e-8);
+    EXPECT_NEAR(specimen.getPerpDistanceToPoint(Point2D(0, 1)), recipRoot2, 1e-8);
 
-    EXPECT_NEAR(specimen.getDistanceToPoint(Point2D(1, 0)), -recipRoot2, 1e-8);
+    EXPECT_NEAR(specimen.getPerpDistanceToPoint(Point2D(1, 0)), -recipRoot2, 1e-8);
 }
 
 GTEST_TEST(LineEq2D, CreateVertical)

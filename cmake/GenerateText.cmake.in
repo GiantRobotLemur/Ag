@@ -2,7 +2,7 @@
 
 function(add_static_text sourceFileName)
     foreach(fullName IN ITEMS ${ARGN})
-        get_filename_component(baseName ${fullName} NAME_WLE)
+        cmake_path(GET fullName STEM baseName)
 
         string(APPEND declarations "const char *get${baseName}Text();\n")
 

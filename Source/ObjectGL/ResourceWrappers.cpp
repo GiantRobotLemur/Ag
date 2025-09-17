@@ -12,7 +12,7 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Core/Exception.hpp"
-#include "Ag/GLAPI/EnumTypes.hpp"
+#include "Ag/ObjectGL/EnumTypes.hpp"
 #include "ResourceWrappers.hpp"
 
 namespace gl {

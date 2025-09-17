@@ -53,6 +53,12 @@ const APIResolver *RenderContext::getResolver() const
     return _context->getDisplay()->getResolver();
 }
 
+//! @brief Resets the object to an unbound state.
+void RenderContext::dispose()
+{
+    _context.reset();
+}
+
 //! @brief Selects the context for use on the current thread.
 void RenderContext::makeCurrent()
 {
@@ -80,7 +86,7 @@ void RenderContext::swapBuffers()
 //! @brief Create a shader using the current context.
 //! @param[in] type The type of shader to create.
 //! @return An object wrapping the newly created shader.
-Shader RenderContext::createShader(ShaderType type)
+Shader RenderContext::createShader(ShaderType type) const
 {
     verifyAccess("createShader()");
 
@@ -95,7 +101,7 @@ Shader RenderContext::createShader(ShaderType type)
 
 //! @brief Creates a shader program using the current context.
 //! @return An object wrapping the newly created program.
-Program RenderContext::createProgram()
+Program RenderContext::createProgram() const
 {
     const auto &api = verifyAccess("createProgram()");
 
@@ -109,7 +115,7 @@ Program RenderContext::createProgram()
 //! @brief Creates a buffer used to hold vertex indices using the
 //! current context.
 //! @return An object wrapping a newly created buffer.
-IndexBuffer RenderContext::createIndexBuffer()
+IndexBuffer RenderContext::createIndexBuffer() const
 {
     const auto &api = verifyAccess("createIndexBuffer()");
 
@@ -128,7 +134,7 @@ IndexBuffer RenderContext::createIndexBuffer()
 
 //! @brief Creates a buffer used to hold vertices using the current context.
 //! @return An object wrapping a newly created buffer.
-VertexBuffer RenderContext::createVertexBuffer()
+VertexBuffer RenderContext::createVertexBuffer() const
 {
     const auto &api = verifyAccess("createVertexBuffer()");
 
@@ -146,7 +152,7 @@ VertexBuffer RenderContext::createVertexBuffer()
 }
 
 //! @brief Creates a Vertex Array Object in the current OpenGL context.
-VertexArrayObject RenderContext::createVertexArray()
+VertexArrayObject RenderContext::createVertexArray() const
 {
     const auto &api = verifyAccess("createVertexArray()");
 
@@ -165,7 +171,7 @@ VertexArrayObject RenderContext::createVertexArray()
 
 //! @brief Disposes of any OpenGL resources queued for disposal since the
 //! last flush.
-void RenderContext::flushResources()
+void RenderContext::flushResources() const
 {
     verifyAccess("flushResources()");
 

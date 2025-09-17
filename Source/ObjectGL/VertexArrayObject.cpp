@@ -52,6 +52,13 @@ void VertexArrayObject::deselect() const
     api.bindVertexArray(gl::VertexArrayName());
 }
 
+//! @brief Resets the object to an unbound state, disposing of the
+//! underlying resource if necessary.
+void VertexArrayObject::dispose()
+{
+    _vao.reset();
+}
+
 //! @brief Verifies that the object is associated with a valid resource and
 //! returns an API used to operate on it.
 //! @param[in] operation The name of the operation being performed.

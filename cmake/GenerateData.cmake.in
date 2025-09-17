@@ -5,9 +5,7 @@ function(add_static_data sourceFileName)
     string(APPEND sourceCode "#include <cstdint>\n\n")
 
     foreach(fullName IN ITEMS ${ARGN})
-        get_filename_component(baseName ${fullName} NAME_WLE)
-
-        # string(APPEND declarations "const uint8_t *get${baseName}Data(size_t &byteCount);\n")
+        cmake_path(GET fullName STEM baseName)
 
         string(APPEND sourceCode "// Imported from ${fullName}\n")
         string(APPEND sourceCode
