@@ -96,6 +96,10 @@
 #include "ObjectGL/WGLDriver.hpp"
 #endif // ifdef AG_OBJECT_GL_WGL_DRIVER
 
+#ifdef AG_OBJECT_GL_SDL2_DRIVER
+#include "ObjectGL/SDL2Driver.hpp"
+#endif // ifdef AG_OBJECT_GL_SDL2_DRIVER
+
 #ifdef AG_OBJECT_GL_SDL3_DRIVER
 #include "ObjectGL/SDL3Driver.hpp"
 #endif // ifdef AG_OBJECT_GL_SDL3_DRIVER

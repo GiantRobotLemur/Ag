@@ -296,6 +296,10 @@ void setSDLFlag(T id, SDL_GLAttr attrib, const U &format)
 SDL3DisplayContext::SDL3DisplayContext(const DisplayFormat &format) :
     _format(format)
 {
+    ContextOptions options;
+    options.enableCoreProfile(true);
+
+    ensureRootContextCreated(options);
 }
 
 //! @brief Ensures that any root GL context and window is disposed of.
@@ -314,6 +318,9 @@ SDL3DisplayContext::~SDL3DisplayContext()
     }
 }
 
+//! @brief Ensures an OpenGL context is created which can be shared across
+//! all contexts explicitly created.
+//! @param[in] options Initial options for the context.
 void SDL3DisplayContext::ensureRootContextCreated(const ContextOptions &options)
 {
     if (_rootContext.isValid() == false)

@@ -241,14 +241,11 @@ public:
     GLContext &getRootContext() { return _rootContext; }
 
     // Operations
-    void ensureRootContextCreated(const ContextOptions &options,
-                                  bool ignoreVersion);
+    void ensureRootContextCreated(const ContextOptions &options);
 
     // Overrides
-    // Inherited from DisplayContextPrivate.
+    virtual const Ag::Version &getMaxSupportedCoreVersion() const override;
     virtual const APIResolver *getResolver() const override;
-
-    // Inherited from DisplayContextPrivate.
     virtual std::shared_ptr<RenderContextPrivate> createContext(uintptr_t drawable,
                                                                 const ContextOptions &options) override;
 
@@ -260,6 +257,7 @@ private:
     DisplayFormat _format;
     SDL2PrivateResolver _resolver;
     GLContext _rootContext;
+    Ag::Version _maxCoreVersion;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -281,7 +279,7 @@ void setSDLFlag(T id, SDL_GLattr attrib, const U &format)
 {
     bool value;
 
-    if (format.tryGetFlagProperty(id, value))
+    if (format.tryGetTypedProperty(id, value))
     {
         SDL_GL_SetAttribute(attrib, value ? SDL_TRUE : SDL_FALSE);
     }
@@ -295,6 +293,10 @@ void setSDLFlag(T id, SDL_GLattr attrib, const U &format)
 SDL2DisplayContext::SDL2DisplayContext(const DisplayFormat &format) :
     _format(format)
 {
+    ContextOptions options;
+    options.enableCoreProfile(true);
+
+    ensureRootContextCreated(options);
 }
 
 //! @brief Ensures that any root GL context and window is disposed of.
@@ -313,8 +315,7 @@ SDL2DisplayContext::~SDL2DisplayContext()
     }
 }
 
-void SDL2DisplayContext::ensureRootContextCreated(const ContextOptions &options,
-                                                  bool ignoreVersion)
+void SDL2DisplayContext::ensureRootContextCreated(const ContextOptions &options)
 {
     if (_rootContext.isValid() == false)
     {
@@ -334,7 +335,7 @@ void SDL2DisplayContext::ensureRootContextCreated(const ContextOptions &options,
         }
 
         // Create a root OpenGL context from which resources will be shared.
-        setContextAttributes(options, _format, ignoreVersion);
+        setContextAttributes(options, _format, /*ignoreVersion = */ true);
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, SDL_FALSE);
 
         _rootContext.Renderer = SDL_GL_CreateContext(_rootContext.Window);
@@ -359,7 +360,15 @@ void SDL2DisplayContext::ensureRootContextCreated(const ContextOptions &options,
 
         // Initialise the underlying API.
         initialiseAPI();
+
+        _maxCoreVersion = getAPI().getAPIVersion();
     }
+}
+
+// Inherited from DisplayContextPrivate.
+const Ag::Version &SDL2DisplayContext::getMaxSupportedCoreVersion() const
+{
+    return _maxCoreVersion;
 }
 
 // Inherited from DisplayContextPrivate.
@@ -382,7 +391,7 @@ std::shared_ptr<RenderContextPrivate> SDL2DisplayContext::createContext(uintptr_
 
     ContextScope contextState;
 
-    ensureRootContextCreated(options, true);
+    ensureRootContextCreated(options);
 
     _rootContext.makeCurrent();
 
@@ -401,7 +410,14 @@ std::shared_ptr<RenderContextPrivate> SDL2DisplayContext::createContext(uintptr_
     // De-select the root context from the current thread.
     _rootContext.doneCurrent();
 
-    return std::make_shared<SDL2RenderContext>(shared_from_this(), context);
+    auto renderContext = std::make_shared<SDL2RenderContext>(shared_from_this(), context);
+
+    // Initialise the context-specific API entry points.
+    context.makeCurrent();
+    renderContext->initialiseAPI(&_resolver);
+    context.doneCurrent();
+
+    return renderContext;
 }
 
 //! @brief Maps preferred format and context to SDL GL attributes.
@@ -470,9 +486,6 @@ SDL2RenderContext::SDL2RenderContext(const DisplayContextPrivateSPtr &display,
     RenderContextPrivate(display),
     _context(context)
 {
-    _context.makeCurrent();
-    getAPIInternal().resolve(display->getResolver());
-    _context.doneCurrent();
 }
 
 //! @brief Disposes of the OpenGL context the object wrapped.
