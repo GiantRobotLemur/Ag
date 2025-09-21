@@ -33,6 +33,8 @@ public:
 
     // Operations
     void create(utf8_cptr_t title, int width, int height, SDL_WindowFlags flags);
+    void createFullScreen(utf8_cptr_t title, SDL_DisplayID display,
+                          const SDL_DisplayMode &mode, SDL_WindowFlags flags);
     void release();
     Window &operator=(const Window &) = delete;
     Window &operator=(Window &&rhs) noexcept;

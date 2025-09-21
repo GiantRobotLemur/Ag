@@ -97,7 +97,7 @@ public:
     }
 
     // Operations
-    bool tryClearProperty(const char *name);
+    bool tryClearProperty(utf8_cptr_t name);
     PropertySet &operator=(const PropertySet &rhs);
     PropertySet &operator=(PropertySet &&rhs) noexcept;
     PropertySet &operator+=(const PropertySet &rhs);

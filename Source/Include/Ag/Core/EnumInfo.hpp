@@ -2,7 +2,7 @@
 //! @brief The declaration of a template class which provides metadata for an
 //! enumeration type.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -30,6 +30,10 @@
 #define STATIC_SCALAR_DEF2(t, x, y) Ag::EnumSymbol<t>(x, # x, y)
 #define STATIC_SCALAR_DEF3(t, x, y, z) Ag::EnumSymbol<t>(x, # x, y, z)
 #define STATIC_ENUM_DEF(x) Ag::EnumSymbol<decltype(x)>(x, # x)
+
+#define STATIC_SCALAR_CLASS_DEF(t, x) Ag::EnumSymbol<t>(t ## :: ## x, # x)
+#define STATIC_SCALAR_CLASS_DEF2(t, x, y) Ag::EnumSymbol<t>(t ## :: ## x, # x, y)
+#define STATIC_SCALAR_CLASS_DEF3(t, x, y, z) Ag::EnumSymbol<t>(t ## :: ## x, # x, y, z)
 
 namespace Ag {
 
