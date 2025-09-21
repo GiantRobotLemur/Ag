@@ -3,10 +3,16 @@
 Ag Core is the lowest level library. It provides the most basic functionality
 for up-stream code. It is dependent upon the platform C Runtime Library
 (currently MSVC Runtime and glibc), the C++ Standard Template Library and, in
-the case of Windows, the Win32 subsystem and shell. Currently Ag Core is not
-dependent upon any third party libraries which are not available to the host
-platform as standard, although testing does require
+the case of Windows, the Win32 subsystem and shell.
+
+Currently Ag Core is not dependent upon any third party libraries which are
+not available to the host platform as standard, although testing does require
 [Google Test](https://github.com/google/googletest.git).
+
+There is also an internal dependency on the bz2 compression library, but this
+code is downloaded from github and compiled into the library, effectively
+making it invisible, although opaquely accessible via the `BzCompressionStream`
+and `BzDecompressionStream` classes.
 
 Some notable features of the Core library are:
 * Optimised low-level binary operations (bit scan, byte order, etc.).
@@ -23,3 +29,5 @@ Some notable features of the Core library are:
 * URI management.
 * File path management using both Win32 and POSIX-style paths.
 * Platform agnostic file system integration.
+* A system of abstract I/O streams which support raw file access and
+compression/decompression using the embedded bz2 library.

@@ -13,6 +13,10 @@ ag_add_library(Sdl3Tools FOLDER     "Core"
                                     ApiException.cpp
                                     ${SDL3_TOOLS_INCLUDE_DIR}/Initialiser.hpp
                                     Initialiser.cpp
+                                    ${SDL3_TOOLS_INCLUDE_DIR}/DisplayModeSpec.hpp
+                                    DisplayModeSpec.cpp
+                                    ${SDL3_TOOLS_INCLUDE_DIR}/ProgramArguments.hpp
+                                    ProgramArguments.cpp
                                     ${SDL3_TOOLS_INCLUDE_DIR}/PropertySet.hpp
                                     PropertySet.cpp
                                     ${SDL3_TOOLS_INCLUDE_DIR}/EventProcessor.hpp
@@ -52,3 +56,12 @@ endif()
 list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
                      "${AG_INCLUDE_DIR}/Ag/Sdl3Tools.hpp"
                      "${AG_INCLUDE_DIR}/Ag/Sdl3Tools")
+
+# Define the unit test harness.
+ag_add_test_app(Sdl3Tools_Tests TEST_LIB Sdl3Tools
+                                SOURCES  Test_DisplayModeSpec.cpp
+                                         Test_ProgramArguments.cpp)
+
+target_precompile_headers(Sdl3Tools_Tests PRIVATE <gtest/gtest.h>
+                                                  [["PreCompiledHeader.hpp"]])
+target_include_directories(Sdl3Tools_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

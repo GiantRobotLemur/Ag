@@ -2,7 +2,7 @@
 //! @brief The definition of an object which manages command line argument
 //! parsing, processing and verification.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -256,10 +256,17 @@ bool tryAppendArgument(ArgumentCollection &argTokens,
 // ProgramArguments Member Function Definitions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs an object ready to process command line options.
+ProgramArguments::ProgramArguments() :
+    _command(NoCommand)
+{
+}
+
+//! @brief Constructs an object ready to process command line options.
 //! @param[in] schema The schema which defines what command line options are
 //! valid.
 ProgramArguments::ProgramArguments(const Schema &schema) :
-    _schema(schema)
+    _schema(schema),
+    _command(NoCommand)
 {
 }
 
@@ -273,6 +280,24 @@ const String &ProgramArguments::getProgramFile() const
 const Schema &ProgramArguments::getSchema() const
 {
     return _schema;
+}
+
+//! @brief Gets the numeric identifier of a command interpreted from the
+//! last set of parsed command line options.
+//! @return The numeric identifier of the command, either a custom value or
+//! something like StandardCommands::ShowHelp.
+uint32_t ProgramArguments::getCommand() const
+{
+    return _command;
+}
+
+//! @brief Determines if a command was set the last time command line arguments
+//! were processed.
+//! @retval true A command was implied.
+//! @retval false No command was implied.
+bool ProgramArguments::hasCommand() const
+{
+    return _command != StandardCommands::NoCommand;
 }
 
 //! @brief Parses A Win32-style continuous wide character command line.
@@ -425,6 +450,90 @@ bool ProgramArguments::tryParse(int argc, const wchar_t * const *argv, String &e
     return isOK;
 }
 
+//! @brief Outputs help to the user describing the available command line options.
+void ProgramArguments::showHelp() const
+{
+    FILE *output = getConsoleOutputStream();
+
+    if (output == nullptr)
+        return;
+
+    String helpText = _schema.getHelpText(80);
+
+#ifdef _WIN32
+    // Output help text in Win32 as Unicode.
+    auto wideHelp = helpText.toWide();
+
+    fputwc(L'\n', output);
+    fputws(wideHelp.c_str(), output);
+
+    if (::IsDebuggerPresent)
+    {
+        wideHelp.push_back(L'\n');
+        ::OutputDebugStringW(wideHelp.c_str());
+    }
+#else
+    fputc('\n', output);
+    fputs(helpText.getUtf8Bytes(), output);
+#endif // ifdef _WIN32
+}
+
+//! @brief Outputs information about the program version to the user.
+void ProgramArguments::showVersion() const
+{
+    FILE *output = getConsoleOutputStream();
+
+    if (output == nullptr)
+        return;
+
+    String versionText = _schema.getVersionText();
+
+#ifdef _WIN32
+    // Output version text in Win32 as Unicode.
+    auto wideHelp = versionText.toWide();
+    wideHelp.push_back(L'\n');
+
+    fputwc(L'\n', output);
+    fputws(wideHelp.c_str(), output);
+
+    if (::IsDebuggerPresent)
+    {
+        wideHelp.push_back(L'\n');
+        ::OutputDebugStringW(wideHelp.c_str());
+    }
+#else
+    fputc('\n', output);
+    fputs(versionText.getUtf8Bytes(), output);
+    fputc('\n', output);
+#endif // ifdef _WIN32
+}
+
+//! @brief Attempts to process any of the standard commands which the user may
+//! have requested via the last set of command line arguments.
+//! @retval true A command was processed, the process should exit.
+//! @retval false The process should continue to perform its default command.
+bool ProgramArguments::tryProcessStandardCommand() const
+{
+    bool commandProcessed = true;
+
+    switch (_command)
+    {
+    case StandardCommands::ShowHelp:
+        showHelp();
+        break;
+
+    case StandardCommands::ShowVersion:
+        showVersion();
+        break;
+
+    default:
+        commandProcessed = false;
+        break;
+    }
+
+    return commandProcessed;
+}
+
 //! @brief Implemented in derived classes to handle an option which
 //! appeared on the command line.
 //! @param[in] id The numeric identifier of the option which corresponds with
@@ -437,9 +546,20 @@ bool ProgramArguments::tryParse(int argc, const wchar_t * const *argv, String &e
 //! @retval false The option was invalid.
 //! @note The default implementation consumes associated values if possible and
 //! always returns true.
-bool ProgramArguments::processOption(uint32_t /* id */, const String & /* value */,
-                                     String & /* error */)
+bool ProgramArguments::processOption(uint32_t id, const String &/*value*/,
+                                     String &/*error*/)
 {
+    switch (id)
+    {
+    case StandardOptions::ShowHelpOption:
+        setCommand(StandardCommands::ShowHelp);
+        break;
+
+    case StandardOptions::ShowVersionOption:
+        setCommand(StandardCommands::ShowVersion);
+        break;
+    }
+
     return true;
 }
 
@@ -479,6 +599,43 @@ void ProgramArguments::postProcess()
 {
 }
 
+//! @brief Resets any accumulated option values before parsing a new set
+//! of command line arguments.
+//! @note The default implementation should be called by derived implementations.
+void ProgramArguments::clear()
+{
+    _command = StandardCommands::NoCommand;
+}
+
+//! @brief An internal function which allows the command line option
+//! schema to be updated.
+//! @param[in] schema The object used to create a new schema.
+void ProgramArguments::setSchema(const SchemaBuilder &schema)
+{
+    _schema = schema.createSchema();
+}
+
+//! @brief Sets the command implied by one or more command line options.
+//! @param[in] command The numeric identifier of the command the user has
+//! requested via command line arguments. Either a custom value or something
+//! like StandardCommands::ShowHelp.
+void ProgramArguments::setCommand(uint32_t command)
+{
+    _command = command;
+}
+
+//! @brief Obtains an output stream to write console output to.
+//! @return The console output stream, possibly nullptr if one could not
+//! be created.
+FILE *ProgramArguments::getConsoleOutputStream()
+{
+    // Ensure STDOUT is open and attempt to re-enable it if it isn't.
+    if (isStdoutEnabled() == false)
+        enableStdout();
+
+    return stdout;
+}
+
 //! @brief Processes the tokens parsed from the command line text.
 //! @param[in] tokens The collection of pre-arsed tokens.
 //! @param[out] error Receives a message detailing why processing filed.
@@ -487,6 +644,10 @@ void ProgramArguments::postProcess()
 bool ProgramArguments::processArgumentTokens(const ArgumentCollection &tokens,
                                              String &error)
 {
+    // Reset the state of any variables with values left over from the last
+    // set of arguments processed.
+    clear();
+
     auto arg = tokens.begin();
     bool isOK = true;
 

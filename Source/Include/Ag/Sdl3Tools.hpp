@@ -26,6 +26,8 @@
 #include "Sdl3Tools/Surface.hpp"
 #include "Sdl3Tools/OpenGL.hpp"
 #include "Sdl3Tools/Initialiser.hpp"
+#include "Sdl3Tools/DisplayModeSpec.hpp"
+#include "Sdl3Tools/ProgramArguments.hpp"
 #include "Sdl3Tools/EventProcessor.hpp"
 #include "Sdl3Tools/GPUObjects.hpp"
 

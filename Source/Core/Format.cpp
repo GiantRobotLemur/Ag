@@ -1,7 +1,7 @@
 //! @file Core/Format.cpp
 //! @brief The definition of objects and functions used to format values as text.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -1692,7 +1692,7 @@ void appendValue(const FormatInfo &options, std::string &buffer, double value)
             characters = NumericCharacters((sign == 0) ? '+' : '-',
                                            decPtIndex, digitBuffer);
         }
-        else if (options.getRequiredFractionDigits() > 0)
+        else if (options.getRequiredFractionDigits() >= 0)
         {
             errorCode = realToFractionDigits(value, options.getRequiredFractionDigits(),
                                              digitBuffer, std::size(digitBuffer),

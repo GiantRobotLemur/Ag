@@ -1,7 +1,7 @@
 //! @file Core/String.cpp
 //! @brief The definition of an immutable UTF-8-encoded string value data type.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -1245,6 +1245,18 @@ bool String::operator==(const String &rhs) const
     return _str.get() == rhs._str.get();
 }
 
+//! @brief Determines if the current string matches a null-terminated UTF-8
+//! encoded byte array.
+//! @param[in] nullTerminatedUtf8 The array of characters to compare against.
+//! @retval true @p nullTerminatedUtf8 contains the same characters as the
+//! current string.
+//! @retval false @p nullTerminatedUtf8 contains at least one differing character
+//! to the current string.
+bool String::operator==(utf8_cptr_t nullTerminatedUtf8) const
+{
+    return _str.get()->getData() == nullTerminatedUtf8;
+}
+
 //! @brief Determines if two string have differing values.
 //! @param[in] rhs The string to compare the current one with.
 //! @retval true The rhs string differs from the current one.
@@ -1254,6 +1266,18 @@ bool String::operator!=(const String &rhs) const
     // If the inner pointers are identical, the String instances reference the
     // same globally unique inner string.
     return _str.get() != rhs._str.get();
+}
+
+//! @brief Determines if the current string is different from a
+//! null-terminated UTF-8 encoded byte array.
+//! @param[in] nullTerminatedUtf8 The array of characters to compare against.
+//! @retval true @p nullTerminatedUtf8 contains at least one differing character
+//! to the current string.
+//! @retval false @p nullTerminatedUtf8 contains the same characters as the
+//! current string.
+bool String::operator!=(utf8_cptr_t nullTerminatedUtf8) const
+{
+    return _str.get()->getData() != nullTerminatedUtf8;
 }
 
 //! @brief Performs a less-than comparison between the current and another string.

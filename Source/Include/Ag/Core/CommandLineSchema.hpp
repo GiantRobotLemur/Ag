@@ -1,8 +1,8 @@
-//! @file CommandLineSchema.hpp
+//! @file Ag/Core/CommandLineSchema.hpp
 //! @brief The declaration of an object which defines which command line options
 //! are valid.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2023
+//! @date 2022-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -21,11 +21,50 @@
 #include "Configuration.hpp"
 #include "EnumInfo.hpp"
 #include "String.hpp"
+#include "Version.hpp"
 
 namespace Ag {
 
 //! @brief A namespace containing command line manipulation tools.
 namespace Cli {
+
+////////////////////////////////////////////////////////////////////////////////
+// Data Type Declarations
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Defines standard commands which can be implied with command line
+//! arguments.
+enum StandardCommands : uint32_t
+{
+    //! @brief The value used to define when no command is implied by the command
+    //! line arguments, or perhaps that the default command should be executed.
+    NoCommand = 0xF0000000,
+
+    //! @brief Indicates the application should display command line help and exit.
+    ShowHelp,
+
+    //! @brief Indicates the application should display name and version information
+    //! and exit.
+    ShowVersion,
+
+    //! @brief A values to be used by other command line schemas to add additional
+    //! custom application commands.
+    LastStdCommand,
+};
+
+//! @brief Unique values used to define standard command line options within a
+//! Schema object.
+enum StandardOptions : uint32_t
+{
+    //! @brief The option which indicates the user wants to display help.
+    ShowHelpOption = 0xF0000000,
+
+    //! @brief The option which indicates the user wants to display the
+    //! program version.
+    ShowVersionOption,
+
+    //! @brief The value used to define subsequent standard command line options.
+    LastStdOption
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -95,17 +134,22 @@ class SchemaBuilderPrivate;
 class Schema
 {
 public:
+    Schema() = default;
     Schema(const SchemaBuilderPrivate &builder);
     ~Schema() = default;
 
     // Accessors
+    bool isBound() const;
     ValueMultiplicity getValueMultiplicity() const;
     bool tryFindShortOption(char32_t shortOption, size_t &index) const;
     bool tryFindLongOption(const String &option, size_t &index) const;
 
     const OptionDefinition &getOptionDefinition(size_t index) const;
 
+    // Operations
     String getHelpText(int maxWidth = -1) const;
+    String getVersionText() const;
+    void dispose();
 private:
     // Internal Fields
     std::shared_ptr<SchemaPrivate> _schema;
@@ -119,7 +163,7 @@ public:
     SchemaBuilder();
 
     // Accessors
-    void setName(const std::string_view &name);
+    void setAppName(const std::string_view &name);
     void setDescription(const std::string_view &description);
 
     // Operations
@@ -130,15 +174,14 @@ public:
     void defineAlias(uint32_t id, char32_t shortForm, bool isCaseSensitve = true);
     void defineAlias(uint32_t id, utf8_cptr_t longForm, bool isCaseSensitive = true);
 
+    void addShowHelpCommand();
+    void addShowVersionCommand(const Version &appVersion);
+
     Schema createSchema() const;
 private:
     // Internal Fields
     std::shared_ptr<SchemaBuilderPrivate> _builder;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// Function Declarations
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Templates

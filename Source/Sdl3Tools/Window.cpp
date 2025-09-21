@@ -84,6 +84,54 @@ void Window::create(utf8_cptr_t title, int width, int height, SDL_WindowFlags fl
         throw ApiException("SDL_CreateWindow()");
 }
 
+//! @brief Creates a new window which covers an entire screen, perhaps changing
+//! the display mode.
+//! @param[in] title The title of the window which maybe displayed elsewhere in the system.
+//! @param[in] display The display for the window to acquire.
+//! @param[in] mode The display mode to set that display to.
+//! @param[in] flags Option flags determining behaviour of the window.
+void Window::createFullScreen(utf8_cptr_t title, SDL_DisplayID display,
+                              const SDL_DisplayMode &mode, SDL_WindowFlags flags)
+{
+    release();
+
+    PropertySet windowProperties;
+    Rect displayBounds;
+
+    windowProperties.set(SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, true);
+
+    if (Utf::isNullOrEmpty(title) == false)
+    {
+        windowProperties.set(SDL_PROP_WINDOW_CREATE_TITLE_STRING, title);
+    }
+
+    SDL_GetDisplayUsableBounds(display, &displayBounds);
+    windowProperties.set(SDL_PROP_WINDOW_CREATE_X_NUMBER, displayBounds.x);
+    windowProperties.set(SDL_PROP_WINDOW_CREATE_Y_NUMBER, displayBounds.y);
+    windowProperties.set(SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, displayBounds.w);
+    windowProperties.set(SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, displayBounds.h);
+
+    if (flags & SDL_WINDOW_OPENGL)
+    {
+        windowProperties.set(SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
+    }
+
+    _window = SDL_CreateWindowWithProperties(windowProperties);
+
+    if (_window == nullptr)
+        throw ApiException("SDL_CreateWindowWithProperties()");
+
+    if (SDL_SetWindowFullscreenMode(_window, &mode) == false)
+    {
+        // Ensure the window is destroyed after the exception is created in
+        // order to preserve the SDL error state.
+        SDL_Window *windowToDestroy = std::exchange(_window, nullptr);
+        AtScopeExit1 destroyWindow(SDL_DestroyWindow, windowToDestroy);
+
+        throw ApiException("SDL_SetWindowFullscreenMode()");
+    }
+}
+
 //! @brief Disposes of any underlying window resource.
 void Window::release()
 {

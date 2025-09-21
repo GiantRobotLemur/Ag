@@ -1,8 +1,8 @@
-//! @file CommandLineSchema.cpp
+//! @file Core/CommandLineSchema.cpp
 //! @brief The definition of an object which defines which command line options
 //! are valid.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2024
+//! @date 2022-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -58,6 +58,7 @@ private:
     String _appDescription;
     String _valueArgName;
     ValueMultiplicity _valueArgMultiplicity;
+    Version _appVersion;
 
     // Internal Functions
     //! @brief Ensures that a definition exists for a command line option with
@@ -82,7 +83,7 @@ private:
 public:
     // Construction
     SchemaBuilderPrivate() :
-        _valueArgMultiplicity(ValueMultiplicity::Many)
+        _valueArgMultiplicity(ValueMultiplicity::None)
     {
     }
 
@@ -90,6 +91,8 @@ public:
     string_cref_t getAppName() const { return _appName; }
 
     string_cref_t getAppDescription() const { return _appDescription; }
+
+    const Version &getAppVersion() const { return _appVersion; }
 
     ValueMultiplicity getValueArgumentCount() const { return _valueArgMultiplicity; }
 
@@ -124,6 +127,11 @@ public:
     void setAppDescription(string_cref_t description)
     {
         _appDescription = description;
+    }
+
+    void setVersion(const Version &appVersion)
+    {
+        _appVersion = appVersion;
     }
 
     //! @brief Defines the description of non-option arguments.
@@ -225,6 +233,7 @@ private:
     LinearSortedMap<String, size_t> _longFormsIgnoreCase;
     String _appName;
     String _appDescription;
+    Version _appVersion;
     String _valueArgName;
     ValueMultiplicity _valueArgMultiplicity;
 
@@ -299,6 +308,7 @@ public:
         _longFormsIgnoreCase(builder.getLongFormIgnoreCaseIndex()),
         _appName(builder.getAppName()),
         _appDescription(builder.getAppDescription()),
+        _appVersion(builder.getAppVersion()),
         _valueArgName(builder.getValueArgumentName()),
         _valueArgMultiplicity(builder.getValueArgumentCount())
     {
@@ -323,6 +333,21 @@ public:
     ValueMultiplicity getValueMultiplicity() const
     {
         return _valueArgMultiplicity;
+    }
+
+    //! @brief Gets the text used to describe the application version.
+    String getVersionText() const
+    {
+        std::string buffer;
+
+        // Format version text.
+        appendAgString(buffer, _appName);
+        buffer.push_back(' ');
+        buffer.push_back('(');
+        appendAgString(buffer, _appVersion.toString());
+        buffer.push_back(')');
+
+        return buffer;
     }
 
     // Operations
@@ -457,256 +482,255 @@ public:
             buffer.push_back('\n');
         }
 
-        if (_definitions.empty() == false)
+        if (_definitions.empty())
+            return buffer;
+
+        // Create reverse mappings for all options.
+        LinearSortedMap<size_t, char32_t> shortOptionsById;
+        LinearSortedMap<size_t, String> longOptionsById;
+
+        size_t maxLineLength = (maxWidth < 0) ? std::numeric_limits<size_t>::max() :
+                                                toSize(maxWidth);
+
+        for (const auto &shortMapping : _shortForms)
         {
-            // Create reverse mappings for all options.
-            LinearSortedMap<size_t, char32_t> shortOptionsById;
-            LinearSortedMap<size_t, String> longOptionsById;
+            shortOptionsById.push_back(shortMapping.second, shortMapping.first);
+        }
 
-            size_t maxLineLength = (maxWidth < 0) ? std::numeric_limits<size_t>::max() :
-                                                    toSize(maxWidth);
+        shortOptionsById.reindex();
 
-            for (const auto &shortMapping : _shortForms)
+        for (const auto &longMapping : _longForms)
+        {
+            longOptionsById.push_back(longMapping.second, longMapping.first);
+        }
+
+        longOptionsById.reindex();
+
+        // Output option information.
+        buffer.append("Options:\n");
+
+        // Calculate the maximum length of any option.
+        size_t maxOptionLength = 0;
+        size_t maxOptionCount = 0;
+
+        for (size_t i = 0, c = _definitions.size(); i < c; ++i)
+        {
+            size_t optionCount;
+            size_t optLength = calculateOptionLength(i, shortOptionsById,
+                                                        longOptionsById, optionCount);
+
+            maxOptionLength = std::max(maxOptionLength, optLength);
+            maxOptionCount = std::max(maxOptionCount, optionCount);
+        }
+
+        // Ensure there is enough space for options and some description.
+        maxLineLength = std::max(maxOptionLength + 20, maxLineLength);
+
+        // Output the options, formatting as required.
+        StringCollection tokens;
+        std::string lineBuffer;
+        tokens.reserve(maxOptionCount);
+
+        for (size_t i = 0, c = _definitions.size(); i < c; ++i)
+        {
+            const OptionDefinition &opt = _definitions[i];
+
+            if (opt.getDescription().isEmpty())
+                continue;
+
+            tokens.clear();
+            auto shortOptRange = shortOptionsById.findRange(i);
+            auto longOptRange = longOptionsById.findRange(i);
+
+            // Accumulate the tokens to appear on each line.
+            for (const auto &shortMapping : shortOptRange)
             {
-                shortOptionsById.push_back(shortMapping.second, shortMapping.first);
+                lineBuffer.clear();
+
+                lineBuffer.push_back('-');
+                Utf::appendCodePoint(lineBuffer, shortMapping.second);
+                lineBuffer.push_back(',');
+
+                tokens.emplace_back(lineBuffer);
             }
 
-            shortOptionsById.reindex();
-
-            for (const auto &longMapping : _longForms)
+            for (const auto &longMapping : longOptRange)
             {
-                longOptionsById.push_back(longMapping.second, longMapping.first);
+                lineBuffer.clear();
+                lineBuffer.push_back('-');
+                lineBuffer.push_back('-');
+                appendAgString(lineBuffer, longMapping.second);
+                lineBuffer.push_back(',');
+
+                tokens.emplace_back(lineBuffer);
             }
 
-            longOptionsById.reindex();
-
-            // Output option information.
-            buffer.append("Options:\n");
-
-            // Calculate the maximum length of any option.
-            size_t maxOptionLength = 0;
-            size_t maxOptionCount = 0;
-
-            for (size_t i = 0, c = _definitions.size(); i < c; ++i)
+            if (tokens.empty() == false)
             {
-                size_t optionCount;
-                size_t optLength = calculateOptionLength(i, shortOptionsById,
-                                                         longOptionsById, optionCount);
+                // Doctor the last item to remove the trailing separator
+                // and possibly add a bound value.
+                lineBuffer.clear();
+                appendAgString(lineBuffer, tokens.back());
+                tokens.pop_back();
+                lineBuffer.pop_back();
 
-                maxOptionLength = std::max(maxOptionLength, optLength);
-                maxOptionCount = std::max(maxOptionCount, optionCount);
+                if (opt.getValueRequired() == OptionValue::Optional)
+                {
+                    lineBuffer.append(" [<");
+                    appendAgString(lineBuffer, opt.getValueName());
+                    lineBuffer.append(">]");
+                }
+                else if (opt.getValueRequired() == OptionValue::Mandatory)
+                {
+                    lineBuffer.push_back(' ');
+                    lineBuffer.push_back('<');
+                    appendAgString(lineBuffer, opt.getValueName());
+                    lineBuffer.push_back('>');
+                }
+
+                tokens.emplace_back(lineBuffer);
             }
 
-            // Ensure there is enough space for options and some description.
-            maxLineLength = std::max(maxOptionLength + 20, maxLineLength);
+            // Output the options and description in two columns.
+            size_t token = 0;
+            const size_t optColWidth = maxOptionLength + 1;
+            std::u32string description = opt.getDescription().toUtf32();
+            size_t descOffset = 0;
+            bool isFirstLine = true;
 
-            // Output the options, formatting as required.
-            StringCollection tokens;
-            std::string lineBuffer;
-            tokens.reserve(maxOptionCount);
-
-            for (size_t i = 0, c = _definitions.size(); i < c; ++i)
+            while ((token < tokens.size()) ||
+                    (descOffset != description.size()))
             {
-                const OptionDefinition &opt = _definitions[i];
+                size_t charsWritten = 0;
+                bool indent;
 
-                if (opt.getDescription().isEmpty())
-                    continue;
-
-                tokens.clear();
-                auto shortOptRange = shortOptionsById.findRange(opt.getId());
-                auto longOptRange = longOptionsById.findRange(opt.getId());
-
-                // Accumulate the tokens to appear on each line.
-                for (const auto &shortMapping : shortOptRange)
+                if (isFirstLine)
                 {
-                    lineBuffer.clear();
-
-                    lineBuffer.push_back('-');
-                    Utf::appendCodePoint(lineBuffer, shortMapping.second);
-                    lineBuffer.push_back(',');
-
-                    tokens.emplace_back(lineBuffer);
+                    isFirstLine = false;
+                    indent = false;
+                }
+                else
+                {
+                    indent = true;
+                    buffer.append(2, ' ');
+                    charsWritten = 2;
                 }
 
-                for (const auto &longMapping : longOptRange)
+                // Write what option tokens we can fit into the column.
+                while (token < tokens.size())
                 {
-                    lineBuffer.clear();
-                    lineBuffer.push_back('-');
-                    lineBuffer.push_back('-');
-                    appendAgString(lineBuffer, longMapping.second);
-                    lineBuffer.push_back(',');
+                    string_cref_t nextToken = tokens[token];
+                    size_t printLength = nextToken.getPrintLength();
 
-                    tokens.emplace_back(lineBuffer);
-                }
-
-                if (tokens.empty() == false)
-                {
-                    // Doctor the last item to remove the trailing separator
-                    // and possibly add a bound value.
-                    lineBuffer.clear();
-                    appendAgString(lineBuffer, tokens.back());
-                    tokens.pop_back();
-                    lineBuffer.pop_back();
-
-                    if (opt.getValueRequired() == OptionValue::Optional)
+                    if ((charsWritten < 1) ||
+                        ((charsWritten + printLength) <= maxOptionLength))
                     {
-                        lineBuffer.append(" [<");
-                        appendAgString(lineBuffer, opt.getValueName());
-                        lineBuffer.append(">]");
-                    }
-                    else if (opt.getValueRequired() == OptionValue::Mandatory)
-                    {
-                        lineBuffer.push_back(' ');
-                        lineBuffer.push_back('<');
-                        appendAgString(lineBuffer, opt.getValueName());
-                        lineBuffer.push_back('>');
-                    }
-
-                    tokens.emplace_back(lineBuffer);
-                }
-
-                // Output the options and description in two columns.
-                size_t token = 0;
-                const size_t optColWidth = maxOptionLength + 1;
-                std::u32string description = opt.getDescription().toUtf32();
-                size_t descOffset = 0;
-                bool isFirstLine = true;
-
-                while ((token < tokens.size()) ||
-                       (descOffset != description.size()))
-                {
-                    size_t charsWritten = 0;
-                    bool indent;
-
-                    if (isFirstLine)
-                    {
-                        isFirstLine = false;
-                        indent = false;
+                        // There is enough space to write the token.
+                        appendAgString(buffer, nextToken);
+                        charsWritten += printLength;
+                        ++token;
                     }
                     else
                     {
-                        indent = true;
-                        buffer.append(2, ' ');
-                        charsWritten = 2;
+                        break;
                     }
+                }
 
-                    // Write what option tokens we can fit into the column.
-                    while (token < tokens.size())
+                // Pad to the description column.
+                if (charsWritten < optColWidth)
+                {
+                    buffer.append(optColWidth - charsWritten, ' ');
+
+                    charsWritten = optColWidth;
+                }
+
+                // Now write what we can of the description.
+
+                // Skip leading white space.
+                while (descOffset < description.size())
+                {
+                    if (CodePoint::isWhiteSpace(description[descOffset]))
                     {
-                        string_cref_t nextToken = tokens[token];
-                        size_t printLength = nextToken.getPrintLength();
-
-                        if ((charsWritten < 1) ||
-                            ((charsWritten + printLength) <= maxOptionLength))
-                        {
-                            // There is enough space to write the token.
-                            appendAgString(buffer, nextToken);
-                            charsWritten += printLength;
-                            ++token;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    // Pad to the description column.
-                    if (charsWritten < optColWidth)
-                    {
-                        buffer.append(optColWidth - charsWritten, ' ');
-
-                        charsWritten = optColWidth;
-                    }
-
-                    // Now write what we can of the description.
-
-                    // Skip leading white space.
-                    while (descOffset < description.size())
-                    {
-                        if (CodePoint::isWhiteSpace(description[descOffset]))
-                        {
-                            ++descOffset;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    if (indent)
-                    {
-                        // Indent continuation lines.
-                        buffer.append(2, ' ');
-                        charsWritten += 2;
-                    }
-
-                    // Output what words we can, wrapping at a word break.
-                    size_t descStart = descOffset;
-                    size_t endOffset = descOffset;
-                    bool isInWord = true;
-
-                    while ((descOffset < description.size()) &&
-                           (charsWritten < maxLineLength))
-                    {
-                        char32_t codePoint = description[descOffset];
-
-                        if (CodePoint::isWhiteSpace(codePoint))
-                        {
-                            if (isInWord)
-                            {
-                                // Its the end of a word, mark it.
-                                endOffset = descOffset;
-                                isInWord = false;
-                            }
-
-                            // All spaces are printable(?).
-                            ++charsWritten;
-                        }
-                        else if (isInWord == false)
-                        {
-                            // It's the beginning of a new word.
-                            isInWord = true;
-
-                            // Only measure printable characters.
-                            if (CodePoint::isPrintable(codePoint))
-                            {
-                                ++charsWritten;
-                            }
-                        }
-                        else if (CodePoint::isPrintable(codePoint))
-                        {
-                            ++charsWritten;
-                        }
-
                         ++descOffset;
                     }
-
-                    if (charsWritten < maxLineLength)
-                    {
-                        // We can output the rest of the line.
-                        endOffset = descOffset;
-                    }
-
-                    if (endOffset > descStart)
-                    {
-                        // At least one word break was found.
-                        Utf::appendToUtf8(buffer,
-                                          description.c_str() + descStart,
-                                          endOffset - descStart);
-                        descOffset = endOffset;
-                    }
                     else
                     {
-                        // There was no line break, just output what we can.
-                        Utf::appendToUtf8(buffer,
-                                          description.c_str() + descStart,
-                                          descOffset - descStart);
+                        break;
+                    }
+                }
+
+                if (indent)
+                {
+                    // Indent continuation lines.
+                    buffer.append(2, ' ');
+                    charsWritten += 2;
+                }
+
+                // Output what words we can, wrapping at a word break.
+                size_t descStart = descOffset;
+                size_t endOffset = descOffset;
+                bool isInWord = true;
+
+                while ((descOffset < description.size()) &&
+                        (charsWritten < maxLineLength))
+                {
+                    char32_t codePoint = description[descOffset];
+
+                    if (CodePoint::isWhiteSpace(codePoint))
+                    {
+                        if (isInWord)
+                        {
+                            // Its the end of a word, mark it.
+                            endOffset = descOffset;
+                            isInWord = false;
+                        }
+
+                        // All spaces are printable(?).
+                        ++charsWritten;
+                    }
+                    else if (isInWord == false)
+                    {
+                        // It's the beginning of a new word.
+                        isInWord = true;
+
+                        // Only measure printable characters.
+                        if (CodePoint::isPrintable(codePoint))
+                        {
+                            ++charsWritten;
+                        }
+                    }
+                    else if (CodePoint::isPrintable(codePoint))
+                    {
+                        ++charsWritten;
                     }
 
-                    buffer.push_back('\n');
+                    ++descOffset;
                 }
-            }
 
+                if (charsWritten < maxLineLength)
+                {
+                    // We can output the rest of the line.
+                    endOffset = descOffset;
+                }
+
+                if (endOffset > descStart)
+                {
+                    // At least one word break was found.
+                    Utf::appendToUtf8(buffer,
+                                        description.c_str() + descStart,
+                                        endOffset - descStart);
+                    descOffset = endOffset;
+                }
+                else
+                {
+                    // There was no line break, just output what we can.
+                    Utf::appendToUtf8(buffer,
+                                        description.c_str() + descStart,
+                                        descOffset - descStart);
+                }
+
+                buffer.push_back('\n');
+            }
         }
 
         return String(buffer);
@@ -781,6 +805,14 @@ Schema::Schema(const SchemaBuilderPrivate &builder) :
 {
 }
 
+//! @brief Determines if the object is bound to an underlying definition.
+//! @retval true The object has a definition.
+//! @retval false The object is not bound.
+bool Schema::isBound() const
+{
+    return _schema.operator bool();
+}
+
 //! @brief Gets the number of non-option arguments allowed by the schema.
 ValueMultiplicity Schema::getValueMultiplicity() const
 {
@@ -821,9 +853,18 @@ const OptionDefinition &Schema::getOptionDefinition(size_t index) const
     return _schema->getDefinition(index);
 }
 
+//! @brief Formats command line help text for output to the console.
+//! @param[in] maxWidth The maximum width of the console output, in characters.
+//! @return A string containing the console help text.
 String Schema::getHelpText(int maxWidth) const
 {
     return _schema->getHelpText(maxWidth);
+}
+
+//! @brief Gets the test to show the user to describe the application version.
+String Schema::getVersionText() const
+{
+    return _schema->getVersionText();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -836,11 +877,15 @@ SchemaBuilder::SchemaBuilder() :
 {
 }
 
-void SchemaBuilder::setName(const std::string_view &name)
+//! @brief Sets the name of the application which appears in command line help text.
+//! @param[in] name The display program name.
+void SchemaBuilder::setAppName(const std::string_view &name)
 {
     _builder->setAppName(name);
 }
 
+//! @brief Sets the description of the application which appears in command line text.
+//! @param[in] description The new application description.
 void SchemaBuilder::setDescription(const std::string_view &description)
 {
     _builder->setAppDescription(description);
@@ -944,6 +989,32 @@ void SchemaBuilder::defineAlias(uint32_t id, utf8_cptr_t longForm,
     }
 
     _builder->defineAlias(id, String(longForm), isCaseSensitive);
+}
+
+//! @brief Defines the standard command line arguments (-? or --help) to
+//! define the 'display help' command.
+void SchemaBuilder::addShowHelpCommand()
+{
+    OptionDefinition definition(StandardOptions::ShowHelpOption,
+                                String("Displays this command line help."));
+
+    _builder->addOption(definition);
+    _builder->defineAlias(StandardOptions::ShowHelpOption, U'?');
+    _builder->defineAlias(StandardOptions::ShowHelpOption, "help", true);
+}
+
+//! @brief Defines the standard command line argument (--version) to define
+//! the 'display version' command.
+//! @param[in] appVersion The version of the application to display.
+void SchemaBuilder::addShowVersionCommand(const Version &appVersion)
+{
+    _builder->setVersion(appVersion);
+
+    OptionDefinition definition(StandardOptions::ShowVersionOption,
+                                String("Displays the program version."));
+
+    _builder->addOption(definition);
+    _builder->defineAlias(StandardOptions::ShowVersionOption, "version", true);
 }
 
 //! @brief Creates a shared, immutable CommandLineSchema object from the current
