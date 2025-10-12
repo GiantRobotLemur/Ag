@@ -35,6 +35,7 @@ ag_add_library(Sdl3Tools FOLDER     "Core"
 #ag_enable_proxy_stacktrace(Sdl3Tools SDL3-shared)
 
 target_precompile_headers(Sdl3Tools PRIVATE [["PreCompiledHeader.hpp"]])
+target_compile_definitions(Sdl3Tools PUBLIC AG_SDL3_TOOLS)
 target_include_directories(Sdl3Tools PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if (WIN32)

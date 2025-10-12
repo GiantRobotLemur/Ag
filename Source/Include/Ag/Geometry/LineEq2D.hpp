@@ -23,7 +23,7 @@ class LineSeg2D;
 
 //! @brief An object representing a line in 2-dimensions using the general form
 //! line equation.
-class LineEq2D
+class STRUCT_ALIGN_16 LineEq2D
 {
 public:
     // Construction/Destruction
@@ -37,9 +37,10 @@ public:
     static LineEq2D createHorizontal(double throughY);
 
     // Accessors
-    double getA() const;
-    double getB() const;
-    double getC() const;
+    double getA() const noexcept;
+    double getB() const noexcept;
+    double getC() const noexcept;
+    const double *toArray() const noexcept;
     Point2D getOrigin() const;
     Point2D getDelta() const;
     bool isHorizontal() const;
@@ -63,6 +64,7 @@ private:
     double _a;
     double _b;
     double _c;
+    uint64_t _padding;
 };
 
 }} // namespace Ag::Geom

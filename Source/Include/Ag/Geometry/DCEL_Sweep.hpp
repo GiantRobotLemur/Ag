@@ -100,8 +100,8 @@ public:
     bool operator==(const SweepEdge &rhs) const;
 private:
     // Internal Fields
-    HalfEdgePtr _edge;
     LineEq2D _edgeLine;
+    HalfEdgePtr _edge;
     mutable int64_t _lastSweepOffset;
     mutable int64_t _cachedSweepIntersection;
     bool _isColinear;

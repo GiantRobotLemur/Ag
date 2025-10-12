@@ -15,7 +15,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered (loosely) by dependency.
 #include "Core/Platform.hpp"
+#include "Core/CPU.hpp"
 #include "Core/Configuration.hpp"
+#include "Core/AlignedTypes.hpp"
 #include "Core/Binary.hpp"
 #include "Core/Timer.hpp"
 #include "Core/ByteOrder.hpp"

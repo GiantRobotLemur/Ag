@@ -9,6 +9,10 @@ ag_add_library(Geometry FOLDER      Geometry
                                     ${GEOM_INCLUDE_DIR}/Exceptions.hpp
                                     NumericDomain.cpp
                                     ${GEOM_INCLUDE_DIR}/NumericDomain.hpp
+                                    Operations_Base.hpp
+                                    Operations_x64v1.hpp
+                                    Operations_x64v2.hpp
+                                    Operations.hpp
                                     Angle.cpp
                                     ${GEOM_INCLUDE_DIR}/Angle.hpp
                                     Point2I.cpp
@@ -36,6 +40,12 @@ ag_add_library(Geometry FOLDER      Geometry
                                     ${GEOM_INCLUDE_DIR}/LineEq2D.hpp
                                     Triangle2D.cpp
                                     ${GEOM_INCLUDE_DIR}/Triangle2D.hpp
+                                    Matrix2x2.cpp
+                                    ${GEOM_INCLUDE_DIR}/Matrix2x2.hpp
+                                    Matrix3x3.cpp
+                                    ${GEOM_INCLUDE_DIR}/Matrix3x3.hpp
+                                    AffineTransform2D.cpp
+                                    ${GEOM_INCLUDE_DIR}/AffineTransform2D.hpp
                                     SnapPoint.cpp
                                     ${GEOM_INCLUDE_DIR}/SnapPoint.hpp
                                     SnapContext.cpp
@@ -69,12 +79,91 @@ list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
                      "${AG_INCLUDE_DIR}/Ag/Geometry.hpp"
                      "${AG_INCLUDE_DIR}/Ag/Geometry")
 
+
+source_group("Build" FILES  PreCompiledHeader.hpp
+                            Geometry.natvis
+                            ${AG_INCLUDE_DIR}/Ag/Geometry.hpp
+                            Exceptions.cpp
+                            ${GEOM_INCLUDE_DIR}/Exceptions.hpp
+)
+
+source_group("SIMD" FILES   Operations.hpp
+                            Operations_Base.hpp
+                            Operations_x64v1.hpp
+                            Operations_x64v2.hpp
+)
+
+source_group("Numerics" FILES   NumericDomain.cpp
+                                ${GEOM_INCLUDE_DIR}/NumericDomain.hpp
+                                Angle.cpp
+                                ${GEOM_INCLUDE_DIR}/Angle.hpp
+                                SnapPoint.cpp
+                                ${GEOM_INCLUDE_DIR}/SnapPoint.hpp
+                                SnapContext.cpp
+                                ${GEOM_INCLUDE_DIR}/SnapContext.hpp
+)
+
+source_group("Primitives" FILES Point2I.cpp
+                                ${GEOM_INCLUDE_DIR}/Point2I.hpp
+                                Point2ICollectionView.cpp
+                                ${GEOM_INCLUDE_DIR}/Point2ICollectionView.hpp
+                                Size2I.cpp
+                                ${GEOM_INCLUDE_DIR}/Size2I.hpp
+                                Rect2I.cpp
+                                ${GEOM_INCLUDE_DIR}/Rect2I.hpp
+                                Point2D.cpp
+                                ${GEOM_INCLUDE_DIR}/Point2D.hpp
+                                Size2D.cpp
+                                ${GEOM_INCLUDE_DIR}/Size2D.hpp
+                                Rect2D.cpp
+                                ${GEOM_INCLUDE_DIR}/Rect2D.hpp
+                                Point2DCollectionView.cpp
+                                ${GEOM_INCLUDE_DIR}/Point2DCollectionView.hpp
+                                Matrix2x2.cpp
+                                ${GEOM_INCLUDE_DIR}/Matrix2x2.hpp
+                                Matrix3x3.cpp
+                                ${GEOM_INCLUDE_DIR}/Matrix3x3.hpp
+                                AffineTransform2D.cpp
+                                ${GEOM_INCLUDE_DIR}/AffineTransform2D.hpp
+)
+
+source_group("Lines" FILES  ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
+                            LineSeg2D.cpp
+                            ${GEOM_INCLUDE_DIR}/LineSeg2D.hpp
+                            Line2D.cpp
+                            ${GEOM_INCLUDE_DIR}/Line2D.hpp
+                            LineEq2D.cpp
+                            ${GEOM_INCLUDE_DIR}/LineEq2D.hpp
+                            QuadBezierCurve2D.cpp
+                            ${GEOM_INCLUDE_DIR}/QuadBezierCurve2D.hpp
+                            CubicBezierCurve2D.cpp
+                            ${GEOM_INCLUDE_DIR}/CubicBezierCurve2D.hpp
+                            Arc2D.cpp
+                            ${GEOM_INCLUDE_DIR}/Arc2D.hpp
+)
+
+source_group("Polygons" FILES   ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
+                                Triangle2D.cpp
+                                ${GEOM_INCLUDE_DIR}/Triangle2D.hpp
+                                DCEL.cpp
+                                ${GEOM_INCLUDE_DIR}/DCEL.hpp
+                                DCEL_Sweep.cpp
+                                ${GEOM_INCLUDE_DIR}/DCEL_Sweep.hpp
+                                DCEL_RingTracer.cpp
+                                DCEL_RingTracer.hpp
+                                DCEL_Triangulate.cpp
+                                DCEL_Triangulate.hpp
+                                DCEL_Algorithms.cpp
+                                ${GEOM_INCLUDE_DIR}/DCEL_Algorithms.hpp
+)
+
 # Define the unit test harness.
 ag_add_test_app(Geometry_Tests  TEST_LIB    Geometry
                                 SOURCES     Geometry_TestsPCH.hpp
                                             GtestHelpers.cpp
                                             GtestHelpers.hpp
                                             Test_NumericDomain.cpp
+                                            Test_Operations.cpp
                                             Test_Angle.cpp
                                             Test_Point2I.cpp
                                             Test_Point2D.cpp
@@ -84,6 +173,9 @@ ag_add_test_app(Geometry_Tests  TEST_LIB    Geometry
                                             Test_QuadBezierCurve2D.cpp
                                             Test_CubicBezierCurve2D.cpp
                                             Test_Arc2D.cpp
+                                            Test_Matrix2x2.cpp
+                                            Test_Matrix3x3.cpp
+                                            Test_AffineTransform2D.cpp
                                             Test_DCEL_Tools.cpp
                                             Test_DCEL_Tools.hpp
                                             Test_DCEL.cpp

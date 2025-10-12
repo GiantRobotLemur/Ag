@@ -28,7 +28,8 @@ namespace Geom {
 LineEq2D::LineEq2D() :
     _a(0),
     _b(1),
-    _c(0)
+    _c(0),
+    _padding(0)
 {
 }
 
@@ -38,7 +39,8 @@ LineEq2D::LineEq2D() :
 LineEq2D::LineEq2D(const Line2D &rhs) :
     _a(-rhs.getDelta().getY()),
     _b(rhs.getDelta().getX()),
-    _c(rhs.getOrigin().determinant(rhs.getDelta()))
+    _c(rhs.getOrigin().determinant(rhs.getDelta())),
+    _padding(0)
 {
     // As a Line2D has a unit vector for a delta, the implicit form is also
     // normalised.
@@ -50,7 +52,8 @@ LineEq2D::LineEq2D(const Line2D &rhs) :
 LineEq2D::LineEq2D(const LineSeg2D &rhs) :
     _a(0),
     _b(0),
-    _c(0)
+    _c(0),
+    _padding(0)
 {
     // Ensure the line segment had length.
     double magnitudeSq = rhs.getDelta().magnitudeSquared();
@@ -79,7 +82,8 @@ LineEq2D::LineEq2D(const LineSeg2D &rhs) :
 LineEq2D::LineEq2D(double a, double b, double c) :
     _a(a),
     _b(b),
-    _c(c)
+    _c(c),
+    _padding(0)
 {
     // Ensure the line is normalised.
     double magnitude = (_a * _a) + (_b * _b);
@@ -105,7 +109,8 @@ LineEq2D::LineEq2D(double a, double b, double c) :
 LineEq2D::LineEq2D(const Point2D &first, const Point2D &second) :
     _a(0),
     _b(0),
-    _c(0)
+    _c(0),
+    _padding(0)
 {
     // Ensure the line segment had length.
     Point2D delta = second - first;
@@ -144,17 +149,24 @@ LineEq2D LineEq2D::createHorizontal(double throughY)
 //! @brief Gets the cosine of the angle the normal to the line makes
 //! with the horizontal.
 //! @return A value between -1. and 1.0.
-double LineEq2D::getA() const { return _a; }
+double LineEq2D::getA() const noexcept { return _a; }
 
 //! @brief Gets the cosine of the angle the normal to the line makes
 //! with the vertical.
 //! @return A value between -1. and 1.0.
-double LineEq2D::getB() const { return _b; }
+double LineEq2D::getB() const noexcept { return _b; }
 
 //! @brief The distance along the normal to the line from the origin to
 //! it's intersection point on the line.
 //! @return The signed shortest distance from the origin to the line.
-double LineEq2D::getC() const { return _c; }
+double LineEq2D::getC() const noexcept { return _c; }
+
+//! @brief Gets a pointer to the three double values defining the line as
+//! an array.
+const double *LineEq2D::toArray() const noexcept
+{
+    return &_a;
+}
 
 //! @brief Calculates the closest point on the line to the origin.
 //! @return A position on the line.

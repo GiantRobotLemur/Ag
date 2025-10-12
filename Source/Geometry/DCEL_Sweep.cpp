@@ -468,8 +468,8 @@ int SweepContext::diffPositions(const SnapPoint &lhs, const SnapPoint &rhs) cons
 //! to the sweep line) through a specified node.
 //! @param[in] node A pointer to the node the edge should pass through.
 SweepEdge::SweepEdge(NodeCPtr node) :
-    _edge(nullptr),
     _edgeLine(),
+    _edge(nullptr),
     _lastSweepOffset(0),
     _cachedSweepIntersection(0),
     _isColinear(false)
@@ -483,8 +483,8 @@ SweepEdge::SweepEdge(NodeCPtr node) :
 //! @param[in] context Details of the sweep the edge will participate in.
 //! @param[in] edge A pointer to the edge to wrap.
 SweepEdge::SweepEdge(const SweepContext &context, EdgePtr edge) :
-    _edge(nullptr),
     _edgeLine(),
+    _edge(nullptr),
     _lastSweepOffset(0),
     _cachedSweepIntersection(0),
     _isColinear(context.isParallelToSweepLine(edge))

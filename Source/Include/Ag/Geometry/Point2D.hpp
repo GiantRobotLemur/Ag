@@ -34,7 +34,7 @@ class Size2D;
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief A 2-dimensional vector value used as an interface to all geometry
 //! primitives.
-class Point2D
+class STRUCT_ALIGN_16 Point2D
 {
 public:
     // Public Types
@@ -46,7 +46,7 @@ public:
     using Pair = std::pair<Point2D, Point2D>;
 
     // Construction/Destruction
-//! @brief Constructs a point primitive with components set to 0.0.
+    //! @brief Constructs a point primitive with components set to 0.0.
     constexpr Point2D()  noexcept : _x(0.0), _y(0.0) { }
 
     //! @brief Constructs a point primitive with components initialised
@@ -55,6 +55,15 @@ public:
     //! @param[in] y The vertical component.
     constexpr Point2D(Point2D::Component x, Point2D::Component y)  noexcept :
         _x(x), _y(y) { }
+
+    //! @brief Constructs a point primitive with components initialised
+    //! individually from an array.
+    //! @param[in] components An array of 2 components which initialise
+    //! the X and Y values.
+    constexpr Point2D(const Point2D::Component *components)  noexcept :
+        _x(components[0]), _y(components[1])
+    {
+    }
 
     //! @brief Constructs a point primitive from an integer equivalent.
     constexpr Point2D(const Point2I &point) noexcept :
@@ -77,55 +86,19 @@ public:
     void set(Component x, Component y) noexcept;
     ComponentPtr toArray() noexcept;
 
-    // Operations
     //! @brief Gets the point as an array of component values.
     constexpr ComponentCPtr toArray() const noexcept { return &_x; }
 
-    //! @brief Determines of the current point has identical component values
-    //! to another.
-    //! @param[in] rhs The point to compare against.
-    //! @retval true The current point has identical components of rhs.
-    //! @retval false The current point has at least one component which
-    //! differs from rhs.
-    constexpr bool operator==(const Point2D &rhs) const noexcept {
-        return (_x == rhs._x) && (_y == rhs._y); }
+    bool isZero() const noexcept;
 
-    //! @brief Determines of the current point has a least one differing
-    //! component value to another.
-    //! @param[in] rhs The point to compare against.
-    //! @retval true The current point has at least one component which
-    //! differs from rhs.
-    //! @retval false The current point has identical components of rhs.
-    constexpr bool operator!=(const Point2D &rhs) const noexcept {
-        return (_x != rhs._x) || (_y != rhs._y); }
-
-    //! @brief Calculates the sum of the current point and another.
-    //! @param[in] rhs The point to add.
-    //! @return The sum of the two points.
-    constexpr Point2D operator+(const Point2D &rhs) const noexcept {
-        return { _x + rhs._x, _y + rhs._y }; }
-
-    //! @brief Calculates the difference between the current point and another.
-    //! @param[in] rhs The point to subtract.
-    //! @return The difference the two points.
-    constexpr Point2D operator-(const Point2D &rhs) const noexcept {
-        return { _x - rhs._x, _y - rhs._y }; }
-
-    //! @brief Calculates the negative of the current point.
-    constexpr Point2D operator-() const noexcept { return { -_x, -_y }; }
-
-    //! @brief Calculates the product of the current point and another.
-    //! @param[in] rhs The point to multiply by.
-    //! @return The component-wise product of the two points.
-    constexpr Point2D operator*(const Point2D &rhs) const noexcept {
-        return { _x * rhs._x, _y * rhs._y }; }
-
-    //! @brief Calculates the product of the current point and a scalar.
-    //! @param[in] rhs The scalar to multiply by.
-    //! @return The component-wise product of the point and scalar.
-    constexpr Point2D operator*(Point2D::Component rhs) const noexcept {
-        return { _x * rhs, _y * rhs }; }
-
+    // Operations
+    bool operator==(const Point2D &rhs) const noexcept;
+    bool operator!=(const Point2D &rhs) const noexcept;
+    Point2D operator+(const Point2D &rhs) const noexcept;
+    Point2D operator-(const Point2D &rhs) const noexcept;
+    Point2D operator-() const noexcept;
+    Point2D operator*(const Point2D &rhs) const noexcept;
+    Point2D operator*(Point2D::Component rhs) const noexcept;
     Point2D operator/(const Point2D &rhs) const;
     Point2D operator/(Component rhs) const;
     Point2D &operator+=(const Point2D &rhs);
@@ -166,30 +139,9 @@ public:
 
     Point2D clamp(const Point2D &minimum, const Point2D &maximum) const;
     Component magnitude() const;
-
-    //! @brief Calculates the squared length of the vector.
-    constexpr Component magnitudeSquared() const noexcept
-    {
-        return (_x * _x) + (_y * _y);
-    }
-
-    //! @brief Calculates the dot product of the current vector with another.
-    //! @param[in] rhs The second vector to create a dot product with.
-    //! @return The dot product value.
-    constexpr Component dotProduct(const Point2D &rhs) const noexcept
-    {
-        return (_x * rhs._x) + (_y * rhs._y);
-    }
-
-    //! @brief Calculates the signed area of a triangle formed by the current
-    //! and another vector.
-    //! @param[in] rhs The vector to calculate the determinant with.
-    //! @return The signed area of the triangle, the sign indicating the relative
-    //! orientation of the two vectors.
-    constexpr Component determinant(const Point2D &rhs) const noexcept
-    {
-        return (_x * rhs._y) - (rhs._x * _y);
-    }
+    Component magnitudeSquared() const noexcept;
+    Component dotProduct(const Point2D &rhs) const noexcept;
+    Component determinant(const Point2D &rhs) const noexcept;
 
     double distance(const Point2D &rhs) const;
     double angleTo(const Point2D &rhs) const;

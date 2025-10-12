@@ -2,7 +2,7 @@
 //! @brief The declaration of various data types and macros used throughout the
 //! core library component and beyond.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -51,6 +51,29 @@
 #define IS_32_BIT
 #endif
 
+#ifdef _MSC_VER
+#define DISABLE_WARNING_PUSH __pragma(warning(push))
+#define DISABLE_WARNING_POP __pragma(warning(pop))
+#define DISABLE_WARNING_UNREF_PARAM
+#define DISABLE_WARNING_UNREF_FUNCITON
+#define DISABLE_WARNING_ALIGN_PADDING __pragma(warning(disable : 4324))
+
+#elif defined(__GNUC__) || defined (__clang__)
+#define DO_PRAGMA(X) _Pragma(#X)
+#define DISABLE_WARNING_PUSH DO_PRAGMA(GCC diagnostic push)
+#define DISABLE_WARNING_POP DO_PRAGMA(GCC diagnostic pop)
+#define DISABLE_WARNING(warningName)   DO_PRAGMA(GCC diagnostic ignored #warningName)
+#define DISABLE_WARNING_UNREF_PARAM   DISABLE_WARNING(-Wunused-parameter)
+#define DISABLE_WARNING_UNREF_FUNCITON DISABLE_WARNING(-Wunused-function)
+#define DISABLE_WARNING_ALIGN_PADDING
+#else
+#define DISABLE_WARNING_PUSH
+#define DISABLE_WARNING_POP
+#define DISABLE_WARNING_UNREF_PARAM
+#define DISABLE_WARNING_UNREF_FUNCITON
+#define DISABLE_WARNING_ALIGN_PADDING
+#endif
+
 namespace Ag {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,9 +114,6 @@ typedef wchar_t *wchar_ptr_t;
 //! represent UTF-16 words on Windows platforms and Unicode code points on POSIX
 //! platforms.
 typedef const wchar_t *wchar_cptr_t;
-
-//! @brief An alias for unsigned 32-bit integers.
-typedef uint32_t uint;
 
 //! @}
 

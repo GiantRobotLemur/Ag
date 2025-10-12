@@ -21,6 +21,8 @@
 #include "Ag/Geometry/Point2D.hpp"
 #include "Ag/Geometry/Size2D.hpp"
 
+#include "Operations.hpp"
+
 namespace Ag {
 namespace Geom {
 
@@ -81,20 +83,106 @@ Point2D::ComponentPtr Point2D::toArray() noexcept
     return &_x;
 }
 
+//! @brief Determines if both components are zero.
+//! @retval true Both X and Y components are zero.
+//! @retval false Either X or Y, possibly both, are non-zero.
+bool Point2D::isZero() const noexcept
+{
+    return Operations_Vec2D::anyZero(&_x);
+}
+
+//! @brief Determines of the current point has identical component values
+//! to another.
+//! @param[in] rhs The point to compare against.
+//! @retval true The current point has identical components of rhs.
+//! @retval false The current point has at least one component which
+//! differs from rhs.
+bool Point2D::operator==(const Point2D &rhs) const noexcept
+{
+    return Operations_Vec2D::isEqual(&_x, &rhs._x);
+}
+
+//! @brief Determines of the current point has a least one differing
+//! component value to another.
+//! @param[in] rhs The point to compare against.
+//! @retval true The current point has at least one component which
+//! differs from rhs.
+//! @retval false The current point has identical components of rhs.
+bool Point2D::operator!=(const Point2D &rhs) const noexcept
+{
+    return Operations_Vec2D::isNotEqual(&_x, &rhs._x);
+}
+
+//! @brief Calculates the sum of the current point and another.
+//! @param[in] rhs The point to add.
+//! @return The sum of the two points.
+Point2D Point2D::operator+(const Point2D &rhs) const noexcept
+{
+    double result[2];
+    Operations_Vec2D::add(&_x, &rhs._x, result);
+
+    return { result };
+}
+
+//! @brief Calculates the difference between the current point and another.
+//! @param[in] rhs The point to subtract.
+//! @return The difference the two points.
+Point2D Point2D::operator-(const Point2D &rhs) const noexcept
+{
+    double result[2];
+    Operations_Vec2D::sub(&_x, &rhs._x, result);
+
+    return { result };
+}
+
+//! @brief Calculates the negative of the current point.
+Point2D Point2D::operator-() const noexcept
+{
+    double result[2];
+    Operations_Vec2D::neg(&_x, result);
+
+    return { result };
+}
+
+//! @brief Calculates the product of the current point and another.
+//! @param[in] rhs The point to multiply by.
+//! @return The component-wise product of the two points.
+Point2D Point2D::operator*(const Point2D &rhs) const noexcept
+{
+    double result[2];
+    Operations_Vec2D::mul(&_x, &rhs._x, result);
+
+    return { result };
+}
+
+//! @brief Calculates the product of the current point and a scalar.
+//! @param[in] rhs The scalar to multiply by.
+//! @return The component-wise product of the point and scalar.
+Point2D Point2D::operator*(Point2D::Component rhs) const noexcept
+{
+    double result[2];
+    Operations_Vec2D::scalarMul(&_x, rhs, result);
+
+    return { result };
+}
+
 //! @brief Calculates the quotient of the current point divided by another.
 //! @param[in] rhs The point to divide by.
 //! @return The quotient of the two points.
 //! @throws Ag::DivisionByZeroException If either component of rhs is 0.
 Point2D Point2D::operator/(const Point2D &rhs) const
 {
-    if ((rhs._x * rhs._y) == 0)
+    if (Operations_Vec2D::anyZero(&rhs._x))
     {
         throw Ag::DivisionByZeroException("The program attempted to perform a "
                                           "division by 0 in scaling a real "
                                           "2-dimensional point.");
     }
 
-    return { _x / rhs._x, _y / rhs._y };
+    double result[2];
+    Operations_Vec2D::div(&_x, &rhs._x, result);
+
+    return { result };
 }
 
 //! @brief Calculates the quotient of the current point divided by a scalar.
@@ -110,7 +198,10 @@ Point2D Point2D::operator/(Point2D::Component rhs) const
                                           "2-dimensional point.");
     }
 
-    return { _x / rhs, _y / rhs };
+    double result[2];
+    Operations_Vec2D::scalarDiv(&_x, rhs, result);
+
+    return { result };
 }
 
 //! @brief Calculates the sum of the current point and another in-place.
@@ -118,8 +209,7 @@ Point2D Point2D::operator/(Point2D::Component rhs) const
 //! @return A reference to the current object.
 Point2D &Point2D::operator+=(const Point2D &rhs)
 {
-    _x += rhs._x;
-    _y += rhs._y;
+    Operations_Vec2D::addAssign(&_x, &rhs._x);
 
     return *this;
 }
@@ -129,8 +219,7 @@ Point2D &Point2D::operator+=(const Point2D &rhs)
 //! @return A reference to the current object.
 Point2D &Point2D::operator-=(const Point2D &rhs)
 {
-    _x -= rhs._x;
-    _y -= rhs._y;
+    Operations_Vec2D::subAssign(&_x, &rhs._x);
 
     return *this;
 }
@@ -140,8 +229,7 @@ Point2D &Point2D::operator-=(const Point2D &rhs)
 //! @return A reference to the current object.
 Point2D &Point2D::operator*=(const Point2D &rhs)
 {
-    _x *= rhs._x;
-    _y *= rhs._y;
+    Operations_Vec2D::mulAssign(&_x, &rhs._x);
 
     return *this;
 }
@@ -151,8 +239,7 @@ Point2D &Point2D::operator*=(const Point2D &rhs)
 //! @return A reference to the current object.
 Point2D &Point2D::operator*=(Point2D::Component rhs)
 {
-    _x *= rhs;
-    _y *= rhs;
+    Operations_Vec2D::scalarMulAssign(&_x, rhs);
 
     return *this;
 }
@@ -163,15 +250,14 @@ Point2D &Point2D::operator*=(Point2D::Component rhs)
 //! @throws Ag::DivisionByZeroException If either component of rhs was 0.
 Point2D &Point2D::operator/=(const Point2D &rhs)
 {
-    if ((rhs._x * rhs._y) == 0)
+    if (Operations_Vec2D::anyZero(&rhs._x))
     {
         throw Ag::DivisionByZeroException("The program attempted to perform a "
                                           "division by 0 in scaling a real "
                                           "2-dimensional point.");
     }
 
-    _x /= rhs._x;
-    _y /= rhs._y;
+    Operations_Vec2D::divAssign(&_x, &rhs._x);
 
     return *this;
 }
@@ -189,8 +275,7 @@ Point2D &Point2D::operator/=(Point2D::Component rhs)
                                           "2-dimensional point.");
     }
 
-    _x /= rhs;
-    _y /= rhs;
+    Operations_Vec2D::scalarDivAssign(&_x, rhs);
 
     return *this;
 }
@@ -202,27 +287,42 @@ Point2D &Point2D::operator/=(Point2D::Component rhs)
 Point2D Point2D::clamp(const Point2D &minimum,
                        const Point2D &maximum) const
 {
-    return { std::clamp(_x, minimum._x, maximum._x),
-             std::clamp(_y, minimum._y, maximum._y) };
+    double result[2];
+    Operations_Vec2D::clamp(&_x, &minimum._x, &maximum._x, result);
+
+    return { result };
 }
 
 //! @brief Calculates the length of the vector.
 Point2D::Component Point2D::magnitude() const
 {
-    double magnitudeSq = magnitudeSquared();
+    const double magnitudeSq = Operations_Vec2D::magnitudeSq(&_x);
 
     return std::sqrt(magnitudeSq);
 }
 
-//! @brief Performs a (possibly optimised) fused-multiply-add operation on the
-//! vector components.
-//! @param[in] scale The scalar to multiply by the current vector components.
-//! @param[in] translation The vector components to add to the product.
-//! @return The resultant vector.
-Point2D Point2D::fma(Point2D::Component scale, const Point2D &translation) const
+//! @brief Calculates the squared length of the vector.
+Point2D::Component Point2D::magnitudeSquared() const noexcept
 {
-    return { std::fma(_x, scale, translation._x),
-             std::fma(_y, scale, translation._y) };
+    return Operations_Vec2D::magnitudeSq(&_x);
+}
+
+//! @brief Calculates the dot product of the current vector with another.
+//! @param[in] rhs The second vector to create a dot product with.
+//! @return The dot product value.
+Point2D::Component Point2D::dotProduct(const Point2D &rhs) const noexcept
+{
+    return Operations_Vec2D::dot(&_x, &rhs._x);
+}
+
+//! @brief Calculates the signed area of a triangle formed by the current
+//! and another vector.
+//! @param[in] rhs The vector to calculate the determinant with.
+//! @return The signed area of the triangle, the sign indicating the relative
+//! orientation of the two vectors.
+Point2D::Component Point2D::determinant(const Point2D &rhs) const noexcept
+{
+    return Operations_Vec2D::det(&_x, &rhs._x);
 }
 
 //! @brief Calculates the non-negative distance separating the current point
@@ -231,9 +331,7 @@ Point2D Point2D::fma(Point2D::Component scale, const Point2D &translation) const
 //! @return The non-negative distance between the points.
 double Point2D::distance(const Point2D &rhs) const
 {
-    Point2D delta = *this - rhs;
-
-    return delta.magnitude();
+    return Operations_Vec2D::distance(&_x, &rhs._x);
 }
 
 //! @brief Calculates the angle of a line connecting the current point to another.
@@ -242,9 +340,10 @@ double Point2D::distance(const Point2D &rhs) const
 //! a LH coordinate system between -Pi and Pi.
 double Point2D::angleTo(const Point2D &rhs) const
 {
-    Point2D delta = rhs - *this;
+    double delta[2];
+    Operations_Vec2D::sub(&rhs._x, &_x, delta);
 
-    return std::atan2(delta.getY(), delta.getX());
+    return std::atan2(delta[1], delta[0]);
 }
 
 //! @brief Calculates the angle of a line formed from the origin to the current
@@ -256,6 +355,38 @@ double Point2D::angleFromOrigin() const
     return std::atan2(_y, _x);
 }
 
+//! @brief Creates a version of the vector with unit length, i.e. with
+//! a magnitude of 1.0.
+//! @return A copy of the vector scaled to have a length of 1.0.
+//! @throws ZeroLengthVectorException If the magnitude is zero.
+Point2D Point2D::normalised() const
+{
+    double result[2];
+
+    if (Operations_Vec2D::tryNormalise(&_x, result))
+    {
+        return Point2D(result);
+    }
+    else
+    {
+        throw ZeroLengthVectorException("Attempting to scale a "
+                                        "zero-length vector to unit length.");
+    }
+}
+
+//! @brief Performs a (possibly optimised) fused-multiply-add operation on the
+//! vector components.
+//! @param[in] scale The scalar to multiply by the current vector components.
+//! @param[in] translation The vector components to add to the product.
+//! @return The resultant vector.
+Point2D Point2D::fma(Point2D::Component scale, const Point2D &translation) const
+{
+    double result[2];
+    Operations_Vec2D::scalarFma(&_x, scale, &translation._x, result);
+
+    return { result };
+}
+
 //! @brief Performs a (possibly optimised) fused-multiply-add operation on the
 //! vector components.
 //! @param[in] scale The vector components to multiply by the current components.
@@ -263,45 +394,21 @@ double Point2D::angleFromOrigin() const
 //! @return The resultant vector.
 Point2D Point2D::fma(const Point2D &scale, const Point2D &translation) const
 {
-    return { std::fma(_x, scale._x, translation._x),
-             std::fma(_y, scale._y, translation._y) };
-}
+    double result[2];
+    Operations_Vec2D::fma(&_x, &scale._x, &translation._x, result);
 
-//! @brief Creates a version of the vector with unit length, i.e. with
-//! a magnitude of 1.0.
-//! @return A copy of the vector scaled to have a length of 1.0.
-//! @throws ZeroLengthVectorException If the magnitude is zero.
-Point2D Point2D::normalised() const
-{
-    double magSq = magnitudeSquared();
-
-    if (magSq == 0.0)
-    {
-        throw ZeroLengthVectorException("Attempting to scale a "
-                                        "zero-length vector to unit length.");
-    }
-
-    double magnitude = std::sqrt(magSq);
-
-    return { _x / magnitude, _y / magnitude };
+    return { result };
 }
 
 //! @brief Scales the vector to have a magnitude of unit length, i.e. 1.0.
 //! @throws ZeroLengthVectorException If the magnitude is zero.
 void Point2D::normalise()
 {
-    double magSq = magnitudeSquared();
-
-    if (magSq == 0.0)
+    if (Operations_Vec2D::tryNormalise(&_x, &_x) == false)
     {
         throw ZeroLengthVectorException("Attempting to scale a "
                                         "zero-length vector to unit length.");
     }
-
-    double magnitude = std::sqrt(magSq);
-
-    _x /= magnitude;
-    _y /= magnitude;
 }
 
 //! @brief Rotates the point about the origin LH clockwise relative to the origin.
