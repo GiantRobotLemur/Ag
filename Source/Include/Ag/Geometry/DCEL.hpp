@@ -121,10 +121,10 @@ public:
     constexpr void setFlags(uint32_t flags) noexcept { _flags = flags; }
 private:
     // Internal Fields
-    ID _id;
-    ID _mappedIndex;
     Point2D _realPosition;
     SnapPoint _gridPosition;
+    ID _id;
+    ID _mappedIndex;
     Edge *_buddyEdge;
     uint32_t _flags;
 };

@@ -467,7 +467,7 @@ void ProgramArguments::showHelp() const
     fputwc(L'\n', output);
     fputws(wideHelp.c_str(), output);
 
-    if (::IsDebuggerPresent)
+    if (::IsDebuggerPresent())
     {
         wideHelp.push_back(L'\n');
         ::OutputDebugStringW(wideHelp.c_str());
@@ -496,7 +496,7 @@ void ProgramArguments::showVersion() const
     fputwc(L'\n', output);
     fputws(wideHelp.c_str(), output);
 
-    if (::IsDebuggerPresent)
+    if (::IsDebuggerPresent())
     {
         wideHelp.push_back(L'\n');
         ::OutputDebugStringW(wideHelp.c_str());

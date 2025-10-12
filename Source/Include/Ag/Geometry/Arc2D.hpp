@@ -15,6 +15,7 @@
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include "Point2D.hpp"
+#include "Matrix2x2.hpp"
 
 namespace Ag {
 namespace Geom {
@@ -23,7 +24,7 @@ namespace Geom {
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief A parametric line segment representing a portion of an elliptical arc.
-class Arc2D
+class STRUCT_ALIGN_16 Arc2D
 {
 private:
     // Internal Fields
@@ -33,20 +34,22 @@ private:
     double _ellipseAngle;
     bool _isLargeSweep;
     bool _isClockwiseSweep;
+    uint8_t _padding[16 - (sizeof(double) + (sizeof(bool) * 2))];
 public:
     // Public Types
     //! @brief Parameters calculated from a curve which are worth retaining for
     //! successive calls to Arc2D::getPoint().
-    struct Parameters
+    struct STRUCT_ALIGN_16 Parameters
     {
     private:
         // Internal Fields
-        //! @brief The centre of the circle the arc traces in circular space.
-        Point2D _circleCentre;
 
         //! @brief The linear transform for points in circular space to points
         //! in elliptical space.
-        double _toEllipse[4];
+        Matrix2x2 _toEllipse;
+
+        //! @brief The centre of the circle the arc traces in circular space.
+        Point2D _circleCentre;
 
         //! @brief The uniform radius of the circle in circular space.
         double _circleRadius;
@@ -58,6 +61,7 @@ public:
         //! @brief The angle delta in radians from the start point to the end point.
         double _angleDelta;
 
+        uint8_t _padding[8];
     public:
         // Construction/Destruction
         Parameters();

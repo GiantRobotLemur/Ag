@@ -33,6 +33,9 @@
 #include "Geometry/QuadBezierCurve2D.hpp"
 #include "Geometry/CubicBezierCurve2D.hpp"
 #include "Geometry/Arc2D.hpp"
+#include "Geometry/Matrix2x2.hpp"
+#include "Geometry/Matrix3x3.hpp"
+#include "Geometry/AffineTransform2D.hpp"
 #include "Geometry/DCEL.hpp"
 #include "Geometry/DCEL_Algorithms.hpp"
 

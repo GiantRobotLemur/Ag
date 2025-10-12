@@ -23,127 +23,24 @@
 namespace Ag {
 namespace Geom {
 
-namespace {
-////////////////////////////////////////////////////////////////////////////////
-// Local Data Types
-////////////////////////////////////////////////////////////////////////////////
-// TODO: Replace this with a proper SIMD-capable matrix transform.
-struct LinearTransform
-{
-    // Public Fields
-    double M[4];
-
-    LinearTransform()
-    {
-        M[0] = 1;
-        M[1] = 0;
-        M[2] = 0;
-        M[3] = 1;
-    }
-
-    LinearTransform(const std::initializer_list<double> &matrixValues)
-    {
-        if (matrixValues.size() != std::size(M))
-            throw ArgumentException("Invalid number of matrix parameters.", "matrixValues");
-
-        std::copy_n(matrixValues.begin(), std::size(M), M);
-    }
-
-    LinearTransform(const double *matrixValues)
-    {
-        std::copy_n(matrixValues, std::size(M), M);
-    }
-
-    //! @brief Overwrites the matrix with a rotation in the Z axis.
-    //! @param[in] angleInRadians The rotation angle counter-clockwise in a left handed system.
-    void LinearTransform::makeRotationXY(double angleInRadians)
-    {
-        double cosAngle = std::cos(angleInRadians);
-        double sinAngle = std::sin(angleInRadians);
-
-        M[0] = cosAngle;
-        M[1] = -sinAngle;
-        M[2] = sinAngle;
-        M[3] = cosAngle;
-    }
-
-    //! @brief Multiplies the transform by a rotation in the Z axis.
-    //! @param[in] angleInRadians The rotation angle counter-clockwise in a left handed system.
-    void LinearTransform::appendRotationXY(double angleInRadians)
-    {
-        double cosAngle = std::cos(angleInRadians);
-        double sinAngle = std::sin(angleInRadians);
-
-        LinearTransform rotation({ cosAngle, -sinAngle,
-                                   sinAngle,  cosAngle });
-
-        *this *= rotation;
-    }
-
-    //! @brief Multiplies the current matrix by a scale transform along the X
-    //! and Y axes.
-    //! @param[in] scaleXY The scales along the X and Y axis to combine.
-    void LinearTransform::appendScaleXY(const Point2D &scaleXY)
-    {
-        LinearTransform scale({ scaleXY.getX(),             0,
-                                             0, scaleXY.getY() } );
-
-        *this *= scale;
-    }
-
-    LinearTransform inverse() const
-    {
-        double determinant = (M[0] * M[3]) - (M[1] * M[2]);
-
-        // Divide all matrix components by the calculated determinant in the
-        // following order: [ ( D / determinant) (-B / determinant) ]
-        //                  [ (-C / determinant) ( A / determinant) ]
-        return LinearTransform({  M[3] / determinant, -M[1] / determinant,
-                                 -M[2] / determinant,  M[0] / determinant });
-    }
-
-    LinearTransform &operator*=(const LinearTransform &rhs)
-    {
-        double lhs[4];
-        std::copy_n(M, std::size(M), lhs);
-
-        M[0] = (lhs[0] * rhs.M[0]) + (lhs[1] * rhs.M[2]);
-        M[1] = (lhs[0] * rhs.M[1]) + (lhs[1] * rhs.M[3]);
-        M[2] = (lhs[2] * rhs.M[0]) + (lhs[3] * rhs.M[2]);
-        M[3] = (lhs[2] * rhs.M[1]) + (lhs[3] * rhs.M[3]);
-
-        return *this;
-    }
-
-    Point2D operator*(const Point2D &rhs) const
-    {
-        return Point2D((rhs.getX() * M[0]) + (rhs.getY() * M[2]),
-                       (rhs.getX() * M[1]) + (rhs.getY() * M[3]));
-    }
-};
-
-} // Anonymous namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // Arc2D::Parameters Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs an empty set of Arc2D parameters.
 Arc2D::Parameters::Parameters() :
-    //LinearTransform ToEllipse;
     _circleRadius(0),
     _startAngle(0),
     _angleDelta(0)
 {
-    _toEllipse[0] = 1;
-    _toEllipse[1] = 0;
-    _toEllipse[2] = 0;
-    _toEllipse[3] = 1;
+    std::fill_n(_padding, std::size(_padding), static_cast<uint8_t>(0));
 }
 
 //! @brief Constructs a set of pre-calculated Arc2D interpolation parameters.
 //! @param[in] arc The definition of the elliptical arc to interpolate.
 Arc2D::Parameters::Parameters(const Arc2D &arc)
 {
+    std::fill_n(_padding, std::size(_padding), static_cast<uint8_t>(0));
+
     // The following code is inspired by  Grandfather of Windows Programming
     // Charles Petzold:
     // http://www.charlespetzold.com/blog/2008/01/mathematics-of-arcsegment.html
@@ -151,14 +48,15 @@ Arc2D::Parameters::Parameters(const Arc2D &arc)
 
     // Calculate a factors to scale the ellipse into a circle.
     _circleRadius = arc._ellipseAxes.getY();
-    Point2D scale(_circleRadius / arc._ellipseAxes.getX(), 1.0);
+    Point2D axisScale(_circleRadius / arc._ellipseAxes.getX(), 1.0);
 
     // Create a transform to allow us to work with a uniform circle rather
     // than an ellipse.
-    LinearTransform toCircle;
+    Matrix2x2 toCircle;
 
-    toCircle.makeRotationXY(-arc._ellipseAngle);
-    toCircle.appendScaleXY(scale);
+    // Note: Reverse order of operations to combine by matrix multiply.
+    toCircle.makeScale(axisScale);
+    toCircle *= Matrix2x2::rotation(-arc._ellipseAngle);
 
     Point2D circleArcStart = toCircle * arc._start;
     Point2D circleArcEnd = toCircle * arc._end;
@@ -215,9 +113,7 @@ Arc2D::Parameters::Parameters(const Arc2D &arc)
 
     // Create a transform which will allow us to transform points from the
     // circular coordinate system back to the ellipse.
-    LinearTransform toEllipse = toCircle.inverse();
-
-    std::copy_n(toEllipse.M, 4, _toEllipse);
+    _toEllipse = toCircle.inverse();
 }
 
 //! @brief Calculates the position of a point on the arc.
@@ -236,8 +132,7 @@ Point2D Arc2D::Parameters::getPoint(double parameter) const
 
     // Transform the point from the circular coordinate system to the
     // elliptical system.
-    LinearTransform toEllipse(_toEllipse);
-    Point2D ellipsePoint = toEllipse * circlePoint;
+    Point2D ellipsePoint = _toEllipse * circlePoint;
 
     return ellipsePoint;
 }
@@ -247,8 +142,7 @@ Point2D Arc2D::Parameters::getPoint(double parameter) const
 //! @return The parameter of the closest point on the arc.
 double Arc2D::Parameters::getParameter(const Point2D &position) const
 {
-    LinearTransform toEllipse(_toEllipse);
-    LinearTransform toCircle = toEllipse.inverse();
+    Matrix2x2 toCircle = _toEllipse.inverse();
     NumericDomain domain(0, _circleRadius);
 
     // Calculate the position in circular space.
@@ -276,8 +170,7 @@ double Arc2D::Parameters::getParameter(const Point2D &position) const
 //! by the parameter returned in @p param.
 double Arc2D::Parameters::getDistanceToPoint(const Point2D &position, double &param) const
 {
-    LinearTransform toEllipse(_toEllipse);
-    LinearTransform toCircle = toEllipse.inverse();
+    Matrix2x2 toCircle = _toEllipse.inverse();
     NumericDomain domain(0, _circleRadius);
 
     // Calculate the position in circular space.
@@ -305,7 +198,7 @@ double Arc2D::Parameters::getDistanceToPoint(const Point2D &position, double &pa
 
     // Transform the point from the circular coordinate system to the
     // elliptical system.
-    Point2D ellipsePoint = toEllipse * circlePoint;
+    Point2D ellipsePoint = _toEllipse * circlePoint;
 
     return ellipsePoint.distance(position);
 }
@@ -313,9 +206,7 @@ double Arc2D::Parameters::getDistanceToPoint(const Point2D &position, double &pa
 //! @brief Gets the centre of the projected ellipse.
 Point2D Arc2D::Parameters::getCentre() const
 {
-    LinearTransform toEllipse(_toEllipse);
-
-    return toEllipse * _circleCentre;
+    return _toEllipse * _circleCentre;
 }
 
 //! @brief Gets a point on the semimajor axis of the ellipse
@@ -324,10 +215,9 @@ Point2D Arc2D::Parameters::getCentre() const
 //! @return A point on the semimajor axis of the projected ellipse.
 Point2D Arc2D::Parameters::getMajorAxisPoint(double yScale /*= 1.0*/) const
 {
-    LinearTransform toEllipse(_toEllipse);
     Point2D axisDelta(0, _circleRadius * yScale);
 
-    return toEllipse * (_circleCentre + axisDelta);
+    return _toEllipse * (_circleCentre + axisDelta);
 }
 
 //! @brief Gets a point on the semiminor axis of the projected ellipse.
@@ -336,10 +226,9 @@ Point2D Arc2D::Parameters::getMajorAxisPoint(double yScale /*= 1.0*/) const
 //! @return A point on the semiminor axis of the projected ellipse.
 Point2D Arc2D::Parameters::getMinorAxisPoint(double xScale /*= 1.0*/) const
 {
-    LinearTransform toEllipse(_toEllipse);
     Point2D axisDelta(_circleRadius * xScale, 0);
 
-    return toEllipse * (_circleCentre + axisDelta);
+    return _toEllipse * (_circleCentre + axisDelta);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -351,6 +240,7 @@ Arc2D::Arc2D() :
     _isLargeSweep(true),
     _isClockwiseSweep(false)
 {
+    std::fill_n(_padding, std::size(_padding), static_cast<uint8_t>(0));
 }
 
 //! @brief Constructs an object representing a line traced around the perimeter
@@ -376,6 +266,8 @@ Arc2D::Arc2D(const Point2D &start, const Point2D &end, const Point2D &axes,
     _isLargeSweep(isLargeSweep),
     _isClockwiseSweep(isClockwise)
 {
+    std::fill_n(_padding, std::size(_padding), static_cast<uint8_t>(0));
+
     double arcDistanceSq = (_end - _start).magnitudeSquared();
 
     if (NumericDomain::SignedScalar.isNearZero(arcDistanceSq))
@@ -419,6 +311,8 @@ Arc2D::Arc2D(const Point2D &start, const Point2D &end,
     _isLargeSweep(isLargeSweep),
     _isClockwiseSweep(isClockwise)
 {
+    std::fill_n(_padding, std::size(_padding), static_cast<uint8_t>(0));
+
     Point2D delta = _end - _start;
     double arcLengthSq = delta.magnitudeSquared();
 

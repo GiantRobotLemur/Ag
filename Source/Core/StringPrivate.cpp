@@ -1,7 +1,7 @@
 //! @file Core/StringPrivate.cpp
 //! @brief The definition of the inner object of the Ag library string value type.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2025
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -386,7 +386,7 @@ void StringPrivate::initialiseUTF8(utf8_cptr_t boundedUtf8, size_t byteCount)
             // Update the sizes for various encodings.
             ++_utf32Length;
 
-            uint wordCount = 0;
+            uint32_t wordCount = 0;
 
             if (Utf::tryGetUTF16WordCountFromCodePoint(codePoint, wordCount))
             {
@@ -503,7 +503,7 @@ void StringPrivate::initialiseUTF32(utf32_cptr_t boundedUtf32, size_t codePointC
         // Update various encoding lengths.
         ++_utf32Length;
 
-        uint count = 0;
+        uint32_t count = 0;
 
         if (Utf::tryGetUTF16WordCountFromCodePoint(codePoint, count))
         {

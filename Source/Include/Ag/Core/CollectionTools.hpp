@@ -135,6 +135,14 @@ private:
     size_t _count;
 
 public:
+    //! @brief Constructs an empty static map so that it can be assigned
+    //! to later.
+    StaticMap() :
+        _mappings(nullptr),
+        _count(0)
+    {
+    }
+
     //! @brief Constructs a map from a static array with a fixed size.
     //! @tparam TCount The count of elements in the array.
     //! @param[in] mappings The array to be sorted into an index.

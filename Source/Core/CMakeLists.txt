@@ -1,9 +1,12 @@
 # CMakeLists configuration for the Ag::Core library
 
+set(AGCORE_INCLUDE_DIR "${AG_INCLUDE_DIR}/Ag/Core")
+
 # Define the library.
 ag_add_library(AgCore SOURCES   PreCompiledHeader.hpp
                                 CoreInternal.hpp
                                 CoreInternal.cpp
+                                CPU.cpp
                                 Binary.cpp
                                 ByteOrder.cpp
                                 CodePoint.cpp
@@ -34,40 +37,42 @@ ag_add_library(AgCore SOURCES   PreCompiledHeader.hpp
                                 Uri.cpp
                                 Timer.cpp
                                 Version.cpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Configuration.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Platform.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/EnumInfo.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Math.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Utils.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/CollectionTools.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/LinearSortedSet.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/LinearSortedMap.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Binary.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/ByteOrder.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/CodePoint.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Utf.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Memory.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/InlineMemory.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/StackTrace.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Exception.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/ErrorGuard.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Trace.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/ScalarParser.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/String.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Stream.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/VariantType.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/VariantTypes.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Variant.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Format.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/CommandLineSchema.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/ProgramArguments.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/App.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/FsPath.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/FsSearchPathList.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/FsDirectory.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Uri.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Timer.hpp
-                                ${AG_INCLUDE_DIR}/Ag/Core/Version.hpp
+                                ${AGCORE_INCLUDE_DIR}/Configuration.hpp
+                                ${AGCORE_INCLUDE_DIR}/Platform.hpp
+                                ${AGCORE_INCLUDE_DIR}/CPU.hpp
+                                ${AGCORE_INCLUDE_DIR}/AlignedTypes.hpp
+                                ${AGCORE_INCLUDE_DIR}/EnumInfo.hpp
+                                ${AGCORE_INCLUDE_DIR}/Math.hpp
+                                ${AGCORE_INCLUDE_DIR}/Utils.hpp
+                                ${AGCORE_INCLUDE_DIR}/CollectionTools.hpp
+                                ${AGCORE_INCLUDE_DIR}/LinearSortedSet.hpp
+                                ${AGCORE_INCLUDE_DIR}/LinearSortedMap.hpp
+                                ${AGCORE_INCLUDE_DIR}/Binary.hpp
+                                ${AGCORE_INCLUDE_DIR}/ByteOrder.hpp
+                                ${AGCORE_INCLUDE_DIR}/CodePoint.hpp
+                                ${AGCORE_INCLUDE_DIR}/Utf.hpp
+                                ${AGCORE_INCLUDE_DIR}/Memory.hpp
+                                ${AGCORE_INCLUDE_DIR}/InlineMemory.hpp
+                                ${AGCORE_INCLUDE_DIR}/StackTrace.hpp
+                                ${AGCORE_INCLUDE_DIR}/Exception.hpp
+                                ${AGCORE_INCLUDE_DIR}/ErrorGuard.hpp
+                                ${AGCORE_INCLUDE_DIR}/Trace.hpp
+                                ${AGCORE_INCLUDE_DIR}/ScalarParser.hpp
+                                ${AGCORE_INCLUDE_DIR}/String.hpp
+                                ${AGCORE_INCLUDE_DIR}/Stream.hpp
+                                ${AGCORE_INCLUDE_DIR}/VariantType.hpp
+                                ${AGCORE_INCLUDE_DIR}/VariantTypes.hpp
+                                ${AGCORE_INCLUDE_DIR}/Variant.hpp
+                                ${AGCORE_INCLUDE_DIR}/Format.hpp
+                                ${AGCORE_INCLUDE_DIR}/CommandLineSchema.hpp
+                                ${AGCORE_INCLUDE_DIR}/ProgramArguments.hpp
+                                ${AGCORE_INCLUDE_DIR}/App.hpp
+                                ${AGCORE_INCLUDE_DIR}/FsPath.hpp
+                                ${AGCORE_INCLUDE_DIR}/FsSearchPathList.hpp
+                                ${AGCORE_INCLUDE_DIR}/FsDirectory.hpp
+                                ${AGCORE_INCLUDE_DIR}/Uri.hpp
+                                ${AGCORE_INCLUDE_DIR}/Timer.hpp
+                                ${AGCORE_INCLUDE_DIR}/Version.hpp
                     WIN_SOURCES Win32API.hpp
                                 Win32API.cpp
                                 Core.natvis
@@ -87,6 +92,34 @@ target_include_directories(AgCore PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
                                           "${BZIP2_INCLUDE_DIRECTORY}")
 target_include_directories(AgCore PUBLIC "${AG_INCLUDE_DIR}")
 
+# Embed configuration variables as public pre-processor macro defines in the
+# library to be propagated down to all consumers.
+
+if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64")
+    # See: https://en.wikipedia.org/wiki/X86-64#Microarchitecture_levels
+    if (AG_ENABLE_X64_V4)
+        target_compile_definitions(AgCore PUBLIC AG_X86_64_VER=4
+                                                 AG_ENABLE_X64_V1
+                                                 AG_ENABLE_X64_V2
+                                                 AG_ENABLE_X64_V3
+                                                 AG_ENABLE_X64_V4)
+    elseif (AG_ENABLE_X64_V3)
+        target_compile_definitions(AgCore PUBLIC AG_X86_64_VER=3
+                                                 AG_ENABLE_X64_V1
+                                                 AG_ENABLE_X64_V2
+                                                 AG_ENABLE_X64_V3)
+    elseif(AG_ENABLE_X64_V2)
+        target_compile_definitions(AgCore PUBLIC AG_X86_64_VER=2
+                                                 AG_ENABLE_X64_V1
+                                                 AG_ENABLE_X64_V2)
+    elseif(AG_ENABLE_X64_V1)
+        target_compile_definitions(AgCore PUBLIC AG_X86_64_VER=1
+                                                 AG_ENABLE_X64_V1)
+    else()
+        target_compile_definitions(AgCore PUBLIC AG_X86_64_VER=0)
+    endif()
+endif()
+
 list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
                      "${AG_INCLUDE_DIR}/Ag/Core.hpp"
                      "${AG_INCLUDE_DIR}/Ag/Core")
@@ -95,18 +128,20 @@ source_group("Build" FILES
     PreCompiledHeader.hpp
     CoreInternal.hpp
     CoreInternal.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Configuration.hpp
+    ${AGCORE_INCLUDE_DIR}/Configuration.hpp
     Core.natvis
     cpp.hint
     ${AG_INCLUDE_DIR}/Ag/Core.hpp
     ${AG_INCLUDE_DIR}/Ag/GTest_Core.hpp
 )
 source_group("Platform" FILES
-    ${AG_INCLUDE_DIR}/Ag/Core/Platform.hpp
+    ${AGCORE_INCLUDE_DIR}/Platform.hpp
+    CPU.cpp
+    ${AGCORE_INCLUDE_DIR}/CPU.hpp
     StackTrace.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/StackTrace.hpp
+    ${AGCORE_INCLUDE_DIR}/StackTrace.hpp
     Timer.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Timer.hpp
+    ${AGCORE_INCLUDE_DIR}/Timer.hpp
     Win32API.hpp
     Win32API.cpp
     PosixAPI.hpp
@@ -114,84 +149,86 @@ source_group("Platform" FILES
 )
 source_group("Basics" FILES
     Binary.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Binary.hpp
+    ${AGCORE_INCLUDE_DIR}/Binary.hpp
     ByteOrder.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/ByteOrder.hpp
+    ${AGCORE_INCLUDE_DIR}/ByteOrder.hpp
     Memory.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Memory.hpp
+    ${AGCORE_INCLUDE_DIR}/Memory.hpp
     InlineMemory.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/InlineMemory.hpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Math.hpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Utils.hpp
+    ${AGCORE_INCLUDE_DIR}/InlineMemory.hpp
+    ${AGCORE_INCLUDE_DIR}/Math.hpp
+    ${AGCORE_INCLUDE_DIR}/Utils.hpp
 )
 
 source_group("Data Types" FILES
+    ${AGCORE_INCLUDE_DIR}/AlignedTypes.hpp
     Variant.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Variant.hpp
+    ${AGCORE_INCLUDE_DIR}/Variant.hpp
     VariantType.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/VariantType.hpp
+    ${AGCORE_INCLUDE_DIR}/VariantType.hpp
     VariantTypes.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/VariantTypes.hpp
+    ${AGCORE_INCLUDE_DIR}/VariantTypes.hpp
     Version.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Version.hpp
-    ${AG_INCLUDE_DIR}/Ag/Core/EnumInfo.hpp
-    ${AG_INCLUDE_DIR}/Ag/Core/CollectionTools.hpp
-    ${AG_INCLUDE_DIR}/Ag/Core/LinearSortedSet.hpp
-    ${AG_INCLUDE_DIR}/Ag/Core/LinearSortedMap.hpp
+    ${AGCORE_INCLUDE_DIR}/Version.hpp
+    ${AGCORE_INCLUDE_DIR}/EnumInfo.hpp
+    ${AGCORE_INCLUDE_DIR}/CollectionTools.hpp
+    ${AGCORE_INCLUDE_DIR}/LinearSortedSet.hpp
+    ${AGCORE_INCLUDE_DIR}/LinearSortedMap.hpp
 )
 
 source_group("Text" FILES
     CodePoint.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/CodePoint.hpp
+    ${AGCORE_INCLUDE_DIR}/CodePoint.hpp
     Utf.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Utf.hpp
+    ${AGCORE_INCLUDE_DIR}/Utf.hpp
     ScalarParser.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/ScalarParser.hpp
+    ${AGCORE_INCLUDE_DIR}/ScalarParser.hpp
     StringPrivate.cpp
     StringPrivate.hpp
     String.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/String.hpp
+    ${AGCORE_INCLUDE_DIR}/String.hpp
     Format.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Format.hpp
+    ${AGCORE_INCLUDE_DIR}/Format.hpp
 )
 
 source_group("Error Handling" FILES
     Exception.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Exception.hpp
+    ${AGCORE_INCLUDE_DIR}/Exception.hpp
     ErrorGuard.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/ErrorGuard.hpp
+    ${AGCORE_INCLUDE_DIR}/ErrorGuard.hpp
     Trace.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Trace.hpp
+    ${AGCORE_INCLUDE_DIR}/Trace.hpp
 )
 
 source_group("IO" FILES
     Stream.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Stream.hpp
+    ${AGCORE_INCLUDE_DIR}/Stream.hpp
     FsPathSchema.cpp
     FsPathSchema.hpp
     FsPath.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/FsPath.hpp
+    ${AGCORE_INCLUDE_DIR}/FsPath.hpp
     FsSearchPathList.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/FsSearchPathList.hpp
+    ${AGCORE_INCLUDE_DIR}/FsSearchPathList.hpp
     FsDirectory.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/FsDirectory.hpp
+    ${AGCORE_INCLUDE_DIR}/FsDirectory.hpp
     Uri.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/Uri.hpp
+    ${AGCORE_INCLUDE_DIR}/Uri.hpp
 )
 
 source_group("Framework" FILES
     CommandLineSchema.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/CommandLineSchema.hpp
+    ${AGCORE_INCLUDE_DIR}/CommandLineSchema.hpp
     ProgramArguments.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/ProgramArguments.hpp
+    ${AGCORE_INCLUDE_DIR}/ProgramArguments.hpp
     App.cpp
-    ${AG_INCLUDE_DIR}/Ag/Core/App.hpp
+    ${AGCORE_INCLUDE_DIR}/App.hpp
 )
 
 # Define the unit test harness.
 ag_add_test_app(Core_Tests TEST_LIB AgCore
                            SOURCES  Test_Binary.cpp
                                     Test_Utils.cpp
+                                    Test_CPU.cpp
                                     Test_EnumInfo.cpp
                                     Test_LinearSortedSet.cpp
                                     Test_LinearSortedMap.cpp
