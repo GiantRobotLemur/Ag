@@ -1,7 +1,7 @@
 //! @file Geometry/Test_AffineTransform2D.cpp
 //! @brief The definition of unit tests for the AffineTransform2D class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,23 +12,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gtest/gtest.h>
 
+#include "Ag/GTest_Core.hpp"
 #include "Ag/Geometry/AffineTransform2D.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 namespace Ag {
 namespace Geom {
 
 namespace {
-////////////////////////////////////////////////////////////////////////////////
-// Local Data Types
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Local Data
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Unit Tests
@@ -153,7 +143,10 @@ GTEST_TEST(AffineTransform2D, RotateAboutPoint)
     // Verify the matrices are the same.
     for (int i = 0; i < 9; ++i)
     {
-        EXPECT_DOUBLE_EQ(combined.toArray()[i], specimen.toArray()[i]);
+        // The values differ between Debug and Release, EXPECT_DOUBLE_EQ() fails
+        // in Release on x64 VS2022 due to differing accuracy of representations
+        // of zero.
+        EXPECT_NEAREQ(combined.toArray()[i], specimen.toArray()[i], 1e-7);
     }
 
     // Transform the point.

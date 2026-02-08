@@ -2,7 +2,7 @@
 //! @brief The definition of an object which uses RAII to initialise and
 //! properly shut down SDL sub-systems.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2024
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -35,12 +35,6 @@ Initialiser::Initialiser(uint32_t subSysFlags /*= SDL_INIT_VIDEO | SDL_INIT_EVEN
 Initialiser::~Initialiser()
 {
     shutdown();
-}
-
-//! @brief Determines if at least some SDL sub-systems are already initialised.
-bool Initialiser::isInitialised() const
-{
-    return _isInitialised;
 }
 
 //! @brief Requests that additional sub-systems be initialised.
@@ -91,6 +85,31 @@ void Initialiser::initialise()
             throw ApiException("SDL_Init()");
         }
     }
+}
+
+//! @brief Attempts to initialise the pre-selected set of sub-systems.
+//! @param[out] error Receives a message describing why initialisation failed.
+//! @retval true Initialisation was successful or had already been performed.
+//! @retval false Initialisation failed, error is updated with the reason why.
+bool Initialiser::tryInitialise(string_ref_t &error) noexcept
+{
+    if (_isInitialised == false)
+    {
+        if (SDL_Init(_subSystemFlags))
+        {
+            _isInitialised = true;
+        }
+        else
+        {
+            // Construct a message for a non-throwing failure.
+            std::string message = "The call to SDL_Init() failed: ";
+            message.append(SDL_GetError());
+
+            error = message;
+        }
+    }
+
+    return _isInitialised;
 }
 
 //! @brief Explicitly shuts down all remaining SDL sub-systems.

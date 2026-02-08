@@ -2,7 +2,7 @@
 //! @brief The declaration of an object which uses RAII to initialise and
 //! properly shut down SDL sub-systems.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2024
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -37,11 +37,13 @@ public:
     ~Initialiser();
 
     // Accessors
-    bool isInitialised() const;
+    //! @brief Determines if at least some SDL sub-systems are already initialised.
+    constexpr bool Initialiser::isInitialised() const { return _isInitialised; }
 
     // Operations
     void addSubSystems(uint32_t subSystemFlags);
     void initialise();
+    bool tryInitialise(string_ref_t &error) noexcept;
     void shutdown();
 private:
     // Internal Fields
