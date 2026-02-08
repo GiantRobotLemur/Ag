@@ -2,7 +2,7 @@
 //! @brief The declaration of standard tools for defining and interpreting
 //! command line options to enumerate and select SDL3 devices.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -81,6 +81,7 @@ public:
     virtual ~ProgramArguments() = default;
 
     // Accessors
+    bool hasSDLCommand() const;
     bool isFullScreenPreferred() const;
     SdlObjectType getSDLListObjectType() const;
     string_cref_t getDisplayName() const;
@@ -101,8 +102,8 @@ public:
     // Overrides
     virtual bool tryProcessStandardCommand() const override;
 protected:
-    virtual bool processOption(uint32_t id, const String &value,
-                               String &error) override;
+    virtual bool processOption(uint32_t id, const String &original,
+                               const String &value, String &error) override;
 
     // Internal Functions
     void defineSDLSchema(Cli::SchemaBuilder &builder);

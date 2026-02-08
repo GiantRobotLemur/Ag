@@ -2,7 +2,7 @@
 //! @brief The declaration of an object which manages command line argument
 //! parsing, processing and verification.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -41,6 +41,7 @@ public:
     const Schema &getSchema() const;
     uint32_t getCommand() const;
     bool hasCommand() const;
+    bool hasStandardCommand() const;
 
     // Operations
     bool tryParse(wchar_cptr_t win32CommandLine, String &error);
@@ -53,7 +54,8 @@ public:
     // Overrides
     virtual bool tryProcessStandardCommand() const;
 protected:
-    virtual bool processOption(uint32_t id, const String &value, String &error);
+    virtual bool processOption(uint32_t id, const String &original,
+                               const String &value, String &error);
     virtual bool processArgument(const String &argument, String &error);
     virtual bool validate(String &error) const;
     virtual void postProcess();

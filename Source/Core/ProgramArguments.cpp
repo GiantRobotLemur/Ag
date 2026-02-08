@@ -2,7 +2,7 @@
 //! @brief The definition of an object which manages command line argument
 //! parsing, processing and verification.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -53,6 +53,7 @@ struct ArgumentToken
         Win32Option,
     };
 
+    String Original;
     String Token;
     String Value;
     Type ArgumentType;
@@ -61,6 +62,7 @@ struct ArgumentToken
     //! @brief Constructs an argument token.
     //! @param[in] arg The text of the argument.
     ArgumentToken(const String &arg) :
+        Original(arg),
         Token(arg),
         ArgumentType(Argument),
         HasValue(false)
@@ -69,8 +71,10 @@ struct ArgumentToken
 
     //! @brief Constructs an option token with no associated value.
     //! @param[in] argType The type of option expressed.
+    //! @param[in] original The original argument for output in messages.
     //! @param[in] option The option identifier.
-    ArgumentToken(Type argType, const String &option) :
+    ArgumentToken(Type argType, const String &original, const String &option) :
+        Original(original),
         Token(option),
         ArgumentType(argType),
         HasValue(false)
@@ -81,8 +85,9 @@ struct ArgumentToken
     //! @param[in] argType The type of option expressed.
     //! @param[in] option The option identifier.
     //! @param[in] value The value explicitly associated with the option
-    ArgumentToken(Type argType, const String &option,
-                  const String &value) :
+    ArgumentToken(Type argType, const String &original,
+                  const String &option, const String &value) :
+        Original(original),
         Token(option),
         Value(value),
         ArgumentType(argType),
@@ -122,6 +127,7 @@ bool tryAppendArgument(ArgumentCollection &argTokens,
 {
     bool isOK = false;
     auto iter = arg.begin();
+    auto startIter = iter;
 
     if (iter == arg.end())
     {
@@ -145,18 +151,22 @@ bool tryAppendArgument(ArgumentCollection &argTokens,
 
                 if (equalsPos == arg.end())
                 {
+                    // There is value bound to the option.
+                    String original = arg;
                     String option = arg.substring(iter, arg.end());
 
                     if (option.isEmpty() == false)
                     {
                         // There is no assigned option value.
-                        argTokens.emplace_back(ArgumentToken::LongOption, option);
+                        argTokens.emplace_back(ArgumentToken::LongOption,
+                                               original, option);
                         isOK = true;
                     }
                 }
                 else
                 {
                     // There is an assigned option.
+                    String original = arg.substring(startIter, equalsPos);
                     String option = arg.substring(iter, equalsPos);
                     ++equalsPos;
                     String value = arg.substring(equalsPos, arg.end());
@@ -164,7 +174,7 @@ bool tryAppendArgument(ArgumentCollection &argTokens,
                     if ((option.isEmpty() == false) && (value.isEmpty() == false))
                     {
                         argTokens.emplace_back(ArgumentToken::LongOption,
-                                               option, value);
+                                               original, option, value);
                         isOK = true;
                     }
                 }
@@ -191,10 +201,16 @@ bool tryAppendArgument(ArgumentCollection &argTokens,
                     }
                     else
                     {
-                        char32_t optChar = *iter;
-                        String option(&optChar, 1);
+                        char32_t originalArray[2];
 
-                        argTokens.emplace_back(ArgumentToken::ShortOption, option);
+                        originalArray[0] = U'-';
+                        originalArray[1] = *iter;
+
+                        String original(originalArray, 2);
+                        String option(originalArray + 1, 1);
+
+                        argTokens.emplace_back(ArgumentToken::ShortOption,
+                                               original, option);
                         ++iter;
                         isOK = true;
                     }
@@ -216,18 +232,21 @@ bool tryAppendArgument(ArgumentCollection &argTokens,
                 if (equalsPos == arg.end())
                 {
                     // There is no associated value.
-                    argTokens.emplace_back(ArgumentToken::Win32Option,
+                    String original = arg;
+
+                    argTokens.emplace_back(ArgumentToken::Win32Option, original,
                                            arg.substring(iter, arg.end()));
                 }
                 else
                 {
                     // Extract the option(s) and value.
+                    String original = arg.substring(startIter, equalsPos);
                     String option = arg.substring(iter, equalsPos);
                     ++equalsPos;
                     String value = arg.substring(equalsPos, arg.end());
 
                     argTokens.emplace_back(ArgumentToken::Win32Option,
-                                           option, value);
+                                           original, option, value);
                 }
 
                 isOK = true;
@@ -298,6 +317,14 @@ uint32_t ProgramArguments::getCommand() const
 bool ProgramArguments::hasCommand() const
 {
     return _command != StandardCommands::NoCommand;
+}
+
+//! @brief Determines whether the command required is one of the standard ones.
+//! @retval true If a standard command has been selected (but not NoCommand).
+//! @retval false A non-standard command has been selected, or NoCommand.
+bool ProgramArguments::hasStandardCommand() const
+{
+    return (_command > StandardCommands::NoCommand) && (_command < StandardCommands::LastStdCommand);
 }
 
 //! @brief Parses A Win32-style continuous wide character command line.
@@ -538,6 +565,8 @@ bool ProgramArguments::tryProcessStandardCommand() const
 //! appeared on the command line.
 //! @param[in] id The numeric identifier of the option which corresponds with
 //! a definition in the command line schema.
+//! @param[in] original The text of the option as it was expressed on the command
+//! line for reference in error messages.
 //! @param[in] value The optional value associated with the option, empty if no
 //! value was associated with the option.
 //! @param[out] error Receives an error message if processing of the command
@@ -546,7 +575,8 @@ bool ProgramArguments::tryProcessStandardCommand() const
 //! @retval false The option was invalid.
 //! @note The default implementation consumes associated values if possible and
 //! always returns true.
-bool ProgramArguments::processOption(uint32_t id, const String &/*value*/,
+bool ProgramArguments::processOption(uint32_t id, const String & /*original*/,
+                                     const String &/*value*/,
                                      String &/*error*/)
 {
     switch (id)
@@ -665,23 +695,19 @@ bool ProgramArguments::processArgumentTokens(const ArgumentCollection &tokens,
             ++next;
             size_t optionIndex = 0;
             bool hasOption = false;
-            std::string_view prefix = Utf::getEmpty();
 
             switch (arg->ArgumentType)
             {
             case ArgumentToken::ShortOption:
                 hasOption = _schema.tryFindShortOption(*arg->Token.begin(), optionIndex);
-                prefix = "-";
                 break;
 
             case ArgumentToken::LongOption:
                 hasOption = _schema.tryFindLongOption(arg->Token, optionIndex);
-                prefix = "--";
                 break;
 
             case ArgumentToken::Win32Option:
             default:
-                prefix = "/";
                 if (arg->Token.getUtf32Length() > 1)
                 {
                     hasOption = _schema.tryFindLongOption(arg->Token, optionIndex);
@@ -701,7 +727,7 @@ bool ProgramArguments::processArgumentTokens(const ArgumentCollection &tokens,
                 if (def.getValueRequired() == OptionValue::None)
                 {
                     // Process the option with no associated value.
-                    isOK = processOption(def.getId(), String::Empty, error);
+                    isOK = processOption(def.getId(), arg->Original, String::Empty, error);
                     ++arg;
                 }
                 else
@@ -710,7 +736,7 @@ bool ProgramArguments::processArgumentTokens(const ArgumentCollection &tokens,
                     if (arg->HasValue)
                     {
                         // Try processing with the explicitly associated value.
-                        isOK = processOption(def.getId(), arg->Value, error);
+                        isOK = processOption(def.getId(), arg->Original, arg->Value, error);
 
                         ++arg;
                     }
@@ -718,7 +744,7 @@ bool ProgramArguments::processArgumentTokens(const ArgumentCollection &tokens,
                              (next->ArgumentType == ArgumentToken::Argument))
                     {
                         // The next token could be associated with the option.
-                        isOK = processOption(def.getId(), next->Token, error);
+                        isOK = processOption(def.getId(), arg->Original, next->Token, error);
 
                         if (isOK)
                         {
@@ -731,24 +757,24 @@ bool ProgramArguments::processArgumentTokens(const ArgumentCollection &tokens,
                     }
                     else if (def.getValueRequired() == OptionValue::Optional)
                     {
-                        isOK = processOption(def.getId(), String::Empty, error);
+                        isOK = processOption(def.getId(), arg->Original, String::Empty, error);
                         ++arg;
                     }
                     else
                     {
                         // An associated value was mandatory and none was available.
                         isOK = false;
-                        error = String::format("Command line option '{0}{1}' must "
+                        error = String::format("Command line option '{0}' must "
                                                " be followed by an associated value.",
-                                               { prefix, arg->Token });
+                                               { arg->Original });
                     }
                 }
             }
             else
             {
                 // The option was not found, create an error message.
-                error = String::format("Unrecognised command line option '{0}{1}'.",
-                                       { prefix, arg->Token });
+                error = String::format("Unrecognised command line option '{0}'.",
+                                       { arg->Original });
                 isOK = false;
             }
         }

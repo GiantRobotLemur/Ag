@@ -1,7 +1,7 @@
 //! @file Sdl3Tools/Test_ProgramArguments.cpp
 //! @brief The definition of unit tests for the Sdl3ProgramArguments class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -55,6 +55,8 @@ GTEST_TEST(ProgramArguments, DefaultContruct)
 
     EXPECT_FALSE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), Cli::StandardCommands::NoCommand);
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_FALSE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::None);
     EXPECT_TRUE(specimen.getDisplayName().isEmpty());
     EXPECT_TRUE(specimen.getDisplayDriverName().isEmpty());
@@ -72,6 +74,8 @@ GTEST_TEST(ProgramArguments, EmptyArguments)
 
     EXPECT_FALSE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), Cli::StandardCommands::NoCommand);
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_FALSE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::None);
     EXPECT_TRUE(specimen.getDisplayName().isEmpty());
     EXPECT_TRUE(specimen.getDisplayDriverName().isEmpty());
@@ -91,6 +95,8 @@ GTEST_TEST(ProgramArguments, DisplayModeArgument)
 
     EXPECT_FALSE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), Cli::StandardCommands::NoCommand);
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_FALSE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::None);
     EXPECT_TRUE(specimen.getDisplayName().isEmpty());
     EXPECT_TRUE(specimen.getDisplayDriverName().isEmpty());
@@ -114,6 +120,8 @@ GTEST_TEST(ProgramArguments, DisplayDriverArgument)
 
     EXPECT_FALSE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), Cli::StandardCommands::NoCommand);
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_FALSE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::None);
     EXPECT_TRUE(specimen.getDisplayName().isEmpty());
     EXPECT_STRINGEQC(specimen.getDisplayDriverName(), "Direct2D");
@@ -133,6 +141,8 @@ GTEST_TEST(ProgramArguments, DisplayNameArgument)
 
     EXPECT_FALSE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), Cli::StandardCommands::NoCommand);
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_FALSE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::None);
     EXPECT_STRINGEQC(specimen.getDisplayName(), "AOC Super-Wide");
     EXPECT_TRUE(specimen.getDisplayDriverName().isEmpty());
@@ -157,6 +167,8 @@ GTEST_TEST(ProgramArguments, AllArguments)
 
     EXPECT_FALSE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), Cli::StandardCommands::NoCommand);
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_FALSE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::None);
     EXPECT_STRINGEQC(specimen.getDisplayName(), "Legacy SVGA");
     EXPECT_STRINGEQC(specimen.getDisplayDriverName(), "DirectDraw");
@@ -165,6 +177,114 @@ GTEST_TEST(ProgramArguments, AllArguments)
     EXPECT_EQ(specimen.getDisplayMode().getHeight(), 768);
     EXPECT_EQ(specimen.getDisplayMode().getBpp(), 24);
     EXPECT_EQ(specimen.getDisplayMode().getRefreshRate(), 75);
+}
+
+GTEST_TEST(ProgramArguments, ListSystemProperties)
+{
+    std::wstring commandLine = createCommandLine();
+    appendQuotedArgument(commandLine, "--sdl_list");
+    appendQuotedArgument(commandLine, "System");
+
+    String error;
+    ProgramArguments specimen;
+
+    ASSERT_TRUE(specimen.tryParse(commandLine.c_str(), error));
+    ASSERT_TRUE(error.isEmpty());
+
+    EXPECT_TRUE(specimen.hasCommand());
+    EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasSDLCommand());
+    EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::System);
+}
+
+GTEST_TEST(ProgramArguments, ListVideoDrivers)
+{
+    std::wstring commandLine = createCommandLine();
+    appendQuotedArgument(commandLine, "--sdl_list");
+    appendQuotedArgument(commandLine, "VideoDrivers");
+
+    String error;
+    ProgramArguments specimen;
+
+    ASSERT_TRUE(specimen.tryParse(commandLine.c_str(), error));
+    ASSERT_TRUE(error.isEmpty());
+
+    EXPECT_TRUE(specimen.hasCommand());
+    EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasSDLCommand());
+    EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::VideoDrivers);
+}
+
+GTEST_TEST(ProgramArguments, ListRenderDrivers)
+{
+    std::wstring commandLine = createCommandLine();
+    appendQuotedArgument(commandLine, "--sdl_list");
+    appendQuotedArgument(commandLine, "RenderDrivers");
+
+    String error;
+    ProgramArguments specimen;
+
+    ASSERT_TRUE(specimen.tryParse(commandLine.c_str(), error));
+    ASSERT_TRUE(error.isEmpty());
+
+    EXPECT_TRUE(specimen.hasCommand());
+    EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasSDLCommand());
+    EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::RenderDrivers);
+}
+
+GTEST_TEST(ProgramArguments, ListGPUDrivers)
+{
+    std::wstring commandLine = createCommandLine();
+    appendQuotedArgument(commandLine, "--sdl_list");
+    appendQuotedArgument(commandLine, "GPUDrivers");
+
+    String error;
+    ProgramArguments specimen;
+
+    ASSERT_TRUE(specimen.tryParse(commandLine.c_str(), error));
+    ASSERT_TRUE(error.isEmpty());
+
+    EXPECT_TRUE(specimen.hasCommand());
+    EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasSDLCommand());
+    EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::GPUDrivers);
+}
+
+GTEST_TEST(ProgramArguments, ListDisplays)
+{
+    std::wstring commandLine = createCommandLine();
+    appendQuotedArgument(commandLine, "--sdl_list");
+    appendQuotedArgument(commandLine, "Displays");
+
+    String error;
+    ProgramArguments specimen;
+
+    ASSERT_TRUE(specimen.tryParse(commandLine.c_str(), error));
+    ASSERT_TRUE(error.isEmpty());
+
+    EXPECT_TRUE(specimen.hasCommand());
+    EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
+    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasSDLCommand());
+    EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::Displays);
+}
+
+GTEST_TEST(ProgramArguments, ListBadObjectType)
+{
+    std::wstring commandLine = createCommandLine();
+    appendQuotedArgument(commandLine, "--sdl_list");
+    appendQuotedArgument(commandLine, "Widgets");
+
+    String error;
+    ProgramArguments specimen;
+
+    ASSERT_FALSE(specimen.tryParse(commandLine.c_str(), error));
+    ASSERT_FALSE(error.isEmpty());
 }
 
 } // Anonymous namespace

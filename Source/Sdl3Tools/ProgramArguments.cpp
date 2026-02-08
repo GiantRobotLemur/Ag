@@ -2,7 +2,7 @@
 //! @brief The definition of standard tools for defining and interpreting
 //! command line options to enumerate and select SDL3 devices.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -332,6 +332,15 @@ ProgramArguments::ProgramArguments(const Ag::Cli::SchemaBuilder &schema) :
     setSchema(builder);
 }
 
+//! @brief Determines if a built-in SDL command was selected.
+//! @retval true A built-in SDL command was selected in command line arguments.
+//! @retval false Some other command was selected in command line arguments.
+bool ProgramArguments::hasSDLCommand() const
+{
+    return (getCommand() >= toScalar(SdlCommand::ListObjects)) &&
+           (getCommand() < toScalar(SdlCommand::LastSdlCommand));
+}
+
 //! @brief Determines if command line options imply that the user wanted
 //! a full-screen application window.
 //! @retval true A specific display name or mode was requested, perhaps both.
@@ -637,8 +646,8 @@ bool ProgramArguments::tryProcessStandardCommand() const
 }
 
 // Inherited from Ag::Cli::ProgramArguments
-bool ProgramArguments::processOption(uint32_t id, const String &value,
-                                     String &error)
+bool ProgramArguments::processOption(uint32_t id, const String &original,
+                                     const String &value, String &error)
 {
     bool isOK = true;
 
@@ -661,7 +670,8 @@ bool ProgramArguments::processOption(uint32_t id, const String &value,
             }
             else
             {
-                error = String::format("Unknown SDL object type '{0}'.", { value });
+                error = String::format("Unknown SDL object type '{0}' specified with {1} option.",
+                                       { value, original });
                 isOK = false;
             }
         }
@@ -713,7 +723,7 @@ bool ProgramArguments::processOption(uint32_t id, const String &value,
 
     default:
         // Have the base class try to process the option.
-        isOK = Cli::ProgramArguments::processOption(id, value, error);
+        isOK = Cli::ProgramArguments::processOption(id, original, value, error);
         break;
     }
 

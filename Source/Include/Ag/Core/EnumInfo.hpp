@@ -2,7 +2,7 @@
 //! @brief The declaration of a template class which provides metadata for an
 //! enumeration type.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -151,14 +151,63 @@ public:
     }
 };
 
+//! @brief An interface defining non-type-specific functionality for the
+//! EnumInfo template class.
+class IEnumInfo
+{
+protected:
+    // Construction/Destruction
+    IEnumInfo() = default;
+public:
+    virtual ~IEnumInfo() = default;
+
+    // Accessors
+    //! @brief Gets the count of symbols defined in the type.
+    virtual size_t getSymbolCount() const = 0;
+
+    //! @brief Attempts to find the index of an entry describing a specific
+    //! symbol from its textual representation.
+    //! @param[in] symbol The UTF-8 encoded text of the symbol value to look up.
+    //! @param[out] index Receives the index of the entry describing the symbol.
+    //! @retval True The symbol was found, it's index in the symbols collection
+    //! was returned in index.
+    //! @retval False The symbol was not defined. Index is initialised to a
+    //! invalid value.
+    virtual bool tryFindSymbolIndex(const std::string_view &symbol, size_t &index) const = 0;
+
+    //! @brief Looks up the locale-neutral textual representation of a symbol
+    //! from its index.
+    //! @param[in] index The 0-based index of the symbol definition, this is
+    //! not necessarily the symbol value.
+    //! @return A locale-neutral string representation of the symbol,
+    //! empty if not found.
+    virtual std::string_view toStringFromIndex(size_t index) const = 0;
+
+    //! @brief Looks up the display-compatible textual representation
+    //! of a symbol.
+    //! @param[in] index The 0-based index of the symbol definition, this is
+    //! not necessarily the symbol value.
+    //! @return A display-compatible string representation the symbol,
+    //! empty if not found.
+    virtual std::string_view toDisplayNameFromIndex(size_t &index) const = 0;
+
+    //! @brief Gets a display-compatible description of a symbol.
+    //! @param[in] index The 0-based index of the symbol definition, this is
+    //! not necessarily the symbol value.
+    //! @return A display-compatible string describing the symbol,
+    //! empty if not found.
+    virtual std::string_view getDescriptionFromIndex(size_t index) const =0;
+};
+
 //! @brief A template class which provides metadata for an enumeration type.
 //! @tparam TEnum The enumeration type being described.
 //! @tparam TEnumSym The structure which describes each enumeration symbol.
 template<typename TEnum, typename TEnumSym = EnumSymbol<TEnum> >
-class EnumInfo
+class EnumInfo : public IEnumInfo
 {
 public:
     // Public Types
+    using EnumType = TEnum;
     using SymbolInfo = TEnumSym;
     using SymbolCollection = std::vector<TEnumSym>;
 
@@ -247,6 +296,7 @@ public:
     }
 
     // Accessors
+
     //! @brief Gets the collection of all symbols defined order by the base
     //! enumeration type.
     const SymbolCollection &getSymbols() const { return _symbols; }
@@ -274,55 +324,6 @@ public:
         else
         {
             index = static_cast<size_t>(std::distance(_symbols.begin(), pos));
-            hasValue = true;
-        }
-
-        return hasValue;
-    }
-
-    //! @brief Attempts to find the index of an entry describing a specific
-    //! symbol from its textual representation.
-    //! @param[in] symbol The UTF-8 encoded text of the symbol value to look up.
-    //! @param[out] index Receives the index of the entry describing the symbol.
-    //! @retval True The symbol was found, it's index in the symbols collection
-    //! was returned in index.
-    //! @retval False The symbol was not defined. Index is initialised to a
-    //! invalid value.
-    bool tryFindSymbolIndex(const std::string_view &symbol, size_t &index) const
-    {
-        HashedStringView key(symbol);
-
-        auto pos = _indexesBySymbol.find(key);
-        bool hasValue = false;
-
-        if (pos == _indexesBySymbol.end())
-        {
-            // Create an upper-case rendering of the symbol to search for.
-            std::string upperCase;
-            upperCase.reserve(key.length());
-
-            for (char ch : symbol)
-            {
-                upperCase.push_back(static_cast<char>(toupper(ch)));
-            }
-
-            // Try looking up the upper-case version of the key.
-            HashedStringView upperCaseKey(upperCase);
-            pos = _indexesByUpperCaseSymbol.find(upperCaseKey);
-
-            if (pos == _indexesByUpperCaseSymbol.end())
-            {
-                index = _indexesBySymbol.size();
-            }
-            else
-            {
-                index = pos->second;
-                hasValue = true;
-            }
-        }
-        else
-        {
-            index = pos->second;
             hasValue = true;
         }
 
@@ -441,6 +442,81 @@ public:
         {
             return std::string_view();
         }
+    }
+
+    // Overrides
+
+    // Inherited from IEnumInfo.
+    virtual size_t getSymbolCount() const override { return _symbols.size(); }
+
+    // Inherited from IEnumInfo.
+    virtual bool tryFindSymbolIndex(const std::string_view &symbol,
+                                    size_t &index) const override
+    {
+        HashedStringView key(symbol);
+
+        auto pos = _indexesBySymbol.find(key);
+        bool hasValue = false;
+
+        if (pos == _indexesBySymbol.end())
+        {
+            // Create an upper-case rendering of the symbol to search for.
+            std::string upperCase;
+            upperCase.reserve(key.length());
+
+            for (char ch : symbol)
+            {
+                upperCase.push_back(static_cast<char>(toupper(ch)));
+            }
+
+            // Try looking up the upper-case version of the key.
+            HashedStringView upperCaseKey(upperCase);
+            pos = _indexesByUpperCaseSymbol.find(upperCaseKey);
+
+            if (pos == _indexesByUpperCaseSymbol.end())
+            {
+                index = _indexesBySymbol.size();
+            }
+            else
+            {
+                index = pos->second;
+                hasValue = true;
+            }
+        }
+        else
+        {
+            index = pos->second;
+            hasValue = true;
+        }
+
+        return hasValue;
+    }
+
+    // Inherited from IEnumInfo.
+    virtual std::string_view toStringFromIndex(size_t index) const override
+    {
+        if (index < _symbols.size())
+            return _symbols.at(index).getSymbol();
+        else
+            return {};
+    }
+
+    // Inherited from IEnumInfo.
+    virtual std::string_view toDisplayNameFromIndex(size_t &index) const override
+    {
+        if (index < _symbols.size())
+            return _symbols.at(index).getDisplayName();
+        else
+            return { };
+    }
+
+    // Inherited from IEnumInfo.
+    virtual std::string_view getDescriptionFromIndex(size_t index) const override
+    {
+        if (index < _symbols.size())
+            return _symbols.at(index).getDescription();
+        else
+            return { };
     }
 };
 
