@@ -60,7 +60,6 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
             endif()
         endif()
 
-
         # Configure the bzip2 compression library needed by SymbolPackager and AgCore
         # Note: Only the master branch (and none of the tags) seems to have
         #   CMake integration.
@@ -208,11 +207,12 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
     macro(ag_configure_sdl3)
         message(STATUS "Obtaining SDL 3...")
 
-        # Set SDL2 configuration options here as
+        # Set SDL3 configuration options here as
         #   FetchContent_Declare(CMAKE_CACHE_ARGS) has no effect.
         if (AG_STATIC_RUNTIME)
-            option(SDL_FORCE_STATIC_VCRT "Use Static MSVCRT" ON)
-            option(SDL_STATIC "Build Static" ON)
+            option(SDL_FORCE_STATIC_VCRT "Use Static MSVCRT in SDL3" ON)
+            option(SDL_STATIC "Build Static SDL3" ON)
+            option(SDL_SHARED "Build Shared SDL3" OFF)
         else()
             option(SDL_FORCE_STATIC_VCRT "Use Static MSVCRT" OFF)
         endif()
