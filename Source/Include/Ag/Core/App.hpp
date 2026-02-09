@@ -40,16 +40,30 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <memory>
 #include <thread>
+#include <string_view>
 
 #include "Configuration.hpp"
+#include "Version.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
 #ifdef _GUI // Defined by CMake script
+
+#ifdef _MSC_VER
+
 #define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(HINSTANCE, HINSTANCE, \
 LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
+
+#else ifndef _MSC_VER
+
+#define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(_In_ HINSTANCE, \
+_In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) \
+{ AppType theApp; return theApp.exec(cmdLine); }
+
+#endif // ifdef _MSC_VER
+
 #else // !defined _GUI
 #define IMPLEMENT_MAIN(AppType) int wmain(int argc, wchar_t *argv[], wchar_t *[]) \
 { AppType theApp; return theApp.exec(argc, argv); }
@@ -71,6 +85,30 @@ class ProgramArguments;
 struct CommandLineInfo;
 class Exception;
 typedef std::unique_ptr<Cli::ProgramArguments> CommandLineUPtr;
+
+//! @brief A structure which can be used to capture hard-coded application metadata.
+struct AppMetadata
+{
+    Version AppVersion;
+    std::string_view AppName;
+    std::string_view ProductName;
+    std::string_view Description;
+    std::string_view Author;
+    std::string_view Copyright;
+
+    AppMetadata() = default;
+    AppMetadata(const Version &version, const std::string_view &appName,
+                const std::string_view &prodName, const std::string_view &desc,
+                const std::string_view &author, const std::string_view &copyright) :
+        AppVersion(version),
+        AppName(appName),
+        ProductName(prodName),
+        Description(desc),
+        Author(author),
+        Copyright(copyright)
+    {
+    }
+};
 
 //! @brief An object which represents the root of an application object hierarchy.
 class App
