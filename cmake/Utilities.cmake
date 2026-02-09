@@ -254,10 +254,10 @@ macro(ag_configure_version target)
     endif()
 
     configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Version.hpp.in"
-                   "Version.hpp" @ONLY)
+                   "AppVersion.hpp" @ONLY)
 
     target_sources("${target}" PRIVATE
-                   "${CMAKE_CURRENT_BINARY_DIR}/Version.hpp")
+                   "${CMAKE_CURRENT_BINARY_DIR}/AppVersion.hpp")
 
     include_directories("${target}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 endmacro()

@@ -53,14 +53,14 @@
 
 #ifdef _MSC_VER
 
-#define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(HINSTANCE, HINSTANCE, \
-LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
+#define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(_In_ HINSTANCE, \
+_In_opt_ HINSTANCE, _In_ LPWSTR cmdLine, _In_ int) \
+{ AppType theApp; return theApp.exec(cmdLine); }
 
 #else ifndef _MSC_VER
 
-#define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(_In_ HINSTANCE, \
-_In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int) \
-{ AppType theApp; return theApp.exec(cmdLine); }
+#define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(HINSTANCE, HINSTANCE, \
+LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
 
 #endif // ifdef _MSC_VER
 

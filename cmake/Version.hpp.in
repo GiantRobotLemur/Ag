@@ -1,5 +1,5 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
-//! @file Version.hpp
+//! @file AppVersion.hpp
 //! @brief A generated file specifying version information.
 //! @author @APP_AUTHOR@
 //! @date @CURRENT_YEAR@
