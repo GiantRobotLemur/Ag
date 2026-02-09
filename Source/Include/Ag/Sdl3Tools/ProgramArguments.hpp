@@ -100,6 +100,7 @@ public:
     String listSdlObjects(SdlObjectType objectType) const;
 
     // Overrides
+    virtual bool hasStandardCommand() const override;
     virtual bool tryProcessStandardCommand() const override;
 protected:
     virtual bool processOption(uint32_t id, const String &original,

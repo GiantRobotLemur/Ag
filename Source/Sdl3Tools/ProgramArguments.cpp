@@ -618,6 +618,12 @@ String ProgramArguments::listSdlObjects(SdlObjectType objectType) const
     return String(buffer);
 }
 
+// Inherited from Ag::Cli::ProgramArguments.
+bool ProgramArguments::hasStandardCommand() const
+{
+    return Cli::ProgramArguments::hasStandardCommand() || hasSDLCommand();
+}
+
 //! @brief Performs the SDL-specific command encoded in the last set of
 //! command line arguments processed, if any.
 //! @retval true A command was performed, the application should exit.

@@ -320,14 +320,6 @@ bool ProgramArguments::hasCommand() const
     return _command != StandardCommands::NoCommand;
 }
 
-//! @brief Determines whether the command required is one of the standard ones.
-//! @retval true If a standard command has been selected (but not NoCommand).
-//! @retval false A non-standard command has been selected, or NoCommand.
-bool ProgramArguments::hasStandardCommand() const
-{
-    return (_command > StandardCommands::NoCommand) && (_command < StandardCommands::LastStdCommand);
-}
-
 //! @brief Parses A Win32-style continuous wide character command line.
 //! @param[in] win32CommandLine The command line arguments which is not expected
 //! to include the program name.
@@ -540,6 +532,15 @@ void ProgramArguments::showVersion() const
         fputc('\n', output);
     }
 #endif // ifdef _WIN32
+}
+
+//! @brief Determines whether the command required is one of the standard ones.
+//! @retval true If a standard command has been selected (but not NoCommand).
+//! @retval false A non-standard command has been selected, or NoCommand.
+bool ProgramArguments::hasStandardCommand() const
+{
+    return (_command > StandardCommands::NoCommand) &&
+           (_command < StandardCommands::LastStdCommand);
 }
 
 //! @brief Attempts to process any of the standard commands which the user may

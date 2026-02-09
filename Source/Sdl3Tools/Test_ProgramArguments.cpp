@@ -193,7 +193,7 @@ GTEST_TEST(ProgramArguments, ListSystemProperties)
 
     EXPECT_TRUE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
-    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasStandardCommand());
     EXPECT_TRUE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::System);
 }
@@ -212,7 +212,7 @@ GTEST_TEST(ProgramArguments, ListVideoDrivers)
 
     EXPECT_TRUE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
-    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasStandardCommand());
     EXPECT_TRUE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::VideoDrivers);
 }
@@ -231,7 +231,7 @@ GTEST_TEST(ProgramArguments, ListRenderDrivers)
 
     EXPECT_TRUE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
-    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasStandardCommand());
     EXPECT_TRUE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::RenderDrivers);
 }
@@ -250,7 +250,7 @@ GTEST_TEST(ProgramArguments, ListGPUDrivers)
 
     EXPECT_TRUE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
-    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasStandardCommand());
     EXPECT_TRUE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::GPUDrivers);
 }
@@ -269,7 +269,7 @@ GTEST_TEST(ProgramArguments, ListDisplays)
 
     EXPECT_TRUE(specimen.hasCommand());
     EXPECT_EQ(specimen.getCommand(), toScalar(SdlCommand::ListObjects));
-    EXPECT_FALSE(specimen.hasStandardCommand());
+    EXPECT_TRUE(specimen.hasStandardCommand());
     EXPECT_TRUE(specimen.hasSDLCommand());
     EXPECT_EQ(specimen.getSDLListObjectType(), SdlObjectType::Displays);
 }

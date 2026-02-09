@@ -41,7 +41,6 @@ public:
     const Schema &getSchema() const;
     uint32_t getCommand() const;
     bool hasCommand() const;
-    bool hasStandardCommand() const;
 
     // Operations
     bool tryParse(wchar_cptr_t win32CommandLine, String &error);
@@ -52,6 +51,7 @@ public:
     virtual void showVersion() const;
 
     // Overrides
+    virtual bool hasStandardCommand() const;
     virtual bool tryProcessStandardCommand() const;
 protected:
     virtual bool processOption(uint32_t id, const String &original,
