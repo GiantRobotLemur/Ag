@@ -2,7 +2,7 @@
 //! @brief The declaration of an object which represents the root of an
 //! application object hierarchy.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -82,6 +82,7 @@ public:
 
     // Accessors
     static App *get();
+    static FILE *getConsoleOutputStream();
 
     // Operations
     int exec();
@@ -94,6 +95,7 @@ public:
 protected:
     virtual CommandLineUPtr createCommandLineArguments() const;
     virtual bool initialise(const Cli::ProgramArguments *args);
+    virtual int run(const Cli::ProgramArguments *args);
     virtual int run();
     virtual void shutdown();
     virtual void reportException(const std::exception &error);
@@ -103,7 +105,7 @@ private:
     // Internal Functions
     int innerExec(CommandLineInfo &info);
     static bool guardedInitialise(App *instance, const Cli::ProgramArguments *args);
-    static int guardedRun(App *instance);
+    static int guardedRun(App *instance, const Cli::ProgramArguments *args);
     static void guardedShutdown(App *instance);
 };
 

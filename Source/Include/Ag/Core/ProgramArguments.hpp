@@ -64,7 +64,6 @@ protected:
     // Internal Functions
     void setSchema(const SchemaBuilder &schema);
     void setCommand(uint32_t command);
-    static FILE *getConsoleOutputStream();
 private:
     bool processArgumentTokens(const ArgumentCollection &tokens, String &error);
 

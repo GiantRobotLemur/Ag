@@ -19,6 +19,7 @@
 #include <string_view>
 
 #include "CoreInternal.hpp"
+#include "Ag/Core/App.hpp"
 #include "Ag/Core/Exception.hpp"
 #include "Ag/Core/Format.hpp"
 #include "Ag/Core/ProgramArguments.hpp"
@@ -480,10 +481,7 @@ bool ProgramArguments::tryParse(int argc, const wchar_t * const *argv, String &e
 //! @brief Outputs help to the user describing the available command line options.
 void ProgramArguments::showHelp() const
 {
-    FILE *output = getConsoleOutputStream();
-
-    if (output == nullptr)
-        return;
+    FILE *output = App::getConsoleOutputStream();
 
     String helpText = _schema.getHelpText(80);
 
@@ -491,8 +489,11 @@ void ProgramArguments::showHelp() const
     // Output help text in Win32 as Unicode.
     auto wideHelp = helpText.toWide();
 
-    fputwc(L'\n', output);
-    fputws(wideHelp.c_str(), output);
+    if (output != nullptr)
+    {
+        fputwc(L'\n', output);
+        fputws(wideHelp.c_str(), output);
+    }
 
     if (::IsDebuggerPresent())
     {
@@ -500,18 +501,18 @@ void ProgramArguments::showHelp() const
         ::OutputDebugStringW(wideHelp.c_str());
     }
 #else
-    fputc('\n', output);
-    fputs(helpText.getUtf8Bytes(), output);
+    if (output != nullptr)
+    {
+        fputc('\n', output);
+        fputs(helpText.getUtf8Bytes(), output);
+    }
 #endif // ifdef _WIN32
 }
 
 //! @brief Outputs information about the program version to the user.
 void ProgramArguments::showVersion() const
 {
-    FILE *output = getConsoleOutputStream();
-
-    if (output == nullptr)
-        return;
+    FILE *output = App::getConsoleOutputStream();
 
     String versionText = _schema.getVersionText();
 
@@ -520,8 +521,11 @@ void ProgramArguments::showVersion() const
     auto wideHelp = versionText.toWide();
     wideHelp.push_back(L'\n');
 
-    fputwc(L'\n', output);
-    fputws(wideHelp.c_str(), output);
+    if (output != nullptr)
+    {
+        fputwc(L'\n', output);
+        fputws(wideHelp.c_str(), output);
+    }
 
     if (::IsDebuggerPresent())
     {
@@ -529,9 +533,12 @@ void ProgramArguments::showVersion() const
         ::OutputDebugStringW(wideHelp.c_str());
     }
 #else
-    fputc('\n', output);
-    fputs(versionText.getUtf8Bytes(), output);
-    fputc('\n', output);
+    if (output != nullptr)
+    {
+        fputc('\n', output);
+        fputs(versionText.getUtf8Bytes(), output);
+        fputc('\n', output);
+    }
 #endif // ifdef _WIN32
 }
 
@@ -652,18 +659,6 @@ void ProgramArguments::setSchema(const SchemaBuilder &schema)
 void ProgramArguments::setCommand(uint32_t command)
 {
     _command = command;
-}
-
-//! @brief Obtains an output stream to write console output to.
-//! @return The console output stream, possibly nullptr if one could not
-//! be created.
-FILE *ProgramArguments::getConsoleOutputStream()
-{
-    // Ensure STDOUT is open and attempt to re-enable it if it isn't.
-    if (isStdoutEnabled() == false)
-        enableStdout();
-
-    return stdout;
 }
 
 //! @brief Processes the tokens parsed from the command line text.

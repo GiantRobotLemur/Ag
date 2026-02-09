@@ -571,6 +571,11 @@ bool ProgramArguments::tryCreatePreferredGPUDevice(
 String ProgramArguments::listSdlObjects(SdlObjectType objectType) const
 {
     std::string buffer;
+    String initError;
+
+    // We might need to temporarily initialise SDL components to enumerate
+    // objects while processing this command.
+    Initialiser initialiser;
 
     switch (objectType)
     {
@@ -579,23 +584,35 @@ String ProgramArguments::listSdlObjects(SdlObjectType objectType) const
         break;
 
     case SdlObjectType::VideoDrivers:
-        listVideoDrivers(buffer);
+        if (initialiser.tryInitialise(initError))
+            listVideoDrivers(buffer);
         break;
 
     case SdlObjectType::RenderDrivers:
-        listRenderDrivers(buffer);
+        if (initialiser.tryInitialise(initError))
+            listRenderDrivers(buffer);
         break;
 
     case SdlObjectType::GPUDrivers:
-        listGPUDrivers(buffer);
+        if (initialiser.tryInitialise(initError))
+            listGPUDrivers(buffer);
         break;
 
     case SdlObjectType::Displays:
-        listDisplays(buffer);
+        if (initialiser.tryInitialise(initError))
+            listDisplays(buffer);
         break;
 
     case SdlObjectType::None:
         break;
+    }
+
+    if (!initError.isEmpty())
+    {
+        // An error occurred while initialising SDL3 before enumerating
+        // objects.
+        buffer.assign("Failed to initialise SDL3: ");
+        appendAgString(buffer, initError);
     }
 
     return String(buffer);
@@ -635,12 +652,12 @@ bool ProgramArguments::tryProcessStandardCommand() const
     }
 #endif
 
-   if (FILE *outputStream = getConsoleOutputStream())
-   {
-       fputc('\n', outputStream);
-       fputs(output.getUtf8Bytes(), outputStream);
-       fputc('\n', outputStream);
-   }
+    if (FILE *stdOut = App::getConsoleOutputStream())
+    {
+        fputc('\n', stdOut);
+        fputs(output.getUtf8Bytes(), stdOut);
+        fputc('\n', stdOut);
+    }
 
     return true;
 }

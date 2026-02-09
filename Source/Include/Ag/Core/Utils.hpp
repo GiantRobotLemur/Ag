@@ -2,7 +2,7 @@
 //! @brief The declaration of useful stand-alone utility functions defined by
 //! the core library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -266,7 +266,7 @@ bool tryOpenFile(const String &fileName, const utf8_cptr_t mode,
                  FILE *&stream, String &error);
 
 bool isStdoutEnabled();
-void enableStdout();
+void enableStdout(bool forceCreateConsole);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Templates

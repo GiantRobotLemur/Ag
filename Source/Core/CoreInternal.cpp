@@ -2,7 +2,7 @@
 //! @brief The definition of stand-alone functions which are internal to the
 //! Core library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -223,12 +223,16 @@ bool isStdoutEnabled()
 }
 
 //! @brief Enables text output to the console.
+//! @param[in] forceCreateConsole True to create a console window under Windows
+//! if the application isn't already attached to one, false to do nothing
+//! if there is no parent console.
 //! @details This only really matters for a Win32 GUI application, but exists
 //! for all platforms.
-void enableStdout()
+void enableStdout(bool forceCreateConsole)
 {
 #ifdef _WIN32
-    if (::AttachConsole(ATTACH_PARENT_PROCESS) || ::AllocConsole())
+    if (::AttachConsole(ATTACH_PARENT_PROCESS) ||
+        (forceCreateConsole && ::AllocConsole()))
     {
 #ifdef _MSC_VER
         FILE *replacementStdOut = nullptr;
