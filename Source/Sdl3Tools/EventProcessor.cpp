@@ -2,7 +2,7 @@
 //! @brief The definition of an object which manages the SDL input event
 //! processing loop.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -326,7 +326,24 @@ bool EventProcessor::processEvent(SDL_Event &currentEvent)
 // Inherited from EventProcessor.
 void IdleEventProcessor::runInternal()
 {
-    // TODO: Implement non-busy waiting and idle task scheduling.
+    // Run a non-busy waiting and idle task scheduling.
+    SDL_Event currentEvent;
+
+    while (isPendingExit() == false)
+    {
+        // TODO: Implement registration of on-idle handlers, and use
+        // SDL_WaitTimeout() instead of SDL_PollEvent() to allow them to be
+        // Periodically run.
+        if (SDL_PollEvent(&currentEvent))
+        {
+            // Process the received event.
+            if ((processEvent(currentEvent) == false) ||
+                (currentEvent.type == SDL_EVENT_QUIT))
+            {
+                requestExit();
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 //! @file Sdl3Tools/Window.cpp
 //! @brief The definition of a class which wraps an SDL_Window resource.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -50,6 +50,12 @@ Window::~Window()
 bool Window::isBound() const
 {
     return _window != nullptr;
+}
+
+//! @brief Gets the numeric identifier of the window, or 0 if unbound.
+SDL_WindowID Window::getID() const
+{
+    return SDL_GetWindowID(_window);
 }
 
 //! @brief Gets the identifier of the display containing the centre of
