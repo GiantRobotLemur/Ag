@@ -319,9 +319,6 @@ function(ag_add_gui_app target)
 
     ag_configure_version(${target})
 
-    target_sources("${target}" PRIVATE
-                   "${CMAKE_CURRENT_BINARY_DIR}/Version.hpp")
-
     include_directories("${target}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
     ag_enable_stacktrace(${target})
