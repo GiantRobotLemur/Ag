@@ -2,7 +2,7 @@
 //! @brief The definition of standard tools for defining and interpreting
 //! command line options to enumerate and select SDL3 devices.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -332,6 +332,15 @@ ProgramArguments::ProgramArguments(const Ag::Cli::SchemaBuilder &schema) :
     setSchema(builder);
 }
 
+//! @brief Determines if a built-in SDL command was selected.
+//! @retval true A built-in SDL command was selected in command line arguments.
+//! @retval false Some other command was selected in command line arguments.
+bool ProgramArguments::hasSDLCommand() const
+{
+    return (getCommand() >= toScalar(SdlCommand::ListObjects)) &&
+           (getCommand() < toScalar(SdlCommand::LastSdlCommand));
+}
+
 //! @brief Determines if command line options imply that the user wanted
 //! a full-screen application window.
 //! @retval true A specific display name or mode was requested, perhaps both.
@@ -562,6 +571,11 @@ bool ProgramArguments::tryCreatePreferredGPUDevice(
 String ProgramArguments::listSdlObjects(SdlObjectType objectType) const
 {
     std::string buffer;
+    String initError;
+
+    // We might need to temporarily initialise SDL components to enumerate
+    // objects while processing this command.
+    Initialiser initialiser;
 
     switch (objectType)
     {
@@ -570,26 +584,44 @@ String ProgramArguments::listSdlObjects(SdlObjectType objectType) const
         break;
 
     case SdlObjectType::VideoDrivers:
-        listVideoDrivers(buffer);
+        if (initialiser.tryInitialise(initError))
+            listVideoDrivers(buffer);
         break;
 
     case SdlObjectType::RenderDrivers:
-        listRenderDrivers(buffer);
+        if (initialiser.tryInitialise(initError))
+            listRenderDrivers(buffer);
         break;
 
     case SdlObjectType::GPUDrivers:
-        listGPUDrivers(buffer);
+        if (initialiser.tryInitialise(initError))
+            listGPUDrivers(buffer);
         break;
 
     case SdlObjectType::Displays:
-        listDisplays(buffer);
+        if (initialiser.tryInitialise(initError))
+            listDisplays(buffer);
         break;
 
     case SdlObjectType::None:
         break;
     }
 
+    if (!initError.isEmpty())
+    {
+        // An error occurred while initialising SDL3 before enumerating
+        // objects.
+        buffer.assign("Failed to initialise SDL3: ");
+        appendAgString(buffer, initError);
+    }
+
     return String(buffer);
+}
+
+// Inherited from Ag::Cli::ProgramArguments.
+bool ProgramArguments::hasStandardCommand() const
+{
+    return Cli::ProgramArguments::hasStandardCommand() || hasSDLCommand();
 }
 
 //! @brief Performs the SDL-specific command encoded in the last set of
@@ -626,19 +658,19 @@ bool ProgramArguments::tryProcessStandardCommand() const
     }
 #endif
 
-   if (FILE *outputStream = getConsoleOutputStream())
-   {
-       fputc('\n', outputStream);
-       fputs(output.getUtf8Bytes(), outputStream);
-       fputc('\n', outputStream);
-   }
+    if (FILE *stdOut = App::getConsoleOutputStream())
+    {
+        fputc('\n', stdOut);
+        fputs(output.getUtf8Bytes(), stdOut);
+        fputc('\n', stdOut);
+    }
 
     return true;
 }
 
 // Inherited from Ag::Cli::ProgramArguments
-bool ProgramArguments::processOption(uint32_t id, const String &value,
-                                     String &error)
+bool ProgramArguments::processOption(uint32_t id, const String &original,
+                                     const String &value, String &error)
 {
     bool isOK = true;
 
@@ -661,7 +693,8 @@ bool ProgramArguments::processOption(uint32_t id, const String &value,
             }
             else
             {
-                error = String::format("Unknown SDL object type '{0}'.", { value });
+                error = String::format("Unknown SDL object type '{0}' specified with {1} option.",
+                                       { value, original });
                 isOK = false;
             }
         }
@@ -713,7 +746,7 @@ bool ProgramArguments::processOption(uint32_t id, const String &value,
 
     default:
         // Have the base class try to process the option.
-        isOK = Cli::ProgramArguments::processOption(id, value, error);
+        isOK = Cli::ProgramArguments::processOption(id, original, value, error);
         break;
     }
 

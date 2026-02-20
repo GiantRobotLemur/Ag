@@ -1,7 +1,7 @@
 //! @file Core/Test_CommandLine.cpp
 //! @brief The definition of unit tests for the CommandLine class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,6 +11,7 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include <initializer_list>
+#include <tuple>
 
 #include <gtest/gtest.h>
 
@@ -83,7 +84,7 @@ public:
     {
     }
 
-    using ArgPair = std::pair<uint32_t, String>;
+    using ArgPair = std::tuple<uint32_t, String, String>;
     std::vector<ArgPair> Args;
 
     // Operations
@@ -104,18 +105,25 @@ public:
 
         while (src != Args.end())
         {
-            if (src->first != target->first)
+            if (std::get<0>(*src) != std::get<0>(*target))
             {
                 return ::testing::AssertionFailure() <<
                     "Argument " << item << " does not have the expected identifier (" <<
-                    src->first << " vs " << target->first << ").";
+                    std::get<0>(*src) << " vs " << std::get<0>(*target) << ").";
 
             }
-            else if (src->second != target->second)
+            else if (std::get<1>(*src) != std::get<1>(*target))
             {
                 return ::testing::AssertionFailure() <<
                     "Argument " << item << " does not have the expected value ('" <<
-                    src->second.getUtf8Bytes() << "' vs '" << target->second.getUtf8Bytes() <<
+                    std::get<1>(*src).getUtf8Bytes() << "' vs '" << std::get<1>(*target).getUtf8Bytes() <<
+                    "').";
+            }
+            else if (std::get<2>(*src) != std::get<2>(*target))
+            {
+                return ::testing::AssertionFailure() <<
+                    "Argument " << item << " does not have the expected value ('" <<
+                    std::get<2>(*src).getUtf8Bytes() << "' vs '" << std::get<2>(*target).getUtf8Bytes() <<
                     "').";
             }
             else
@@ -130,10 +138,10 @@ public:
 
     // Overrides
 protected:
-    virtual bool processOption(uint32_t id, const String &value,
-                               String & /* error */) override
+    virtual bool processOption(uint32_t id, const String &original,
+                               const String &value, String & /* error */) override
     {
-        Args.emplace_back(id, value);
+        Args.emplace_back(id, original, value);
 
         return true;
     }
@@ -141,7 +149,7 @@ protected:
     virtual bool processArgument(const String &argument,
                                  String & /* error */) override
     {
-        Args.emplace_back(~0u, argument);
+        Args.emplace_back(~0u, String::Empty, argument);
 
         return true;
     }
@@ -231,11 +239,21 @@ GTEST_TEST(CommandLine, ParseWin32CommandLineSuccess)
     EXPECT_TRUE(specimen.tryParse(input, error));
     EXPECT_FALSE(specimen.getProgramFile().isEmpty());
     EXPECT_TRUE(error.isEmpty());
+#ifdef _WIN32
     EXPECT_TRUE(specimen.compareArgs({
-        { Opt_Output, "Log.txt" },
-        { Opt_ShowHelp, String::Empty },
-        { Opt_Input, "C:\\Users\\My Documents\\Table.csv" },
-        { Opt_ShowHelp, "Options" } }));
+        { Opt_Output, "-o", "Log.txt" },
+        { Opt_ShowHelp, "--help", String::Empty },
+        { Opt_Input, "/i", "C:\\Users\\My Documents\\Table.csv" },
+        { Opt_ShowHelp, "/?", "Options" }
+    }));
+#else
+    EXPECT_TRUE(specimen.compareArgs({
+        { Opt_Output, "-o", "Log.txt" },
+        { Opt_ShowHelp, "--help", String::Empty },
+        { Opt_Input, "-i", "C:\\Users\\My Documents\\Table.csv" },
+        { Opt_ShowHelp, "-?", "Options" }
+    }));
+#endif
 }
 
 GTEST_TEST(CommandLine, ParsePOSIXCommandLineSuccess)
@@ -265,11 +283,21 @@ GTEST_TEST(CommandLine, ParsePOSIXCommandLineSuccess)
     EXPECT_TRUE(specimen.tryParse(argc, argv, error));
     EXPECT_FALSE(specimen.getProgramFile().isEmpty());
     EXPECT_TRUE(error.isEmpty());
+#ifdef _WIN32
     EXPECT_TRUE(specimen.compareArgs({
-        { Opt_Output, "Log.txt" },
-        { Opt_ShowHelp, String::Empty },
-        { Opt_Input, "C:\\Users\\My Documents\\Table.csv" },
-        { Opt_ShowHelp, "Options" } }));
+        { Opt_Output, "-o", "Log.txt" },
+        { Opt_ShowHelp, "--help", String::Empty },
+        { Opt_Input, "/i", "C:\\Users\\My Documents\\Table.csv" },
+        { Opt_ShowHelp, "/?", "Options" }
+    }));
+#else
+    EXPECT_TRUE(specimen.compareArgs({
+        { Opt_Output, "-o", "Log.txt" },
+        { Opt_ShowHelp, "--help", String::Empty },
+        { Opt_Input, "-i", "C:\\Users\\My Documents\\Table.csv" },
+        { Opt_ShowHelp, "-?", "Options" }
+    }));
+#endif
 }
 
 GTEST_TEST(CommandLine, ParseMultipleShortOptions)
@@ -287,13 +315,13 @@ GTEST_TEST(CommandLine, ParseMultipleShortOptions)
     EXPECT_TRUE(specimen.tryParse(argc, argv, error));
     EXPECT_TRUE(error.isEmpty());
     EXPECT_TRUE(specimen.compareArgs({
-        { Opt_ShowHelp, String::Empty },
-        { Opt_Quiet, String::Empty },
-        { Opt_Output, "Log.txt" },
-        { ~0u, "Input.doc" },
-        { Opt_ShowHelp, String::Empty },
-        { Opt_Verbose, String::Empty },
-        { Opt_Input, "C:\\Users\\My Documents\\Table.csv" }
+        { Opt_ShowHelp, "-?", String::Empty },
+        { Opt_Quiet, "-Q", String::Empty },
+        { Opt_Output, "-o", "Log.txt" },
+        { ~0u, String::Empty, "Input.doc" },
+        { Opt_ShowHelp, "-h", String::Empty },
+        { Opt_Verbose, "-v", String::Empty },
+        { Opt_Input, "-i", "C:\\Users\\My Documents\\Table.csv" }
     }));
 }
 

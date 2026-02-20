@@ -5,6 +5,8 @@ include(CMakePrintHelpers)
 # This might be important when building for ARM64 on x64.
 set(AG_EXT_SYMBOL_PACKAGER "" CACHE FILEPATH "The path to an external Symbol Packager tool binary.")
 
+string(TIMESTAMP PROJECT_BUILD_YEAR "%Y")
+
 function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
     if (NOT TARGET ${destTargetName})
         message(SEND_ERROR "'${destTargetName}' is not a valid target.")
@@ -181,58 +183,8 @@ function(ag_add_test_app target)
     ag_enable_stacktrace(${target})
 endfunction()
 
-# Create a GUI application dependent upon the Ag suite of libraries.
-# ag_add_gui_app(target ...)
-# Arguments: target                  - The mandatory target name
-#            QT                      - The application will be defined using qt_add_executable()
-#            FOLDER <folder name>    - The name of the project folder to add the item to.
-#            NAME <app name>         - The base name of the application program file.
-#            DESCRIPTION <desc>      - A description of the application's purpose.
-#            VERSION <version>       - The version to embed in the application.
-#            SOURCES <files>         - Internal source and header files.
-#            WIN_SOURCES <files>     - Win32-specific source and header files.
-#            POSIX_SOURCES <files>   - Linux-specific source and header files.
-#            LIBS                    - The libraries the application should link to.
-function(ag_add_gui_app target)
-    set(prefix APP)
-    set(noValues QT)
-    set(singleValues FOLDER NAME DESCRIPTION VERSION)
-    set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES LIBS)
-
-    cmake_parse_arguments("${prefix}"
-                          "${noValues}"
-                          "${singleValues}"
-                          "${multiValues}"
-                          ${ARGN})
-
-    if ("${APP_QT}")
-        if (DEFINED WIN32)
-            qt_add_executable("${target}" WIN32)
-        else()
-            qt_add_executable("${target}")
-        endif()
-
-        if (DEFINED MSVC)
-            set_target_properties("${target}" PROPERTIES
-                                  VS_DEBUGGER_ENVIRONMENT
-                                  "PATH=$<TARGET_FILE_DIR:Qt6::Core>;%PATH%")
-        endif()
-    elseif (DEFINED WIN32)
-        add_executable(${target} WIN32)
-
-        # Define a macro indicating the use of the WinMain() entry point.
-        target_compile_definitions(${target} PRIVATE "_GUI")
-    else()
-        add_executable(${target})
-    endif()
-
-    if (DEFINED WIN32)
-        target_sources(${target} PRIVATE ${APP_WIN_SOURCES})
-    else()
-        target_sources(${target} PRIVATE ${APP_POSIX_SOURCES})
-    endif()
-
-    target_sources(${target} PRIVATE ${APP_SOURCES})
+macro(ag_configure_version target)
+    string(TIMESTAMP CURRENT_YEAR "%Y")
 
     if (NOT DEFINED APP_VERSION)
         set(APP_VERSION "${PROJECT_VERSION}")
@@ -240,6 +192,14 @@ function(ag_add_gui_app target)
 
     if (NOT DEFINED APP_NAME)
         set(APP_NAME "${target}")
+    endif()
+
+    if (NOT DEFINED APP_AUTHOR)
+        set(APP_AUTHOR "Anon")
+    endif()
+
+    if (NOT DEFINED APP_COPYRIGHT)
+        set(APP_COPYRIGHT "Copyright (c) ${CURRENT_YEAR} ${APP_AUTHOR}. All Rights Reserved")
     endif()
 
     if (DEFINED APP_FOLDER)
@@ -294,10 +254,70 @@ function(ag_add_gui_app target)
     endif()
 
     configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Version.hpp.in"
-                   "Version.hpp" @ONLY)
+                   "AppVersion.hpp" @ONLY)
 
     target_sources("${target}" PRIVATE
-                   "${CMAKE_CURRENT_BINARY_DIR}/Version.hpp")
+                   "${CMAKE_CURRENT_BINARY_DIR}/AppVersion.hpp")
+
+    include_directories("${target}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+endmacro()
+
+# Create a GUI application dependent upon the Ag suite of libraries.
+# ag_add_gui_app(target ...)
+# Arguments: target                  - The mandatory target name
+#            QT                      - The application will be defined using qt_add_executable()
+#            FOLDER <folder name>    - The name of the project folder to add the item to.
+#            NAME <app name>         - The base name of the application program file.
+#            AUTHOR <app author>     - The name of the author of the application.
+#            DESCRIPTION <desc>      - A description of the application's purpose.
+#            COPYRIGHT <message>     - The application copyright message.
+#            VERSION <version>       - The version to embed in the application.
+#            SOURCES <files>         - Internal source and header files.
+#            WIN_SOURCES <files>     - Win32-specific source and header files.
+#            POSIX_SOURCES <files>   - Linux-specific source and header files.
+#            LIBS                    - The libraries the application should link to.
+function(ag_add_gui_app target)
+    set(prefix APP)
+    set(noValues QT)
+    set(singleValues FOLDER NAME AUTHOR DESCRIPTION COPYRIGHT VERSION)
+    set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES LIBS)
+
+    cmake_parse_arguments("${prefix}"
+                          "${noValues}"
+                          "${singleValues}"
+                          "${multiValues}"
+                          ${ARGN})
+
+    if ("${APP_QT}")
+        if (DEFINED WIN32)
+            qt_add_executable("${target}" WIN32)
+        else()
+            qt_add_executable("${target}")
+        endif()
+
+        if (DEFINED MSVC)
+            set_target_properties("${target}" PROPERTIES
+                                  VS_DEBUGGER_ENVIRONMENT
+                                  "PATH=$<TARGET_FILE_DIR:Qt6::Core>;%PATH%")
+        endif()
+    elseif (DEFINED WIN32)
+        add_executable(${target} WIN32)
+
+        # Define a macro indicating the use of the WinMain() entry point.
+        target_compile_definitions(${target} PRIVATE "_GUI")
+    else()
+        add_executable(${target})
+    endif()
+
+    if (DEFINED WIN32)
+        target_sources(${target} PRIVATE ${APP_WIN_SOURCES})
+    else()
+        target_sources(${target} PRIVATE ${APP_POSIX_SOURCES})
+    endif()
+
+    target_sources(${target} PRIVATE ${APP_SOURCES})
+
+    ag_configure_version(${target})
 
     include_directories("${target}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -310,7 +330,9 @@ endfunction()
 # Arguments: target                  - The mandatory target name
 #            FOLDER <folder name>    - The name of the project folder to add the item to.
 #            NAME <app name>         - The base name of the application program file.
+#            AUTHOR <app author>     - The name of the author of the application.
 #            DESCRIPTION <desc>      - A description of the application's purpose.
+#            COPYRIGHT <message>     - The application copyright message.
 #            VERSION <version>       - The version to embed in the application.
 #            SOURCES <files>         - Internal source and header files.
 #            WIN_SOURCES <files>     - Win32-specific source and header files.
@@ -319,7 +341,7 @@ endfunction()
 function(ag_add_cli_app target)
     set(prefix APP)
     set(noValues "")
-    set(singleValues FOLDER NAME DESCRIPTION VERSION)
+    set(singleValues FOLDER NAME AUTHOR DESCRIPTION COPYRIGHT VERSION)
     set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES LIBS)
 
     cmake_parse_arguments("${prefix}"
@@ -352,6 +374,8 @@ function(ag_add_cli_app target)
     if(DEFINED APP_NAME)
         set_target_properties(${target} PROPERTIES OUTPUT_NAME "${APP_NAME}")
     endif()
+
+    ag_configure_version(${target})
 
     ag_enable_stacktrace(${target})
 endfunction()

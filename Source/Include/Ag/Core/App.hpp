@@ -2,7 +2,7 @@
 //! @brief The declaration of an object which represents the root of an
 //! application object hierarchy.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -40,16 +40,30 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <memory>
 #include <thread>
+#include <string_view>
 
 #include "Configuration.hpp"
+#include "Version.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
 #ifdef _GUI // Defined by CMake script
+
+#ifdef _MSC_VER
+
+#define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(_In_ HINSTANCE, \
+_In_opt_ HINSTANCE, _In_ LPWSTR cmdLine, _In_ int) \
+{ AppType theApp; return theApp.exec(cmdLine); }
+
+#else ifndef _MSC_VER
+
 #define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(HINSTANCE, HINSTANCE, \
 LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
+
+#endif // ifdef _MSC_VER
+
 #else // !defined _GUI
 #define IMPLEMENT_MAIN(AppType) int wmain(int argc, wchar_t *argv[], wchar_t *[]) \
 { AppType theApp; return theApp.exec(argc, argv); }
@@ -72,6 +86,30 @@ struct CommandLineInfo;
 class Exception;
 typedef std::unique_ptr<Cli::ProgramArguments> CommandLineUPtr;
 
+//! @brief A structure which can be used to capture hard-coded application metadata.
+struct AppMetadata
+{
+    Version AppVersion;
+    std::string_view AppName;
+    std::string_view ProductName;
+    std::string_view Description;
+    std::string_view Author;
+    std::string_view Copyright;
+
+    AppMetadata() = default;
+    AppMetadata(const Version &version, const std::string_view &appName,
+                const std::string_view &prodName, const std::string_view &desc,
+                const std::string_view &author, const std::string_view &copyright) :
+        AppVersion(version),
+        AppName(appName),
+        ProductName(prodName),
+        Description(desc),
+        Author(author),
+        Copyright(copyright)
+    {
+    }
+};
+
 //! @brief An object which represents the root of an application object hierarchy.
 class App
 {
@@ -82,6 +120,7 @@ public:
 
     // Accessors
     static App *get();
+    static FILE *getConsoleOutputStream();
 
     // Operations
     int exec();
@@ -94,6 +133,7 @@ public:
 protected:
     virtual CommandLineUPtr createCommandLineArguments() const;
     virtual bool initialise(const Cli::ProgramArguments *args);
+    virtual int run(const Cli::ProgramArguments *args);
     virtual int run();
     virtual void shutdown();
     virtual void reportException(const std::exception &error);
@@ -103,7 +143,7 @@ private:
     // Internal Functions
     int innerExec(CommandLineInfo &info);
     static bool guardedInitialise(App *instance, const Cli::ProgramArguments *args);
-    static int guardedRun(App *instance);
+    static int guardedRun(App *instance, const Cli::ProgramArguments *args);
     static void guardedShutdown(App *instance);
 };
 

@@ -1,7 +1,7 @@
 //! @file Core/Test_App.cpp
 //! @brief The definition of unit tests for the App class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -76,7 +76,8 @@ public:
 
     // Overrides
 protected:
-    virtual bool processOption(uint32_t id, const String &value, String &error) override
+    virtual bool processOption(uint32_t id, const String &original,
+                               const String &value, String &error) override
     {
         if ((id == Opt_PossibleFail) && (_phase == Fail_CommandLineOption))
         {
@@ -85,7 +86,7 @@ protected:
         }
         else
         {
-            return Cli::ProgramArguments::processOption(id, value, error);
+            return Cli::ProgramArguments::processOption(id, original, value, error);
         }
     }
 

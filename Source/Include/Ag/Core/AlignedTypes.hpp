@@ -99,6 +99,13 @@ template<typename T, size_t N> struct AlignedBaseN
         {
             std::fill_n(Padding, std::size(Padding), static_cast<uint8_t>(0));
         }
+
+        template<typename ... TArgs>
+        PaddedBase(TArgs && ... args) :
+            T(std::forward(args))
+        {
+            std::fill_n(Padding, std::size(Padding), static_cast<uint8_t>(0));
+        }
     };
 
     //! @brief A type which selects either the padded or unpadded version of

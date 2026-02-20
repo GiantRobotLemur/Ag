@@ -1,7 +1,7 @@
 //! @file Ag/Sdl3Tools/Window.hpp
 //! @brief The declaration of a class which wraps an SDL_Window resource.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -29,6 +29,7 @@ public:
 
     // Accessors
     bool isBound() const;
+    SDL_WindowID getID() const;
     SDL_DisplayID getDisplayID() const;
 
     // Operations

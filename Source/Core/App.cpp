@@ -2,7 +2,7 @@
 //! @brief The definition of an object which represents the root of an
 //! application object hierarchy.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -160,6 +160,18 @@ App *App::get()
     return g_singletonApp;
 }
 
+//! @brief Obtains an output stream to write console output to.
+//! @return The console output stream, possibly nullptr if one could not
+//! be created.
+FILE *App::getConsoleOutputStream()
+{
+    // Ensure STDOUT is open and attempt to re-enable it if it isn't.
+    if (isStdoutEnabled() == false)
+        enableStdout(false);
+
+    return stdout;
+}
+
 //! @brief Executes the application using the command line arguments it was
 //! launched with.
 //! @returns The global process result value to return from main().
@@ -269,6 +281,17 @@ bool App::initialise(const Cli::ProgramArguments * /* args */)
 
 //! @brief Implemented in derived classes to perform the main function of the
 //! application after a successful initialisation.
+//! @param[in] args The arguments parsed from the command line.
+//! @return The global process result to be returned from the process entry
+//! point function i.e. main() or WinMain().
+//! @details The default implementation executes run(void).
+int App::run(const Cli::ProgramArguments */* args */)
+{
+    return run();
+}
+
+//! @brief Implemented in derived classes to perform the main function of the
+//! application after a successful initialisation.
 //! @return The global process result to be returned from the process entry
 //! point function i.e. main() or WinMain().
 //! @details The default implementation always returns 0 with no previous processing.
@@ -338,7 +361,10 @@ void App::reportError(utf8_cptr_t errorText)
 #endif
 
     // Write the text to the error stream.
-    fputs(errorText, stderr);
+    FILE *output = App::getConsoleOutputStream();
+
+    if (output != nullptr)
+        fputs(errorText, output);
 }
 
 //! @brief Common logic for the exec() member function.
@@ -391,16 +417,15 @@ int App::innerExec(CommandLineInfo &info)
         {
             if (isOK)
             {
-                // Dispose of the command line data as it shouldn't be allowed to
-                // linger for the duration of the application.
-                info.Manager.reset();
-
-                if (guard.tryExecFunction(guardedRun, processResult, this) == false)
+                // Initialisation was successful, execute the run() member function.
+                if (guard.tryExecFunction<int, App *, const Cli::ProgramArguments *>(
+                        guardedRun, processResult, this, info.Manager.get()) == false)
                 {
                     onUnhandledException(guard.getError());
                     processResult = 1;
                 }
 
+                // Ensure shutdown is properly performed.
                 if (guard.tryExecProcedure(guardedShutdown, this) == false)
                 {
                     // Signal failure, but otherwise ignore the error.
@@ -445,9 +470,9 @@ bool App::guardedInitialise(App *instance, const Cli::ProgramArguments *args)
 //! in a guarded context.
 //! @param[in] instance The application instance to call run() on.
 //! @returns The global process result.
-int App::guardedRun(App *instance)
+int App::guardedRun(App *instance, const Cli::ProgramArguments *args)
 {
-    return instance->run();
+    return instance->run(args);
 }
 
 //! @brief Makes a call to the overridden version of the shutdown() member function
