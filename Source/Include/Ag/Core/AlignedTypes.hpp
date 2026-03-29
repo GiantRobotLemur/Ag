@@ -93,7 +93,7 @@ template<typename T, size_t N> struct AlignedBaseN
     {
     private:
         // Pad with up to alignof(U) bytes to align the base class.
-        uint8_t Padding[RoundedUpSizeN<T, N>::value];
+        uint8_t Padding[RoundedUpSizeN<T, N>::value - sizeof(T)];
     public:
         PaddedBase()
         {
