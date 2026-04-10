@@ -2,7 +2,7 @@
 //! @brief The declaration of an object which manages the SDL input event
 //! processing loop.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -75,6 +75,8 @@ public:
     bool dispatchEvent(SDL_Event &eventInfo);
     uint32_t registerEventHandler(SDL_EventType type, const EventHandlerSPtr &handler);
     uint32_t registerEventHandler(SDL_EventType type, EventHandlerFn handlerFn, uintptr_t context = 0);
+    uint32_t registerCustomEventHandler(uint32_t typeId, const EventHandlerSPtr &handler);
+    uint32_t registerCustomEventHandler(uint32_t typeId, EventHandlerFn handlerFn, uintptr_t context = 0);
     void deregisterEventHandler(uint32_t id);
     void deregisterEventHandler(SDL_EventType type, const EventHandlerSPtr &handler);
     void deregisterEventHandler(SDL_EventType type, EventHandlerFn handlerFn, uintptr_t context = 0);
@@ -132,11 +134,10 @@ public:
 
 protected:
     // Overrides
-    virtual void runInternal() =0;
-
-    // Internal Types
+    virtual void runInternal();
 
     // Internal Functions
+    bool processOutstandingEvents();
     bool processEvent(SDL_Event &currentEvent);
 
 private:

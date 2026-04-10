@@ -63,15 +63,10 @@ bool EventHandlers::dispatchEvent(SDL_Event &eventInfo)
 uint32_t EventHandlers::registerEventHandler(SDL_EventType type,
                                              const EventHandlerSPtr &handler)
 {
-    EventHandlerNode node(_handlerSeed++, handler);
-    uint32_t rawType = type;
-
-    _typedEvents.push_back(rawType, node);
-
-    return node.getID();
+    return registerCustomEventHandler(type, handler);
 }
 
-//! @brief Registers an object to be called when an event is fired.
+//! @brief Registers an function to be called when an event is raised.
 //! @param[in] type The type of event to handle.
 //! @param[in] handlerFn A pointer to a function to handle the event.
 //! @param[in] context A user specified value to pass to the function when the
@@ -81,10 +76,36 @@ uint32_t EventHandlers::registerEventHandler(SDL_EventType type,
                                              EventHandlerFn handlerFn,
                                              uintptr_t context /*= 0*/)
 {
-    EventHandlerNode node(_handlerSeed++, handlerFn, context);
-    uint32_t rawType = type;
+    return registerCustomEventHandler(type, handlerFn, context);
+}
 
-    _typedEvents.push_back(rawType, node);
+//! @brief Registers an object to be called when a custom event is raised.
+//! @param[in] typeId The custom type of event to handle.
+//! @param[in] handler The object to handle the event.
+//! @return The unique ID of the registered handler.
+uint32_t EventHandlers::registerCustomEventHandler(uint32_t typeId,
+                                                   const EventHandlerSPtr &handler)
+{
+    EventHandlerNode node(_handlerSeed++, handler);
+
+    _typedEvents.push_back(typeId, node);
+
+    return node.getID();
+}
+
+//! @brief Registers an function to be called when a custom event is raised.
+//! @param[in] typeId The custom type of event to handle.
+//! @param[in] handlerFn A pointer to a function to handle the event.
+//! @param[in] context A user specified value to pass to the function when the
+//! event is being handled.
+//! @return The unique ID of the registered handler.
+uint32_t EventHandlers::registerCustomEventHandler(uint32_t typeId,
+                                                   EventHandlerFn handlerFn,
+                                                   uintptr_t context /*= 0*/)
+{
+    EventHandlerNode node(_handlerSeed++, handlerFn, context);
+
+    _typedEvents.push_back(typeId, node);
 
     return node.getID();
 }
@@ -311,6 +332,70 @@ void EventProcessor::run()
     runInternal();
 }
 
+//! @brief The base implementation simply calls SDL_PollEvent() until an exit
+//! is requested, possibly triggered by SDL_EVENT_QUIT.
+void EventProcessor::runInternal()
+{
+    SDL_Event currentEvent;
+
+    // Simply poll events.
+    while (isPendingExit() == false)
+    {
+        if (SDL_PollEvent(&currentEvent))
+        {
+            // Process the received event.
+            if ((processEvent(currentEvent) == false) ||
+                (currentEvent.type == SDL_EVENT_QUIT))
+            {
+                requestExit();
+            }
+        }
+    }
+}
+
+//! @brief Extracts all outstanding messages from the event queue and
+//! processes them.
+//! @retval true Event processing should continue.
+//! @retval false The event processing loop should exit.
+//! @remarks You may need to call SDL_PumpEvents() before calling this function.
+bool EventProcessor::processOutstandingEvents()
+{
+    constexpr int MaxEvents = 16;
+    SDL_Event eventInfo[MaxEvents];
+    int eventCount = 0;
+    bool canContinue = true;
+
+    do
+    {
+        // Fill the array with events to process.
+        eventCount = SDL_PeepEvents(eventInfo, MaxEvents, SDL_GETEVENT,
+                                    SDL_EVENT_FIRST, SDL_EVENT_LAST);
+
+        // Check for a polling failure.
+        if (eventCount < 0)
+            throw ApiException("SDL_PeepEvents");
+
+        for (int i = 0; i < eventCount; ++i)
+        {
+            auto &currentEvent = eventInfo[i];
+
+            if (!processEvent(currentEvent) ||
+                (currentEvent.type == SDL_EVENT_QUIT))
+            {
+                requestExit();
+                canContinue = false;
+            }
+        }
+
+        // If we didn't fill the array, don't request more events.
+        if (eventCount < MaxEvents)
+            eventCount = 0;
+
+    } while (canContinue && (eventCount > 0));
+
+    return canContinue;
+}
+
 //! @brief Processes a single event.
 //! @param[in] currentEvent The event to process.
 //! @retval true Event processing should continue.
@@ -481,11 +566,7 @@ bool PeriodicEventProcessor::removePeriodicTask(PeriodicCallbackFn taskFn,
 void PeriodicEventProcessor::runInternal()
 {
     using PerfCounter_t = decltype(SDL_GetPerformanceCounter());
-
     constexpr TimerTick_t MsToNs = static_cast<TimerTick_t>(1000000);
-    constexpr int MaxEvents = 16;
-    SDL_Event eventInfo[MaxEvents];
-
     double perfFrequency = static_cast<double>(SDL_GetPerformanceFrequency());
 
     // Initially query for events.
@@ -496,35 +577,9 @@ void PeriodicEventProcessor::runInternal()
     {
         // Process outstanding events.
         TimerTick_t startTime = SDL_GetTicks();
-        int eventCount = 0;
 
-        do
-        {
-            // Fill the array with events to process.
-            eventCount = SDL_PeepEvents(eventInfo, MaxEvents, SDL_GETEVENT,
-                                        SDL_EVENT_FIRST, SDL_EVENT_LAST);
-
-            // Check for a polling failure.
-            if (eventCount < 0)
-                throw ApiException("SDL_PeepEvents");
-
-            for (int i = 0; i < eventCount; ++i)
-            {
-                auto &currentEvent = eventInfo[i];
-
-                if (!processEvent(currentEvent) ||
-                    (currentEvent.type == SDL_EVENT_QUIT))
-                {
-                    requestExit();
-                    break;
-                }
-            }
-
-            // If we didn't fill the array, don't request more events.
-            if (eventCount < MaxEvents)
-                eventCount = 0;
-
-        } while (eventCount > 0);
+        // Process input events to the thread.
+        processOutstandingEvents();
 
         // Perform periodic processing.
         auto currentTime = SDL_GetPerformanceCounter();
