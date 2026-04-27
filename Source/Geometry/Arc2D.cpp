@@ -143,10 +143,19 @@ Point2D Arc2D::Parameters::getPoint(double parameter) const
 //! @return The direction vector of the arc at the specified point.
 Point2D Arc2D::Parameters::getDirection(double parameter) const
 {
-    // TODO: Calculate the gradient of the point specified by the parameter
-    // and then transform it by _toEllipse to get the direction vector in the
-    // elliptical coordinate system.
-    return { };
+    // The point on the circle is:
+    //   P(t) = C + R * (cos(theta), sin(theta))
+    // where theta = _startAngle + t * _angleDelta. Differentiating with
+    // respect to t and applying the chain rule gives:
+    //   P'(t) = R * _angleDelta * (-sin(theta), cos(theta))
+    double pointAngle = _startAngle + (parameter * _angleDelta);
+
+    Point2D circleDirection(-std::sin(pointAngle) * _circleRadius * _angleDelta,
+                             std::cos(pointAngle) * _circleRadius * _angleDelta);
+
+    // _toEllipse is a pure linear transform (scale + rotation, no translation),
+    // so it can be applied directly to the tangent vector.
+    return _toEllipse * circleDirection;
 }
 
 //! @brief Gets the parameter of the point on the arc closest to a specified position.

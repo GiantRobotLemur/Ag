@@ -65,9 +65,12 @@ Point2D QuadBezierCurve2D::getPoint(double parameter) const
 //! @return The direction vector of the curve at the specified point.
 Point2D QuadBezierCurve2D::getDirection(double parameter) const
 {
-    // TODO: Use the derivative of the parametric line equation to calculate
-    // the direction vector of the curve at the specified point.
-    return { };
+    // B(t)  = (1 - t)^2 _start + 2(1 - t)t _ctrl + t^2 _end
+    // B'(t) = 2(1 - t)(_ctrl - _start) + 2t(_end - _ctrl)
+    double inverseParam = 1.0 - parameter;
+
+    return ((_ctrl - _start) * (2.0 * inverseParam)) +
+           ((_end  - _ctrl)  * (2.0 * parameter));
 }
 
 //! @brief Gets the parameter of the point on the curve closest to a specified position.

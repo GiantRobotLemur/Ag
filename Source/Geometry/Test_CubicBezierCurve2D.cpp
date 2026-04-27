@@ -1,7 +1,7 @@
 //! @file Geometry/Test_CubicBezierCurve2D.cpp
 //! @brief The definition of unit tests for the CubicBezierCurve2D class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -75,6 +75,47 @@ GTEST_TEST(CubicBezierCurve2D, GetParameterDistance)
     distance = specimen.getDistanceToPoint(afterEnd, param);
     EXPECT_NEAR(distance, specimen.getEnd().distance(afterEnd), Epsilon);
     EXPECT_NEAR(param, 1.0, Epsilon);
+}
+
+GTEST_TEST(CubicBezierCurve2D, GetDirection)
+{
+    constexpr double Epsilon = 1e-9;
+    const CubicBezierCurve2D specimen(Point2D(0, 0), Point2D(0, 10),
+                                      Point2D(10, 10), Point2D(10, 0));
+
+    // B'(t) = 3(1-t)^2 (ctrl1 - start)
+    //       + 6(1-t)t  (ctrl2 - ctrl1)
+    //       + 3 t^2    (end   - ctrl2)
+    //       = 3(1-t)^2 (0, 10) + 6(1-t)t (10, 0) + 3 t^2 (0, -10)
+
+    // At t = 0 the tangent points from start towards ctrl1, scaled by 3.
+    Point2D dirStart = specimen.getDirection(0.0);
+    EXPECT_NEAR(dirStart.getX(), 0.0, Epsilon);
+    EXPECT_NEAR(dirStart.getY(), 30.0, Epsilon);
+
+    // At t = 1 the tangent points from ctrl2 towards end, scaled by 3.
+    Point2D dirEnd = specimen.getDirection(1.0);
+    EXPECT_NEAR(dirEnd.getX(), 0.0, Epsilon);
+    EXPECT_NEAR(dirEnd.getY(), -30.0, Epsilon);
+
+    // At t = 0.5: 0.75 * (0, 10) + 1.5 * (10, 0) + 0.75 * (0, -10) = (15, 0).
+    Point2D dirMid = specimen.getDirection(0.5);
+    EXPECT_NEAR(dirMid.getX(), 15.0, Epsilon);
+    EXPECT_NEAR(dirMid.getY(), 0.0, Epsilon);
+
+    // Cross-check the analytical derivative against a central numerical
+    // difference of getPoint() at several parameter values.
+    constexpr double H = 1e-6;
+    constexpr double NumericTolerance = 1e-4;
+    for (double t : { 0.1, 0.25, 0.5, 0.75, 0.9 })
+    {
+        Point2D numeric = (specimen.getPoint(t + H) -
+                           specimen.getPoint(t - H)) * (1.0 / (2.0 * H));
+        Point2D analytic = specimen.getDirection(t);
+
+        EXPECT_NEAR(analytic.getX(), numeric.getX(), NumericTolerance);
+        EXPECT_NEAR(analytic.getY(), numeric.getY(), NumericTolerance);
+    }
 }
 
 GTEST_TEST(CubicBezierCurve2D, ToPolyline)
