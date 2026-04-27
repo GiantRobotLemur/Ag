@@ -24,6 +24,8 @@ ag_add_library(Gfx2D FOLDER         Graphics
                                     ${GFX2D_INCLUDE_DIR}/Font.hpp
                                     Path.cpp
                                     ${GFX2D_INCLUDE_DIR}/Path.hpp
+                                    StrokeHelper.cpp
+                                    StrokeHelper.hpp
                                     Gfx2D_Internal.cpp
                                     Gfx2D_Internal.hpp
                                     Graphic.cpp
@@ -59,7 +61,8 @@ list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
 ag_add_test_app(Gfx2D_Tests TEST_LIB    Gfx2D
                             SOURCES     Gfx2D_TestPCH.hpp
                                         Test_Operations.cpp
-                                        Test_Colours.cpp)
+                                        Test_Colours.cpp
+                                        Test_StrokeHelper.cpp)
 
 target_precompile_headers(Gfx2D_Tests PRIVATE [["Gfx2D_TestPCH.hpp"]])
 target_include_directories(Gfx2D_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

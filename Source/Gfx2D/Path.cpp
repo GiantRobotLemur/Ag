@@ -12,6 +12,7 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Gfx2D/Path.hpp"
+#include "StrokeHelper.hpp"
 
 namespace Ag {
 namespace Gfx2D {
@@ -547,14 +548,60 @@ public:
                           const Geom::Point2DCollectionView &points,
                           const PenSPtr &stroke) const
     {
-        Geom::Point2D start = params.transform(points[_startPoint]);
+        if (!stroke || stroke->isThin())
+            return;
 
         SegmentView figureSegments = segments.subset(_startSegment,
                                                      _segmentCount);
 
-        // TODO: add geometry to context, tracing the edges, but offsetting
-        // based on the thickness of the line, also applying start/end caps,
-        // dash styles and join caps.
+        StrokeHelper stroker(context, params, *stroke);
+        stroker.beginFigure(points[_startPoint]);
+
+        for (const PathSegment &segment : figureSegments)
+        {
+            uint32_t firstVertex = segment.getFirstVertex();
+            uint32_t vertexCount = segment.getVertexCount();
+            Geom::Point2DCollectionView segmentPoints =
+                points.subset(firstVertex, vertexCount);
+
+            switch (segment.getType())
+            {
+            case SegmentType::Polyline:
+                for (const Geom::Point2D &p : segmentPoints)
+                    stroker.appendLine(p);
+                break;
+
+            case SegmentType::QuadraticBezierCurve:
+                for (size_t i = 0; (i + 1) < vertexCount; i += 2)
+                {
+                    stroker.appendQuadBezier(segmentPoints[i],
+                                             segmentPoints[i + 1]);
+                }
+                break;
+
+            case SegmentType::CubicBezierCurve:
+                for (size_t i = 0; (i + 2) < vertexCount; i += 3)
+                {
+                    stroker.appendCubicBezier(segmentPoints[i],
+                                              segmentPoints[i + 1],
+                                              segmentPoints[i + 2]);
+                }
+                break;
+
+            case SegmentType::Arc:
+            {
+                Geom::Point2D axisEndpoint = segmentPoints[0];
+                Geom::Point2D arcEnd = segmentPoints[1];
+                Geom::Point2D axes = axisEndpoint - arcEnd;
+
+                stroker.appendArc(arcEnd, axes, segment.getArcSweepAngle(),
+                                  segment.isLargeArcSweep(),
+                                  segment.isArcCW());
+            } break;
+            }
+        }
+
+        stroker.endFigure(_isClosed);
     }
 };
 
