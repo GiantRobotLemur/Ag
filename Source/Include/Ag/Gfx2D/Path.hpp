@@ -18,16 +18,8 @@
 #include "DecompositionContext.hpp"
 #include "Pen.hpp"
 
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-
 namespace Ag {
 namespace Gfx2D {
-
-////////////////////////////////////////////////////////////////////////////////
-// Data Type Declarations
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -55,10 +47,12 @@ public:
 
     DecompositionStatistics simulateDecomposition(const DecompositionParams &decomposition) const;
 
-    void addToDecomposition(DecompositionContext &context,
-                            const DecompositionParams &params,
-                            bool isClip) const;
-    Path createOutlinePath(const PenSPtr &stroke);
+    void addFillToDecomposition(DecompositionContext &context,
+                                const DecompositionParams &params,
+                                bool isClip) const;
+    void addOutlineToDecomposition(DecompositionContext &context,
+                                   const DecompositionParams &params,
+                                   const PenSPtr &stroke) const;
 private:
     // Internal Fields
     std::shared_ptr<PathPrivate> _path;
@@ -92,14 +86,6 @@ private:
     // Internal Fields
     std::shared_ptr<PathBuilderPrivate> _builder;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// Function Declarations
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Templates
-////////////////////////////////////////////////////////////////////////////////
 
 }} // namespace Ag::Gfx2D
 

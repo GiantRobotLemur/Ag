@@ -2,7 +2,7 @@
 //! @brief The declaration of a 2-dimensional parametric line segment object
 //! represented using real values.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to-
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -42,6 +42,7 @@ class NumericDomain;
 //      void setEnd(const Point2D &end) noexcept;
 //
 //      Point2D getPoint(double parameter) const;
+//      Point2D getDirection(double parameter) const;
 //      double getParameter(const Point2D &position) const;
 //      double getDistanceToPoint(const Point2D &pt, double &param) const;
 //      Point2DCollection toPolyline(double tolerance, double startParam = 0.0, double endParam = 1.0) const
@@ -77,6 +78,7 @@ public:
     constexpr const Point2D &getEnd() const noexcept { return _end; }
     void setEnd(const Point2D &end) noexcept;
     Point2D getPoint(double parameter) const;
+    Point2D getDirection(double parameter) const;
 
     double getParameter(const Point2D &position) const;
     double getDistanceToPoint(const Point2D &pt, double &param) const;

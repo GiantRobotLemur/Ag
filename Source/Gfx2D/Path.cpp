@@ -2,7 +2,7 @@
 //! @brief The definition of an object representing one or more line segments,
 //! possibly curves, creating one or more figures, possibly enclosed.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,10 +12,6 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Gfx2D/Path.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 namespace Ag {
 namespace Gfx2D {
@@ -520,11 +516,11 @@ public:
     //! @param[in] points The collection of all points in the path.
     //! @param[in] isClip True if the edges added should be marked as
     //! clip geometry, false for fill geometry.
-    void decompose(DecompositionContext &context,
-                   const DecompositionParams &params,
-                   const SegmentView &segments,
-                   const Geom::Point2DCollectionView &points,
-                   bool isClip) const
+    void decomposeFill(DecompositionContext &context,
+                       const DecompositionParams &params,
+                       const SegmentView &segments,
+                       const Geom::Point2DCollectionView &points,
+                       bool isClip) const
     {
         Geom::Point2D start = params.transform(points[_startPoint]);
 
@@ -537,38 +533,28 @@ public:
         }
     }
 
-    //! @brief Traces the outline of the figure and creates a new filled
-    //! geometry by applying a line style.
-    //! @param[in] builder The object to accumulate the figure geometry.
+    //! @brief Decomposes the outline of the figure into points and straight
+    //! line segments according to a line style.
+    //! @param[in] context The object to add points and line segments to.
+    //! @param[in] params An object defining the decomposition.
     //! @param[in] segments The collection of all segments in the path.
     //! @param[in] points The collection of all points in the path.
-    //! @param[in] stroke The description of the line style, which must not be
-    //! a "thin" line style.
-    void buildOutline(PathBuilderInternal &builder,
-                      const SegmentView &segments,
-                      const Geom::Point2DCollectionView &points,
-                      const PenSPtr &stroke) const
+    //! @param[in] stroke The line style used to expand the edge geometry
+    //! into filled polygons which can be decomposed.
+    void decomposeOutline(DecompositionContext &context,
+                          const DecompositionParams &params,
+                          const SegmentView &segments,
+                          const Geom::Point2DCollectionView &points,
+                          const PenSPtr &stroke) const
     {
-
-        const Geom::Point2D &start = points[_startPoint];
+        Geom::Point2D start = params.transform(points[_startPoint]);
 
         SegmentView figureSegments = segments.subset(_startSegment,
                                                      _segmentCount);
 
-        if (_isClosed)
-        {
-            // TODO: Trace the first edge with stroke->getLineStartCap().
-            //       Trace all except the last edges with connections defined
-            //          by stroke->getJoinCap().
-            //       Trace the final edge with stroke->getLineEndCap().
-        }
-        else
-        {
-            // TODO: Calculate the geometry of the join connecting the first
-            //       and last edge.
-            //       Trace all edges with connections defined by
-            //          stroke->getJoinCap().
-        }
+        // TODO: add geometry to context, tracing the edges, but offsetting
+        // based on the thickness of the line, also applying start/end caps,
+        // dash styles and join caps.
     }
 };
 
@@ -935,26 +921,36 @@ public:
     //! @param[in] params An object defining the decomposition.
     //! @param[in] isClip True if the edges added should be marked as
     //! clip geometry, false for fill geometry.
-    void addToDecomposition(DecompositionContext &context,
-                            const DecompositionParams &params,
-                            bool isClip) const
+    void addFillToDecomposition(DecompositionContext &context,
+                                const DecompositionParams &params,
+                                bool isClip) const
     {
         for (const PathFigure &figure : _figures)
         {
-            figure.decompose(context, params, _segments, _points, isClip);
+            figure.decomposeFill(context, params, _segments, _points, isClip);
         }
     }
 
-    //! @brief Creates a path of filled figures by using tracing the figures
-    //! of the current path with a specified line style.
-    //! @param[in] builder The object used to accumulate the outline figures.
-    //! @param[in] stroke The line style to apply. This MUST not be a "thin"
-    //! line style.
-    void buildOutline(PathBuilderInternal &builder, const PenSPtr &stroke) const
+    //! @brief Decomposes the outline of the path into points and straight line
+    //! segments based on the line style specified.
+    //! @param[in] context The object to add points and line segments to.
+    //! @param[in] params An object defining the decomposition.
+    //! @param[in] stroke The line style used to expand the edge of the
+    //! path into decomposed filled line shapes.
+    void addOutlineToDecomposition(DecompositionContext &context,
+                                   const DecompositionParams &params,
+                                   const PenSPtr &stroke) const
     {
+        // If the line style has no thickness, the original geometry is fine.
+        if (stroke->isThin())
+        {
+            addFillToDecomposition(context, params, false);
+            return;
+        }
+
         for (const PathFigure &figure : _figures)
         {
-            figure.buildOutline(builder, _segments, _points, stroke);
+            figure.decomposeOutline(context, params, _segments, _points, stroke);
         }
     }
 };
@@ -1029,39 +1025,27 @@ DecompositionStatistics Path::simulateDecomposition(const DecompositionParams &d
 //! decomposed.
 //! @param[in] isClip True to indicate the geometry is used to clip other
 //! geometry, false of the geometry is to be clipped.
-void Path::addToDecomposition(DecompositionContext &context,
+void Path::addFillToDecomposition(DecompositionContext &context,
                               const DecompositionParams &params,
                               bool isClip) const
 {
     if (_path)
-        _path->addToDecomposition(context, params, isClip);
+        _path->addFillToDecomposition(context, params, isClip);
 }
 
-//! @brief Creates a path which traces the outline of the current path when
-//! rendered with a specific line style.
-//! @param[in] stroke The line style to apply.
-//! @return 
-Path Path::createOutlinePath(const PenSPtr &stroke)
+//! @brief Adds the geometry of the outline of the path to an object which
+//! decomposes geometry into base primitives.
+//! @param[in] context The context to add the geometry to.
+//! @param[in] params Details of how the path should be transformed before being
+//! decomposed.
+//! @param[in] stroke The line style defining how edges should be converted into
+//! filled shapes.
+void Path::addOutlineToDecomposition(DecompositionContext &context,
+                                     const DecompositionParams &params,
+                                     const PenSPtr &stroke) const
 {
-    // If the line style has no thickness, the original geometry is fine.
-    if (stroke->isThin())
-        return *this;
-
     if (_path)
-    {
-        // Create a path builder and trace the upper/lower edges of the path.
-        PathBuilderInternal builder;
-
-        // Create figures by using the figures to create outline figures.
-        _path->buildOutline(builder, stroke);
-
-        // Construct a filled path from the outline figures created.
-        return { std::make_shared<PathPrivate>(builder) };
-    }
-    else
-    {
-        return {};
-    }
+        _path->addOutlineToDecomposition(context, params, stroke);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

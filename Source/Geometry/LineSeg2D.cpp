@@ -2,7 +2,7 @@
 //! @brief The definition of a 2-dimensional parametric line segment object
 //! represented using real values.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -70,6 +70,17 @@ Point2D LineSeg2D::getPoint(double parameter) const
     Point2D delta = _end - _start;
 
     return delta.fma(parameter, _start);
+}
+
+//! @brief Calculates the gradient of the line segment to fulfil the
+//! concept of a segment.
+//! @param parameter Theoretically the parameter of the point at which to
+//! calculate the direction, but ignored because the direction of a straight
+//! line is constant.
+//! @return The direction of the line segment.
+Point2D LineSeg2D::getDirection(double /*parameter*/) const
+{
+    return _end - _start;
 }
 
 //! @brief Gets the parameter of the point along the line closest to a
