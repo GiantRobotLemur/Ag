@@ -2,7 +2,7 @@
 //! @brief The declaration of objects which measure and initialise blocks of
 //! memory packed with fields.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -14,11 +14,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
+#include <deque>
 #include <list>
 #include <string>
 #include <vector>
 
 #include "Configuration.hpp"
+#include "CollectionTools.hpp"
 
 namespace Ag {
 
@@ -282,12 +284,13 @@ public:
     //! to copy the data to.
     //! @param[in] elements The array of values to copy.
     //! @param[in] elementCount The count of elements to copy.
-    //! @return A pointer to the initialised field within the buffer, nullptr
+    //! @return A view of the initialised array within the buffer, empty
     //! if the field was outside the buffer or too small.
     //! @details The maximum number of elements supported by the field allocated
     //! in the buffer will be copied, possibly none.
-    template<typename T> T *initialiseArray(const InlineField &field,
-                                            const T *elements, size_t elementCount)
+    template<typename T>
+    WritableArrayView<T> initialiseArray(const InlineField &field,
+                                         const T *elements, size_t elementCount)
     {
         T *data;
         size_t safeCount;
@@ -297,7 +300,7 @@ public:
             std::uninitialized_copy_n(elements, std::min(safeCount, elementCount), data);
         }
 
-        return data;
+        return { data, safeCount };
     }
 
     //! @brief Initialises an array of type elements in the buffer.
@@ -306,12 +309,13 @@ public:
     //! @param[in] field A description of the field pre-allocated in the buffer
     //! to copy the data to.
     //! @param[in] elements The array of values to copy.
-    //! @return A pointer to the initialised field within the buffer, nullptr
+    //! @return A view of the initialised array within the buffer, empty
     //! if the field was outside the buffer or too small.
     //! @details The maximum number of elements supported by the field allocated
     //! in the buffer will be copied, possibly none.
-    template<typename T, size_t U> T *initialiseArray(const InlineField &field,
-                                                      const T (&elements)[U])
+    template<typename T, size_t U>
+    WritableArrayView<T> initialiseArray(const InlineField &field,
+                                         const T (&elements)[U])
     {
         T *data;
         size_t safeCount;
@@ -321,7 +325,7 @@ public:
             std::uninitialized_copy_n(elements, std::min(safeCount, U), data);
         }
 
-        return data;
+        return { data, safeCount };
     }
 
     //! @brief Initialises an array of type elements in the buffer.
@@ -331,13 +335,13 @@ public:
     //! @param[in] field A description of the field pre-allocated in the buffer
     //! to copy the data to.
     //! @param[in] collection An STL vector of values to copy.
-    //! @return A pointer to the initialised field within the buffer, nullptr
+    //! @return A view of the initialised array within the buffer, empty
     //! if the field was outside the buffer or too small.
     //! @details The maximum number of elements supported by the field allocated
     //! in the buffer will be copied, possibly none.
     template<typename T, typename UAlloc>
-    T *initialiseArray(const InlineField &field,
-                       const std::vector<T, UAlloc> &collection)
+    WritableArrayView<T> initialiseArray(const InlineField &field,
+                                         const std::vector<T, UAlloc> &collection)
     {
         T *data;
         size_t safeCount;
@@ -349,7 +353,7 @@ public:
                                       data);
         }
 
-        return data;
+        return { data, safeCount };
     }
 
     //! @brief Initialises an array of type elements in the buffer.
@@ -359,13 +363,13 @@ public:
     //! @param[in] field A description of the field pre-allocated in the buffer
     //! to copy the data to.
     //! @param[in] collection An STL list of values to copy.
-    //! @return A pointer to the initialised field within the buffer, nullptr
+    //! @return A view of the initialised array within the buffer, empty
     //! if the field was outside the buffer or too small.
     //! @details The maximum number of elements supported by the field allocated
     //! in the buffer will be copied, possibly none.
     template<typename T, typename UAlloc>
-    T *initialiseArray(const InlineField &field,
-                       const std::list<T, UAlloc> &collection)
+    WritableArrayView<T> initialiseArray(const InlineField &field,
+                                         const std::list<T, UAlloc> &collection)
     {
         T *data;
         size_t safeCount;
@@ -377,9 +381,65 @@ public:
                                       data);
         }
 
-        return data;
+        return { data, safeCount };
     }
 
+    //! @brief Initialises an array of type elements in the buffer.
+    //! @tparam T The data type of the elements being initialised.
+    //! @tparam UAlloc The allocator type associated with the STL deque, this value
+    //! can be deduced by the compiler.
+    //! @param[in] field A description of the field pre-allocated in the buffer
+    //! to copy the data to.
+    //! @param[in] collection An STL deque of values to copy.
+    //! @return A view of the initialised array within the buffer, empty
+    //! if the field was outside the buffer or too small.
+    //! @details The maximum number of elements supported by the field allocated
+    //! in the buffer will be copied, possibly none.
+    template<typename T, typename UAlloc>
+    WritableArrayView<T> initialiseArray(const InlineField &field,
+                                         const std::deque<T, UAlloc> &collection)
+    {
+        T *data;
+        size_t safeCount;
+
+        if (tryGetSafeFieldData(field, data, safeCount))
+        {
+            std::uninitialized_copy_n(collection.begin(),
+                                      std::min(safeCount, collection.size()),
+                                      data);
+        }
+
+        return { data, safeCount };
+    }
+
+    //! @brief Initialises an array of type elements in the buffer.
+    //! @tparam T The data type of the elements being initialised.
+    //! @tparam TIter The data type of an iterator used to point to
+    //! successive items to copy.
+    //! @param[in] field A description of the field pre-allocated in the buffer
+    //! to copy the data to.
+    //! @param[in] begin An iterator pointing to the first item to copy.
+    //! @param[in] count
+    //! @return A view of the initialised array within the buffer, empty
+    //! if the field was outside the buffer or too small.
+    //! @details The maximum number of elements supported by the field allocated
+    //! in the buffer will be copied, possibly none.
+    template<typename T, typename TIter>
+    WritableArrayView<T> initialiseCollectionN(const InlineField &field,
+                                               TIter begin, size_t count)
+    {
+        T *data;
+        size_t safeCount;
+
+        if (tryGetSafeFieldData(field, data, safeCount))
+        {
+            std::uninitialized_copy_n(begin,
+                                      std::min(safeCount, count),
+                                      data);
+        }
+
+        return { data, safeCount };
+    }
 private:
     uint8_ptr_t _buffer;
     size_t _byteCount;

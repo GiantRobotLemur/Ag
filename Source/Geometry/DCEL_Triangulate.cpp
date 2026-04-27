@@ -2,7 +2,7 @@
 //! @brief The definition of functions and structures needed to triangulate
 //! convex and monotone polygons.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -81,7 +81,7 @@ bool BoundaryEdgeNode::operator<(const BoundaryEdgeNode &rhs) const
     auto lhsComponents = _node->getGridPosition().toArray();
     auto rhsComponents = rhs._node->getGridPosition().toArray();
 
-    const uint8_t minorIndex = _majorIndex ^ 1;
+    const uint8_t minorIndex = reverseDirection(_majorIndex);
 
     if (lhsComponents[_majorIndex] == rhsComponents[_majorIndex])
     {
@@ -131,7 +131,7 @@ BoundaryEdgeCollection enumerateSideNodes(const Ring &ring, uint8_t majorIndex)
     size_t minNodeIndex = 0;
     size_t maxNodeIndex = 0;
     const uint8_t safeMajorIndex = majorIndex & 1;
-    const uint8_t safeMinorIndex = majorIndex ^ 1;
+    const uint8_t safeMinorIndex = reverseDirection(majorIndex);
 
     do
     {

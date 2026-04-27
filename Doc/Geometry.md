@@ -44,7 +44,35 @@ A CMake command, `embed_glyph_geometry()` has been created which uses
 tree on Win32 platforms, or copy the backup to the build folder on non-Win32
 platforms. This will allow units test to operate on any platform.
 
-## Future
+The library is also intended to be able to perform boolean operations on 2D
+meshes in order to further implement degeneration of high level graphic
+primitives into triangles. This includes clipping, combining and other logical
+operations.
 
-I hope to extend the library to implement primitives for various kinds of
-curves which could be useful for managing geometry for graphic rendering.
+## Primitives
+
+The library implements a number of primitives for use both internally and
+externally. These include:
+
+- `Point2I` - An integer 2D point/vector.
+- `Point2D` - A double-precision floating point 2D point/vector.
+- `LineEq2D` - A representation of a line expressed as a general for 2D line equation.
+- `Line2D` - A parametric equation of an infinite 2D line.
+- `LineSeg2D` - A parametric equation of a bounded 2D line segment.
+- `Arc2D` - A definition of a 2D line segment tracing some or all of the outline of an elliptical arc.
+- `QuadBezierCurve2D` - A parametric equation of a 2D quadratic bezier curve.
+- `CubicBezierCurve2D` - A parametric equation of a 2D cubic bezier curve.
+- `Size2D` - A 2D axis-aligned extent value.
+- `Rect2D` - A 2D axis-aligned rectangle definition.
+- `Size2I` - A 2D axis-aligned integer extent value.
+- `Rect2I` - A 2D axis-aligned integer rectangle definition.
+- `Matrix2x2` - A 2 x 2 transformation matrix.
+- `Matrix3x3` - A 3 x 3 transformation matrix.
+- `AffineTransform2D`- A 2D affine transformation.
+
+Apart from `Point2I`, `Size2I` and `Rect2I`, which are all defined in terms of
+32-bit integers, all primitives are defined in terms of 64-bit double floating
+point quantities.
+
+Where possible, SIMD acceleration has been defined for primitive operations on
+floating point primitives.

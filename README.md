@@ -28,6 +28,10 @@ explanation about various topics.
   tracing and decomposition of polygons into triangle.
 * WriteGlyphGeometry - A Win32 tool to extract the geometry of glyphs from
   a font to use in the unit tests for the Geometry library.
+* [Gfx2D](Doc/Gfx2D.md) - An abstract graphics library which decomposes high
+  level graphic primitives into geometry which can be rendered by a GPU, but
+  without a specific GPU implementation. This is based on the
+  [Geometry](Doc/Geometry.md) library.
 * [Win32Base](Doc/Win32Base.md) - A library which provides basic tools for
   creating a native Win32 GUI application and other low-level Win32 tools
   such as COM interface wrappers.

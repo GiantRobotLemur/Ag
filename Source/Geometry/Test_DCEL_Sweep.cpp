@@ -2,7 +2,7 @@
 //! @brief The definition of unit tests for the a plane sweep of edges held
 //! in a Doubly-Connected Edge List.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -47,23 +47,23 @@ GTEST_TEST(DCEL_SweepEdge, Intersection)
 {
     NodeTable nodes(Rect2D(-100, -100, 200, 200));
 
-    ID first = nodes.addNode(Point2D(2, 1)).getID();
-    ID second = nodes.addNode(Point2D(57, 56)).getID();
-    ID third = nodes.addNode(Point2D(25, 2)).getID();
-    ID fourth = nodes.addNode(Point2D(-38, 65)).getID();
+    ID first = nodes.addNode(Point2D(2, 1))->getID();
+    ID second = nodes.addNode(Point2D(57, 56))->getID();
+    ID third = nodes.addNode(Point2D(25, 2))->getID();
+    ID fourth = nodes.addNode(Point2D(-38, 65))->getID();
 
     EdgeTable edges(4);
     auto firstEdge = edges.addEdge(nodes, first, second);
     auto secondEdge = edges.addEdge(nodes, third, fourth);
 
-    LineSeg2D firstSecond(nodes[first].getRealPosition(), nodes[second].getRealPosition());
-    LineSeg2D thirdFourth(nodes[third].getRealPosition(), nodes[fourth].getRealPosition());
+    LineSeg2D firstSecond(nodes[first]->getRealPosition(), nodes[second]->getRealPosition());
+    LineSeg2D thirdFourth(nodes[third]->getRealPosition(), nodes[fourth]->getRealPosition());
     Point2D intersectionPt;
 
     const auto &domain = nodes.getGrid().getDomain();
 
     ASSERT_TRUE(firstSecond.tryCalculateIntersection(domain, thirdFourth, intersectionPt));
-    auto intersectionNode = &nodes.addNode(intersectionPt);
+    auto intersectionNode = nodes.addNode(intersectionPt);
 
     SweepContext context(nodes);
     context.setSweepNode(intersectionNode);
@@ -92,11 +92,11 @@ GTEST_TEST(DCEL_SweepState, InsertSweepColinear)
 {
     NodeTable nodes(Rect2D(-10, -10, 20, 20));
 
-    NodePtr first = &nodes.addNode(Point2D(5, 0));
-    NodePtr second = &nodes.addNode(Point2D(5, 10));
-    NodePtr third = &nodes.addNode(Point2D(0, 5));
-    NodePtr fourth = &nodes.addNode(Point2D(10, 5));
-    NodePtr intersection = &nodes.addNode(Point2D(5, 5));
+    NodePtr first = nodes.addNode(Point2D(5, 0));
+    NodePtr second = nodes.addNode(Point2D(5, 10));
+    NodePtr third = nodes.addNode(Point2D(0, 5));
+    NodePtr fourth = nodes.addNode(Point2D(10, 5));
+    NodePtr intersection = nodes.addNode(Point2D(5, 5));
 
     EdgeTable edges(4);
     auto verticalEdge = edges.addEdge(nodes, first->getID(), second->getID());
@@ -124,10 +124,10 @@ GTEST_TEST(DCEL_Sweep, SimpleIntersection)
     NodeTable nodes(Rect2D(-10, -10, 20, 20));
 
     // Create a diagonal cross with two lines.
-    ID first = nodes.addNode(Point2D(0, 0)).getID();
-    ID second = nodes.addNode(Point2D(10, 10)).getID();
-    ID third = nodes.addNode(Point2D(10, 0)).getID();
-    ID fourth = nodes.addNode(Point2D(0, 10)).getID();
+    ID first = nodes.addNode(Point2D(0, 0))->getID();
+    ID second = nodes.addNode(Point2D(10, 10))->getID();
+    ID third = nodes.addNode(Point2D(10, 0))->getID();
+    ID fourth = nodes.addNode(Point2D(0, 10))->getID();
 
     EdgeTable edges(4);
     edges.addEdge(nodes, first, second);
@@ -136,10 +136,12 @@ GTEST_TEST(DCEL_Sweep, SimpleIntersection)
     ASSERT_EQ(nodes.getCount(), 4u);
     ASSERT_EQ(edges.getCount(), 2u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
 
     EXPECT_EQ(nodes.getCount(), 5u);
     EXPECT_EQ(edges.getCount(), 4u);
+    EXPECT_EQ(substitutes.getCount(), 2u);
 }
 
 GTEST_TEST(DCEL_Sweep, ColinearIntersection)
@@ -147,10 +149,10 @@ GTEST_TEST(DCEL_Sweep, ColinearIntersection)
     NodeTable nodes(Rect2D(-10, -10, 20, 20));
 
     // Create two diagonal lines which share some of their span.
-    ID first = nodes.addNode(Point2D(0, 0)).getID();
-    ID second = nodes.addNode(Point2D(10, 10)).getID();
-    ID third = nodes.addNode(Point2D(5, 5)).getID();
-    ID fourth = nodes.addNode(Point2D(15, 15)).getID();
+    ID first = nodes.addNode(Point2D(0, 0))->getID();
+    ID second = nodes.addNode(Point2D(10, 10))->getID();
+    ID third = nodes.addNode(Point2D(5, 5))->getID();
+    ID fourth = nodes.addNode(Point2D(15, 15))->getID();
 
     EdgeTable edges(4);
     edges.addEdge(nodes, first, second);
@@ -159,7 +161,9 @@ GTEST_TEST(DCEL_Sweep, ColinearIntersection)
     ASSERT_EQ(nodes.getCount(), 4u);
     ASSERT_EQ(edges.getCount(), 2u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
+    EXPECT_EQ(substitutes.getCount(), 2u);
 
     EXPECT_EQ(nodes.getCount(), 4u);
     EXPECT_EQ(edges.getCount(), 3u);
@@ -191,7 +195,7 @@ GTEST_TEST(DCEL_Sweep, PartitionStar)
 
     for (size_t i = 0; i < PointCount; ++i)
     {
-        nodePtrs.push_back(&nodes.addNode(points[i]));
+        nodePtrs.push_back(nodes.addNode(points[i]));
     }
 
     // Create lines which cross to define a 5-pointed star.
@@ -205,7 +209,9 @@ GTEST_TEST(DCEL_Sweep, PartitionStar)
     ASSERT_EQ(nodes.getCount(), 5u);
     ASSERT_EQ(edges.getCount(), 5u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
+    EXPECT_EQ(substitutes.getCount(), 5u);
 
     EXPECT_EQ(nodes.getCount(), 10u);
     EXPECT_EQ(edges.getCount(), 15u);
@@ -223,7 +229,9 @@ GTEST_TEST(DCEL_Sweep, HorzOverlappingRects)
     ASSERT_EQ(nodes.getCount(), 8u);
     ASSERT_EQ(edges.getCount(), 8u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
+    EXPECT_EQ(substitutes.getCount(), 4u);
 
     EXPECT_EQ(nodes.getCount(), 8u);
     EXPECT_EQ(edges.getCount(), 10u);
@@ -234,14 +242,16 @@ GTEST_TEST(DCEL_Sweep, VertOverlappingRects)
     NodeTable nodes(Rect2D(0, 0, 20, 20));
     EdgeTable edges;
 
-    // Add two horizontally overlapping rectangles.
+    // Add two vertically overlapping rectangles.
     RectIndices firstRect = addRect(edges, nodes, 2, 2, 4, 8);
     RectIndices secondRect = addRect(edges, nodes, 2, 6, 4, 8);
 
     ASSERT_EQ(nodes.getCount(), 8u);
     ASSERT_EQ(edges.getCount(), 8u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
+    EXPECT_EQ(substitutes.getCount(), 4u);
 
     EXPECT_EQ(nodes.getCount(), 8u);
     EXPECT_EQ(edges.getCount(), 10u);
@@ -252,14 +262,16 @@ GTEST_TEST(DCEL_Sweep, CascadingRects)
     NodeTable nodes(Rect2D(0, 0, 20, 20));
     EdgeTable edges;
 
-    // Add two horizontally overlapping rectangles.
+    // Add two rectangles overlapping in one corner.
     RectIndices firstRect = addRect(edges, nodes, 2, 2, 8, 4);
     RectIndices secondRect = addRect(edges, nodes, 6, 4, 8, 4);
 
     ASSERT_EQ(nodes.getCount(), 8u);
     ASSERT_EQ(edges.getCount(), 8u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
+    EXPECT_EQ(substitutes.getCount(), 4u);
 
     EXPECT_EQ(nodes.getCount(), 10u);
     EXPECT_EQ(edges.getCount(), 12u);
@@ -303,7 +315,9 @@ GTEST_TEST(DCEL_Sweep, SingleVertLineRectWithHole)
     ASSERT_EQ(nodes.getCount(), 9u);
     ASSERT_EQ(edges.getCount(), 10u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
+    EXPECT_EQ(substitutes.getCount(), 1u);
 
     EXPECT_EQ(nodes.getCount(), 9u);
     EXPECT_EQ(edges.getCount(), 10u);
@@ -361,7 +375,9 @@ GTEST_TEST(DCEL_Sweep, SingleHorzLineRectWithHole)
     ASSERT_EQ(nodes.getCount(), 9u);
     ASSERT_EQ(edges.getCount(), 10u);
 
-    EXPECT_TRUE(findAllIntersections(nodes, edges));
+    auto substitutes = findAllIntersections(nodes, edges);
+    EXPECT_FALSE(substitutes.isEmpty());
+    EXPECT_EQ(substitutes.getCount(), 1u);
 
     EXPECT_EQ(nodes.getCount(), 9u);
     EXPECT_EQ(edges.getCount(), 10u);

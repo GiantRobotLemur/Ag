@@ -46,6 +46,8 @@ ag_add_library(Geometry FOLDER      Geometry
                                     ${GEOM_INCLUDE_DIR}/Matrix3x3.hpp
                                     AffineTransform2D.cpp
                                     ${GEOM_INCLUDE_DIR}/AffineTransform2D.hpp
+                                    Transform2DStack.cpp
+                                    ${GEOM_INCLUDE_DIR}/Transform2DStack.hpp
                                     SnapPoint.cpp
                                     ${GEOM_INCLUDE_DIR}/SnapPoint.hpp
                                     SnapContext.cpp
@@ -66,6 +68,8 @@ ag_add_library(Geometry FOLDER      Geometry
                                     DCEL_Triangulate.hpp
                                     DCEL_Algorithms.cpp
                                     ${GEOM_INCLUDE_DIR}/DCEL_Algorithms.hpp
+                                    DCEL_Boolean.cpp
+                                    ${GEOM_INCLUDE_DIR}/DCEL_Boolean.hpp
                         WIN_SOURCES Geometry.natvis
                         HEADERS     ${AG_INCLUDE_DIR}/Ag/Geometry.hpp
                         #PRIVATE_LIBS glm::glm
@@ -125,6 +129,8 @@ source_group("Primitives" FILES Point2I.cpp
                                 ${GEOM_INCLUDE_DIR}/Matrix3x3.hpp
                                 AffineTransform2D.cpp
                                 ${GEOM_INCLUDE_DIR}/AffineTransform2D.hpp
+                                Transform2DStack.cpp
+                                ${GEOM_INCLUDE_DIR}/Transform2DStack.hpp
 )
 
 source_group("Lines" FILES  ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
@@ -140,10 +146,10 @@ source_group("Lines" FILES  ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
                             ${GEOM_INCLUDE_DIR}/CubicBezierCurve2D.hpp
                             Arc2D.cpp
                             ${GEOM_INCLUDE_DIR}/Arc2D.hpp
+                            ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
 )
 
-source_group("Polygons" FILES   ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
-                                Triangle2D.cpp
+source_group("Polygons" FILES   Triangle2D.cpp
                                 ${GEOM_INCLUDE_DIR}/Triangle2D.hpp
                                 DCEL.cpp
                                 ${GEOM_INCLUDE_DIR}/DCEL.hpp
@@ -155,6 +161,8 @@ source_group("Polygons" FILES   ${GEOM_INCLUDE_DIR}/LineHelpers.hpp
                                 DCEL_Triangulate.hpp
                                 DCEL_Algorithms.cpp
                                 ${GEOM_INCLUDE_DIR}/DCEL_Algorithms.hpp
+                                DCEL_Boolean.cpp
+                                ${GEOM_INCLUDE_DIR}/DCEL_Boolean.hpp
 )
 
 # Define the unit test harness.
@@ -180,6 +188,7 @@ ag_add_test_app(Geometry_Tests  TEST_LIB    Geometry
                                             Test_DCEL_Tools.hpp
                                             Test_DCEL.cpp
                                             Test_DCEL_Sweep.cpp
+                                            Test_DCEL_Boolean.cpp
                                             Test_Glyphs.txt
                                             Test_DCEL_Algorithms.cpp)
 

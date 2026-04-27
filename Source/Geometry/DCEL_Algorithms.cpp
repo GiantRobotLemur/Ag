@@ -2,7 +2,7 @@
 //! @brief The definition of various algorithms which operate on a Doubly
 //! Connected Edge List.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -1230,7 +1230,9 @@ bool makeYMonotone(NodeTable &nodes, EdgeTable &edges,
         {
             printf("Connect %u -> %u\n", connection.first, connection.second);
 
-            edges.addEdge(nodes, connection.first, connection.second);
+            edges.addEdge(nodes, connection.first,
+                          connection.second,
+                          Edge::Partition);
         }
 
          putchar('\n');

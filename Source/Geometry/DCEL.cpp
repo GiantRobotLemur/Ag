@@ -2,7 +2,7 @@
 //! @brief The definition of a doubly-Connected Edge List and child data
 //! structures used in geometry algorithms.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -25,6 +25,47 @@
 namespace Ag {
 namespace Geom {
 namespace DCEL {
+
+namespace {
+
+//! @brief A functor used to sort mappings from Edge ID to Node IDs, ordering nodes
+//! by their position on a plane sweep.
+struct IndexEdgeIDToNodeIDMappings
+{
+private:
+    const NodeTable &_nodes;
+public:
+    IndexEdgeIDToNodeIDMappings(const NodeTable &nodes) :
+        _nodes(nodes)
+    {
+    }
+
+    bool operator()(const IDToIDMapping &lhs, const IDToIDMapping &rhs) const
+    {
+        bool isLessThan = false;
+
+        if (lhs.first == rhs.first)
+        {
+            // Then compare by sweep position.
+            const SnapPoint &lhsPos = _nodes[lhs.second]->getGridPosition();
+            const SnapPoint &rhsPos = _nodes[rhs.second]->getGridPosition();
+
+            isLessThan = lhsPos.lessThanSweep(rhsPos);
+        }
+        else
+        {
+            // First - sort by edge ID.
+            isLessThan = lhs.first < rhs.first;
+        }
+
+        return isLessThan;
+    }
+};
+
+using IndexIDMapping = LessThanKeyComparer<ID, ID>;
+using EqualIDMapping = EqualToPairComparer<ID, ID>;
+
+} // Anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // InvalidNodeIDException Member Definitions
@@ -85,13 +126,15 @@ InvalidHalfEdgeIDException::InvalidHalfEdgeIDException(const HalfEdgeID &id)
 //! @param[in] id The unique identifier of the node.
 //! @param[in] position The actual position of the node in space.
 //! @param[in] gridPosition A rounded representation of position used for indexing.
-Node::Node(ID id, const Point2D &position, const SnapPoint &gridPosition) :
+//! @param[in] flags The initial set of flags associated with the node.
+Node::Node(ID id, const Point2D &position, const SnapPoint &gridPosition,
+           FlagsType flags /*= 0*/) :
     _id(id),
     _mappedIndex(0),
     _realPosition(position),
     _gridPosition(gridPosition),
     _buddyEdge(nullptr),
-    _flags(0)
+    _flags(flags)
 {
 }
 
@@ -194,13 +237,13 @@ void NodeTable::reset(const Rect2D &estimatedBounds, size_t /*nodeCountHint = 0*
 //! @param[in] nodeID The identifier of the node to get.
 //! @return A reference to the node.
 //! @throw InvalidNodeIDException If nodeID is invalid.
-Node &NodeTable::operator[](ID nodeID)
+Node *NodeTable::operator[](ID nodeID)
 {
     NodePtr node;
 
     if (tryFindNodeByID(nodeID, node))
     {
-        return *node;
+        return node;
     }
 
     throw InvalidNodeIDException(nodeID);
@@ -210,13 +253,13 @@ Node &NodeTable::operator[](ID nodeID)
 //! @param[in] nodeID The identifier of the node to get.
 //! @return A reference to the node.
 //! @throw InvalidNodeIDException If nodeID is invalid.
-const Node &NodeTable::operator[](ID nodeID) const
+const Node *NodeTable::operator[](ID nodeID) const
 {
     NodeCPtr node;
 
     if (tryFindNodeByID(nodeID, node))
     {
-        return *node;
+        return node;
     }
 
     throw InvalidNodeIDException(nodeID);
@@ -319,8 +362,11 @@ NodeTable::NodeIDCIter NodeTable::endByID() const
 
 //! @brief Adds or gets a node.
 //! @param[in] realPosition The position of the node to add.
+//! @param[in] flags The initial set of flags to associate with the node, or to
+//! merge with the flags of an existing node at the specified position.
 //! @return A reference to the node, possibly newly created.
-Node &NodeTable::addNode(const Point2D &realPosition)
+Node *NodeTable::addNode(const Point2D &realPosition,
+                         Node::FlagsType flags /*= 0*/)
 {
     SnapPoint gridPosition = _grid.snapPoint(realPosition);
 
@@ -329,18 +375,22 @@ Node &NodeTable::addNode(const Point2D &realPosition)
     if (pos == _nodesByPosition.end())
     {
         // No node exists at that position, insert one.
-        _allNodes.emplace_back(std::make_unique<Node>(_idSeed++, realPosition, gridPosition));
+        _allNodes.emplace_back(std::make_unique<Node>(_idSeed++, realPosition,
+                                                      gridPosition, flags));
 
         // Update indexes.
         NodePtr newNode = _allNodes.back().get();
         indexNode(newNode);
 
-        return *newNode;
+        return newNode;
     }
     else
     {
         // A node at that position already exists, return it.
-        return *pos->second;
+        NodePtr existingNode = pos->second;
+        existingNode->setFlags(existingNode->getFlags() | flags);
+
+        return existingNode;
     }
 }
 
@@ -414,6 +464,42 @@ void NodeTable::resetNodeMapping()
                   });
 }
 
+//! @brief Collects together the positions of nodes which have been given
+//! a mapped index.
+//! @param[out] points The collection to fill with node positions.
+//! @remarks Mapped nodes will be written to their mapped indices in the
+//! @p points collection. The collection will be resized to receive point
+//! with a mapped index too high to fit. Reserve or resize the @p points
+//! collection before this call to reduce memory re-allocation and copying.
+void NodeTable::collectMappedNodePoints(Point2DCollection &points) const
+{
+    struct GatherMappedVertices
+    {
+    private:
+        Geom::Point2DCollection &_points;
+    public:
+        GatherMappedVertices(Geom::Point2DCollection &points) :
+            _points(points)
+        {
+        }
+
+        void operator()(Geom::DCEL::NodeCPtr node)
+        {
+            auto mappedIndex = node->getMappedIndex();
+
+            if (mappedIndex == NullID)
+                return;
+
+            if (_points.size() < mappedIndex)
+                _points.resize(mappedIndex + 1);
+
+            _points[mappedIndex] = node->getRealPosition();
+        }
+    };
+
+    forEachNode(GatherMappedVertices(points));
+}
+
 //! @brief Adds a new node to the various indexes.
 //! @param[in] node The new node to index.
 void NodeTable::indexNode(NodePtr node)
@@ -475,8 +561,11 @@ HalfEdgeID HalfEdgeID::getReverseID() const noexcept
 //! must be called for the object to be in a valid state.
 HalfEdge::HalfEdge() :
     _parent(nullptr),
-    _index(0),
-    _ring(NullID)
+    _prevEdge(nullptr),
+    _nextEdge(nullptr),
+    _ring(NullID),
+    _flags(0),
+    _index(0)
 {
 }
 
@@ -495,7 +584,7 @@ ID HalfEdge::getStartNodeID() const noexcept
 //! @brief Gets the identifier of the node at the end of the edge.
 ID HalfEdge::getEndNodeID() const noexcept
 {
-    return _parent->_nodes[_index ^ 1]->getID();
+    return _parent->_nodes[reverseDirection(_index)]->getID();
 }
 
 //! @brief Gets a pointer to the node defining the start point of the edge.
@@ -507,7 +596,7 @@ NodePtr HalfEdge::getStartNode() const noexcept
 //! @brief Gets a pointer to the node defining the end point of the edge.
 NodePtr HalfEdge::getEndNode() const noexcept
 {
-    return _parent->_nodes[_index ^ 1];
+    return _parent->_nodes[reverseDirection(_index)];
 }
 
 //! @brief Determines of a specified node appears at either end of the edge.
@@ -556,14 +645,14 @@ HalfEdgeID HalfEdge::getNextEdgeID() const noexcept
 //! the opposite direction.
 HalfEdgePtr HalfEdge::getReverse() noexcept
 {
-    return _parent->_directions + (_index ^ 1);
+    return _parent->_directions + reverseDirection(_index);
 }
 
 //! @brief Gets the directed edge connecting the same nodes, but travelling in
 //! the opposite direction.
 HalfEdgeCPtr HalfEdge::getReverse() const noexcept
 {
-    return _parent->_directions + (_index ^ 1);
+    return _parent->_directions + reverseDirection(_index);
 }
 
 //! @brief Gets the angle of the edge from its start to its end.
@@ -644,6 +733,7 @@ void HalfEdge::setParent(Edge *parent, DirectionIndex index)
 //! @param[in] rhs The edge to copy.
 Edge::Edge(const Edge &rhs) :
     _id(rhs._id),
+    _flags(rhs._flags),
     _angle(0.0)
 {
     copyEdge(rhs);
@@ -653,6 +743,7 @@ Edge::Edge(const Edge &rhs) :
 //! @param[in] rhs The edge to copy.
 Edge::Edge(Edge &&rhs) noexcept :
     _id(rhs._id),
+    _flags(rhs._flags),
     _angle(0.0)
 {
     moveEdge(std::move(rhs));
@@ -665,6 +756,7 @@ Edge::Edge(Edge &&rhs) noexcept :
 //! @throws Ag::ArgumentException If firstNode == secondNode.
 Edge::Edge(ID edgeID, NodePtr firstNode, NodePtr secondNode) :
     _id(edgeID),
+    _flags(Normal),
     _angle(0.0),
     _associatedNode(nullptr)
 {
@@ -756,6 +848,18 @@ void Edge::setAssociatedNode(NodePtr node)
     _associatedNode = node;
 }
 
+//! @brief Calculates the index for the direction which flows from earlier
+//! to later in a Y-monotone sweep.
+//! @retval 0 The first node is earlier in the sweep, hence the forward half-edge
+//! flows in the sweep direction.
+//! @retval 1 The second node is earlier in the sweep, hence the forward half-edge
+//! flows in  the reverse sweep direction.
+DirectionIndex Edge::getSweepDirection() const
+{
+    // If the second node is earlier, the edge needs the reverse orientation.
+    return _nodes[1]->getGridPosition().lessThanSweep(_nodes[0]->getGridPosition()) ? 1 : 0;
+}
+
 //! @brief Copy assigns an edge to overwrite the current edge.
 //! @param[in] rhs The edge to copy.
 //! @return A reference to the current edge.
@@ -820,6 +924,7 @@ void Edge::copyEdge(const Edge &rhs) noexcept
     {
         _angle = rhs._angle;
         _id = rhs._id;
+        _flags = rhs._flags;
 
         std::copy_n(rhs._nodes, 2, _nodes);
         _associatedNode = rhs._associatedNode;
@@ -837,6 +942,7 @@ void Edge::moveEdge(Edge &&rhs) noexcept
     {
         _angle = rhs._angle;
         _id = rhs._id;
+        _flags = rhs._flags;
 
         std::copy_n(rhs._nodes, 2, _nodes);
         _associatedNode = rhs._associatedNode;
@@ -1281,16 +1387,19 @@ void EdgeTable::clear()
 //! @param[in] nodes The table of node definitions.
 //! @param[in] firstNode The ID of the first node to connect.
 //! @param[in] secondNode The ID of the second node to connect.
+//! @param[in] flags The flags to set on the new edge or to merge with the
+//! flags of an existing edge if the two nodes are already connected.
 //! @return A reference to the edge connecting the nodes, possibly new. The
 //! returned edge isn't guaranteed to connect the nodes in the order specified
 //! in the parameters.
-Edge *EdgeTable::addEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID)
+Edge *EdgeTable::addEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID,
+                         Edge::FlagsType flags /*= Edge::Normal*/)
 {
     if (firstNodeID == secondNodeID)
     {
-        Ag::OperationException("The program attempted to add an edge to a "
-                               "doubly connected edge list which connected "
-                               "a node to itself.");
+        throw Ag::OperationException("The program attempted to add an edge to a "
+                                     "doubly connected edge list which connected "
+                                     "a node to itself.");
     }
 
     EdgeKey key = makeEdgeKey(firstNodeID, secondNodeID);
@@ -1311,6 +1420,7 @@ Edge *EdgeTable::addEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID)
             _allEdges.push_back(std::make_unique<Edge>(newEdge));
 
             EdgePtr edgePtr = _allEdges.back().get();
+            edgePtr->setFlags(flags);
 
             // Add the edge to the indexes.
             indexEdge(edgePtr);
@@ -1325,7 +1435,10 @@ Edge *EdgeTable::addEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID)
     else
     {
         // The edge already exists.
-        return edgeIDPos->second;
+        EdgePtr existingEdge = edgeIDPos->second;
+        existingEdge->setFlags(existingEdge->getFlags() | flags);
+
+        return existingEdge;
     }
 }
 
@@ -1359,6 +1472,17 @@ void EdgeTable::removeEdge(ID edgeID)
     }
 }
 
+//! @brief Resets the parent ring ID on all half edges to NullID.
+void EdgeTable::resetOwnership()
+{
+    std::for_each(std::execution::parallel_unsequenced_policy(),
+                  _allEdges.begin(), _allEdges.end(),
+                  [](EdgeUPtr &edgeUPtr) {
+                      for (DirectionIndex i = 0; i < 2; ++i)
+                          edgeUPtr->getHalfEdge(i)->setRingID(NullID);
+                  });
+}
+
 //! @brief Removes all sibling connections and ring associations from all
 //! edges in the table.
 void EdgeTable::resetConnections()
@@ -1368,112 +1492,13 @@ void EdgeTable::resetConnections()
                   [](EdgeUPtr &edgeUPtr) { edgeUPtr->resetConnections(); });
 }
 
-//! @brief Splits a specified edge about a specified joint, which is expected
-//! to be somewhere within its interior, removing the original edge.
-//! @param[in] nodes The table the node defining the edge and to split by.
-//! @param[in] edgeID The identifier of the edge to split.
-//! @param[in] nodeToSplitAboutID The identifier of the node at the split point.
-//! @return A structure defining the two edges which result and the node which
-//! they have in common.
-SplitEdgeResult EdgeTable::splitEdge(NodeTable &nodes, ID edgeID, ID nodeToSplitAboutID)
+//! @brief Removes all edges which only exist to create intersections.
+//! @retval true If any edges were removed.
+//! @retval false No edges were marked as IntersectionOnly with no other flags.
+bool EdgeTable::removeIntersectionEdges()
 {
-    auto edgeIDPos = _edgesByID.find(edgeID);
-
-    if (edgeIDPos == _edgesByID.end())
-    {
-        throw InvalidEdgeIDException(edgeID);
-    }
-
-    EdgePtr originalEdge = edgeIDPos->second;
-
-    if ((originalEdge->getFirstNode()->getID() == nodeToSplitAboutID) ||
-        (originalEdge->getSecondNode()->getID() == nodeToSplitAboutID))
-    {
-        throw Ag::OperationException("Splitting an edge about one of its ends.");
-    }
-
-    Edge originalCopy = *originalEdge;
-    ID firstNodeID = originalEdge->getFirstNodeID();
-    ID secondNodeID = originalEdge->getSecondNodeID();
-
-    // Both the partial edges could already exist - check.
-    auto firstHalfPos = _edgesByConnection.find(makeEdgeKey(firstNodeID, nodeToSplitAboutID));
-    auto secondHalfPos = _edgesByConnection.find(makeEdgeKey(nodeToSplitAboutID, secondNodeID));
-
-    SplitEdgeResult result;
-    result.SplitNode = &nodes[nodeToSplitAboutID];
-
-    bool originalEdgeReplaced = false;
-
-    if (firstHalfPos == _edgesByConnection.end())
-    {
-        result.FirstEdge = createEdge(nodes, firstNodeID, nodeToSplitAboutID, originalEdge);
-        originalEdgeReplaced = (originalEdge != nullptr);
-    }
-    else
-    {
-        result.FirstEdge = firstHalfPos->second;
-    }
-
-    if (secondHalfPos == _edgesByConnection.end())
-    {
-        result.SecondEdge = createEdge(nodes, nodeToSplitAboutID, secondNodeID,
-                                       originalEdgeReplaced ? nullptr : originalEdge);
-        originalEdgeReplaced = true;
-    }
-    else
-    {
-        result.SecondEdge = secondHalfPos->second;
-    }
-
-    if ((originalEdge != nullptr) && (originalEdgeReplaced == false))
-    {
-        // Remove the original edge if it wasn't re-used.
-        removeEdge(edgeID);
-    }
-
-    return result;
-}
-
-//! @brief Replaces an edge with a new definition.
-//! @param[in] nodes The table of nodes which are used to defined edges in this table.
-//! @param[in] edgeID The identity of the edge to replace.
-//! @param[in] firstNodeID The ID of the first node on the new edge.
-//! @param[in] secondNodeID The ID of the second node on the new edge.
-//! @retval true The existing edge @p edgeID was replaced by the new edge.
-//! @retval false Edge @p edgeID was not replaced because an edge between
-//! @p firstNodeID and @p secondNodeID already existed.
-bool EdgeTable::replaceEdge(NodeTable &nodes, ID edgeID, ID firstNodeID, ID secondNodeID)
-{
-    EdgePtr edge;
-
-    // Ensure the required edge doesn't already exist.
-    if (tryFindEdgeByNodes(firstNodeID, secondNodeID, edge))
-        return false;
-
-    if (tryFindEdgeByID(edgeID, edge) == false)
-        throw ArgumentException("An edge with the specified ID does not exist.", "edgeID");
-
-    NodePtr firstNode = nullptr;
-
-    if (nodes.tryFindNodeByID(firstNodeID, firstNode) == false)
-        throw ArgumentException("A node with the specified ID does not exist.", "firstNodeID");
-
-    NodePtr secondNode = nullptr;
-
-    if (nodes.tryFindNodeByID(secondNodeID, secondNode) == false)
-        throw ArgumentException("A node with the specified ID does not exist.", "secondNodeID");
-
-    // Remove the original edge from all but the ID index.
-    deindexEdge(edge, false);
-
-    // Overwrite the edge.
-    *edge = Edge(edgeID, firstNode, secondNode);
-
-    // Add the new edge to the non-ID indexes.
-    indexEdge(edge, false);
-
-    return true;
+    return removeEdgesIf([](EdgePtr edgePtr) {
+        return edgePtr->getFlags() == Edge::IntersectionOnly; }) > 0;
 }
 
 //! @brief Removes edges which aren't currently assigned to a ring.
@@ -1492,18 +1517,188 @@ size_t EdgeTable::removeUnassignedEdges(ID maxAssignedRingID)
         {
         }
 
-        bool operator()(const EdgeUPtr &edge) const
+        bool operator()(const EdgePtr &edge) const
         {
             return (edge->getHalfEdge(0)->getRingID() <= _maxRingID) ||
                    (edge->getHalfEdge(1)->getRingID() <= _maxRingID);
         }
     };
 
+    IsEdgeAssigned fn(maxAssignedRingID);
+
+    return removeEdgesIf(fn);
+}
+
+//! @brief Splits a batch of edges across one or mode nodes.
+//! @param[in] nodes The table of nodes referenced by the mapping.
+//! @param[in,out] edgeToNodeIDMappings A collection of mappings of edge ID
+//! to the ID of nodes which should be used to split them. The collection
+//! will be sorted and duplicate mappings removed during processing.
+//! @param[in,out] substitutes A map of original edge ID to the set of
+//! nodes which now replace it.
+//! @returns the count of edges split.
+//! @remarks
+//! Where edges already exist to connect nodes, flags will be perpetuated.
+//! Where edges are new, their predecessors and successors will be perpetuated.
+size_t EdgeTable::batchSplitEdges(NodeTable &nodes,
+                                  IDToIDMappingCollection &edgeToNodeIDMappings,
+                                  SortedEdgeSubstituteMap &substitutes)
+{
+    // Sort mappings by edge ID and then by the relative position of the
+    // identified node on the sweep, earliest first.
+    std::sort(edgeToNodeIDMappings.begin(), edgeToNodeIDMappings.end(),
+              IndexEdgeIDToNodeIDMappings(nodes));
+
+    // Remove duplicates.
+    auto last = std::unique(edgeToNodeIDMappings.begin(), edgeToNodeIDMappings.end(), EqualIDMapping());
+    edgeToNodeIDMappings.erase(last, edgeToNodeIDMappings.end());
+
+    IDToIDMappingRange group;
+    IndexIDMapping indexer;
+    size_t edgesSplit = false;
+    IDCollection emptyIDs;
+
+    if (getFirstGroup(edgeToNodeIDMappings.begin(), edgeToNodeIDMappings.end(), group, indexer))
+    {
+        do
+        {
+            // Go through the sweep ordered nodes, including the original first and
+            // last nodes, to create a set of edges which replace the original.
+            ID edgeID = group.front().first;
+            EdgePtr originalEdge = _edgesByID.find(edgeID)->second;
+
+            // Capture the set of nodes which replaces the edge.
+            IDCollection &substituteIDs = substitutes.push_back(originalEdge->getKey(),
+                                                                emptyIDs).second;
+
+            substituteIDs.reserve(group.getCount() + 2);
+
+            // Make a copy of the edge and its inner half-edges as we are going
+            // to replace it.
+            Edge originalCopy = *originalEdge;
+
+            // Calculate the direction of the edge relative to the sweep to
+            // be sympathetic with the ordering of the intersection nodes.
+            DirectionIndex forwardNode = originalEdge->getSweepDirection();
+
+            // TODO: Maintain Next/Previous pointers on edges which get split.
+            // What happens if an edge created from an intersection node already
+            //   exists as part of another ring???
+
+            // Create new segments between original and intersection nodes.
+            NodePtr prevNode = originalEdge->getNode(forwardNode);
+            NodePtr endNode = originalEdge->getNode(reverseDirection(forwardNode));
+            HalfEdgePtr forwardPrev = originalEdge->getHalfEdge(forwardNode)->getPreviousEdge();
+            HalfEdgePtr reverseNext = originalEdge->getHalfEdge(reverseDirection(forwardNode))->getNextEdge();
+            EdgePtr newEdge;
+            bool wasExisting;
+
+            substituteIDs.push_back(prevNode->getID());
+
+            for (const auto &mappingPos : group)
+            {
+                NodePtr nextNode = nodes[mappingPos.second];
+                substituteIDs.push_back(nextNode->getID());
+
+                newEdge = addOrReplaceEdge(originalEdge, prevNode, nextNode,
+                                           originalCopy.getFlags(), wasExisting);
+
+                if (wasExisting)
+                {
+                    // TODO: We can't maintain the linked list of half-edges.
+                    //   in that case, is it worth bothering trying to maintain?
+                    // 
+                    // Should we create a mapping of original edge ID to the new
+                    // set of edges created from it?
+                }
+                else
+                {
+                    // Only update half-edge connections if the edge was new.
+                    DirectionIndex newDirection = newEdge->getSweepDirection();
+                    HalfEdgePtr forwardEdge = newEdge->getHalfEdge(newDirection);
+                    HalfEdgePtr reverseEdge = newEdge->getHalfEdge(reverseDirection(newDirection));
+
+                    forwardEdge->setPreviousEdge(forwardPrev);
+                    reverseEdge->setNextEdge(reverseNext);
+
+                    if (forwardPrev != nullptr)
+                        forwardPrev->setNextEdge(forwardEdge);
+
+                    if (reverseNext != nullptr)
+                        reverseNext->setPreviousEdge(reverseEdge);
+
+                    forwardPrev = forwardEdge;
+                    reverseNext = reverseEdge;
+                }
+
+                prevNode = nextNode;
+            }
+
+            // Create the final edge.
+            substituteIDs.push_back(endNode->getID());
+
+            newEdge = addOrReplaceEdge(originalEdge, prevNode, endNode,
+                                       originalCopy.getFlags(), wasExisting);
+
+            if (wasExisting == false)
+            {
+                // Only update half-edge connections if the edge was new.
+                DirectionIndex newDirection = newEdge->getSweepDirection();
+                HalfEdgePtr forwardEdge = newEdge->getHalfEdge(newDirection);
+                HalfEdgePtr reverseEdge = newEdge->getHalfEdge(reverseDirection(newDirection));
+
+                forwardEdge->setPreviousEdge(forwardPrev);
+                reverseEdge->setNextEdge(reverseNext);
+
+                if (forwardPrev != nullptr)
+                    forwardPrev->setNextEdge(forwardEdge);
+
+                if (reverseNext != nullptr)
+                    reverseNext->setPreviousEdge(reverseEdge);
+
+                // Connect the last partitioned edge to the neighbours of the
+                // original edge.
+                HalfEdgePtr forwardNext = originalCopy.getHalfEdge(forwardNode)->getNextEdge();
+                HalfEdgePtr reversePrev = originalCopy.getHalfEdge(reverseDirection(forwardNode))->getPreviousEdge();
+
+                forwardEdge->setNextEdge(forwardNext);
+                reverseEdge->setPreviousEdge(reversePrev);
+
+                if (forwardNext != nullptr)
+                    forwardNext->setPreviousEdge(forwardEdge);
+
+                if (reversePrev != nullptr)
+                    reversePrev->setNextEdge(reverseEdge);
+            }
+
+            if (originalEdge != nullptr)
+            {
+                // Delete originalEdge if it hasn't been replaced yet.
+                removeEdge(edgeID);
+            }
+
+            ++edgesSplit;
+        } while (getNextGroup(edgeToNodeIDMappings.end(), group, indexer));
+    }
+
+    // Ensure the substitute edges are properly sorted for look-up.
+    substitutes.reindex();
+
+    return edgesSplit;
+}
+
+//! @brief Removes edges from the table if the match specified criteria.
+//! @tparam TUnaryFunc The data type of the unary function to call which
+//! should return true if the edge needs to be removed.
+//! @param[in] fn The unary function object which determines if an edge
+//! should be removed.
+size_t EdgeTable::removeEdgesIf(const std::function<bool(EdgePtr)> &fn)
+{
     // Use partition() instead of remove_if() as it does not destroy
     // the unassigned edges before we've had a chance to remove them
     // from the indexes.
     auto last = std::partition(_allEdges.begin(), _allEdges.end(),
-                               IsEdgeAssigned(maxAssignedRingID));
+                               [&fn](EdgeUPtr &edgeUPtr) { return fn(edgeUPtr.get()); });
 
     // No edges were removed.
     if (last == _allEdges.end())
@@ -1594,20 +1789,23 @@ const HalfEdge *EdgeTable::operator[](const HalfEdgeID &edgeID) const
 //! @param[in] secondNodeID The ID of the node at the end of the new edge.
 //! @param[in] edgeToReplace The optional existing edge to replace with the
 //! new one, null to create an entirely new edge.
+//! @param[in] edgeFlags The flags to set on the newly created edge.
 //! @return A pointer to new newly created node, possibly @p edgeToReplace.
 EdgePtr EdgeTable::createEdge(NodeTable &nodes, ID firstNodeID, ID secondNodeID,
-                              EdgePtr edgeToReplace)
+                              EdgePtr edgeToReplace, Edge::FlagsType edgeFlags)
 {
     if (edgeToReplace == nullptr)
     {
-        return addEdge(nodes, firstNodeID, secondNodeID);
+        return addEdge(nodes, firstNodeID, secondNodeID, edgeFlags);
     }
     else
     {
         // Remove the existing edge from all indexes except the ID index.
         deindexEdge(edgeToReplace, false);
 
-        *edgeToReplace = Edge(edgeToReplace->getID(), &nodes[firstNodeID], &nodes[secondNodeID]);
+        *edgeToReplace = Edge(edgeToReplace->getID(), nodes[firstNodeID],
+                              nodes[secondNodeID]);
+        edgeToReplace->setFlags(edgeFlags);
 
         // Add the edge back into indexes in a new position.
         indexEdge(edgeToReplace, false);
@@ -1668,6 +1866,172 @@ void EdgeTable::deindexEdge(EdgePtr edgePtr, bool indexByID /*= true*/)
     }
 }
 
+//! @brief Adds a new edge connecting two known nodes.
+//! @param[in] firstNode A pointer to the first node to connect.
+//! @param[in] secondNode A pointer to the second node to connect.
+//! @param[in] flags The explicit value to set as the new edges flags or to
+//! merge with the flags of an existing edge if the nodes are already connected.
+//! @param[out] wasExisting Receives true if an edge connecting @p firstNode
+//! and @p secondNode already existed, false if it was newly created.
+//! @return A pointer to the edge connecting the two nodes, possibly
+//! newly created.
+EdgePtr EdgeTable::addEdgeInternal(NodePtr firstNode, NodePtr secondNode,
+                                   Edge::FlagsType flags, bool &wasExisting)
+{
+    wasExisting = false;
+
+    if (firstNode == secondNode)
+    {
+        throw Ag::OperationException("The program attempted to add an edge to a "
+                                     "doubly connected edge list which connected "
+                                     "a node to itself.");
+    }
+
+    EdgeKey key = makeEdgeKey(firstNode->getID(), secondNode->getID());
+
+    auto edgeIDPos = _edgesByConnection.find(key);
+
+    if (edgeIDPos == _edgesByConnection.end())
+    {
+        // The edge doesn't exist yet, create it.
+        Edge newEdge(_idSeed++, firstNode, secondNode);
+
+        // Add the edge to the table.
+        _allEdges.push_back(std::make_unique<Edge>(newEdge));
+
+        EdgePtr edgePtr = _allEdges.back().get();
+        edgePtr->setFlags(flags);
+
+        // Add the edge to the indexes.
+        indexEdge(edgePtr);
+
+        return edgePtr;
+    }
+    else
+    {
+        // The edge already exists.
+        EdgePtr existingEdge = edgeIDPos->second;
+
+        existingEdge->setFlags(existingEdge->getFlags() | flags);
+        wasExisting = true;
+
+        return existingEdge;
+    }
+}
+
+//! @brief Replaces or adds a new edge between two nodes.
+//! @param[in,out] originalEdge A reference to the pointer to the edge to
+//! replace, to be updated to nullptr if replaced. Can be nullptr.
+//! @param[in] firstNode A pointer to the first node defining the new edge.
+//! @param[in] secondNode A pointer to the second node defining the new edge.
+//! @param[in] edgeFlags The flags to set on the new edge or merge with an
+//! existing edge if the nodes are already connected.
+//! @param[out] wasExisting Receives true if an edge connecting @p firstNode
+//! and @p secondNode already existed, false if it was newly created.
+//! @return A pointer to the new edge, possible the original value of @p
+//! originalEdge, if so, originalEdge is overwritten with nullptr.
+EdgePtr EdgeTable::addOrReplaceEdge(EdgePtr &originalEdge, NodePtr firstNode,
+                                    NodePtr secondNode, Edge::FlagsType edgeFlags,
+                                    bool &wasExisting)
+{
+    if (originalEdge == nullptr)
+        return addEdgeInternal(firstNode, secondNode, edgeFlags, wasExisting);
+
+    EdgeKey key = makeEdgeKey(firstNode->getID(), secondNode->getID());
+    wasExisting = false;
+
+    // Determine if an edge connecting the two nodes already exists.
+    auto edgeIDPos = _edgesByConnection.find(key);
+
+    if (edgeIDPos == _edgesByConnection.end())
+    {
+        // The edge doesn't exist yet, replace the original with it.
+        deindexEdge(originalEdge, /* indexById = */ false);
+
+        ID originalID = originalEdge->getID();
+        EdgePtr edgePtr = originalEdge;
+
+        // Overwrite the original edge with the new one, re-using its ID.
+        *edgePtr = Edge(originalID, firstNode, secondNode);
+
+        // Completely overwrite the flags with the new value.
+        edgePtr->setFlags(edgeFlags);
+
+        // Add the edge to the indexes.
+        indexEdge(edgePtr, /* indexById = */ false);
+
+        // Mark the original edge as replaced.
+        originalEdge = nullptr;
+
+        return edgePtr;
+    }
+    else
+    {
+        // The edge already exists.
+        EdgePtr existingEdge = edgeIDPos->second;
+
+        // Merge the new set of flags with the existing edge.
+        existingEdge->setFlags(existingEdge->getFlags() | edgeFlags);
+
+        wasExisting = true;
+
+        return existingEdge;
+    }
+}
+
+//! @brief Replaces an edge with a new definition.
+//! @param[in] nodes The table of nodes which are used to defined edges in this table.
+//! @param[in] edgeID The identity of the edge to replace.
+//! @param[in] firstNodeID The ID of the first node on the new edge.
+//! @param[in] secondNodeID The ID of the second node on the new edge.
+//! @param[in] edgeFlags The flags to attribute to the new edge, or possibly
+//! merge into an existing edge.
+//! @retval true The existing edge @p edgeID was replaced by the new edge.
+//! @retval false Edge @p edgeID was not replaced because an edge between
+//! @p firstNodeID and @p secondNodeID already existed.
+bool EdgeTable::replaceEdge(NodeTable &nodes, ID edgeID, ID firstNodeID,
+                            ID secondNodeID, Edge::FlagsType edgeFlags)
+{
+    EdgePtr edge;
+
+    // Ensure the required edge doesn't already exist.
+    if (tryFindEdgeByNodes(firstNodeID, secondNodeID, edge))
+    {
+        // If it does, attribute it with the desired flags.
+        edge->setFlags(edge->getFlags() | edgeFlags);
+
+        return false;
+    }
+
+    if (tryFindEdgeByID(edgeID, edge) == false)
+        throw ArgumentException("An edge with the specified ID does not exist.",
+                                "edgeID");
+
+    NodePtr firstNode = nullptr;
+
+    if (nodes.tryFindNodeByID(firstNodeID, firstNode) == false)
+        throw ArgumentException("A node with the specified ID does not exist.",
+                                "firstNodeID");
+
+    NodePtr secondNode = nullptr;
+
+    if (nodes.tryFindNodeByID(secondNodeID, secondNode) == false)
+        throw ArgumentException("A node with the specified ID does not exist.",
+                                "secondNodeID");
+
+    // Remove the original edge from all but the ID index.
+    deindexEdge(edge, false);
+
+    // Overwrite the edge.
+    *edge = Edge(edgeID, firstNode, secondNode);
+    edge->setFlags(edgeFlags);
+
+    // Add the new edge to the non-ID indexes.
+    indexEdge(edge, false);
+
+    return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Ring Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -1678,7 +2042,7 @@ void EdgeTable::deindexEdge(EdgePtr edgePtr, bool indexByID /*= true*/)
 //! @param[in] nodeCount The optional count of vertices defining the ring.
 //! @param[in] flags Optional attributes of the ring, such as IsCCW.
 Ring::Ring(ID ringID, HalfEdgePtr firstHalfEdge,
-           uint32_t nodeCount /*= 0*/, uint32_t flags /*= 0*/) :
+           uint32_t nodeCount /*= 0*/, Ring::FlagsType flags /*= 0*/) :
     _id(ringID),
     _parentRingID(NullID),
     _firstHalfEdge(firstHalfEdge),
@@ -1928,6 +2292,127 @@ void RingSystem::buildFromPartitioned(NodeTable &nodes, EdgeTable &edges)
 {
     // Re-scan the edges to form a new set of CCW-only polygons.
     _holesByParentID = findPartitionedRings(nodes, edges, _allRings);
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ExplicitRing Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Constructs an explicit ring from an implicit ring defined by a linked
+//! set of directed edges.
+//! @param[in] implicit The implicit ring to extract a set of nodes from and to
+//! use as a source of metadata.
+ExplicitRing::ExplicitRing(const Ring &implicit) :
+    _id(implicit.getID()),
+    _flags(implicit.getFlags())
+{
+    _nodeIDs.reserve(implicit.getNodeCount());
+
+    HalfEdgeCPtr startEdge = implicit.getFirstEdge();
+    HalfEdgeCPtr currentEdge = startEdge;
+    SnapPoint bestPoint;
+    size_t bestIndex = implicit.getNodeCount();
+
+    do
+    {
+        NodePtr node = currentEdge->getStartNode();
+
+        if ((bestIndex > _nodeIDs.size()) ||
+            node->getGridPosition().lessThanSweep(bestPoint))
+        {
+            // Update the top-left-most point.
+            bestIndex = _nodeIDs.size();
+            bestPoint = node->getGridPosition();
+        }
+
+        _nodeIDs.push_back(currentEdge->getStartNodeID());
+
+        currentEdge = currentEdge->getNextEdge();
+    } while (currentEdge != startEdge);
+
+    // Shuffle the points so that the top-left-most point appears first.
+    if (bestIndex > 0)
+    {
+        std::rotate(_nodeIDs.begin(),
+                    _nodeIDs.begin() + bestIndex,
+                    _nodeIDs.end());
+    }
+}
+
+//! @brief Inserts intersection nodes where edges were updated due to an
+//! intersection sweep.
+//! @param[in] substitutes The map of edges replaced.
+//! @retval true If the set of nodes defining the ring was updated.
+//! @retval false No change was made to the ring.
+bool ExplicitRing::addIntersections(const SortedEdgeSubstituteMap &substitutes)
+{
+    IDCollection newNodes;
+    ID prevNodeID = _nodeIDs.back();
+
+    // Look up the edges connecting nodes to see if any have been replaced.
+    // Only create a new collection of node IDs if there is a change.
+    for (auto nodeIDPos = _nodeIDs.begin(), endPos = _nodeIDs.end();
+         nodeIDPos != endPos;
+         ++nodeIDPos)
+    {
+        ID currentNodeID = *nodeIDPos;
+        EdgeKey edgeKey = makeEdgeKey(currentNodeID, prevNodeID);
+
+        auto mappingPos = substitutes.find(edgeKey);
+
+        if (mappingPos != substitutes.end())
+        {
+            // The edge connecting prevNodeID to currentNodeID had
+            // intersections and was replaced.
+            const IDCollection &replacementNodes = mappingPos->second;
+
+            if (newNodes.empty())
+            {
+                // Prepare the replacement node ID collection.
+                newNodes.reserve(((_nodeIDs.size() + replacementNodes.size()) * 110) / 100);
+
+                // Copy the previous IDs to the new collection.
+                std::copy(_nodeIDs.begin(), nodeIDPos, std::back_inserter(newNodes));
+            }
+
+            // Determine in what order to copy the new nodes. We need to be
+            // careful not to copy prevNodeID because it should already be in
+            // the collection.
+            if (replacementNodes.front() == prevNodeID)
+            {
+                // The nodes are ordered correctly.
+                std::copy(std::next(replacementNodes.begin()),
+                          replacementNodes.end(),
+                          std::back_inserter(newNodes));
+            }
+            else // if (replacementNodes.front() == currentNodeID)
+            {
+                // The replacement nodes are ordered from
+                // currentNodeID to prevNodeID.
+                std::copy(replacementNodes.rbegin(),
+                          std::prev(replacementNodes.rend()),
+                          std::back_inserter(newNodes));
+            }
+        }
+        else if (newNodes.empty() == false)
+        {
+            // Update the new collection given there have already been
+            // substitutions.
+            newNodes.push_back(currentNodeID);
+        }
+
+        // Prepare of the next edge.
+        prevNodeID = currentNodeID;
+    }
+
+    if (newNodes.empty())
+        return false;
+
+    // Replace the old node collection.
+    _nodeIDs = std::move(newNodes);
+
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

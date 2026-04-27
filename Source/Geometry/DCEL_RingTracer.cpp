@@ -2,7 +2,7 @@
 //! @brief The definition of internal structures and functions used to trace
 //! a system of rings and holes from nodes and edges.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -14,10 +14,6 @@
 #include "Ag/Geometry/DCEL_Algorithms.hpp"
 #include "Ag/Geometry/DCEL_Sweep.hpp"
 #include "DCEL_RingTracer.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 namespace Ag {
 namespace Geom {
@@ -34,7 +30,6 @@ class RingValue
 private:
     IDCollection _nodeIDs;
     size_t _hash;
-    uint32_t _flags;
 
 public:
     RingValue() : _hash(0) {}

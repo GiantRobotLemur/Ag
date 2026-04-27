@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 
 #include "Ag/GTest_Core.hpp"
+
 #include "Ag/Geometry/AffineTransform2D.hpp"
 
 namespace Ag {

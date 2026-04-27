@@ -3,7 +3,7 @@
 //! owning them so that optimised operations can be performed on groups of
 //! elements.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -34,30 +34,7 @@ namespace Geom {
 //! @brief An object holding a view of Point2D values without
 //! owning them so that optimised operations can be performed on groups of
 //! elements.
-class Point2DCollectionView
-{
-public:
-    // Public Data Types
-    using ValuePtr = Point2D *;
-    using ValueCPtr = const Point2D *;
-    using Collection = Point2DCollection;
-    using CollectionRef = Point2DCollection &;
-    using CollectionCRef = const Point2DCollection &;
-
-    // Construction/Destruction
-    //! @brief Constructs an empty collection view.
-    constexpr Point2DCollectionView() noexcept : _source(nullptr), _count(0) {}
-    ~Point2DCollectionView() = default;
-
-    // Accessors
-    constexpr bool isEmpty() const noexcept { return _count == 0; }
-
-private:
-
-    // Internal Fields
-    ValueCPtr _source;
-    size_t _count;
-};
+using Point2DCollectionView = ArrayView<Point2D>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
