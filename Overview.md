@@ -179,17 +179,9 @@ triangle data.
 - **Gfx2D:** `GraphicDecomposition.cpp` is essentially empty (template-only)
 - **Gfx2D:** Missing tests for most components (only `Test_Operations.cpp` and `Test_Colours.cpp`)
 - **ConfigureBuild.cmake:** TODO to auto-detect x86-64 architecture level via `try_run()`
-- **Geometry:** `Grahpics.uxf` appears to be a typo (should be `Graphics.uxf`)
 
 ### Potential Issues / Flaws
 1. **Header guards use reserved identifiers:** Double-underscore prefixed names (`__AG_CORE_STRING_HPP__`) are reserved by the C++ standard. Should use single-underscore or `#pragma once`.
-2. **Self-inclusion in String.hpp:** Line 23 includes `"String.hpp"` from within `String.hpp` itself - likely meant to include a different header or is a copy-paste error.
-3. **Build directory in repo:** The `Build/` directory contains `.cmake` API reply files that appear to be checked in, despite `build*` being in `.gitignore` (the capital `B` may not match the pattern on case-sensitive systems).
-4. **`FATAL` vs `FATAL_ERROR`:** In `ConfigureBuild.cmake` line 112, `message(FATAL ...)` should be `message(FATAL_ERROR ...)` - `FATAL` alone is not a valid CMake message mode.
-5. **Duplicate SSE4.1/4.2 config:** In `ag_configure_sdl3()`, `SDL_SSE4_2` is set twice per branch (once with "SSE4.2" comment, once with "SSE4.1" comment) - the `SDL_SSE4_1` variable is never set.
-6. **SDL2 still declared:** `FetchContent_Declare(SDL2 ...)` and `ag_configure_sdl2()` exist but SDL2 support appears vestigial since the move to SDL3.
-7. **Posix code paths use `${targetName}` instead of `${destTargetName}`:** In `ag_enable_proxy_stacktrace()`, the Linux branch references `${targetName}` which is the old parameter name, but the function signature uses `destTargetName`/`symbolTargetName`.
-
 ---
 
 ## External Dependencies
