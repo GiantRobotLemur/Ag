@@ -17,16 +17,12 @@ ag_add_library(Geometry FOLDER      Geometry
                                     ${GEOM_INCLUDE_DIR}/Angle.hpp
                                     Point2I.cpp
                                     ${GEOM_INCLUDE_DIR}/Point2I.hpp
-                                    Point2ICollectionView.cpp
-                                    ${GEOM_INCLUDE_DIR}/Point2ICollectionView.hpp
                                     Size2I.cpp
                                     ${GEOM_INCLUDE_DIR}/Size2I.hpp
                                     Rect2I.cpp
                                     ${GEOM_INCLUDE_DIR}/Rect2I.hpp
                                     Point2D.cpp
                                     ${GEOM_INCLUDE_DIR}/Point2D.hpp
-                                    Point2DCollectionView.cpp
-                                    ${GEOM_INCLUDE_DIR}/Point2DCollectionView.hpp
                                     Size2D.cpp
                                     ${GEOM_INCLUDE_DIR}/Size2D.hpp
                                     Rect2D.cpp
@@ -109,8 +105,6 @@ source_group("Numerics" FILES   NumericDomain.cpp
 
 source_group("Primitives" FILES Point2I.cpp
                                 ${GEOM_INCLUDE_DIR}/Point2I.hpp
-                                Point2ICollectionView.cpp
-                                ${GEOM_INCLUDE_DIR}/Point2ICollectionView.hpp
                                 Size2I.cpp
                                 ${GEOM_INCLUDE_DIR}/Size2I.hpp
                                 Rect2I.cpp
@@ -121,8 +115,6 @@ source_group("Primitives" FILES Point2I.cpp
                                 ${GEOM_INCLUDE_DIR}/Size2D.hpp
                                 Rect2D.cpp
                                 ${GEOM_INCLUDE_DIR}/Rect2D.hpp
-                                Point2DCollectionView.cpp
-                                ${GEOM_INCLUDE_DIR}/Point2DCollectionView.hpp
                                 Matrix2x2.cpp
                                 ${GEOM_INCLUDE_DIR}/Matrix2x2.hpp
                                 Matrix3x3.cpp

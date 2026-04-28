@@ -199,6 +199,11 @@ using Point2DPair = Point2D::Pair;
 //! be processed by AVX instruction.
 using Point2DCollection = std::vector<Point2D, Ag::AlignedAllocator<Point2D, 32>>;
 
+//! @brief An object holding a view of Point2D values without
+//! owning them so that optimised operations can be performed on groups of
+//! elements.
+using Point2DCollectionView = ArrayView<Point2D>;
+
 //! @brief An alias for a double-ended queue of Point2D values which will
 //! allow them to be processed by SSE instruction.
 using Point2DDeque = std::deque<Point2D, Ag::AlignedAllocator<Point2D, 16>>;
