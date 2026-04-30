@@ -34,7 +34,7 @@ namespace Gfx2D {
 //using RawScene2DSPtr = std::shared_ptr<RawScene2D>;
 
 //! @brief A base class representing a component of a 2D scene graph.
-class Graphic // TODO: Needs to derive from GraphicArtefact to be freezeable?
+class Graphic : public GraphicArtefact
 {
 protected:
     // Construction/Destruction
@@ -70,12 +70,18 @@ public:
     virtual ~VectorGraphic() = default;
 
     // Accessors
-
+    BrushSPtr getFill() const;
+    void setFill(const BrushSPtr &fillStyle);
+    PenSPtr getStroke() const;
+    void setStroke(const PenSPtr &lineStyle);
 
     // Operations
     //virtual Geom::Rect2D calculateBounds(const Geom::AffineTransform2D &transform) const = 0;
     //virtual bool isPointIn(const Geom::AffineTransform2D &transform, const Geom::Point2D &point) const = 0;
     //virtual RawScene2DSPtr decompose(const Geom::AffineTransform2D &transform) const = 0;
+
+    // Overrides
+
 protected:
     virtual PartitionedPolygon decompose(const Geom::AffineTransform2D &transform,
                                          DecompositionContext &context) const =0;

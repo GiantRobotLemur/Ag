@@ -2,7 +2,7 @@
 //! @brief The definition of a set of classes representing the components of
 //! a 2D scene graph.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -28,6 +28,7 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Local Data
 ////////////////////////////////////////////////////////////////////////////////
+const std::string_view VectorGraphicName("VectorGraphic");
 
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
@@ -38,6 +39,39 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Graphic Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// VectorGraphic Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Gets the style used to fill the area encompassed by the graphic.
+BrushSPtr VectorGraphic::getFill() const
+{
+    return _fill;
+}
+
+//! @brief Sets the style used to fill the area encompassed by the graphic.
+//! @param[in] fillStyle The new fill style, nullptr for no fill.
+void VectorGraphic::setFill(const BrushSPtr &fillStyle)
+{
+    verifyAccess(VectorGraphicName, "set fill");
+
+    _fill = fillStyle;
+}
+
+//! @brief Gets the style used to render the outline of the graphic.
+PenSPtr VectorGraphic::getStroke() const
+{
+    return _stroke;
+}
+
+//! @brief Sets the style used to render the outline of the graphic.
+//! @param[in] lineStyle The new line style, nullptr if there is no outline.
+void VectorGraphic::setStroke(const PenSPtr &lineStyle)
+{
+    verifyAccess(VectorGraphicName, "set stroke");
+
+    _stroke = lineStyle;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global Function Definitions
