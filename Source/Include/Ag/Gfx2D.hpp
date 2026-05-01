@@ -40,6 +40,9 @@
 #include "Gfx2D/GraphicArtefact.hpp"
 #include "Gfx2D/PartitionedPolygon.hpp"
 #include "Gfx2D/GraphicDecomposition.hpp"
+#include "Gfx2D/GraphicGroup.hpp"
+#include "Gfx2D/Scene.hpp"
+#include "Gfx2D/PrimitiveGraphics.hpp"
 
 
 #endif // Header guard

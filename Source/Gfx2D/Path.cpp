@@ -58,8 +58,8 @@ public:
     //! @brief Gets the statistics gathered by the object.
     DecompositionStatistics getStatistics() const
     {
-        return DecompositionStatistics(_bounds.value(), _vertexCount,
-                                       _edgeCount, _figureCount);
+        return DecompositionStatistics(_bounds.value_or(Geom::Rect2D()),
+                                       _vertexCount, _edgeCount, _figureCount);
     }
 
     // Operations
@@ -640,8 +640,11 @@ private:
     //! @throws OperationException If no figure is currently being defined.
     void verifyFigureActive()
     {
-        if (_figures.empty() ||
-            _figures.back().isFinished())
+        // A figure is "active" while it is the most recent figure on the
+        // builder. The builder marks a figure as fully formed only when a
+        // new beginFigure() call replaces it; segments may be added to the
+        // current figure freely up until that point.
+        if (_figures.empty())
             throw OperationException("Appending to a figure when none is active.");
     }
 
@@ -789,7 +792,7 @@ public:
         uint32_t pointIndex = appendPoint(end);
         PathSegment segment(SegmentType::Polyline, pointIndex, 1);
 
-        if (_segments.back().tryMerge(segment) == false)
+        if (_segments.empty() || _segments.back().tryMerge(segment) == false)
         {
             _segments.push_back(segment);
 
@@ -814,7 +817,7 @@ public:
                             static_cast<uint32_t>(points.getCount()));
 
         // Either merge of add the polyline segment.
-        if (_segments.back().tryMerge(segment) == false)
+        if (_segments.empty() || _segments.back().tryMerge(segment) == false)
         {
             _segments.push_back(segment);
 

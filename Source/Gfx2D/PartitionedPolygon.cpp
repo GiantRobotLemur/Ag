@@ -19,6 +19,12 @@ namespace Gfx2D {
 ////////////////////////////////////////////////////////////////////////////////
 // PartitionedPolygon Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
+//! @brief Constructs a bounds-only polygon with no vertex or index data.
+PartitionedPolygon::PartitionedPolygon(const Geom::Rect2D &originalBounds) :
+    _originalBounds(originalBounds)
+{
+}
+
 //! @brief Constructs an object which is a set of triangles ready to be rendered
 //! which represent the decomposition of a graphic path.
 //! @param[in] decomposition An object containing the vertices and edges of the

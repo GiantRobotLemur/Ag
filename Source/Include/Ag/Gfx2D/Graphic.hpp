@@ -18,20 +18,16 @@
 
 #include "Brush.hpp"
 #include "Pen.hpp"
-#include "PartitionedPolygon.hpp"
+#include "Path.hpp"
 
 namespace Ag {
 namespace Gfx2D {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Data Type Declarations
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-//class RawScene2D;
-//using RawScene2DSPtr = std::shared_ptr<RawScene2D>;
+class DecompositionContext;
+class GraphicDecomposition;
 
 //! @brief A base class representing a component of a 2D scene graph.
 class Graphic : public GraphicArtefact
@@ -42,22 +38,44 @@ protected:
 public:
     virtual ~Graphic() = default;
 
-    // Accessors
-
     // Operations
-    virtual Geom::Rect2D calculateBounds(const Geom::AffineTransform2D &transform) const =0;
-    virtual bool isPointIn(const Geom::AffineTransform2D &transform, const Geom::Point2D &point) const =0;
-    //virtual RawScene2DSPtr decompose(const Geom::AffineTransform2D &transform) const = 0;
 
-private:
-    // Internal Types
+    //! @brief Computes the world-space bounding rectangle of this node,
+    //! given the accumulated transform from its ancestors.
+    //! @param[in] parentTransform The transform composed from all ancestors,
+    //! identity at the root.
+    virtual Geom::Rect2D calculateBounds(
+        const Geom::AffineTransform2D &parentTransform) const = 0;
 
-    // Internal Functions
+    //! @brief Tests whether a world-space point lies within this node.
+    //! @param[in] worldPoint The point to test in world space.
+    //! @param[in] parentTransform The transform composed from all ancestors,
+    //! identity at the root.
+    virtual bool hitTest(const Geom::Point2D &worldPoint,
+                         const Geom::AffineTransform2D &parentTransform) const = 0;
 
-    // Internal Fields
+    //! @brief Decomposes this node into draw items, appending them to @a out.
+    //! @param[out] out The decomposition to append to.
+    //! @param[in] parentTransform The transform composed from all ancestors.
+    //! @param[in] parentOpacity The opacity composed from all ancestors,
+    //! 1.0 at the root.
+    //! @param[in] parentClipId The clip-region id inherited from the
+    //! enclosing group, or @c GraphicDecomposition::NoClip if unclipped.
+    //! @param[in,out] ctx A scratch decomposition context, reused across
+    //! invocations to retain allocations.
+    virtual void decomposeInto(GraphicDecomposition &out,
+                               const Geom::AffineTransform2D &parentTransform,
+                               double parentOpacity,
+                               size_t parentClipId,
+                               DecompositionContext &ctx) const = 0;
+
+    // Convenience overloads for top-level callers.
+    Geom::Rect2D calculateBounds() const;
+    bool hitTest(const Geom::Point2D &worldPoint) const;
+    GraphicDecomposition decompose() const;
 };
 
-class DecompositionContext;
+using GraphicSPtr = std::shared_ptr<Graphic>;
 
 //! @brief A class representing a component of a 2D scene graph defined by
 //! vector graphics, possibly filled, possibly outlined.
@@ -75,34 +93,43 @@ public:
     PenSPtr getStroke() const;
     void setStroke(const PenSPtr &lineStyle);
 
-    // Operations
-    //virtual Geom::Rect2D calculateBounds(const Geom::AffineTransform2D &transform) const = 0;
-    //virtual bool isPointIn(const Geom::AffineTransform2D &transform, const Geom::Point2D &point) const = 0;
-    //virtual RawScene2DSPtr decompose(const Geom::AffineTransform2D &transform) const = 0;
+    // Graphic overrides
+    virtual Geom::Rect2D calculateBounds(
+        const Geom::AffineTransform2D &parentTransform) const override;
+    virtual bool hitTest(const Geom::Point2D &worldPoint,
+                         const Geom::AffineTransform2D &parentTransform) const override;
+    virtual void decomposeInto(GraphicDecomposition &out,
+                               const Geom::AffineTransform2D &parentTransform,
+                               double parentOpacity,
+                               size_t parentClipId,
+                               DecompositionContext &ctx) const override;
 
-    // Overrides
+    using Graphic::calculateBounds;
+    using Graphic::hitTest;
+    using Graphic::decompose;
+
+    // GraphicArtefact overrides
+    virtual void freeze() override;
 
 protected:
-    virtual PartitionedPolygon decompose(const Geom::AffineTransform2D &transform,
-                                         DecompositionContext &context) const =0;
+    //! @brief Returns the geometric path which represents this primitive in
+    //! its local coordinate space. Concrete subclasses implement this to
+    //! lower their high-level shape (rectangle, ellipse, etc.) to a Path.
+    virtual Path lowerToPath() const = 0;
+
+    //! @brief Returns the bounding rectangle of this primitive in its
+    //! local coordinate space (before any parent transform is applied).
+    //! Concrete subclasses provide this directly so we don't have to round-
+    //! trip through the (incomplete) Path simulation pipeline.
+    virtual Geom::Rect2D calculateLocalBounds() const = 0;
 
 private:
-    // Internal Types
-
-    // Internal Functions
-
     // Internal Fields
     BrushSPtr _fill;
     PenSPtr _stroke;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// Function Declarations
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Templates
-////////////////////////////////////////////////////////////////////////////////
+using VectorGraphicSPtr = std::shared_ptr<VectorGraphic>;
 
 }} // namespace Ag::Gfx2D
 

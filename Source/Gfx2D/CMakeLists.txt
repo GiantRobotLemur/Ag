@@ -36,6 +36,12 @@ ag_add_library(Gfx2D FOLDER         Graphics
                                     DecompositionContext.hpp
                                     GraphicDecomposition.cpp
                                     ${GFX2D_INCLUDE_DIR}/GraphicDecomposition.hpp
+                                    GraphicGroup.cpp
+                                    ${GFX2D_INCLUDE_DIR}/GraphicGroup.hpp
+                                    Scene.cpp
+                                    ${GFX2D_INCLUDE_DIR}/Scene.hpp
+                                    PrimitiveGraphics.cpp
+                                    ${GFX2D_INCLUDE_DIR}/PrimitiveGraphics.hpp
 
                      HEADERS        ${AG_INCLUDE_DIR}/Ag/Gfx2D.hpp
                      PUBLIC_LIBS    Geometry AgCore)
@@ -62,7 +68,10 @@ ag_add_test_app(Gfx2D_Tests TEST_LIB    Gfx2D
                             SOURCES     Gfx2D_TestPCH.hpp
                                         Test_Operations.cpp
                                         Test_Colours.cpp
-                                        Test_StrokeHelper.cpp)
+                                        Test_StrokeHelper.cpp
+                                        Test_GraphicDecomposition.cpp
+                                        Test_GraphicGroup.cpp
+                                        Test_Scene.cpp)
 
 target_precompile_headers(Gfx2D_Tests PRIVATE [["Gfx2D_TestPCH.hpp"]])
 target_include_directories(Gfx2D_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

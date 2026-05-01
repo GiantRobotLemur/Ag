@@ -49,16 +49,33 @@ private:
     Geom::Rect2D _originalBounds;
 public:
     // Construction/Destruction
+    PartitionedPolygon() = default;
     PartitionedPolygon(const Geom::Point2DCollection &vertices,
                        const Geom::DCEL::IDDeque &triangleIndices,
                        const Geom::DCEL::IDDeque &outlineIndices,
                        const Geom::Rect2D &originalBounds);
+
+    //! @brief Constructs a bounds-only placeholder polygon with no vertex
+    //! or index data. Intended as a workaround until the DCEL partition
+    //! pipeline lands.
+    explicit PartitionedPolygon(const Geom::Rect2D &originalBounds);
+
     ~PartitionedPolygon() = default;
+
+    // The internal views point at memory owned by _data. A deep copy would
+    // leave the views referencing the source's buffer, so copying is
+    // explicitly disallowed. std::vector move semantics preserve the buffer
+    // pointer, so move construction/assignment is safe.
+    PartitionedPolygon(const PartitionedPolygon &) = delete;
+    PartitionedPolygon &operator=(const PartitionedPolygon &) = delete;
+    PartitionedPolygon(PartitionedPolygon &&) noexcept = default;
+    PartitionedPolygon &operator=(PartitionedPolygon &&) noexcept = default;
 
     // Accessors
     constexpr const Geom::Point2DCollectionView &getPoints() const noexcept { return _points; }
     constexpr const Geom::DCEL::IDCollectionView &getTriangleIndices() const noexcept { return _triangleIndices; }
     constexpr const Geom::DCEL::IDCollectionView &getOutlineIndices() const noexcept { return _outlineIndices; }
+    constexpr const Geom::Rect2D &getOriginalBounds() const noexcept { return _originalBounds; }
 
     // Operations
 
