@@ -118,7 +118,7 @@ public:
     bool                                isEmpty() const noexcept   { return _shapes.empty(); }
 
     // Builder operations (called during decomposition).
-    void appendShape(DecomposedShape shape);
+    void appendShape(DecomposedShape &&shape);
     size_t appendClip(ClipRegion clip);
     void mergeBounds(const Geom::Rect2D &bounds);
 

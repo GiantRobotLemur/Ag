@@ -54,6 +54,19 @@ protected:
     void verifyAccess(const std::string_view &artefactType,
                       const std::string_view &operation);
 
+    //! @brief Updates a pointer to a GraphicArtefact-derived instance frozen,
+    //! re-using an inner frozen clone if possible.
+    //! @tparam T The GraphicArtefact-derived data type of the artefact to clone.
+    //! @param[in,out] artefact The reference to the artefact to freeze,
+    //! possibly null, updated with a frozen clone if necessary. A null
+    //! reference leads to a non-op.
+    template<typename T>
+    static void makeFrozen(std::shared_ptr<T> &artefact)
+    {
+        if (artefact && !artefact->isFrozen())
+            artefact = std::dynamic_pointer_cast<T>(artefact->createFrozenClone());
+    }
+
 private:
     // Internal Fields
     mutable std::shared_ptr<GraphicArtefact> _frozenCopy;

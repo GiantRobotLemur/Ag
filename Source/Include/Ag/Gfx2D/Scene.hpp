@@ -2,7 +2,7 @@
 //! @brief The declaration of a top-level scene owner that supports producing
 //! frozen snapshots safe for consumption on a render thread.
 //! @author GiantRobotLemur@na-se.co.uk and Claude Opus 4.7.
-//! @date 2025-2026
+//! @date 2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -33,18 +33,19 @@ namespace Gfx2D {
 class Scene
 {
 public:
+    // Construction/Destruction
     Scene();
     explicit Scene(const GraphicGroupSPtr &root);
     ~Scene() = default;
 
-    //! @brief Returns the live, mutable root group.
+    // Accessors
     const GraphicGroupSPtr &root() const noexcept;
 
-    //! @brief Produces a fully-frozen deep clone of the scene tree, suitable
-    //! for handing to a render thread.
+    // Operations
     GraphicGroupSPtr snapshot() const;
 
 private:
+    // Internal Fields
     GraphicGroupSPtr _root;
 };
 

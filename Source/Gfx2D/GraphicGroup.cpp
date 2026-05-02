@@ -226,13 +226,11 @@ void GraphicGroup::decomposeInto(GraphicDecomposition &out,
 //! children, then marks the group itself frozen.
 void GraphicGroup::freeze()
 {
-    for (const auto &child : _children)
-    {
-        if (child)
-        {
-            child->freeze();
-        }
-    }
+    if (isFrozen())
+        return;
+
+    for (auto &child : _children)
+        makeFrozen(child);
 
     GraphicArtefact::freeze();
 }

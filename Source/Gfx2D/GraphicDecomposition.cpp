@@ -49,7 +49,7 @@ ClipRegion::ClipRegion(PartitionedPolygon geometry,
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Appends a draw item to the decomposition and merges its world
 //! bounds into the cumulative bounds.
-void GraphicDecomposition::appendShape(DecomposedShape shape)
+void GraphicDecomposition::appendShape(DecomposedShape &&shape)
 {
     // The shape's geometry is in local space; project its bounds through the
     // shape transform to compute its world-space contribution to bounds.

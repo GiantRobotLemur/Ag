@@ -96,15 +96,8 @@ void VectorGraphic::setStroke(const PenSPtr &lineStyle)
 //! tree is safe to traverse from a render thread.
 void VectorGraphic::freeze()
 {
-    if (_fill)
-    {
-        _fill->freeze();
-    }
-
-    if (_stroke)
-    {
-        _stroke->freeze();
-    }
+    makeFrozen(_fill);
+    makeFrozen(_stroke);
 
     GraphicArtefact::freeze();
 }
