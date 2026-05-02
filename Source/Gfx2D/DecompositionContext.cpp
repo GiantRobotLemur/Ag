@@ -140,7 +140,25 @@ void DecompositionContext::reset(const DecompositionStatistics &stats)
 {
     // TODO: Allow size hint to edge table.
     _edges.clear();
-    _nodes.reset(stats.getBounds(), stats.getPointCount());
+    _filledBounds = Geom::Rect2D();
+    _clipBounds = Geom::Rect2D();
+
+    // The snap context needs a non-degenerate scale on each axis. Inflate
+    // an axis with zero extent so callers can pass tight (e.g. line) bounds
+    // without triggering a divide-by-zero in the node table's snap grid.
+    Geom::Rect2D bounds = stats.getBounds();
+
+    if (bounds.getWidth() <= 0.0 || bounds.getHeight() <= 0.0)
+    {
+        const double padX = (bounds.getWidth()  <= 0.0) ? 1.0 : 0.0;
+        const double padY = (bounds.getHeight() <= 0.0) ? 1.0 : 0.0;
+        bounds = Geom::Rect2D(bounds.getMinimumX() - padX,
+                              bounds.getMinimumY() - padY,
+                              bounds.getMaximumX() + padX,
+                              bounds.getMaximumY() + padY);
+    }
+
+    _nodes.reset(bounds, stats.getPointCount());
 }
 
 //! @brief Defines a point within the context.
@@ -228,6 +246,36 @@ void DecompositionContext::addIntersectionLine(const Geom::LineEq2D &line)
     }
 }
 
+//! @brief Snapshots the current fill geometry as an ExplicitRingCollection
+//! for later use as the @c originalRings argument to @c partition.
+//! @details Builds a RingSystem from the current node/edge state, then
+//! converts each ring (filled or hole) into an ExplicitRing. This is the
+//! input shape that the partition step preserves as the polygon outline.
+Geom::DCEL::ExplicitRingCollection DecompositionContext::extractFillRings()
+{
+    Geom::DCEL::RingSystem rings;
+    rings.build(_nodes, _edges);
+
+    Geom::DCEL::ExplicitRingCollection result;
+    const auto &allRings = rings.getRings();
+    result.reserve(allRings.size());
+
+    for (const Geom::DCEL::Ring &ring : allRings)
+    {
+        result.emplace_back(ring);
+    }
+
+    return result;
+}
+
+//! @brief Convenience overload which extracts the original fill rings from
+//! the current node/edge state and partitions in one step.
+PartitionedPolygon DecompositionContext::partition(bool includeIntersections /*= false*/)
+{
+    Geom::DCEL::ExplicitRingCollection rings = extractFillRings();
+    return partition(rings, includeIntersections);
+}
+
 //! @brief Create a partitioned polygon from the clipped geometry.
 //! @return A shape which can be rendered by a GPU, possibly empty if all
 //! geometry was clipped out.
@@ -293,11 +341,10 @@ PartitionedPolygon DecompositionContext::partition(Geom::DCEL::ExplicitRingColle
     Geom::DCEL::RingSystem ringsToPartition;
     ringsToPartition.build(_nodes, _edges, includeIntersections);
 
-    if (Geom::DCEL::makeYMonotone(_nodes, _edges, ringsToPartition))
-    {
-        // If any partitioning was done, re-build the rings.
-        ringsToPartition.buildFromPartitioned(_nodes, _edges);
-    }
+
+    // makeYMonotone() rebuilds the ring system internally when it adds
+    // partition edges, so no second buildFromPartitioned() call is needed here.
+    Geom::DCEL::makeYMonotone(_nodes, _edges, ringsToPartition);
 
     // Triangulate the y-monotone and convex polygons.
     for (const auto &ring : ringsToPartition.getRings())

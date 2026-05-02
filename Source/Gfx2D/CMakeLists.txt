@@ -71,6 +71,7 @@ ag_add_test_app(Gfx2D_Tests TEST_LIB    Gfx2D
                                         Test_StrokeHelper.cpp
                                         Test_GraphicDecomposition.cpp
                                         Test_GraphicGroup.cpp
+                                        Test_PartitionPipeline.cpp
                                         Test_Scene.cpp)
 
 target_precompile_headers(Gfx2D_Tests PRIVATE [["Gfx2D_TestPCH.hpp"]])

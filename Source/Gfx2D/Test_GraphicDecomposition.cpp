@@ -71,12 +71,13 @@ TEST(GraphicDecomposition, RectangleFillProducesOneShape)
     EXPECT_DOUBLE_EQ(1.0, shape.getEffectiveOpacity());
     EXPECT_EQ(GraphicDecomposition::NoClip, shape.getClipStackId());
     EXPECT_NE(nullptr, shape.getBrush());
-    // NOTE: getPoints() and getTriangleIndices() will become non-empty once
-    // the Geometry partition() pipeline is implemented; for now we only
-    // validate that a placeholder shape with the right bounds was emitted.
     const Geom::Rect2D &b = shape.getGeometry().getOriginalBounds();
     EXPECT_NEAR(0.0,  b.getMinimumX(), Tolerance);
     EXPECT_NEAR(10.0, b.getMaximumX(), Tolerance);
+
+    // The fill should now be triangulated, not a bounds-only placeholder.
+    EXPECT_EQ(4u, shape.getGeometry().getPoints().getCount());
+    EXPECT_EQ(6u, shape.getGeometry().getTriangleIndices().getCount());
 }
 
 TEST(GraphicDecomposition, FillAndStrokeProduceTwoShapes)

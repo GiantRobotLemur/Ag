@@ -1224,18 +1224,12 @@ bool makeYMonotone(NodeTable &nodes, EdgeTable &edges,
     if (connections.empty() == false)
     {
         // Create edges for all the connections.
-        puts("Monotone Connected Edges:\n");
-
         for (const auto &connection : connections)
         {
-            printf("Connect %u -> %u\n", connection.first, connection.second);
-
             edges.addEdge(nodes, connection.first,
                           connection.second,
                           Edge::Partition);
         }
-
-         putchar('\n');
 
         // Reform the ring split by diagonals into several rings.
         rings.buildFromPartitioned(nodes, edges);

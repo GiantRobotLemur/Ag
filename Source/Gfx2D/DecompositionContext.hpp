@@ -106,8 +106,10 @@ public:
                               bool isClip);
 
     void addIntersectionLine(const Geom::LineEq2D &line);
+    Geom::DCEL::ExplicitRingCollection extractFillRings();
     PartitionedPolygon partition(Geom::DCEL::ExplicitRingCollection &originalRings,
                                  bool includeIntersections);
+    PartitionedPolygon partition(bool includeIntersections = false);
 private:
     // Internal Types
 

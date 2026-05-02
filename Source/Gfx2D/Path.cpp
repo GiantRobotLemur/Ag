@@ -468,10 +468,17 @@ public:
     //! @retval false The figure was intended to be filled.
     constexpr bool isHole() const noexcept { return _isHole; }
 
-    //! @brief Indicates whether the figure is complete.
-    //! @retval true The figure is complete in its current state.
-    //! @retval false The figure definition is not valid.
+    //! @brief Indicates whether the figure has at least one segment defined.
+    //! @retval true The figure has been populated.
+    //! @retval false The figure is still empty.
     constexpr bool isFinished() const noexcept { return _segmentCount > 0; }
+
+    //! @brief Indicates whether the figure has been explicitly closed.
+    //! @retval true closeFigure() ran and added the closing segment if
+    //! one was needed.
+    //! @retval false The figure is open: a stroke can be drawn but the
+    //! interior is not bounded.
+    constexpr bool isClosed() const noexcept { return _isClosed; }
 
     constexpr uint32_t getStartPointIndex() const noexcept { return _startPoint; }
     constexpr uint32_t getStartSegmentIndex() const noexcept { return _startSegment; }
@@ -500,6 +507,11 @@ public:
     {
         stats.addFigure();
         Geom::Point2D start = stats.transform(points[_startPoint]);
+
+        // The figure's start point would otherwise be omitted from the bounds:
+        // PathSegment::simulateDecomposition only walks the segment's own
+        // vertices, not the inherited start.
+        stats.addBounds(start);
 
         SegmentView figureSegments = segments.subset(_startSegment,
                                                      _segmentCount);
@@ -662,8 +674,9 @@ private:
 
         if (segmentCount != activeFigure.getSegmentCount())
         {
-            const PathSegment &firstSegment = _segments[activeFigure.getStartSegmentIndex()];
-            Geom::Point2D start = _points[firstSegment.getFirstVertex()];
+            // The figure's start point lives on the figure itself; the first
+            // segment's _firstVertex actually addresses its end point.
+            Geom::Point2D start = _points[activeFigure.getStartPointIndex()];
 
             PathSegment &lastSegment = _segments.back();
             Geom::Point2D last = _points[lastSegment.getFirstVertex() + lastSegment.getVertexCount() - 1];
@@ -751,15 +764,17 @@ public:
     //! segment connecting the start and end points if necessary.
     void closeFigure()
     {
-        if (_figures.empty() || _figures.back().isFinished())
+        if (_figures.empty() || _figures.back().isClosed())
             return;
 
         PathFigure &lastFigure = _figures.back();
 
         if (lastFigure.getSegmentCount() > 0)
         {
-            const PathSegment &firstSegment = _segments[lastFigure.getStartSegmentIndex()];
-            Geom::Point2D startPoint = _points[firstSegment.getFirstVertex()];
+            // The figure's start point is stored on the figure itself; the
+            // first segment's _firstVertex actually addresses the segment's
+            // *end* (a point appended after beginFigure).
+            Geom::Point2D startPoint = _points[lastFigure.getStartPointIndex()];
 
             PathSegment &lastSegment = _segments.back();
             Geom::Point2D lastPoint = _points[lastSegment.getLastVertex()];
@@ -772,6 +787,11 @@ public:
 
                 appendSegmentToActiveFigure(closingSegment);
             }
+
+            // appendSegmentToActiveFigure() leaves _isClosed alone when the
+            // closing segment merges into the previous one, so set it here.
+            lastFigure.updateFigure(lastFigure.getSegmentCount(),
+                                    /* isClosed = */ true);
         }
         else
         {

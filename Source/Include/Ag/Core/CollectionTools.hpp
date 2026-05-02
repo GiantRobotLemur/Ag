@@ -583,7 +583,7 @@ public:
     //! go beyond the current view.
     ArrayView<T> subset(size_t first, size_t count = SIZE_MAX) const
     {
-        if (count >= first)
+        if (first >= _count)
             return { };
 
         size_t maxCount = _count - first;
@@ -730,7 +730,7 @@ public:
     //! go beyond the current view.
     ArrayView<T> subset(size_t first, size_t count = SIZE_MAX) const
     {
-        if (count >= first)
+        if (first >= _count)
             return { };
 
         size_t maxCount = _count - first;
@@ -746,7 +746,7 @@ public:
     //! go beyond the current view.
     WritableArrayView<T> subset(size_t first, size_t count = SIZE_MAX)
     {
-        if (count >= first)
+        if (first >= _count)
             return { };
 
         size_t maxCount = _count - first;

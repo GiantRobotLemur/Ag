@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Gfx2D/Graphic.hpp"
 #include "Ag/Gfx2D/GraphicDecomposition.hpp"
+#include "Ag/Gfx2D/Path.hpp"
 
 #include "DecompositionContext.hpp"
 
@@ -162,53 +163,72 @@ void VectorGraphic::decomposeInto(GraphicDecomposition &out,
         return;
     }
 
-    // NOTE: The DCEL partition() pipeline (RingSystem::build / makeYMonotone /
-    // triangulate) is incomplete in the underlying Geometry library — calling
-    // it on a valid closed path triggers an assertion in DCEL_Triangulate, and
-    // PreDecompositionStats has unrelated issues that prevent even
-    // tryCalculateBounds() from returning correct results in some cases.
-    // Until those land, decomposition emits bounds-only placeholder
-    // PartitionedPolygons so the scene-graph pipeline (transforms, opacity,
-    // clip ids, brush attachment, draw-list ordering) can be exercised
-    // end-to-end. Replace each `bounds-only` construction below with a
-    // ctx.reset/addFillToDecomposition/ctx.partition sequence once partition()
-    // is reliable.
+    const bool wantsFill = _fill && (_fill->getType() != FillType::Empty);
+    const bool wantsStroke = _stroke && (_stroke->getThickness() > 0.0) &&
+                             _stroke->getFill() &&
+                             (_stroke->getFill()->getType() != FillType::Empty);
 
-    // Fill: only emit if a brush is set and the path encloses an area.
-    if (_fill && _fill->getType() != FillType::Empty)
+    if (!wantsFill && !wantsStroke)
+        return;
+
+    Path path = lowerToPath();
+
+    if (path.isBound() == false)
+        return;
+
+    DecompositionParams params(DefaultDecompositionTolerance);
+
+    // Fill: triangulate the closed regions of the path.
+    if (wantsFill)
     {
-        BrushSPtr frozenBrush = std::static_pointer_cast<Brush>(
-            _fill->createFrozenClone());
+        DecompositionStatistics stats = path.simulateDecomposition(params);
 
-        out.appendShape(DecomposedShape(PartitionedPolygon(localBounds),
-                                        parentTransform,
-                                        std::move(frozenBrush),
-                                        parentOpacity,
-                                        parentClipId));
+        if (stats.isEmpty() == false)
+        {
+            ctx.reset(stats);
+            path.addFillToDecomposition(ctx, params, /* isClip = */ false);
+
+            PartitionedPolygon poly = ctx.partition();
+
+            if (poly.getTriangleIndices().getCount() > 0)
+            {
+                BrushSPtr frozenBrush = std::static_pointer_cast<Brush>(
+                    _fill->createFrozenClone());
+
+                out.appendShape(DecomposedShape(std::move(poly),
+                                                parentTransform,
+                                                std::move(frozenBrush),
+                                                parentOpacity,
+                                                parentClipId));
+            }
+        }
     }
 
-    // Stroke: only emit if a pen with a non-zero thickness and a brush is set.
-    if (_stroke && _stroke->getThickness() > 0.0 && _stroke->getFill() &&
-        _stroke->getFill()->getType() != FillType::Empty)
+    // Stroke: expand the outline by the pen and triangulate the result.
+    if (wantsStroke)
     {
-        double half = _stroke->getThickness() * 0.5;
-        Geom::Rect2D strokeBounds(localBounds.getMinimumX() - half,
-                                  localBounds.getMinimumY() - half,
-                                  localBounds.getMaximumX() + half,
-                                  localBounds.getMaximumY() + half);
+        DecompositionStatistics stats = path.simulateDecomposition(params);
 
-        BrushSPtr frozenBrush = std::static_pointer_cast<Brush>(
-            _stroke->getFill()->createFrozenClone());
+        if (stats.isEmpty() == false)
+        {
+            ctx.reset(stats);
+            path.addOutlineToDecomposition(ctx, params, _stroke);
 
-        out.appendShape(DecomposedShape(PartitionedPolygon(strokeBounds),
-                                        parentTransform,
-                                        std::move(frozenBrush),
-                                        parentOpacity,
-                                        parentClipId));
+            PartitionedPolygon poly = ctx.partition();
+
+            if (poly.getTriangleIndices().getCount() > 0)
+            {
+                BrushSPtr frozenBrush = std::static_pointer_cast<Brush>(
+                    _stroke->getFill()->createFrozenClone());
+
+                out.appendShape(DecomposedShape(std::move(poly),
+                                                parentTransform,
+                                                std::move(frozenBrush),
+                                                parentOpacity,
+                                                parentClipId));
+            }
+        }
     }
-
-    // Suppress unused-parameter warning until partition() is wired in.
-    (void)ctx;
 }
 
 }} // namespace Ag::Gfx2D

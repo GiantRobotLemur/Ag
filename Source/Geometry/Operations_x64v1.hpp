@@ -3,7 +3,7 @@
 //! accelerated by SSE 2 SIMD technology available to the v1 x86-64 processor
 //! architecture.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -61,7 +61,8 @@ struct OperationsX64v1_Vec2D : public OperationsBase_Vec2D
         Vec2D rhsVec = _mm_load_pd(rhs);
         Vec2D resultMask = _mm_cmpneq_pd(lhsVec, rhsVec);
 
-        return _mm_movemask_pd(resultMask) == 3;
+        // Any differing lane makes the points unequal.
+        return _mm_movemask_pd(resultMask) != 0;
     }
 
     static void neg(const double *lhs, double *result) noexcept
