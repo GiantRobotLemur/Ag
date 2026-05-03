@@ -15,7 +15,10 @@
 #include "Ag/Gfx2D/GraphicDecomposition.hpp"
 #include "Ag/Gfx2D/Path.hpp"
 
+#include <array>
+
 #include "DecompositionContext.hpp"
+#include "PolygonClipping.hpp"
 
 namespace Ag {
 namespace Gfx2D {
@@ -31,6 +34,104 @@ constexpr double DefaultDecompositionTolerance = 0.5;
 DecompositionParams makeParams(const Geom::AffineTransform2D &transform)
 {
     return DecompositionParams(transform, DefaultDecompositionTolerance);
+}
+
+//! @brief Builds the four corners of an axis-aligned clip rectangle in
+//! shape-local space, in counter-clockwise order suitable for
+//! Sutherland-Hodgman clipping against shape-local triangles.
+//!
+//! @c clipLocalBounds lives in the clip-owner @c GraphicGroup's local space
+//! and reaches world space via @c clipLocalToWorld; the receiving shape
+//! reaches world space via @c shapeLocalToWorld. The composite
+//! @c shapeLocalToWorld⁻¹ * clipLocalToWorld brings the four corners into
+//! shape-local space.
+//!
+//! @return @c true if the corners are valid and were written; @c false if
+//! the clip rectangle is empty or @c shapeLocalToWorld is singular.
+bool buildClipQuadInShapeLocal(const Geom::Rect2D &clipLocalBounds,
+                               const Geom::AffineTransform2D &clipLocalToWorld,
+                               const Geom::AffineTransform2D &shapeLocalToWorld,
+                               std::array<Geom::Point2D, 4> &outCorners)
+{
+    if (clipLocalBounds.isEmpty())
+        return false;
+
+    Geom::AffineTransform2D worldToShapeLocal;
+    try
+    {
+        // TODO: Expose tryCalculateInverse() so that exceptions aren't part of
+        // the non-exceptional control flow.
+
+        worldToShapeLocal = shapeLocalToWorld.inverse();
+    }
+    catch (const DivisionByZeroException &)
+    {
+        return false;
+    }
+
+    const Geom::AffineTransform2D clipLocalToShapeLocal =
+        worldToShapeLocal * clipLocalToWorld;
+
+    // CCW corner order in clip-local space (positive Y is "down" in screen
+    // conventions, but our signed-distance treats CCW with the +X-right /
+    // +Y-down convention consistently — the shape-local triangulation
+    // produced by the partitioner uses the same orientation, so they
+    // agree).
+    const Geom::Point2D corners[4] = {
+        Geom::Point2D(clipLocalBounds.getMinimumX(), clipLocalBounds.getMinimumY()),
+        Geom::Point2D(clipLocalBounds.getMaximumX(), clipLocalBounds.getMinimumY()),
+        Geom::Point2D(clipLocalBounds.getMaximumX(), clipLocalBounds.getMaximumY()),
+        Geom::Point2D(clipLocalBounds.getMinimumX(), clipLocalBounds.getMaximumY()),
+    };
+
+    for (int i = 0; i < 4; ++i)
+        outCorners[i] = clipLocalToShapeLocal * corners[i];
+
+    return true;
+}
+
+//! @brief Applies every clip in @a activeClips to @a poly (in shape-local
+//! space). Returns the clipped polygon — possibly empty if all geometry was
+//! clipped away.
+PartitionedPolygon applyActiveClips(PartitionedPolygon poly,
+                                    const ClipStack &activeClips,
+                                    const Geom::AffineTransform2D &shapeLocalToWorld)
+{
+    for (const ActiveClip &clip : activeClips)
+    {
+        if (poly.getTriangleIndices().getCount() == 0)
+            break;
+
+        std::array<Geom::Point2D, 4> corners;
+
+        if (!buildClipQuadInShapeLocal(clip.bounds, clip.localToWorld,
+                                       shapeLocalToWorld, corners))
+            continue;
+
+        // The corner order above is CCW only when the composite transform's
+        // determinant is positive; if it's negative (mirrored), we need to
+        // reverse to keep "left of edge" == "inside".
+        Geom::Point2DCollectionView clipView(corners.data(), corners.size());
+
+        // Detect orientation by signed area; reverse if needed.
+        std::array<Geom::Point2D, 4> reversed;
+        const double signedArea =
+            (corners[1].getX() - corners[0].getX()) *
+                (corners[2].getY() - corners[0].getY()) -
+            (corners[1].getY() - corners[0].getY()) *
+                (corners[2].getX() - corners[0].getX());
+
+        if (signedArea < 0.0)
+        {
+            for (int i = 0; i < 4; ++i)
+                reversed[i] = corners[3 - i];
+            clipView = Geom::Point2DCollectionView(reversed.data(), reversed.size());
+        }
+
+        poly = clipPolygonAgainstConvex(poly, clipView);
+    }
+
+    return poly;
 }
 
 } // Anonymous namespace
@@ -55,9 +156,23 @@ GraphicDecomposition Graphic::decompose() const
 {
     GraphicDecomposition out;
     DecompositionContext ctx;
+    ClipStack activeClips;
     decomposeInto(out, Geom::AffineTransform2D(), 1.0,
-                  GraphicDecomposition::NoClip, ctx);
+                  GraphicDecomposition::NoClip, activeClips, ctx);
     return out;
+}
+
+//! @brief Backwards-compatible overload — calls the virtual with an empty
+//! clip stack.
+void Graphic::decomposeInto(GraphicDecomposition &out,
+                            const Geom::AffineTransform2D &parentTransform,
+                            double parentOpacity,
+                            size_t parentClipId,
+                            DecompositionContext &ctx) const
+{
+    ClipStack activeClips;
+    decomposeInto(out, parentTransform, parentOpacity, parentClipId,
+                  activeClips, ctx);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,6 +269,7 @@ void VectorGraphic::decomposeInto(GraphicDecomposition &out,
                                   const Geom::AffineTransform2D &parentTransform,
                                   double parentOpacity,
                                   size_t parentClipId,
+                                  const ClipStack &activeClips,
                                   DecompositionContext &ctx) const
 {
     Geom::Rect2D localBounds = calculateLocalBounds();
@@ -190,6 +306,8 @@ void VectorGraphic::decomposeInto(GraphicDecomposition &out,
 
             PartitionedPolygon poly = ctx.partition();
 
+            poly = applyActiveClips(std::move(poly), activeClips, parentTransform);
+
             if (poly.getTriangleIndices().getCount() > 0)
             {
                 BrushSPtr frozenBrush = std::static_pointer_cast<Brush>(
@@ -215,6 +333,8 @@ void VectorGraphic::decomposeInto(GraphicDecomposition &out,
             path.addOutlineToDecomposition(ctx, params, _stroke);
 
             PartitionedPolygon poly = ctx.partition();
+
+            poly = applyActiveClips(std::move(poly), activeClips, parentTransform);
 
             if (poly.getTriangleIndices().getCount() > 0)
             {

@@ -63,11 +63,13 @@ public:
                                const Geom::AffineTransform2D &parentTransform,
                                double parentOpacity,
                                size_t parentClipId,
+                               const ClipStack &activeClips,
                                DecompositionContext &ctx) const override;
 
     using Graphic::calculateBounds;
     using Graphic::hitTest;
     using Graphic::decompose;
+    using Graphic::decomposeInto;
 
     // GraphicArtefact overrides
     virtual void freeze() override;

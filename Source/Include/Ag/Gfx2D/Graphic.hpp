@@ -17,6 +17,7 @@
 #include "Ag/Geometry.hpp"
 
 #include "Brush.hpp"
+#include "ClipStack.hpp"
 #include "Pen.hpp"
 #include "Path.hpp"
 
@@ -61,13 +62,26 @@ public:
     //! 1.0 at the root.
     //! @param[in] parentClipId The clip-region id inherited from the
     //! enclosing group, or @c GraphicDecomposition::NoClip if unclipped.
+    //! @param[in] activeClips The stack of ancestor clips currently in
+    //! effect. Each entry's @c bounds is in its owner @c GraphicGroup's
+    //! local space, transformable to world space via @c localToWorld.
+    //! Concrete implementations clip their output geometry against this
+    //! stack before adding it to @a out.
     //! @param[in,out] ctx A scratch decomposition context, reused across
     //! invocations to retain allocations.
     virtual void decomposeInto(GraphicDecomposition &out,
                                const Geom::AffineTransform2D &parentTransform,
                                double parentOpacity,
                                size_t parentClipId,
+                               const ClipStack &activeClips,
                                DecompositionContext &ctx) const = 0;
+
+    //! @brief Backwards-compatible overload defaulting to no active clips.
+    void decomposeInto(GraphicDecomposition &out,
+                       const Geom::AffineTransform2D &parentTransform,
+                       double parentOpacity,
+                       size_t parentClipId,
+                       DecompositionContext &ctx) const;
 
     // Convenience overloads for top-level callers.
     Geom::Rect2D calculateBounds() const;
@@ -102,11 +116,13 @@ public:
                                const Geom::AffineTransform2D &parentTransform,
                                double parentOpacity,
                                size_t parentClipId,
+                               const ClipStack &activeClips,
                                DecompositionContext &ctx) const override;
 
     using Graphic::calculateBounds;
     using Graphic::hitTest;
     using Graphic::decompose;
+    using Graphic::decomposeInto;
 
     // GraphicArtefact overrides
     virtual void freeze() override;

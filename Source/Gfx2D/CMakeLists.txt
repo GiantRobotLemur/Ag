@@ -18,6 +18,9 @@ ag_add_library(Gfx2D FOLDER         Graphics
                                     ${GFX2D_INCLUDE_DIR}/Pen.hpp
                                     Brush.cpp
                                     ${GFX2D_INCLUDE_DIR}/Brush.hpp
+                                    ${GFX2D_INCLUDE_DIR}/ClipStack.hpp
+                                    PolygonClipping.cpp
+                                    PolygonClipping.hpp
                                     Brushes.cpp
                                     ${GFX2D_INCLUDE_DIR}/Brushes.hpp
                                     Font.cpp
@@ -36,6 +39,8 @@ ag_add_library(Gfx2D FOLDER         Graphics
                                     DecompositionContext.hpp
                                     GraphicDecomposition.cpp
                                     ${GFX2D_INCLUDE_DIR}/GraphicDecomposition.hpp
+                                    GpuDrawList.cpp
+                                    ${GFX2D_INCLUDE_DIR}/GpuDrawList.hpp
                                     GraphicGroup.cpp
                                     ${GFX2D_INCLUDE_DIR}/GraphicGroup.hpp
                                     Scene.cpp
@@ -70,6 +75,8 @@ ag_add_test_app(Gfx2D_Tests TEST_LIB    Gfx2D
                                         Test_Colours.cpp
                                         Test_StrokeHelper.cpp
                                         Test_GraphicDecomposition.cpp
+                                        Test_GpuDrawList.cpp
+                                        Test_PolygonClipping.cpp
                                         Test_GraphicGroup.cpp
                                         Test_PartitionPipeline.cpp
                                         Test_Scene.cpp)

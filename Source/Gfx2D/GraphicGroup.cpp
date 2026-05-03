@@ -183,6 +183,7 @@ void GraphicGroup::decomposeInto(GraphicDecomposition &out,
                                  const Geom::AffineTransform2D &parentTransform,
                                  double parentOpacity,
                                  size_t parentClipId,
+                                 const ClipStack &activeClips,
                                  DecompositionContext &ctx) const
 {
     double effectiveOpacity = parentOpacity * _opacity;
@@ -193,11 +194,14 @@ void GraphicGroup::decomposeInto(GraphicDecomposition &out,
     Geom::AffineTransform2D composed = parentTransform * _transform;
     size_t childClipId = parentClipId;
 
-    // See note in VectorGraphic::decomposeInto — partition() is currently
-    // incomplete in the Geometry layer, so the clip is recorded as a
-    // bounds-only placeholder until that pipeline lands. We always register
-    // the clip when one is set; tryCalculateBounds() may return an empty
-    // rect for some paths until the path simulation pipeline is complete.
+    // The clip lives in this group's local space — its world transform is
+    // @c composed. In v1 we capture the AABB of the clip path; descendants
+    // intersect their geometry with this rect (transformed into shape-local
+    // space) per triangle. Non-rectangular clip paths are currently
+    // approximated by their bounding box; a follow-up will swap in proper
+    // polyline flattening so non-rect clips clip exactly.
+    ClipStack childClips = activeClips;
+
     if (_hasClip && _clip.isBound())
     {
         Geom::Rect2D clipBounds;
@@ -208,16 +212,22 @@ void GraphicGroup::decomposeInto(GraphicDecomposition &out,
         childClipId = out.appendClip(
             ClipRegion(PartitionedPolygon(clipBounds),
                        composed, parentClipId));
-    }
 
-    (void)ctx;
+        if (clipBounds.isEmpty() == false)
+        {
+            ActiveClip ac;
+            ac.bounds = clipBounds;
+            ac.localToWorld = composed;
+            childClips.push_back(ac);
+        }
+    }
 
     for (const auto &child : _children)
     {
         if (child)
         {
             child->decomposeInto(out, composed, effectiveOpacity,
-                                 childClipId, ctx);
+                                 childClipId, childClips, ctx);
         }
     }
 }
