@@ -14,9 +14,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
+#include <memory>
 #include <vector>
 
 #include "Ag/Geometry.hpp"
+
+#include "PartitionedPolygon.hpp"
 
 namespace Ag {
 namespace Gfx2D {
@@ -27,22 +30,22 @@ namespace Gfx2D {
 
 //! @brief One ancestor clip captured during scene graph traversal.
 //!
-//! @c bounds is the clip rectangle in the local space of the @c GraphicGroup
-//! that owns it. @c localToWorld takes points from that local space to world
-//! space; the receiving shape composes its own world-to-local with this
-//! transform to bring the four clip corners into shape-local space, where
-//! triangle clipping is then applied.
+//! @c localGeometry is the clip path flattened into a triangulated polygon
+//! in the local space of the @c GraphicGroup that owns it. The geometry is
+//! captured once at decomposition time and shared (by @c shared_ptr) across
+//! the descendants that consume it; clipping is non-mutating.
 //!
-//! @note In v1 the clip is captured as the axis-aligned bounding rectangle
-//! of the owning group's clip @c Path. This is exact for rectangular clips
-//! and overly permissive for other clip shapes — a follow-up will replace
-//! @c bounds with a flattened polyline so non-rectangular clips are handled
-//! exactly. The plumbing in this header does not need to change for that
-//! upgrade; only the field type and the consumer in the partitioner do.
+//! @c localToWorld takes points from that local space to world space; the
+//! receiving shape composes its own world-to-local with this transform to
+//! bring each clip triangle into shape-local space, where Sutherland-Hodgman
+//! clipping is then applied per source-triangle / clip-triangle pair. The
+//! union of those per-pair intersections is the shape's geometry inside this
+//! clip; non-convex clip outlines are handled correctly because clip
+//! triangles are themselves convex by construction.
 struct ActiveClip
 {
-    Geom::Rect2D            bounds;
-    Geom::AffineTransform2D localToWorld;
+    std::shared_ptr<const PartitionedPolygon> localGeometry;
+    Geom::AffineTransform2D                   localToWorld;
 };
 
 //! @brief A stack of active clips inherited from ancestor @c GraphicGroup

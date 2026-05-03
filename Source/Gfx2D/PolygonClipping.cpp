@@ -14,7 +14,9 @@
 #include "PolygonClipping.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
+#include <cstdlib>
 
 namespace Ag {
 namespace Gfx2D {
@@ -112,15 +114,32 @@ void clipAndAppendTriangle(const Geom::Point2D &v0,
         return;
 
     // Fan-triangulate the surviving convex sub-polygon. Each new triangle is
-    // (v0, v[i-1], v[i]) for i in [2, n).
+    // (v0, v[i-1], v[i]) for i in [2, n). Degenerate (zero-area) fan
+    // triangles are skipped — Sutherland-Hodgman emits them when clipping
+    // grazes an existing edge, and they waste GPU vertex-buffer slots
+    // without contributing rasterised pixels.
+    constexpr double DegenerateTriangleArea2 = 1e-12;
+
     const Geom::DCEL::ID baseIndex = static_cast<Geom::DCEL::ID>(outVertices.size());
 
     for (const Geom::Point2D &p : *current)
         outVertices.push_back(p);
 
+    const Geom::Point2D &fanV0 = (*current)[0];
     const size_t n = current->size();
+
     for (size_t i = 2; i < n; ++i)
     {
+        const Geom::Point2D &fanV1 = (*current)[i - 1];
+        const Geom::Point2D &fanV2 = (*current)[i];
+
+        const double area2 =
+            (fanV1.getX() - fanV0.getX()) * (fanV2.getY() - fanV0.getY()) -
+            (fanV1.getY() - fanV0.getY()) * (fanV2.getX() - fanV0.getX());
+
+        if (std::abs(area2) < DegenerateTriangleArea2)
+            continue;
+
         outTriangles.push_back(baseIndex);
         outTriangles.push_back(baseIndex + static_cast<Geom::DCEL::ID>(i - 1));
         outTriangles.push_back(baseIndex + static_cast<Geom::DCEL::ID>(i));

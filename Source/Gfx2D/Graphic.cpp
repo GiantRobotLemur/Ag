@@ -36,50 +36,114 @@ DecompositionParams makeParams(const Geom::AffineTransform2D &transform)
     return DecompositionParams(transform, DefaultDecompositionTolerance);
 }
 
-//! @brief Builds the four corners of an axis-aligned clip rectangle in
-//! shape-local space, in counter-clockwise order suitable for
-//! Sutherland-Hodgman clipping against shape-local triangles.
-//!
-//! @c clipLocalBounds lives in the clip-owner @c GraphicGroup's local space
-//! and reaches world space via @c clipLocalToWorld; the receiving shape
-//! reaches world space via @c shapeLocalToWorld. The composite
-//! @c shapeLocalToWorld⁻¹ * clipLocalToWorld brings the four corners into
-//! shape-local space.
-//!
-//! @return @c true if the corners are valid and were written; @c false if
-//! the clip rectangle is empty or @c shapeLocalToWorld is singular.
-bool buildClipQuadInShapeLocal(const Geom::Rect2D &clipLocalBounds,
-                               const Geom::AffineTransform2D &clipLocalToWorld,
-                               const Geom::AffineTransform2D &shapeLocalToWorld,
-                               std::array<Geom::Point2D, 4> &outCorners)
+//! @brief Twice the signed area of a triangle. Positive when the triangle
+//! is wound counter-clockwise; we use the sign to detect the orientation
+//! that Sutherland-Hodgman expects ("left of edge" == "inside").
+inline double signedAreaX2(const Geom::Point2D &a,
+                           const Geom::Point2D &b,
+                           const Geom::Point2D &c)
 {
-    if (clipLocalBounds.isEmpty())
-        return false;
+    return (b.getX() - a.getX()) * (c.getY() - a.getY()) -
+           (b.getY() - a.getY()) * (c.getX() - a.getX());
+}
+
+//! @brief Appends every triangle in @a piece to the running accumulator,
+//! re-basing its vertex indices into @a accVertices.
+void appendClippedPiece(const PartitionedPolygon &piece,
+                        Geom::Point2DCollection &accVertices,
+                        Geom::DCEL::IDDeque &accTriangles)
+{
+    const auto &points    = piece.getPoints();
+    const auto &triangles = piece.getTriangleIndices();
+
+    if (triangles.getCount() == 0)
+        return;
+
+    const Geom::DCEL::ID base =
+        static_cast<Geom::DCEL::ID>(accVertices.size());
+
+    for (size_t i = 0; i < points.getCount(); ++i)
+        accVertices.push_back(points.getAt(i));
+
+    for (size_t i = 0; i < triangles.getCount(); ++i)
+        accTriangles.push_back(base + triangles.getAt(i));
+}
+
+//! @brief Applies one clip to @a poly: clips it against every triangle in
+//! the clip's triangulation and unions the results.
+//!
+//! Triangulating the clip outline gives a set of disjoint convex pieces;
+//! the union of (input ∩ clip-triangle-i) over i equals (input ∩ clip),
+//! which is correct even when the original clip outline is non-convex.
+//! Each per-triangle intersection is computed by Sutherland-Hodgman.
+PartitionedPolygon applyOneClip(PartitionedPolygon poly,
+                                const ActiveClip &clip,
+                                const Geom::AffineTransform2D &shapeLocalToWorld)
+{
+    if (!clip.localGeometry)
+        return poly;
+
+    const auto &clipPoints    = clip.localGeometry->getPoints();
+    const auto &clipTriangles = clip.localGeometry->getTriangleIndices();
+
+    if (clipPoints.getCount() == 0 || clipTriangles.getCount() < 3)
+        return poly;
 
     Geom::AffineTransform2D worldToShapeLocal;
 
     if (shapeLocalToWorld.tryCalculateInverse(worldToShapeLocal) == false)
-        return false;
+    {
+        // Singular shape transform — leave the polygon unclipped. The
+        // back-end can still cull on bounds.
+        return poly;
+    }
 
     const Geom::AffineTransform2D clipLocalToShapeLocal =
-        worldToShapeLocal * clipLocalToWorld;
+        worldToShapeLocal * clip.localToWorld;
 
-    // CCW corner order in clip-local space (positive Y is "down" in screen
-    // conventions, but our signed-distance treats CCW with the +X-right /
-    // +Y-down convention consistently — the shape-local triangulation
-    // produced by the partitioner uses the same orientation, so they
-    // agree).
-    const Geom::Point2D corners[4] = {
-        Geom::Point2D(clipLocalBounds.getMinimumX(), clipLocalBounds.getMinimumY()),
-        Geom::Point2D(clipLocalBounds.getMaximumX(), clipLocalBounds.getMinimumY()),
-        Geom::Point2D(clipLocalBounds.getMaximumX(), clipLocalBounds.getMaximumY()),
-        Geom::Point2D(clipLocalBounds.getMinimumX(), clipLocalBounds.getMaximumY()),
-    };
+    // Transform the clip's vertices into shape-local space once, then
+    // walk each clip triangle.
+    std::vector<Geom::Point2D> shapeLocalClipPoints;
+    shapeLocalClipPoints.reserve(clipPoints.getCount());
 
-    for (int i = 0; i < 4; ++i)
-        outCorners[i] = clipLocalToShapeLocal * corners[i];
+    for (size_t i = 0; i < clipPoints.getCount(); ++i)
+    {
+        shapeLocalClipPoints.push_back(
+            clipLocalToShapeLocal * clipPoints.getAt(i));
+    }
 
-    return true;
+    Geom::Point2DCollection accVertices;
+    Geom::DCEL::IDDeque     accTriangles;
+    Geom::DCEL::IDDeque     emptyOutline;
+
+    accVertices.reserve(poly.getPoints().getCount());
+
+    const size_t triCount = clipTriangles.getCount() / 3;
+
+    std::array<Geom::Point2D, 3> tri;
+
+    for (size_t t = 0; t < triCount; ++t)
+    {
+        tri[0] = shapeLocalClipPoints[clipTriangles.getAt(t * 3)];
+        tri[1] = shapeLocalClipPoints[clipTriangles.getAt(t * 3 + 1)];
+        tri[2] = shapeLocalClipPoints[clipTriangles.getAt(t * 3 + 2)];
+
+        // Sutherland-Hodgman expects CCW; flip if the partitioner emitted
+        // CW or if the composite transform mirrored orientation.
+        if (signedAreaX2(tri[0], tri[1], tri[2]) < 0.0)
+            std::swap(tri[1], tri[2]);
+
+        Geom::Point2DCollectionView triView(tri.data(), tri.size());
+        PartitionedPolygon piece = clipPolygonAgainstConvex(poly, triView);
+
+        appendClippedPiece(piece, accVertices, accTriangles);
+    }
+
+    if (accTriangles.empty())
+        return PartitionedPolygon(poly.getOriginalBounds());
+
+    return PartitionedPolygon(accVertices, accTriangles, emptyOutline,
+                              poly.getOriginalBounds());
 }
 
 //! @brief Applies every clip in @a activeClips to @a poly (in shape-local
@@ -94,33 +158,7 @@ PartitionedPolygon applyActiveClips(PartitionedPolygon poly,
         if (poly.getTriangleIndices().getCount() == 0)
             break;
 
-        std::array<Geom::Point2D, 4> corners;
-
-        if (!buildClipQuadInShapeLocal(clip.bounds, clip.localToWorld,
-                                       shapeLocalToWorld, corners))
-            continue;
-
-        // The corner order above is CCW only when the composite transform's
-        // determinant is positive; if it's negative (mirrored), we need to
-        // reverse to keep "left of edge" == "inside".
-        Geom::Point2DCollectionView clipView(corners.data(), corners.size());
-
-        // Detect orientation by signed area; reverse if needed.
-        std::array<Geom::Point2D, 4> reversed;
-        const double signedArea =
-            (corners[1].getX() - corners[0].getX()) *
-                (corners[2].getY() - corners[0].getY()) -
-            (corners[1].getY() - corners[0].getY()) *
-                (corners[2].getX() - corners[0].getX());
-
-        if (signedArea < 0.0)
-        {
-            for (int i = 0; i < 4; ++i)
-                reversed[i] = corners[3 - i];
-            clipView = Geom::Point2DCollectionView(reversed.data(), reversed.size());
-        }
-
-        poly = clipPolygonAgainstConvex(poly, clipView);
+        poly = applyOneClip(std::move(poly), clip, shapeLocalToWorld);
     }
 
     return poly;

@@ -195,30 +195,65 @@ void GraphicGroup::decomposeInto(GraphicDecomposition &out,
     size_t childClipId = parentClipId;
 
     // The clip lives in this group's local space — its world transform is
-    // @c composed. In v1 we capture the AABB of the clip path; descendants
-    // intersect their geometry with this rect (transformed into shape-local
-    // space) per triangle. Non-rectangular clip paths are currently
-    // approximated by their bounding box; a follow-up will swap in proper
-    // polyline flattening so non-rect clips clip exactly.
-    ClipStack childClips = activeClips;
-
+    // @c composed. We flatten the clip path once per decomposition into a
+    // triangulated polygon in clip-local space and stash a shared pointer
+    // to it on the active clip stack; descendants intersect their geometry
+    // against that triangulation in shape-local space.
+    //
+    // To avoid copying @a activeClips on every recursive step we only fork
+    // when this group actually adds a clip — otherwise the existing stack
+    // reference is forwarded as-is.
     if (_hasClip && _clip.isBound())
     {
-        Geom::Rect2D clipBounds;
-        _clip.tryCalculateBounds(
-            DecompositionParams(DefaultDecompositionTolerance),
-            clipBounds);
+        DecompositionParams clipParams(DefaultDecompositionTolerance);
+        DecompositionStatistics clipStats =
+            _clip.simulateDecomposition(clipParams);
+
+        std::shared_ptr<PartitionedPolygon> clipPoly;
+
+        if (!clipStats.isEmpty())
+        {
+            DecompositionContext clipCtx;
+            clipCtx.reset(clipStats);
+            _clip.addFillToDecomposition(clipCtx, clipParams,
+                                         /* isClip = */ false);
+            clipPoly = std::make_shared<PartitionedPolygon>(clipCtx.partition());
+        }
+
+        // Record the legacy ClipRegion metadata for back-end debugging,
+        // using the bounds we get from the flattened triangulation (or the
+        // path's bounds as a fallback when flattening produced nothing).
+        Geom::Rect2D recordedBounds;
+        if (clipPoly && clipPoly->getTriangleIndices().getCount() > 0)
+        {
+            recordedBounds = clipPoly->getOriginalBounds();
+        }
+        else
+        {
+            _clip.tryCalculateBounds(clipParams, recordedBounds);
+        }
 
         childClipId = out.appendClip(
-            ClipRegion(PartitionedPolygon(clipBounds),
+            ClipRegion(PartitionedPolygon(recordedBounds),
                        composed, parentClipId));
 
-        if (clipBounds.isEmpty() == false)
+        if (clipPoly && clipPoly->getTriangleIndices().getCount() > 0)
         {
+            ClipStack childClips = activeClips;
             ActiveClip ac;
-            ac.bounds = clipBounds;
+            ac.localGeometry = std::move(clipPoly);
             ac.localToWorld = composed;
-            childClips.push_back(ac);
+            childClips.push_back(std::move(ac));
+
+            for (const auto &child : _children)
+            {
+                if (child)
+                {
+                    child->decomposeInto(out, composed, effectiveOpacity,
+                                         childClipId, childClips, ctx);
+                }
+            }
+            return;
         }
     }
 
@@ -227,7 +262,7 @@ void GraphicGroup::decomposeInto(GraphicDecomposition &out,
         if (child)
         {
             child->decomposeInto(out, composed, effectiveOpacity,
-                                 childClipId, childClips, ctx);
+                                 childClipId, activeClips, ctx);
         }
     }
 }
