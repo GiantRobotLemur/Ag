@@ -25,43 +25,13 @@ namespace {
 // Local Functions
 ////////////////////////////////////////////////////////////////////////////////
 
-//! @brief Signed perpendicular distance of @a p from the directed line
-//! through @a edgeStart -> @a edgeEnd. Positive when @a p is on the left
-//! of the directed edge — i.e. inside, for a CCW clip polygon.
-inline double signedDistance(const Geom::Point2D &p,
-                             const Geom::Point2D &edgeStart,
-                             const Geom::Point2D &edgeEnd)
-{
-    // TODO: Determinant - implement using SIMD or Point2D operations.
-
-    const double ex = edgeEnd.getX() - edgeStart.getX();
-    const double ey = edgeEnd.getY() - edgeStart.getY();
-    const double px = p.getX() - edgeStart.getX();
-    const double py = p.getY() - edgeStart.getY();
-
-    return ex * py - ey * px;
-}
-
-//! @brief Linearly interpolates the intersection of segment a->b with the
-//! line through edgeStart->edgeEnd. Caller has verified the two endpoint
-//! signed distances have opposite signs.
-Geom::Point2D intersect(const Geom::Point2D &a, double da,
-                        const Geom::Point2D &b, double db)
-{
-    // TODO: Implement using SIMD-compatible Point2D operations.
-
-    const double t = da / (da - db);
-    return Geom::Point2D(a.getX() + t * (b.getX() - a.getX()),
-                         a.getY() + t * (b.getY() - a.getY()));
-}
-
 //! @brief Clips a convex polygon (the @a input vertex list, in order) against
 //! one half-plane defined by the directed edge edgeStart->edgeEnd of a CCW
 //! clip polygon. The result is appended to @a output.
-void clipAgainstHalfPlane(const std::vector<Geom::Point2D> &input,
+void clipAgainstHalfPlane(const Geom::Point2DCollection &input,
                           const Geom::Point2D &edgeStart,
                           const Geom::Point2D &edgeEnd,
-                          std::vector<Geom::Point2D> &output)
+                          Geom::Point2DCollection &output)
 {
     output.clear();
 
@@ -69,11 +39,14 @@ void clipAgainstHalfPlane(const std::vector<Geom::Point2D> &input,
         return;
 
     Geom::Point2D prev = input.back();
-    double prevDist = signedDistance(prev, edgeStart, edgeEnd);
+    Geom::LineSeg2D edge(edgeStart, edgeEnd);
+
+    double prevDist = edge.getDeterminant(prev);
 
     for (const Geom::Point2D &cur : input)
     {
-        const double curDist = signedDistance(cur, edgeStart, edgeEnd);
+        Geom::LineSeg2D currentEdge(prev, cur);
+        const double curDist = edge.getDeterminant(cur);
 
         if (curDist >= 0.0)
         {
@@ -81,14 +54,19 @@ void clipAgainstHalfPlane(const std::vector<Geom::Point2D> &input,
             if (prevDist < 0.0)
             {
                 // Crossing into the half-plane — emit the entry point.
-                output.push_back(intersect(prev, prevDist, cur, curDist));
+                const double t = prevDist / (prevDist - curDist);
+
+                output.push_back(currentEdge.getPoint(t));
             }
+
             output.push_back(cur);
         }
         else if (prevDist >= 0.0)
         {
             // Crossing out of the half-plane — emit the exit point only.
-            output.push_back(intersect(prev, prevDist, cur, curDist));
+            const double t = prevDist / (prevDist - curDist);
+
+            output.push_back(currentEdge.getPoint(t));
         }
 
         prev = cur;
@@ -106,8 +84,8 @@ void clipAndAppendTriangle(const Geom::Point2D &v0,
                            Geom::Point2DCollection &outVertices,
                            Geom::DCEL::IDDeque &outTriangles)
 {
-    std::vector<Geom::Point2D> bufferA;
-    std::vector<Geom::Point2D> bufferB;
+    Geom::Point2DCollection bufferA;
+    Geom::Point2DCollection bufferB;
 
     bufferA.reserve(8);
     bufferB.reserve(8);
@@ -116,8 +94,8 @@ void clipAndAppendTriangle(const Geom::Point2D &v0,
     bufferA.push_back(v1);
     bufferA.push_back(v2);
 
-    std::vector<Geom::Point2D> *current = &bufferA;
-    std::vector<Geom::Point2D> *next    = &bufferB;
+    Geom::Point2DCollection *current = &bufferA;
+    Geom::Point2DCollection *next    = &bufferB;
 
     const size_t clipCount = clipVertices.getCount();
 

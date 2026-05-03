@@ -57,17 +57,9 @@ bool buildClipQuadInShapeLocal(const Geom::Rect2D &clipLocalBounds,
         return false;
 
     Geom::AffineTransform2D worldToShapeLocal;
-    try
-    {
-        // TODO: Expose tryCalculateInverse() so that exceptions aren't part of
-        // the non-exceptional control flow.
 
-        worldToShapeLocal = shapeLocalToWorld.inverse();
-    }
-    catch (const DivisionByZeroException &)
-    {
+    if (shapeLocalToWorld.tryCalculateInverse(worldToShapeLocal) == false)
         return false;
-    }
 
     const Geom::AffineTransform2D clipLocalToShapeLocal =
         worldToShapeLocal * clipLocalToWorld;

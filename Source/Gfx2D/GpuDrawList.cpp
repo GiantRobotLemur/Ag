@@ -34,20 +34,16 @@ Colour evaluateLinearGradient(const LinearGradientBrush &brush,
                               const Geom::Point2D &localPosition)
 {
     const Geom::Point2D &start = brush.getStartPosition();
-    const Geom::Point2D &end   = brush.getEndPosition();
-
-    // TODO: Implement using primitives from Geometry library.
-    const double dx = end.getX() - start.getX();
-    const double dy = end.getY() - start.getY();
-    const double lengthSq = dx * dx + dy * dy;
+    const Geom::Point2D delta = brush.getEndPosition() - start;
+    const double lengthSq = delta.magnitudeSquared();
 
     double t = 0.0;
 
     if (lengthSq > 0.0)
     {
-        const double vx = localPosition.getX() - start.getX();
-        const double vy = localPosition.getY() - start.getY();
-        t = (vx * dx + vy * dy) / lengthSq;
+        const Geom::Point2D localDelta = localPosition - start;
+
+        t = localDelta.dotProduct(delta) / lengthSq;
     }
 
     if (t <= 0.0)

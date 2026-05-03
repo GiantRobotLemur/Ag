@@ -39,6 +39,7 @@ public:
     const double *toArray() const noexcept;
     bool isIdentity() const noexcept;
     AffineTransform2D inverse() const;
+    bool tryCalculateInverse(AffineTransform2D &inv) const;
 
     // Operations
     AffineTransform2D &makeIdentity();
