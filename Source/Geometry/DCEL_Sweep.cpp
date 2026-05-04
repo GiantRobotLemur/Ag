@@ -2,7 +2,7 @@
 //! @brief The definition of structures required to implement a sweep through
 //! edges held in a Doubly-Connected Edge List.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -106,46 +106,6 @@ struct HorzSweepEdgeInsertionComparer
     }
 };
 
-using IDToIDMapping = std::pair<ID, ID>;
-using IDToIDMappingCollection = std::vector<IDToIDMapping>;
-
-//! @brief A functor used to sort mappings from Edge ID to Node IDs, ordering nodes
-//! by their position on a plane sweep.
-struct IndexEdgeIDToNodeIDMappings
-{
-private:
-    const NodeTable &_nodes;
-public:
-    IndexEdgeIDToNodeIDMappings(const NodeTable &nodes) :
-        _nodes(nodes)
-    {
-    }
-
-    bool operator()(const IDToIDMapping &lhs, const IDToIDMapping &rhs) const
-    {
-        bool isLessThan = false;
-
-        if (lhs.first == rhs.first)
-        {
-            // Then compare by sweep position.
-            const SnapPoint &lhsPos = _nodes[lhs.second].getGridPosition();
-            const SnapPoint &rhsPos = _nodes[rhs.second].getGridPosition();
-
-            isLessThan = lhsPos.lessThanSweep(rhsPos);
-        }
-        else
-        {
-            // First - sort by edge ID.
-            isLessThan = lhs.first < rhs.first;
-        }
-
-        return isLessThan;
-    }
-};
-
-using IndexIDMapping = LessThanKeyComparer<ID, ID>;
-using EqualIDMapping = EqualToPairComparer<ID, ID>;
-
 using ParametricNode = std::pair<double, NodePtr>;
 using ParametricNodeIndexer = LessThanKeyComparer<double, NodePtr>;
 
@@ -225,7 +185,7 @@ bool checkForIntersection(NodeTable &nodes,
         if (sweepPos->getGridPosition().lessThanSweep(gridIntersection))
         {
             // The intersection point is further down the sweep - create a node
-            NodePtr intersectionNode = &nodes.addNode(intersection);
+            NodePtr intersectionNode = nodes.addNode(intersection);
 
             // Ensure the intersection isn't where the two edges meet.
             if ((lhs.getEdge()->hasNode(intersectionNode) == false) ||
@@ -275,7 +235,7 @@ bool checkForHorizontalIntersection(const SweepContext &context, NodeTable &node
         if (context.getSweepNode()->getGridPosition().lessThanSweep(gridIntersection))
         {
             // The intersection is after the current sweep position - add it.
-            NodePtr intersectionNode = &nodes.addNode(intersection);
+            NodePtr intersectionNode = nodes.addNode(intersection);
 
             // Determine if an intersection event at that node already
             // exists, and if it doesn't, create one.
@@ -293,85 +253,12 @@ bool checkForHorizontalIntersection(const SweepContext &context, NodeTable &node
 //! @param[in] edges The table defining all edges in the mesh.
 //! @param[in] intersections A collection non-unique mappings from Edge ID to
 //! the IDs of nodes which split that edge.
-//! @retval true At lest one edge was split.
-//! @retval false No edges were split.
-bool splitEdgesAtIntersections(NodeTable &nodes, EdgeTable &edges,
-                               IDToIDMappingCollection &intersections)
+void splitEdgesAtIntersections(NodeTable &nodes, EdgeTable &edges,
+                               IDToIDMappingCollection &intersections,
+                               SortedEdgeSubstituteMap &substitutes)
 {
-    // Sort mappings by edge ID and then by the relative position of the
-    // identified node on the sweep, earliest first.
-    std::sort(intersections.begin(), intersections.end(),
-              IndexEdgeIDToNodeIDMappings(nodes));
-
-    // Remove duplicates.
-    auto last = std::unique(intersections.begin(), intersections.end(), EqualIDMapping());
-    intersections.erase(last, intersections.end());
-
-    IteratorRange<IDToIDMappingCollection::iterator> group;
-    IndexIDMapping indexer;
-    bool edgesSplit = false;
-
-    if (getFirstGroup(intersections.begin(), intersections.end(), group, indexer))
-    {
-        do
-        {
-            // Go through the sweep ordered nodes, including the original first and
-            // last nodes, to create a set of edges which replace the original.
-            ID edgeID = group.front().first;
-            EdgePtr originalEdge = edges[edgeID];
-
-            auto firstNode = originalEdge->getFirstNode();
-            auto secondNode = originalEdge->getSecondNode();
-
-            // Ensure firstNode is earliest in sweep order.
-            if (secondNode->getGridPosition().lessThanSweep(firstNode->getGridPosition()))
-                std::swap(firstNode, secondNode);
-
-            // Create new segments between original and intersection nodes.
-            NodePtr prevNode = firstNode;
-
-            for (const auto &mappingPos : group)
-            {
-                NodePtr nextNode = &nodes[mappingPos.second];
-
-                if (originalEdge == nullptr)
-                {
-                    edges.addEdge(nodes, prevNode->getID(), nextNode->getID());
-                }
-                else if (edges.replaceEdge(nodes, edgeID, prevNode->getID(),
-                                           nextNode->getID()))
-                {
-                    // The original edge was replaced.
-                    originalEdge = nullptr;
-                }
-
-                prevNode = nextNode;
-            }
-
-            // Create the final edge.
-            if (originalEdge == nullptr)
-            {
-                edges.addEdge(nodes, prevNode->getID(), secondNode->getID());
-            }
-            else if (edges.replaceEdge(nodes, edgeID, prevNode->getID(),
-                                       secondNode->getID()))
-            {
-                originalEdge = nullptr;
-            }
-
-            if (originalEdge != nullptr)
-            {
-                // Delete originalEdge if it hasn't been replaced yet.
-                edges.removeEdge(edgeID);
-            }
-
-            edgesSplit = true;
-        } while (getNextGroup(intersections.end(), group, indexer));
-    }
-
+    edges.batchSplitEdges(nodes, intersections, substitutes);
     intersections.clear();
-
-    return edgesSplit;
 }
 
 } // Anonymous namespace
@@ -1004,10 +891,8 @@ bool containsSweepEvent(const SweepContext &context, SweepEventCollection &event
 //! edges and adding nodes to represent them.
 //! @param[in] nodes The table of nodes to add to.
 //! @param[in] edges The table of edges to scan and add to.
-//! @retval true At least one intersection was found which split edges, the
-//! intersection in question may have been an existing node.
-//! @retval false No edges were split due to intersection.
-bool findAllIntersections(NodeTable &nodes, EdgeTable &edges)
+//! @returns A mapping of edges split to the run of nodes which replaced them.
+SortedEdgeSubstituteMap findAllIntersections(NodeTable &nodes, EdgeTable &edges)
 {
     SweepContext context(nodes);
 
@@ -1027,7 +912,8 @@ bool findAllIntersections(NodeTable &nodes, EdgeTable &edges)
 
     SweepStatus state(context);
     SweepEvent currentEvent;
-    bool intersectionsFound = false;
+    SortedEdgeSubstituteMap substitutes;
+    substitutes.reserve(16);
 
     while (eventQueue.tryPopEvent(currentEvent))
     {
@@ -1040,7 +926,7 @@ bool findAllIntersections(NodeTable &nodes, EdgeTable &edges)
 
         // Process any batched intersections, if we can.
         if (state.isEmpty() && (splitNodesByEdgeID.empty() == false))
-            intersectionsFound |= splitEdgesAtIntersections(nodes, edges, splitNodesByEdgeID);
+            splitEdgesAtIntersections(nodes, edges, splitNodesByEdgeID, substitutes);
 
         // Process the event by type.
         if (eventType == IntersectionEventType::DiagonalEdgeStarting)
@@ -1206,9 +1092,9 @@ bool findAllIntersections(NodeTable &nodes, EdgeTable &edges)
     }
 
     // Process final batch of edges to be split.
-     intersectionsFound |= splitEdgesAtIntersections(nodes, edges, splitNodesByEdgeID);
+    splitEdgesAtIntersections(nodes, edges, splitNodesByEdgeID, substitutes);
 
-    return intersectionsFound;
+    return substitutes;
 }
 
 }}} // namespace Ag::Geom::DCEL

@@ -2,7 +2,7 @@
 //! @brief The definition of a class representing a parametric cubic bezier
 //! curve.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -71,6 +71,26 @@ Point2D CubicBezierCurve2D::getPoint(double parameter) const
     // (3 * POWER(1 - $A9, 2) * $A9 * B$4) +
     // (3 * (1 - $A9) * POWER($A9, 2) * B$5) +
     // (POWER($A9, 3) * B$6)
+}
+
+//! @brief Calculates the gradient of the curve at a point along its length.
+//! @param parameter The parameter of the point at which to calculate the
+//! direction vector.
+//! @return The direction vector of the curve at the specified point.
+Point2D CubicBezierCurve2D::getDirection(double parameter) const
+{
+    // B(t)  = (1 - t)^3 _start + 3(1 - t)^2 t _ctrl1 +
+    //         3(1 - t) t^2 _ctrl2 + t^3 _end
+    // B'(t) = 3(1 - t)^2 (_ctrl1 - _start) +
+    //         6(1 - t) t  (_ctrl2 - _ctrl1) +
+    //         3 t^2       (_end   - _ctrl2)
+    double inverseParam = 1.0 - parameter;
+    double inverseParamSq = inverseParam * inverseParam;
+    double paramSq = parameter * parameter;
+
+    return ((_ctrl1 - _start) * (3.0 * inverseParamSq)) +
+           ((_ctrl2 - _ctrl1) * (6.0 * inverseParam * parameter)) +
+           ((_end   - _ctrl2) * (3.0 * paramSq));
 }
 
 //! @brief Gets the parameter of the point on the curve closest to a specified position.

@@ -2,7 +2,7 @@
 //! @brief The definition of a class representing a parametric quadratic bezier
 //! curve.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -57,6 +57,20 @@ Point2D QuadBezierCurve2D::getPoint(double parameter) const
 
     return (((_start * inverseParam) + (_ctrl * parameter)) * inverseParam) +
            (((_ctrl  * inverseParam) + (_end  * parameter)) * parameter);
+}
+
+//! @brief Calculates the gradient of the curve at a point along its length.
+//! @param parameter The parameter of the point at which to calculate the
+//! direction vector.
+//! @return The direction vector of the curve at the specified point.
+Point2D QuadBezierCurve2D::getDirection(double parameter) const
+{
+    // B(t)  = (1 - t)^2 _start + 2(1 - t)t _ctrl + t^2 _end
+    // B'(t) = 2(1 - t)(_ctrl - _start) + 2t(_end - _ctrl)
+    double inverseParam = 1.0 - parameter;
+
+    return ((_ctrl - _start) * (2.0 * inverseParam)) +
+           ((_end  - _ctrl)  * (2.0 * parameter));
 }
 
 //! @brief Gets the parameter of the point on the curve closest to a specified position.

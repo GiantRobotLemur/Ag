@@ -45,6 +45,10 @@ if (DEFINED AG_IS_ROOT)
         ag_configure_glm()
     endif()
 
+    if (AG_CONFIG_SDL2)
+        ag_configure_sdl2()
+    endif()
+
     if (AG_CONFIG_SDL3)
         ag_configure_sdl3()
     endif()

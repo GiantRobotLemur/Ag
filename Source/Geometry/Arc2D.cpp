@@ -2,7 +2,7 @@
 //! @brief The definition of a parametric line segment representing a portion
 //! of an elliptical arc.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -135,6 +135,27 @@ Point2D Arc2D::Parameters::getPoint(double parameter) const
     Point2D ellipsePoint = _toEllipse * circlePoint;
 
     return ellipsePoint;
+}
+
+//! @brief Calculates the gradient of the arc at a point along its length.
+//! @param parameter The parameter of the point at which to calculate the
+//! direction vector.
+//! @return The direction vector of the arc at the specified point.
+Point2D Arc2D::Parameters::getDirection(double parameter) const
+{
+    // The point on the circle is:
+    //   P(t) = C + R * (cos(theta), sin(theta))
+    // where theta = _startAngle + t * _angleDelta. Differentiating with
+    // respect to t and applying the chain rule gives:
+    //   P'(t) = R * _angleDelta * (-sin(theta), cos(theta))
+    double pointAngle = _startAngle + (parameter * _angleDelta);
+
+    Point2D circleDirection(-std::sin(pointAngle) * _circleRadius * _angleDelta,
+                             std::cos(pointAngle) * _circleRadius * _angleDelta);
+
+    // _toEllipse is a pure linear transform (scale + rotation, no translation),
+    // so it can be applied directly to the tangent vector.
+    return _toEllipse * circleDirection;
 }
 
 //! @brief Gets the parameter of the point on the arc closest to a specified position.
@@ -357,6 +378,17 @@ Point2D Arc2D::getPoint(double parameter) const
     Parameters arcParameters(*this);
 
     return arcParameters.getPoint(parameter);
+}
+
+//! @brief Calculates the gradient of the arc at a point along its length.
+//! @param parameter The parameter of the point at which to calculate the
+//! direction vector.
+//! @return The direction vector of the arc at the specified point.
+Point2D Arc2D::getDirection(double parameter) const
+{
+    Parameters arcParameters(*this);
+
+    return arcParameters.getDirection(parameter);
 }
 
 //! @brief Gets the parameter of the point on the arc closest to a specified position.

@@ -64,11 +64,11 @@ function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
 
         add_custom_command(TARGET ${targetName} POST_BUILD
                            COMMAND "${SymTool}" ARGS "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.map"
-                                                  -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
-                           COMMAND "${SymTool}" ARGS "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
-                                                  -o "$<TARGET_FILE_DIR:${targetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.txt"
+                                                  -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
+                           COMMAND "${SymTool}" ARGS "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
+                                                  -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.txt"
                            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                           COMMENT "Creating stack trace data for ${targetName}...")
+                           COMMENT "Creating stack trace data for ${destTargetName}...")
     endif()
 endfunction()
 

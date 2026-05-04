@@ -2,7 +2,7 @@
 //! @brief The declaration of an object representing a 2-dimensional affine
 //! transformation.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -39,6 +39,7 @@ public:
     const double *toArray() const noexcept;
     bool isIdentity() const noexcept;
     AffineTransform2D inverse() const;
+    bool tryCalculateInverse(AffineTransform2D &inv) const;
 
     // Operations
     AffineTransform2D &makeIdentity();
@@ -65,6 +66,10 @@ private:
     // Internal Fields
     double _m[8];
 };
+
+//! @brief An alias for a properly aligned collection of AffineTransform2D objects.
+using AffineTransform2DCollection = std::vector<AffineTransform2D,
+                                                AlignedAllocator<AffineTransform2D, 32>>;
 
 }} // namespace Ag::Geom
 

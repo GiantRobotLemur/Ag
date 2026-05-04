@@ -2,7 +2,7 @@
 //! @brief The declaration of a parametric line segment representing a portion
 //! of an elliptical arc.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -70,6 +70,7 @@ public:
 
         // Concept
         Point2D getPoint(double parameter) const;
+        Point2D getDirection(double parameter) const;
         double getParameter(const Point2D &position) const;
         double getDistanceToPoint(const Point2D &position, double &param) const;
 
@@ -97,6 +98,7 @@ public:
     constexpr Point2D getEnd() const noexcept { return _end; }
     void setEnd(const Point2D &end) noexcept;
     Point2D getPoint(double parameter) const;
+    Point2D getDirection(double parameter) const;
     double getParameter(const Point2D &position) const;
     double getDistanceToPoint(const Point2D &pt, double &param) const;
     Point2DCollection toPolyline(double tolerance, double startParam = 0.0,

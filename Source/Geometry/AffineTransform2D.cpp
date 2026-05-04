@@ -2,7 +2,7 @@
 //! @brief The definition of an object representing a 2-dimensional affine
 //! transformation.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -96,6 +96,16 @@ AffineTransform2D AffineTransform2D::inverse() const
         return { m };
 
     throw DivisionByZeroException("Creating an inverse 2D affine transformation.");
+}
+
+//! @brief Attempts to calculate the affine transformation representing the inverse
+//! of the current transformation.
+//! @param[out] inv Receives the inverse transformation, if on e is possible.
+//! @retval true An inverse transform was calculated and returned in @p inv.
+//! @retval false The transform did not have an inverse.
+bool AffineTransform2D::tryCalculateInverse(AffineTransform2D &inv) const
+{
+    return Operations_AffineTrans2D::tryCalculateInverse(_m, inv._m);
 }
 
 //! @brief Overwrites the object with the identity transform.

@@ -1,7 +1,7 @@
 //! @file Geometry/Test_QuadBezierCurve2D.cpp
 //! @brief The definition of unit tests for the QuadBezierCurve2D class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -83,6 +83,44 @@ GTEST_TEST(QuadBezierCurve2D, GetParameterDistance)
     distance = specimen.getDistanceToPoint(afterEnd, param);
     EXPECT_NEAR(distance, specimen.getEnd().distance(afterEnd), Epsilon);
     EXPECT_NEAR(param, 1.0, Epsilon);
+}
+
+GTEST_TEST(QuadBezierCurve2D, GetDirection)
+{
+    constexpr double Epsilon = 1e-9;
+    const QuadBezierCurve2D specimen(Point2D(0, 0), Point2D(0, 10), Point2D(10, 10));
+
+    // B'(t) = 2(1-t)(ctrl - start) + 2t(end - ctrl)
+    //       = 2(1-t)(0, 10) + 2t(10, 0)
+
+    // At t = 0 the tangent points from start towards ctrl, scaled by 2.
+    Point2D dirStart = specimen.getDirection(0.0);
+    EXPECT_NEAR(dirStart.getX(), 0.0, Epsilon);
+    EXPECT_NEAR(dirStart.getY(), 20.0, Epsilon);
+
+    // At t = 1 the tangent points from ctrl towards end, scaled by 2.
+    Point2D dirEnd = specimen.getDirection(1.0);
+    EXPECT_NEAR(dirEnd.getX(), 20.0, Epsilon);
+    EXPECT_NEAR(dirEnd.getY(), 0.0, Epsilon);
+
+    // At t = 0.5 the two contributions sum.
+    Point2D dirMid = specimen.getDirection(0.5);
+    EXPECT_NEAR(dirMid.getX(), 10.0, Epsilon);
+    EXPECT_NEAR(dirMid.getY(), 10.0, Epsilon);
+
+    // Cross-check the analytical derivative against a central numerical
+    // difference of getPoint() at several parameter values.
+    constexpr double H = 1e-6;
+    constexpr double NumericTolerance = 1e-5;
+    for (double t : { 0.1, 0.25, 0.5, 0.75, 0.9 })
+    {
+        Point2D numeric = (specimen.getPoint(t + H) -
+                           specimen.getPoint(t - H)) * (1.0 / (2.0 * H));
+        Point2D analytic = specimen.getDirection(t);
+
+        EXPECT_NEAR(analytic.getX(), numeric.getX(), NumericTolerance);
+        EXPECT_NEAR(analytic.getY(), numeric.getY(), NumericTolerance);
+    }
 }
 
 GTEST_TEST(QuadBezierCurve2D, ToPolyline)

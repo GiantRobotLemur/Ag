@@ -2,7 +2,7 @@
 //! @brief The definition of unit tests for algorithms which operate on a
 //! doubly connected edge list.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -806,13 +806,13 @@ TEST_P(DCELTests, Triangulate)
             ID secondID = triangles[i + 1];
             ID thirdID = triangles[i + 2];
 
-            Node &first = nodes[firstID];
-            Node &second = nodes[secondID];
-            Node &third = nodes[thirdID];
+            NodePtr first = nodes[firstID];
+            NodePtr second = nodes[secondID];
+            NodePtr third = nodes[thirdID];
 
-            LineSeg2D mainEdge(first.getRealPosition(), second.getRealPosition());
+            LineSeg2D mainEdge(first->getRealPosition(), second->getRealPosition());
 
-            EXPECT_GT(mainEdge.getDeterminant(third.getRealPosition()), 0.0);
+            EXPECT_GT(mainEdge.getDeterminant(third->getRealPosition()), 0.0);
         }
     }
 }
@@ -899,13 +899,13 @@ GTEST_TEST(DCEL_Triangulate, DiamondWithHole)
             ID secondID = triangles[i + 1];
             ID thirdID = triangles[i + 2];
 
-            Node &first = nodes[firstID];
-            Node &second = nodes[secondID];
-            Node &third = nodes[thirdID];
+            NodePtr first = nodes[firstID];
+            NodePtr second = nodes[secondID];
+            NodePtr third = nodes[thirdID];
 
-            LineSeg2D mainEdge(first.getRealPosition(), second.getRealPosition());
+            LineSeg2D mainEdge(first->getRealPosition(), second->getRealPosition());
 
-            EXPECT_GT(mainEdge.getDeterminant(third.getRealPosition()), 0.0);
+            EXPECT_GT(mainEdge.getDeterminant(third->getRealPosition()), 0.0);
         }
     }
 }
@@ -959,13 +959,13 @@ GTEST_TEST(DCEL_Triangulate, StarShape)
             ID secondID = triangles[i + 1];
             ID thirdID = triangles[i + 2];
 
-            Node &first = nodes[firstID];
-            Node &second = nodes[secondID];
-            Node &third = nodes[thirdID];
+            NodePtr first = nodes[firstID];
+            NodePtr second = nodes[secondID];
+            NodePtr third = nodes[thirdID];
 
-            LineSeg2D mainEdge(first.getRealPosition(), second.getRealPosition());
+            LineSeg2D mainEdge(first->getRealPosition(), second->getRealPosition());
 
-            EXPECT_GT(mainEdge.getDeterminant(third.getRealPosition()), 0.0);
+            EXPECT_GT(mainEdge.getDeterminant(third->getRealPosition()), 0.0);
         }
     }
 }
@@ -1007,13 +1007,13 @@ GTEST_TEST(DCEL_Triangulate, ComplexRect)
             ID secondID = triangles[i + 1];
             ID thirdID = triangles[i + 2];
 
-            Node &first = nodes[firstID];
-            Node &second = nodes[secondID];
-            Node &third = nodes[thirdID];
+            NodePtr first = nodes[firstID];
+            NodePtr second = nodes[secondID];
+            NodePtr third = nodes[thirdID];
 
-            LineSeg2D mainEdge(first.getRealPosition(), second.getRealPosition());
+            LineSeg2D mainEdge(first->getRealPosition(), second->getRealPosition());
 
-            EXPECT_GT(mainEdge.getDeterminant(third.getRealPosition()), 0.0);
+            EXPECT_GT(mainEdge.getDeterminant(third->getRealPosition()), 0.0);
         }
     }
 }

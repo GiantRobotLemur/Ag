@@ -1,7 +1,7 @@
 //! @file Geometry/Test_DCEL_Tools.cpp
 //! @brief The definition of tools shared between various DCEL unit tests.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -129,11 +129,11 @@ RectIndices addRect(NodeTable &table, double x, double y,
                     double width, double height)
 {
     RectIndices indices;
-    indices.BL = table.addNode(Point2D(x, y)).getID();
-    indices.BR = table.addNode(Point2D(x + std::abs(width), y)).getID();
-    indices.TL = table.addNode(Point2D(x, y + std::abs(height))).getID();
+    indices.BL = table.addNode(Point2D(x, y))->getID();
+    indices.BR = table.addNode(Point2D(x + std::abs(width), y))->getID();
+    indices.TL = table.addNode(Point2D(x, y + std::abs(height)))->getID();
     indices.TR = table.addNode(Point2D(x + std::abs(width),
-                                       y + std::abs(height))).getID();
+                                       y + std::abs(height)))->getID();
 
     return indices;
 }
@@ -175,7 +175,7 @@ IDCollection addPolygon(EdgeTable &edges, NodeTable &nodes,
 
     for (const Point2D &vertex : points)
     {
-        NodePtr currentNode = &nodes.addNode(vertex);
+        NodePtr currentNode = nodes.addNode(vertex);
         nodeIDs.push_back(currentNode->getID());
 
         if (firstNode == nullptr)
@@ -214,8 +214,8 @@ void addGlyph(NodeTable &nodes, EdgeTable &edges,
         {
             const auto &start = vertices[figure.first + ((i == 0) ? last : i - 1)];
             const auto &end = vertices[figure.first + i];
-            ID startNodeID = nodes.addNode(Point2D(start.first, start.second)).getID();
-            ID endNodeID = nodes.addNode(Point2D(end.first, end.second)).getID();
+            ID startNodeID = nodes.addNode(Point2D(start.first, start.second))->getID();
+            ID endNodeID = nodes.addNode(Point2D(end.first, end.second))->getID();
 
             // Prevent us from trying to create an edge where the
             // nodes were snapped together.

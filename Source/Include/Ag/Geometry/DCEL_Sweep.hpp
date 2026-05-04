@@ -2,7 +2,7 @@
 //! @brief The declaration of structures required to implement a sweep through
 //! edges held in a Doubly-Connected Edge List.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -221,7 +221,7 @@ private:
 void sortSweepEvents(const SweepContext &context, SweepEventCollection &events);
 bool containsSweepEvent(const SweepContext &context, SweepEventCollection &events, const SweepEvent &key);
 
-bool findAllIntersections(NodeTable &nodes, EdgeTable &edges);
+SortedEdgeSubstituteMap findAllIntersections(NodeTable &nodes, EdgeTable &edges);
 
 }}} // namespace Ag::Geom::DCEL
 

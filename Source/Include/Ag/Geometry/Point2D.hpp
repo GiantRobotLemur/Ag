@@ -2,7 +2,7 @@
 //! @brief The declaration of a 2-dimensional vector value used as an interface
 //! to all geometry primitives.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -15,6 +15,7 @@
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include <algorithm>
+#include <deque>
 #include <utility>
 #include <vector>
 
@@ -197,6 +198,15 @@ using Point2DPair = Point2D::Pair;
 //! @brief An alias for a vector of Point2D values which will allow them to
 //! be processed by AVX instruction.
 using Point2DCollection = std::vector<Point2D, Ag::AlignedAllocator<Point2D, 32>>;
+
+//! @brief An object holding a view of Point2D values without
+//! owning them so that optimised operations can be performed on groups of
+//! elements.
+using Point2DCollectionView = ArrayView<Point2D>;
+
+//! @brief An alias for a double-ended queue of Point2D values which will
+//! allow them to be processed by SSE instruction.
+using Point2DDeque = std::deque<Point2D, Ag::AlignedAllocator<Point2D, 16>>;
 
 }} // namespace Ag::Geom
 

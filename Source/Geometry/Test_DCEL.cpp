@@ -2,7 +2,7 @@
 //! @brief The definition of unit tests for the structure which form part of
 //! the Doubly-Connected Edge List namespace.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -495,37 +495,6 @@ GTEST_TEST(DCEL_Edges, EdgesAtNode)
     EXPECT_NE(std::find(edgeCollection.begin(), edgeCollection.end(), trToBr), edgeCollection.end());
 }
 
-GTEST_TEST(DCEL_Edges, SplitEdge)
-{
-    NodeTable nodes(Rect2D(-100, -100, 100, 100));
-    EdgeTable specimen(8);
-
-    RectIndices indices = addRect(specimen, nodes, -10, -15, 20, 30);
-
-    EXPECT_FALSE(specimen.isEmpty());
-    EXPECT_EQ(specimen.getCount(), 4u);
-
-    EdgePtr tlToTr, trToBr, brToBl, blToTl;
-
-    // Ensure all corners are connected.
-    ASSERT_TRUE(specimen.tryFindEdgeByNodes(indices.TL, indices.TR, tlToTr));
-    ASSERT_TRUE(specimen.tryFindEdgeByNodes(indices.TR, indices.BR, trToBr));
-    ASSERT_TRUE(specimen.tryFindEdgeByNodes(indices.BR, indices.BL, brToBl));
-    ASSERT_TRUE(specimen.tryFindEdgeByNodes(indices.BL, indices.TL, blToTl));
-
-    // Create a node to split about.
-    auto splitNode = nodes.addNode(Point2D(5.0, 20.0));
-
-    auto splitResult = specimen.splitEdge(nodes, tlToTr->getID(), splitNode.getID());
-
-    EXPECT_TRUE(splitResult.FirstEdge->isDefinedByNode(indices.TL));
-    EXPECT_TRUE(splitResult.FirstEdge->isDefinedByNode(splitNode.getID()));
-
-    EXPECT_TRUE(splitResult.SecondEdge->isDefinedByNode(indices.TR));
-    EXPECT_TRUE(splitResult.SecondEdge->isDefinedByNode(splitNode.getID()));
-
-    EXPECT_EQ(splitResult.SplitNode->getID(), splitNode.getID());
-}
 
 GTEST_TEST(DCEL_Edges, FindSuccessorEdge)
 {

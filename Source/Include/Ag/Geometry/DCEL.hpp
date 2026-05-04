@@ -2,7 +2,7 @@
 //! @brief The declaration of a Doubly-Connected Edge List and child data
 //! structures used in geometry algorithms.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -46,16 +46,49 @@ constexpr ID NullID = std::numeric_limits<ID>::max() >> 1;
 //! @brief An identifier used to mark an element as processed, but not assigned.
 constexpr ID VisitedID = NullID - 1;
 
+//! @brief The ID used in a collection of vertex indices to mark the end of a
+//! primitive.
+constexpr ID EndIndex = std::numeric_limits<ID>::max();
+
+//! @brief A scalar value used to express the pair of nodes an edge connects.
 using EdgeKey = uint64_t;
+
+//! @brief Defines the direction of a directed edge in relation to its parent of
+//! the order of nodes within an Edge defining a 'forward' direction.
+//! @remarks
+//! A value of 0 indicates the forward direction is from node 0 to node 1 in
+//! the context of an edge definition. A value of 1 indicates that the forward
+//! direction is from node 1 to node 0.
+//! 
+//! Using this definition, a direction can easily be reversed by simply XORing
+//! the value with 1 - this is encapsulated by the reverseDirection() function.
 using DirectionIndex = uint8_t;
+
+//! @brief Gets the reverse of a direction value 0 -> 1 or 1 -> 0, anything else
+//! is undefined.
+//! @param[in] dir The direction value to reverse, assumed to be 0 or 1.
+//! @return A value representing the reverse direction of @p dir.
+constexpr DirectionIndex reverseDirection(DirectionIndex dir) noexcept
+{
+    return dir ^ 1;
+}
 
 struct HalfEdgeID;
 class Edge;
 class EdgeTable;
 
 using IDCollection = std::vector<ID>;
+using IDDeque = std::deque<ID>;
+using IDCollectionView = ArrayView<ID>;
 using SortedIDSet = std::set<ID>;
 using SortedIDToIDMap = LinearSortedMap<ID, ID>;
+
+using SortedEdgeSubstituteMap = LinearSortedMap<EdgeKey, IDCollection>;
+
+// A more bespoke ID mapping used in batching edge intersections.
+using IDToIDMapping = std::pair<ID, ID>;
+using IDToIDMappingCollection = std::vector<IDToIDMapping>;
+using IDToIDMappingRange = IteratorRange<IDToIDMappingCollection::iterator>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
@@ -93,8 +126,37 @@ public:
 class Node
 {
 public:
+    // Public Types
+    using FlagsType = uint32_t;
+
+private:
+    // Internal Fields
+    Point2D _realPosition;
+    SnapPoint _gridPosition;
+    ID _id;
+    ID _mappedIndex;
+    Edge *_buddyEdge;
+    FlagsType _flags;
+
+public:
+    // Public Constants
+
+    //! @brief Indicates the node is an intersection between two edges, even if
+    //! the node previously existed.
+    static constexpr FlagsType IsIntersection = 0x01;
+
+    //! @brief Indicates the node defines part of the left operand in 
+    //! boolean operation.
+    static constexpr FlagsType IsLhs = 0x02;
+
+    //! @brief Indicates the node defines part of the right operand in a
+    //! boolean operation.
+    static constexpr FlagsType IsRhs = 0x04;
+
     // Construction/Destruction
-    Node(ID id, const Point2D &position, const SnapPoint &gridPosition);
+    Node(ID id, const Point2D &position,
+         const SnapPoint &gridPosition,
+         FlagsType flags = 0);
     ~Node() = default;
 
     // Accessors
@@ -114,19 +176,11 @@ public:
     const SnapPoint &getGridPosition() const noexcept;
 
     //! @brief Gets flags used during algorithmic processing.
-    constexpr uint32_t getFlags() const noexcept { return _flags; }
+    constexpr FlagsType getFlags() const noexcept { return _flags; }
 
     //! @brief Updates flags used during algorithmic processing.
     //! @param[in] flags The new value for the flags field.
-    constexpr void setFlags(uint32_t flags) noexcept { _flags = flags; }
-private:
-    // Internal Fields
-    Point2D _realPosition;
-    SnapPoint _gridPosition;
-    ID _id;
-    ID _mappedIndex;
-    Edge *_buddyEdge;
-    uint32_t _flags;
+    constexpr void setFlags(FlagsType flags) noexcept { _flags = flags; }
 };
 
 using NodePtr = Node *;
@@ -160,8 +214,8 @@ public:
     // Operations
     void clear();
     void reset(const Rect2D &estimatedBounds, size_t nodeCountHint = 0);
-    Node &operator[](ID nodeID);
-    const Node &operator[](ID nodeID) const;
+    Node *operator[](ID nodeID);
+    const Node *operator[](ID nodeID) const;
     bool tryFindNodeByID(ID nodeID, NodePtr &node);
     bool tryFindNodeByID(ID nodeID, NodeCPtr &node) const;
     bool tryFindNodeByPosition(const Point2D &realPosition, NodePtr &node);
@@ -171,10 +225,37 @@ public:
     NodeIDCIter beginByID() const;
     NodeIDCIter endByID() const;
 
-    Node &addNode(const Point2D &realPosition);
+    Node *addNode(const Point2D &realPosition, Node::FlagsType flags = 0);
     void removeNode(ID nodeID);
     size_t removeDisconnectedNodes(const EdgeTable &edges);
     void resetNodeMapping();
+    void collectMappedNodePoints(Point2DCollection &points) const;
+
+    //! @brief Performs an operation on every node sequentially and
+    //! on the calling thread.
+    //! @tparam TUnaryFunc The type of operation to perform, possibly a function
+    //! object which will be copied, so state must be referenced if it is to
+    //! be retained.
+    //! @param fn A function object which takes a pointer to a node.
+    template<class TUnaryFunc>
+    void forEachNode(TUnaryFunc fn) const
+    {
+        std::for_each(_allNodes.begin(), _allNodes.end(),
+                      [&fn](const NodeUPtr &nodeUPtr) { fn(nodeUPtr.get()); });
+    }
+
+    //! @brief Performs an operation on every node sequentially and
+    //! on the calling thread.
+    //! @tparam TUnaryFunc The type of operation to perform, possibly a function
+    //! object which will be copied, so state must be referenced if it is to
+    //! be retained.
+    //! @param fn A function object which takes a pointer to a node.
+    template<class TUnaryFunc>
+    void forEachNode(TUnaryFunc fn)
+    {
+        std::for_each(_allNodes.begin(), _allNodes.end(),
+                      [&fn](NodeUPtr &nodeUPtr) { fn(nodeUPtr.get()); });
+    }
 private:
     // Internal Functions
     void indexNode(NodePtr node);
@@ -263,6 +344,9 @@ public:
     ~HalfEdge() = default;
     friend class Edge;
 
+    // Public Types
+    using FlagsType = uint16_t;
+
     // Accessors
     HalfEdgeID getID() const noexcept;
     ID getEdgeID() const noexcept;
@@ -281,6 +365,9 @@ public:
     //! @brief Sets the identifier of the ring for which the edge forms
     //! part of the perimeter.
     constexpr ID getRingID() const noexcept { return _ring; }
+
+    constexpr FlagsType getFlags() const noexcept { return _flags; }
+    constexpr void setFlags(FlagsType flags) noexcept { _flags = flags; }
 
     void setRingID(ID ring) noexcept;
     HalfEdge *getPreviousEdge() const noexcept;
@@ -303,10 +390,11 @@ private:
 
     // Internal Fields
     Edge *_parent;
-    DirectionIndex _index;
     HalfEdge *_prevEdge;
     HalfEdge *_nextEdge;
     ID _ring;
+    FlagsType _flags;
+    DirectionIndex _index;
 };
 
 //! @brief A connection within a doubly-connected edge list.
@@ -314,6 +402,35 @@ class Edge
 {
 public:
     friend class HalfEdge;
+
+    // Public Types
+    using FlagsType = uint32_t;
+
+    // Public Constants
+    //! @brief A flag used to indicate the edge has normal semantics.
+    static constexpr FlagsType Normal = 0x01;
+
+    //! @brief A flag used to indicate the edge bounds a filled area.
+    static constexpr FlagsType Fill = 0x02;
+
+    //! @brief A flag used to indicate the edge bounds a hole within a filled area.
+    static constexpr FlagsType Hole = 0x04;
+
+    //! @brief A flag indicating the edge borders an area which is part of
+    //! the left operand of a boolean operation.
+    static constexpr FlagsType IsLhs = 0x08;
+
+    //! @brief A flag indicating the edge borders an area which is part of
+    //! the right operand of a boolean operation.
+    static constexpr FlagsType IsRhs = 0x10;
+
+    //! @brief A flag indicating that the edge was added to create
+    //! intersections.
+    static constexpr FlagsType IntersectionOnly = 0x20;
+
+    //! @brief A flag indicating that the edge added to partition a larger
+    //! polygon, thus may not represent an outside edge.
+    static constexpr FlagsType Partition = 0x40;
 
     // Construction/Destruction
     Edge() = delete;
@@ -386,6 +503,11 @@ public:
 
     void setAssociatedNode(NodePtr node);
 
+    DirectionIndex getSweepDirection() const;
+
+    constexpr FlagsType getFlags() const noexcept { return _flags; }
+    constexpr void setFlags(FlagsType flags) noexcept { _flags = flags; }
+
     // Operations
     Edge &operator=(const Edge &rhs) noexcept;
     Edge &operator=(Edge &&rhs) noexcept;
@@ -399,6 +521,7 @@ private:
 
     // Internal Fields
     ID _id;
+    FlagsType _flags;
     double _angle;
     HalfEdge _directions[2];
     NodePtr _nodes[2];
@@ -464,12 +587,17 @@ public:
 
     // Operations
     void clear();
-    Edge *addEdge(NodeTable &nodes, ID firstNode, ID secondNode);
+    Edge *addEdge(NodeTable &nodes, ID firstNode, ID secondNode,
+                  Edge::FlagsType flags = Edge::Normal);
+
     void removeEdge(ID edgeID);
+    void resetOwnership();
     void resetConnections();
-    SplitEdgeResult splitEdge(NodeTable &nodes, ID edgeID, ID nodeToSplitAboutID);
-    bool replaceEdge(NodeTable &nodes, ID edgeID, ID firstNodeID, ID secondNodeID);
+    bool removeIntersectionEdges();
     size_t removeUnassignedEdges(ID maxAssignedRingID);
+    size_t batchSplitEdges(NodeTable &nodes,
+                           IDToIDMappingCollection &edgeToNodeIDMappings,
+                           SortedEdgeSubstituteMap &substitutes);
 
     //! @brief Performs an operation on every edge, possibly out of
     //! order and in parallel.
@@ -489,11 +617,13 @@ public:
     //! object which can retain state as edges are iterated over.
     //! @param fn A function object which takes a reference to an edge.
     template<class TUnaryFunc>
-    void forEachEdge(TUnaryFunc &fn)
+    void forEachEdge(TUnaryFunc fn)
     {
         std::for_each(_allEdges.begin(), _allEdges.end(),
                       [&fn](EdgeUPtr &edgeUPtr) { fn(edgeUPtr.get()); });
     }
+
+    size_t removeEdgesIf(const std::function<bool(EdgePtr)> &fn);
 
     Edge *operator[](ID edgeID);
     const Edge *operator[](ID edgeID) const;
@@ -502,9 +632,21 @@ public:
 private:
     // Internal Functions
     EdgePtr createEdge(NodeTable &nodes, ID firstNodeID,
-                       ID secondNodeID, EdgePtr edgeToReplace);
+                       ID secondNodeID, EdgePtr edgeToReplace,
+                       Edge::FlagsType edgeFlags);
     void indexEdge(EdgePtr edgePtr, bool indexByID = true);
     void deindexEdge(EdgePtr edgePtr, bool indexByID = true);
+
+    EdgePtr addEdgeInternal(NodePtr firstNode, NodePtr secondNode,
+                            Edge::FlagsType flags,
+                            bool &wasExisting);
+
+    EdgePtr addOrReplaceEdge(EdgePtr &originalEdge, NodePtr firstNode,
+                             NodePtr secondNode, Edge::FlagsType edgeFlags,
+                             bool &wasExisting);
+
+    bool replaceEdge(NodeTable &nodes, ID edgeID, ID firstNodeID,
+                     ID secondNodeID, Edge::FlagsType edgeFlags);
 
     // Internal Types
     using EdgeIDIndex = std::map<ID, Edge *>;
@@ -522,21 +664,26 @@ private:
 class Ring
 {
 public:
+    // Public Types
+    using FlagsType = uint32_t;
+
     // Public Constants
-    static constexpr uint32_t IsConvex = 0x01;
-    static constexpr uint32_t IsCCW = 0x02;
-    static constexpr uint32_t IsXMonotone = 0x04;
-    static constexpr uint32_t IsYMonotone = 0x08;
-    static constexpr uint32_t IsMonotone = IsXMonotone | IsYMonotone;
-    static constexpr uint32_t IsHole = 0x10;
-    static constexpr uint32_t HasChildren = 0x20;
-    static constexpr uint32_t IsSurrounding = 0x40;
-    static constexpr uint32_t HasIntermediateHorzNodes = 0x80;
-    static constexpr uint32_t HasIntermediateVertNodes = 0x100;
+    static constexpr FlagsType IsConvex = 0x01;
+    static constexpr FlagsType IsCCW = 0x02;
+    static constexpr FlagsType IsXMonotone = 0x04;
+    static constexpr FlagsType IsYMonotone = 0x08;
+    static constexpr FlagsType IsMonotone = IsXMonotone | IsYMonotone;
+    static constexpr FlagsType IsHole = 0x10;
+    static constexpr FlagsType HasChildren = 0x20;
+    static constexpr FlagsType IsSurrounding = 0x40;
+    static constexpr FlagsType HasIntermediateHorzNodes = 0x80;
+    static constexpr FlagsType HasIntermediateVertNodes = 0x100;
+    static constexpr FlagsType IsLhs = 0x200;
+    static constexpr FlagsType IsRhs = 0x400;
 
     // Construction/Destruction
     Ring(ID ringID, HalfEdgePtr firstHalfEdge,
-         uint32_t nodeCount = 0, uint32_t flags = 0);
+         uint32_t nodeCount = 0, FlagsType flags = 0);
     ~Ring() = default;
 
     // Accessors
@@ -544,11 +691,11 @@ public:
     constexpr ID getID() const noexcept { return _id; }
 
     //! @brief Gets the flags which specify attributes of the ring.
-    constexpr uint32_t getFlags() const noexcept { return _flags; }
+    constexpr FlagsType getFlags() const noexcept { return _flags; }
 
     //! @brief Sets the flags which specify attributes of the ring.
     //! @param[in] flags The new flag bits, possibly including IsConvex and/or IsCCW.
-    void setFlags(uint32_t flags) noexcept { _flags = flags; }
+    void setFlags(FlagsType flags) noexcept { _flags = flags; }
 
     //! @brief Determines if attributes indicate the ring is a convex polygon.
     //! @retval true The ring is convex.
@@ -635,6 +782,43 @@ private:
     RingCollection _allRings;
     SortedIDToIDMap _holesByParentID;
 };
+
+//! @brief A ring explicit defined by as set of nodes, not a connected set of
+//! directed edges.
+class ExplicitRing
+{
+private:
+    // Internal Fields
+    ID _id;
+    Ring::FlagsType _flags;
+    IDCollection _nodeIDs;
+
+public:
+    // Construction/Destruction
+    ExplicitRing(const Ring &implicit);
+    ~ExplicitRing() = default;
+
+    // Accessors
+
+    //! @brief Gets the unique identifier of the ring.
+    constexpr ID getID() const noexcept { return _id; }
+
+    //! @brief Gets the flags which specify attributes of the ring.
+    constexpr Ring::FlagsType getFlags() const noexcept { return _flags; }
+
+    //! @brief Sets the flags which specify attributes of the ring.
+    //! @param[in] flags The new flag bits, possibly including IsConvex and/or IsCCW.
+    void setFlags(Ring::FlagsType flags) noexcept { _flags = flags; }
+
+    //! @brief Gets the identifiers of the nodes defining the ring.
+    const IDCollection &getNodes() const noexcept { return _nodeIDs; }
+
+    // Operations
+    bool addIntersections(const SortedEdgeSubstituteMap &substitutes);
+};
+
+//! @brief A alias for an STL vector of ExplicitRing objects.
+using ExplicitRingCollection = std::vector<ExplicitRing>;
 
 }}} // namespace Ag::Geom::DCEL
 

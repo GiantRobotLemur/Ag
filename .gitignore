@@ -35,6 +35,10 @@
 .vs
 .vscode
 build*
+Build*
+
+# Claude stuff
+.claude
 
 # Allow projects to be temporarily configured without being
 # part of the repository.

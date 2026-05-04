@@ -2,7 +2,7 @@
 //! @brief The declaration of various useful collection-related template data
 //! structures and functions.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2025
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -467,6 +467,293 @@ bool diffValues(T lhs, T rhs, int &diff)
 }
 
 static_assert(false < true, "diffValues<bool>() will not work correctly.");
+
+//! @brief A template class which represents a read-only bounded array of items.
+//! @tparam T The data type of the items in the array.
+template<typename T> class ArrayView
+{
+public:
+    // Public Data Types
+    using ValuePtr = T *;
+    using ValueCPtr = const T *;
+    using ValueCRef = const T &;
+    using Collection = std::vector<T>;
+    using CollectionRef = Collection &;
+    using CollectionCRef = const Collection &;
+
+private:
+    // Internal Fields
+    ValueCPtr _source;
+    size_t _count;
+
+public:
+    // Construction/Destruction
+    //! @brief Constructs an empty view.
+    constexpr ArrayView() noexcept :
+        _source(nullptr),
+        _count(0)
+    {
+    }
+
+    //! @brief Constructs a view of an entire vector.
+    //! @tparam TAllocator The allocator used by the vector we are creating
+    //! a view of.
+    //! @param[in] source The vector to create a read-only view of.
+    template<typename TAllocator = std::allocator<T>>
+    ArrayView(const std::vector<T, TAllocator> &source) :
+        _source(source.data()),
+        _count(source.size())
+    {
+    }
+
+    //! @brief Constructs a view from another view, possibly a writable view.
+    //! @tparam TView The data type of the view which is the source of the
+    //! read-only view being created.
+    //! @param[in] source The view, possibly writable, to create a read-only view of.
+    template<typename TView>
+    ArrayView(const TView &source) :
+        _source(source.getData()),
+        _count(source.getCount())
+    {
+    }
+
+    //! @brief Constructs a bounded view of an array.
+    //! @param[in] source A pointer to the first element to view, nullptr to
+    //! create an empty view.
+    //! @param[in] count The count of elements in source, will be overridden
+    //! with 0 if source is nullptr.
+    constexpr ArrayView(ValueCPtr source, size_t count) noexcept :
+        _source(source),
+        _count((source == nullptr) ? 0 : count)
+    {
+    }
+
+    ~ArrayView() = default;
+
+    // Accessors
+    //! @brief Determines if the view contains no items.
+    //! @retval true The view contains 0 items.
+    //! @retval false The view contains at least one item.
+    constexpr bool isEmpty() const noexcept { return _count == 0; }
+
+    //! @brief Gets a read-only pointer to the first item.
+    constexpr ValueCPtr getData() const noexcept { return _source; }
+
+    //! @brief Gets the count of items in the view.
+    constexpr size_t getCount() const noexcept { return _count; }
+
+    //! @brief Gets a pointer to the first item in the view for compatibility
+    //! with range-based for loops and STL algorithms.
+    constexpr ValueCPtr begin() const noexcept { return _source; }
+
+    //! @brief Gets a pointer to the item just after the last in the view for
+    //! compatibility with range-based for loops and STL algorithms.
+    constexpr ValueCPtr end() const noexcept { return _source + _count; }
+
+    // Operations
+
+    //! @brief Gets a read-only reference to the item at a specified index,
+    //! throwing an exception of the index is out of bounds.
+    //! @param[in] index The 0-based index of the items to obtain.
+    //! @return A read-only reference to the item.
+    //! @throws IndexOutOfRangeException If @p index is beyond the end of
+    //! the view.
+    ValueCRef operator[](size_t index) const
+    {
+        if (index >= _count)
+            throw IndexOutOfRangeException(index, _count);
+
+        return _source[index];
+    }
+
+    //! @brief Gets a read-only reference to the item at a specified index
+    //! without performing any bound checking.
+    //! @param[in] index The 0-based index of the items to obtain.
+    //! @return A read-only reference to the item.
+    constexpr ValueCRef getAt(size_t index) const noexcept
+    {
+        return *(_source + index);
+    }
+
+    //! @brief Creates a view of a subset of the current view.
+    //! @param[in] first The index of the first item in the subset view.
+    //! @param[in] count The most number of items in the new view, this value
+    //! will be clipped down to the actual number of items available.
+    //! @return A view of a subset of the current view with bounds which do not
+    //! go beyond the current view.
+    ArrayView<T> subset(size_t first, size_t count = SIZE_MAX) const
+    {
+        if (first >= _count)
+            return { };
+
+        size_t maxCount = _count - first;
+
+        return { _source + first, std::min(maxCount, count) };
+    }
+};
+
+//! @brief A template class which represents a writable bounded array of items.
+//! @tparam T The data type of the items in the array.
+template<typename T> class WritableArrayView
+{
+public:
+    // Public Data Types
+    using ValuePtr = T *;
+    using ValueCPtr = const T *;
+    using ValueRef = T &;
+    using ValueCRef = const T &;
+    using Collection = std::vector<T>;
+    using CollectionRef = Collection &;
+
+private:
+    // Internal Fields
+    ValuePtr _source;
+    size_t _count;
+
+public:
+    // Construction/Destruction
+    //! @brief Constructs an empty view.
+    constexpr WritableArrayView() noexcept :
+        _source(nullptr),
+        _count(0)
+    {
+    }
+
+    //! @brief Constructs a view of an entire vector.
+    //! @tparam TAllocator The allocator used by the vector we are creating
+    //! a view of.
+    //! @param[in] source The vector to create a view of.
+    template<typename TAllocator = std::allocator<T>>
+    WritableArrayView(std::vector<T, TAllocator> &source) :
+        _source(source.data()),
+        _count(source.size())
+    {
+    }
+
+    //! @brief Constructs a bounded view of an array.
+    //! @param[in] source A pointer to the first element to view, nullptr to
+    //! create an empty view.
+    //! @param[in] count The count of elements in source, will be overridden
+    //! with 0 if source is nullptr.
+    constexpr WritableArrayView(ValuePtr source, size_t count) noexcept :
+        _source(source),
+        _count((source == nullptr) ? 0 : count)
+    {
+    }
+
+    ~WritableArrayView() = default;
+
+    // Accessors
+    //! @brief Determines if the view contains no items.
+    //! @retval true The view contains 0 items.
+    //! @retval false The view contains at least one item.
+    constexpr bool isEmpty() const noexcept { return _count == 0; }
+
+    //! @brief Gets a pointer to the first item.
+    constexpr ValuePtr getData() noexcept { return _source; }
+
+    //! @brief Gets a read-only pointer to the first item.
+    constexpr ValueCPtr getData() const noexcept { return _source; }
+
+    //! @brief Gets the count of items in the view.
+    constexpr size_t getCount() const noexcept { return _count; }
+
+    //! @brief Gets a pointer to the first item in the view for compatibility
+    //! with range-based for loops and STL algorithms.
+    constexpr ValuePtr begin() noexcept { return _source; }
+
+    //! @brief Gets a pointer to the first item in the view for compatibility
+    //! with range-based for loops and STL algorithms.
+    constexpr ValueCPtr begin() const noexcept { return _source; }
+
+    //! @brief Gets a pointer to the item just after the last in the view for
+    //! compatibility with range-based for loops and STL algorithms.
+    constexpr ValuePtr end() noexcept { return _source + _count; }
+
+    //! @brief Gets a pointer to the item just after the last in the view for
+    //! compatibility with range-based for loops and STL algorithms.
+    constexpr ValueCPtr end() const noexcept { return _source + _count; }
+
+    // Operations
+
+    //! @brief Gets a reference to the item at a specified index,
+    //! throwing an exception of the index is out of bounds.
+    //! @param[in] index The 0-based index of the items to obtain.
+    //! @return A read-only reference to the item.
+    //! @throws IndexOutOfRangeException If @p index is beyond the end of
+    //! the view.
+    ValueRef operator[](size_t index)
+    {
+        if (index >= _count)
+            throw IndexOutOfRangeException(index, _count);
+
+        return _source[index];
+    }
+
+    //! @brief Gets a reference to the item at a specified index
+    //! without performing any bound checking.
+    //! @param[in] index The 0-based index of the items to obtain.
+    //! @return A read-only reference to the item.
+    constexpr ValueRef getAt(size_t index) noexcept
+    {
+        return *(_source + index);
+    }
+
+    //! @brief Gets a read-only reference to the item at a specified index,
+    //! throwing an exception of the index is out of bounds.
+    //! @param[in] index The 0-based index of the items to obtain.
+    //! @return A read-only reference to the item.
+    //! @throws IndexOutOfRangeException If @p index is beyond the end of
+    //! the view.
+    ValueCRef operator[](size_t index) const
+    {
+        if (index >= _count)
+            throw IndexOutOfRangeException(index, _count);
+
+        return _source[index];
+    }
+
+    //! @brief Gets a read-only reference to the item at a specified index
+    //! without performing any bound checking.
+    //! @param[in] index The 0-based index of the items to obtain.
+    //! @return A read-only reference to the item.
+    constexpr ValueCRef getAt(size_t index) const noexcept
+    {
+        return *(_source + index);
+    }
+
+    //! @brief Creates a view of a subset of the current view.
+    //! @param[in] first The index of the first item in the subset view.
+    //! @param[in] count The most number of items in the new view, this value
+    //! will be clipped down to the actual number of items available.
+    //! @return A view of a subset of the current view with bounds which do not
+    //! go beyond the current view.
+    ArrayView<T> subset(size_t first, size_t count = SIZE_MAX) const
+    {
+        if (first >= _count)
+            return { };
+
+        size_t maxCount = _count - first;
+
+        return { _source + first, std::min(maxCount, count) };
+    }
+
+    //! @brief Creates a view of a subset of the current view.
+    //! @param[in] first The index of the first item in the subset view.
+    //! @param[in] count The most number of items in the new view, this value
+    //! will be clipped down to the actual number of items available.
+    //! @return A view of a subset of the current view with bounds which do not
+    //! go beyond the current view.
+    WritableArrayView<T> subset(size_t first, size_t count = SIZE_MAX)
+    {
+        if (first >= _count)
+            return { };
+
+        size_t maxCount = _count - first;
+
+        return { _source + first, std::min(maxCount, count) };
+    }
+};
 
 } // namespace Ag
 

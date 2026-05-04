@@ -2,7 +2,7 @@
 //! @brief The definition of a value representing a 2-dimensional rectangle
 //! using real continuous components.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -623,6 +623,15 @@ bool Rect2D::operator!=(const Rect2D &rhs) const
 //! @param[in] rhs The point to encompass.
 void Rect2D::combineTo(const Point2D &rhs)
 {
+    if (isEmpty())
+    {
+        // A default-constructed rectangle is anchored at (0,0); take the
+        // point's position rather than spanning from the origin to it.
+        _origin = rhs;
+        _extents = Point2D(0.0, 0.0);
+        return;
+    }
+
     Point2D extreme = rhs.max(_origin + _extents);
     _origin = _origin.min(rhs);
 
@@ -633,6 +642,16 @@ void Rect2D::combineTo(const Point2D &rhs)
 //! @param[in] rhs The rectangle to encompass.
 void Rect2D::combineTo(const Rect2D &rhs)
 {
+    if (rhs.isEmpty())
+        return;
+
+    if (isEmpty())
+    {
+        _origin = rhs._origin;
+        _extents = rhs._extents;
+        return;
+    }
+
     Point2D extreme = (rhs._origin + rhs._extents).max(_origin + _extents);
     _origin = _origin.min(rhs._origin);
 

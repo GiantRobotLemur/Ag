@@ -1,7 +1,7 @@
 //! @file Ag/Geometry.hpp
 //! @brief The declaration of the public interface to the Ag Geometry library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to-
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -18,11 +18,9 @@
 #include "Geometry/NumericDomain.hpp"
 #include "Geometry/Angle.hpp"
 #include "Geometry/Point2I.hpp"
-#include "Geometry/Point2ICollectionView.hpp"
 #include "Geometry/Size2I.hpp"
 #include "Geometry/Rect2I.hpp"
 #include "Geometry/Point2D.hpp"
-#include "Geometry/Point2DCollectionView.hpp"
 #include "Geometry/Size2D.hpp"
 #include "Geometry/Rect2D.hpp"
 #include "Geometry/Line2D.hpp"
@@ -36,8 +34,11 @@
 #include "Geometry/Matrix2x2.hpp"
 #include "Geometry/Matrix3x3.hpp"
 #include "Geometry/AffineTransform2D.hpp"
+#include "Geometry/Transform2DStack.hpp"
 #include "Geometry/DCEL.hpp"
+#include "Geometry/DCEL_Sweep.hpp"
 #include "Geometry/DCEL_Algorithms.hpp"
+#include "Geometry/DCEL_Boolean.hpp"
 
 #endif // Header guard
 ////////////////////////////////////////////////////////////////////////////////
