@@ -2340,6 +2340,19 @@ ExplicitRing::ExplicitRing(const Ring &implicit) :
     }
 }
 
+//! @brief Constructs an explicit ring from a known list of node identifiers.
+//! @param[in] id The unique identifier to assign to the ring.
+//! @param[in] flags The flag bits describing the ring (winding, hole status,
+//! operand membership, etc.). The caller is responsible for ensuring these
+//! match the geometry implied by @p nodeIDs.
+//! @param[in] nodeIDs The ordered collection of nodes which define the ring.
+ExplicitRing::ExplicitRing(ID id, Ring::FlagsType flags, IDCollection nodeIDs) :
+    _id(id),
+    _flags(flags),
+    _nodeIDs(std::move(nodeIDs))
+{
+}
+
 //! @brief Inserts intersection nodes where edges were updated due to an
 //! intersection sweep.
 //! @param[in] substitutes The map of edges replaced.
@@ -2347,71 +2360,56 @@ ExplicitRing::ExplicitRing(const Ring &implicit) :
 //! @retval false No change was made to the ring.
 bool ExplicitRing::addIntersections(const SortedEdgeSubstituteMap &substitutes)
 {
+    bool changed = false;
     IDCollection newNodes;
+    newNodes.reserve(_nodeIDs.size() * 2);
+
     ID prevNodeID = _nodeIDs.back();
 
-    // Look up the edges connecting nodes to see if any have been replaced.
-    // Only create a new collection of node IDs if there is a change.
-    for (auto nodeIDPos = _nodeIDs.begin(), endPos = _nodeIDs.end();
-         nodeIDPos != endPos;
-         ++nodeIDPos)
+    // Walk every (prev, curr) pair around the ring. For each edge that has
+    // been split, insert only the intermediate intersection nodes (excluding
+    // both endpoints, which are already in the ring's node list and will be
+    // appended by the loop itself).
+    for (ID currentNodeID : _nodeIDs)
     {
-        ID currentNodeID = *nodeIDPos;
         EdgeKey edgeKey = makeEdgeKey(currentNodeID, prevNodeID);
-
         auto mappingPos = substitutes.find(edgeKey);
 
         if (mappingPos != substitutes.end())
         {
-            // The edge connecting prevNodeID to currentNodeID had
-            // intersections and was replaced.
             const IDCollection &replacementNodes = mappingPos->second;
 
-            if (newNodes.empty())
+            // replacementNodes is [endpointA, intersections..., endpointB]
+            // ordered along the original edge in sweep direction.
+            if (replacementNodes.size() > 2)
             {
-                // Prepare the replacement node ID collection.
-                newNodes.reserve(((_nodeIDs.size() + replacementNodes.size()) * 110) / 100);
-
-                // Copy the previous IDs to the new collection.
-                std::copy(_nodeIDs.begin(), nodeIDPos, std::back_inserter(newNodes));
+                if (replacementNodes.front() == prevNodeID)
+                {
+                    // [prev, intersections..., curr]: skip both endpoints.
+                    std::copy(std::next(replacementNodes.begin()),
+                              std::prev(replacementNodes.end()),
+                              std::back_inserter(newNodes));
+                }
+                else
+                {
+                    // [curr, intersections..., prev]: walk in reverse, again
+                    // skipping both endpoints.
+                    std::copy(std::next(replacementNodes.rbegin()),
+                              std::prev(replacementNodes.rend()),
+                              std::back_inserter(newNodes));
+                }
             }
-
-            // Determine in what order to copy the new nodes. We need to be
-            // careful not to copy prevNodeID because it should already be in
-            // the collection.
-            if (replacementNodes.front() == prevNodeID)
-            {
-                // The nodes are ordered correctly.
-                std::copy(std::next(replacementNodes.begin()),
-                          replacementNodes.end(),
-                          std::back_inserter(newNodes));
-            }
-            else // if (replacementNodes.front() == currentNodeID)
-            {
-                // The replacement nodes are ordered from
-                // currentNodeID to prevNodeID.
-                std::copy(replacementNodes.rbegin(),
-                          std::prev(replacementNodes.rend()),
-                          std::back_inserter(newNodes));
-            }
-        }
-        else if (newNodes.empty() == false)
-        {
-            // Update the new collection given there have already been
-            // substitutions.
-            newNodes.push_back(currentNodeID);
+            changed = true;
         }
 
-        // Prepare of the next edge.
+        newNodes.push_back(currentNodeID);
         prevNodeID = currentNodeID;
     }
 
-    if (newNodes.empty())
+    if (!changed)
         return false;
 
-    // Replace the old node collection.
     _nodeIDs = std::move(newNodes);
-
     return true;
 }
 

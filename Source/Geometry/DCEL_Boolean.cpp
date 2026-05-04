@@ -12,6 +12,7 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Ag/Geometry/DCEL_Boolean.hpp"
 #include "Ag/Geometry/DCEL_Sweep.hpp"
@@ -30,6 +31,7 @@ enum class BooleanOpKind
 {
     Intersect,
     Unite,
+    Xor,
 };
 
 //! @brief A transient marker bit set on each half-edge that survives the
@@ -220,12 +222,21 @@ ExplicitRingCollection booleanOp(NodeTable &nodes, EdgeTable &edges,
 
         if (isLhsEdge && isRhsEdge)
         {
-            // Coincident operand edges. Parallel coincidence (both rings
-            // traverse the edge with fills on the same side) keeps the kept
-            // direction as a boundary of both Intersect and Union.
-            // Anti-parallel coincidence (operands abut without overlapping)
-            // contributes zero-area to either result and is dropped.
-            if (sides.lhs < 2 && sides.rhs < 2 && sides.lhs == sides.rhs)
+            // Coincident operand edges.
+            //
+            // For Intersect/Unite, parallel coincidence (both rings traverse
+            // the edge with fills on the same side) keeps the matching
+            // direction as a boundary; anti-parallel coincidence (operands
+            // abut without overlapping) is interior to neither result and is
+            // dropped.
+            //
+            // For Xor (symmetric difference), every coincident edge is
+            // interior to the result regardless of orientation: parallel
+            // coincidence has the same operand membership on both sides, and
+            // anti-parallel coincidence has both sides in exactly one
+            // operand (so both sides sit in the XOR interior).
+            if (op != BooleanOpKind::Xor &&
+                sides.lhs < 2 && sides.rhs < 2 && sides.lhs == sides.rhs)
             {
                 markKept(sides.lhs);
             }
@@ -234,9 +245,8 @@ ExplicitRingCollection booleanOp(NodeTable &nodes, EdgeTable &edges,
 
         // Non-coincident operand edge: the edge bounds exactly one operand.
         // Its "fill on left" half-edge has that operand's interior on its
-        // left; the result includes this half-edge iff the predicate holds
-        // for the left side relative to the OTHER operand.
-        const uint8_t fillDir = isLhsEdge ? sides.lhs : sides.rhs;
+        // left.
+        const DirectionIndex fillDir = isLhsEdge ? sides.lhs : sides.rhs;
         if (fillDir >= 2)
             return;
 
@@ -251,11 +261,33 @@ ExplicitRingCollection booleanOp(NodeTable &nodes, EdgeTable &edges,
 
         const bool insideOther = isPointInsideOperand(mid, edges, otherFlag);
 
-        const bool keep = (op == BooleanOpKind::Intersect) ? insideOther
-                                                           : !insideOther;
+        // Decide which direction (if any) lies on the result boundary.
+        //   Intersect: keep fillDir iff midpoint is in the other operand.
+        //   Unite:     keep fillDir iff midpoint is outside the other operand.
+        //   Xor:       always keep one direction, but flip it when the
+        //              midpoint is inside the other operand (the symmetric-
+        //              difference interior then sits on the right of the
+        //              fill-on-left half-edge, i.e. on the left of its twin).
+        DirectionIndex keepDir = 2;
 
-        if (keep)
-            markKept(fillDir);
+        switch (op)
+        {
+        case BooleanOpKind::Intersect:
+            if (insideOther)
+                keepDir = fillDir;
+            break;
+        case BooleanOpKind::Unite:
+            if (!insideOther)
+                keepDir = fillDir;
+            break;
+        case BooleanOpKind::Xor:
+            keepDir = insideOther ? static_cast<DirectionIndex>(1u - fillDir)
+                                  : fillDir;
+            break;
+        }
+
+        if (keepDir < 2)
+            markKept(keepDir);
     });
 
     // Stage D: keep edges with at least one half-edge marked OnResult; drop
@@ -295,11 +327,20 @@ ExplicitRingCollection booleanOp(NodeTable &nodes, EdgeTable &edges,
 //! @param[in] nodes The table of nodes to update.
 //! @param[in] edges The table of edges to update.
 //! @param[in] rings The ring definitions used to update node and edge flags.
+//! @remarks
+//! Operand-related flags from previous calls are cleared the first time each
+//! node or edge is touched in this call; subsequent touches OR-accumulate
+//! contributions so that an entity shared by multiple rings ends up with the
+//! union of their operand markers (e.g. an edge appearing on both an Lhs and
+//! an Rhs ring carries both IsLhs and IsRhs).
 void markBooleanOperands(NodeTable &nodes, EdgeTable &edges,
                          const ExplicitRingCollection &rings)
 {
     constexpr Node::FlagsType nodeFlagMask = ~(Node::IsLhs | Node::IsRhs);
     constexpr Edge::FlagsType edgeFlagMask = ~(Edge::IsLhs | Edge::IsRhs | Edge::Hole | Edge::Fill);
+
+    std::unordered_set<ID> touchedNodes;
+    std::unordered_set<ID> touchedEdges;
 
     for (const ExplicitRing &ring : rings)
     {
@@ -324,12 +365,16 @@ void markBooleanOperands(NodeTable &nodes, EdgeTable &edges,
             NodePtr currentNode = nodes[currentNodeID];
 
             Node::FlagsType currentNodeFlags = currentNode->getFlags();
-            currentNode->setFlags((currentNodeFlags & nodeFlagMask) | nodeFlags);
+            if (touchedNodes.insert(currentNodeID).second)
+                currentNodeFlags &= nodeFlagMask;
+            currentNode->setFlags(currentNodeFlags | nodeFlags);
 
             if (edges.tryFindEdgeByNodes(prevNodeID, currentNodeID, edge))
             {
                 Edge::FlagsType currentEdgeFlags = edge->getFlags();
-                edge->setFlags((currentEdgeFlags & edgeFlagMask) | edgeFlags);
+                if (touchedEdges.insert(edge->getID()).second)
+                    currentEdgeFlags &= edgeFlagMask;
+                edge->setFlags(currentEdgeFlags | edgeFlags);
             }
 
             // Prepare for the next node.
@@ -356,6 +401,32 @@ ExplicitRingCollection clip(NodeTable &nodes, EdgeTable &edges,
                             ExplicitRingCollection &rings)
 {
     return booleanOp(nodes, edges, rings, BooleanOpKind::Intersect);
+}
+
+//! @brief Combines rings marked as Lhs and Rhs into the union of their
+//! covered regions.
+//! @param[in] nodes The table of nodes which define the rings to process.
+//! @param[in] edges The table of edges which define the rings to process.
+//! @param[in] rings All Lhs and Rhs ring definitions.
+//! @returns The boundary rings of Lhs ∪ Rhs.
+//! @copydetails clip()
+ExplicitRingCollection unite(NodeTable &nodes, EdgeTable &edges,
+                             ExplicitRingCollection &rings)
+{
+    return booleanOp(nodes, edges, rings, BooleanOpKind::Unite);
+}
+
+//! @brief Computes the symmetric difference of rings marked as Lhs and Rhs:
+//! the regions covered by exactly one operand.
+//! @param[in] nodes The table of nodes which define the rings to process.
+//! @param[in] edges The table of edges which define the rings to process.
+//! @param[in] rings All Lhs and Rhs ring definitions.
+//! @returns The boundary rings of (Lhs ∪ Rhs) − (Lhs ∩ Rhs).
+//! @copydetails clip()
+ExplicitRingCollection symmetricDifference(NodeTable &nodes, EdgeTable &edges,
+                                           ExplicitRingCollection &rings)
+{
+    return booleanOp(nodes, edges, rings, BooleanOpKind::Xor);
 }
 
 

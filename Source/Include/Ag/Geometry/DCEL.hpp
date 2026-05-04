@@ -796,6 +796,7 @@ private:
 public:
     // Construction/Destruction
     ExplicitRing(const Ring &implicit);
+    ExplicitRing(ID id, Ring::FlagsType flags, IDCollection nodeIDs);
     ~ExplicitRing() = default;
 
     // Accessors

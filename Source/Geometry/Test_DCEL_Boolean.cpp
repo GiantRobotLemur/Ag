@@ -11,14 +11,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
-#include <algorithm>
-#include <set>
-
 #include <gtest/gtest.h>
 
 #include "Test_DCEL_Tools.hpp"
 #include "Ag/Geometry/DCEL_Boolean.hpp"
-#include "DCEL_RingTracer.hpp"
 
 namespace Ag {
 namespace Geom {
@@ -28,48 +24,29 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief Returns true if @p ring's node IDs are exactly the four corners of
-//! @p rect.
-bool ringContainsRect(const ExplicitRing &ring, const RectIndices &rect)
+//! @brief Builds an ExplicitRing for an axis-aligned rectangle from its
+//! RectIndices. addRect adds edges in the order TL→TR→BR→BL→TL which is
+//! clockwise in Y-up math coordinates, so we mark IsCCW=false and store
+//! the same node order. Y-up rectangles are fill rings (not holes).
+ExplicitRing makeRectRing(ID ringID, const RectIndices &rect,
+                          Ring::FlagsType operandFlag)
 {
-    const auto &n = ring.getNodes();
-    if (n.size() != 4)
-        return false;
-
-    std::set<ID> ringSet(n.begin(), n.end());
-    return ringSet.count(rect.TL) == 1 &&
-           ringSet.count(rect.TR) == 1 &&
-           ringSet.count(rect.BR) == 1 &&
-           ringSet.count(rect.BL) == 1;
+    return ExplicitRing(ringID,
+                        operandFlag | Ring::IsConvex,
+                        rect.toCollection());
 }
 
-//! @brief Builds operand rings by tracing the existing edge table, then tags
-//! each ring as Lhs or Rhs based on which input rectangle's corners appear
-//! in its node list. Calls markBooleanOperands so the DCEL flags are ready
-//! for clip().
+//! @brief Convenience: builds two operand rings from two rectangles and
+//! propagates flags to the underlying nodes/edges. Suitable for tests where
+//! the operands are simple rectangles built via addRect.
 ExplicitRingCollection prepareOperands(NodeTable &nodes, EdgeTable &edges,
                                        const RectIndices &lhs,
                                        const RectIndices &rhs)
 {
-    RingCollection traced = traceRings(nodes, edges);
-
     ExplicitRingCollection rings;
-    rings.reserve(traced.size());
-
-    for (const Ring &r : traced)
-        rings.emplace_back(r);
-
-    for (ExplicitRing &er : rings)
-    {
-        Ring::FlagsType flags = er.getFlags();
-
-        if (ringContainsRect(er, lhs))
-            flags |= Ring::IsLhs;
-        else if (ringContainsRect(er, rhs))
-            flags |= Ring::IsRhs;
-
-        er.setFlags(flags);
-    }
+    rings.reserve(2);
+    rings.push_back(makeRectRing(0, lhs, Ring::IsLhs));
+    rings.push_back(makeRectRing(1, rhs, Ring::IsRhs));
 
     markBooleanOperands(nodes, edges, rings);
     return rings;
@@ -155,15 +132,10 @@ GTEST_TEST(DCEL_Boolean, Identical)
     NodeTable nodes(Rect2D(-50, -50, 100, 100));
     EdgeTable edges;
 
-    addRect(edges, nodes, 0, 0, 10, 10);
-
-    RingCollection traced = traceRings(nodes, edges);
-    ASSERT_EQ(traced.size(), 1u);
+    RectIndices rect = addRect(edges, nodes, 0, 0, 10, 10);
 
     ExplicitRingCollection rings;
-    rings.emplace_back(traced.front());
-    rings[0].setFlags(rings[0].getFlags() | Ring::IsLhs | Ring::IsRhs);
-
+    rings.push_back(makeRectRing(0, rect, Ring::IsLhs | Ring::IsRhs));
     markBooleanOperands(nodes, edges, rings);
 
     auto result = clip(nodes, edges, rings);
@@ -185,6 +157,201 @@ GTEST_TEST(DCEL_Boolean, SharedEdge)
     auto result = clip(nodes, edges, rings);
 
     EXPECT_EQ(result.size(), 0u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Unite (boolean OR) tests
+////////////////////////////////////////////////////////////////////////////////
+GTEST_TEST(DCEL_Boolean, UniteDisjoint)
+{
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 10, 10);
+    RectIndices rhs = addRect(edges, nodes, 20, 0, 10, 10);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = unite(nodes, edges, rings);
+
+    EXPECT_EQ(result.size(), 2u);
+}
+
+GTEST_TEST(DCEL_Boolean, UniteRhsContainedInLhs)
+{
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 20, 20);
+    RectIndices rhs = addRect(edges, nodes, 5, 5, 5, 5);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = unite(nodes, edges, rings);
+
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_EQ(result[0].getNodes().size(), 4u);
+}
+
+GTEST_TEST(DCEL_Boolean, UniteOverlappingCorner)
+{
+    // Lhs (0,0,10,10) and Rhs (5,5,10,10) overlap. Their union forms an
+    // L-shape with eight vertices: the four exterior Lhs/Rhs corners not
+    // shared with the overlap, plus the two intersection points.
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 10, 10);
+    RectIndices rhs = addRect(edges, nodes, 5, 5, 10, 10);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = unite(nodes, edges, rings);
+
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_EQ(result[0].getNodes().size(), 8u);
+}
+
+GTEST_TEST(DCEL_Boolean, UniteIdentical)
+{
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices rect = addRect(edges, nodes, 0, 0, 10, 10);
+
+    ExplicitRingCollection rings;
+    rings.push_back(makeRectRing(0, rect, Ring::IsLhs | Ring::IsRhs));
+    markBooleanOperands(nodes, edges, rings);
+
+    auto result = unite(nodes, edges, rings);
+
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_EQ(result[0].getNodes().size(), 4u);
+}
+
+GTEST_TEST(DCEL_Boolean, UniteSharedEdge)
+{
+    // Two rectangles abutting along a shared edge merge into a single
+    // wider rectangle - the shared edge is interior to the union.
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 10, 10);
+    RectIndices rhs = addRect(edges, nodes, 10, 0, 10, 10);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = unite(nodes, edges, rings);
+
+    ASSERT_EQ(result.size(), 1u);
+    // 6 vertices: 4 outer corners + 2 endpoints of the (now collinear)
+    // shared boundary that remain because they are also corners of the
+    // combined outline.
+    EXPECT_EQ(result[0].getNodes().size(), 6u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SymmetricDifference (boolean XOR) tests
+////////////////////////////////////////////////////////////////////////////////
+GTEST_TEST(DCEL_Boolean, XorDisjoint)
+{
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 10, 10);
+    RectIndices rhs = addRect(edges, nodes, 20, 0, 10, 10);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = symmetricDifference(nodes, edges, rings);
+
+    EXPECT_EQ(result.size(), 2u);
+}
+
+GTEST_TEST(DCEL_Boolean, XorIdentical)
+{
+    // The symmetric difference of a region with itself is empty.
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices rect = addRect(edges, nodes, 0, 0, 10, 10);
+
+    ExplicitRingCollection rings;
+    rings.push_back(makeRectRing(0, rect, Ring::IsLhs | Ring::IsRhs));
+    markBooleanOperands(nodes, edges, rings);
+
+    auto result = symmetricDifference(nodes, edges, rings);
+
+    EXPECT_EQ(result.size(), 0u);
+}
+
+GTEST_TEST(DCEL_Boolean, XorSharedEdge)
+{
+    // Two rectangles abutting along a shared edge: the symmetric difference
+    // is the union (no overlap, so XOR == OR), a single wider rectangle.
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 10, 10);
+    RectIndices rhs = addRect(edges, nodes, 10, 0, 10, 10);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = symmetricDifference(nodes, edges, rings);
+
+    ASSERT_EQ(result.size(), 1u);
+    EXPECT_EQ(result[0].getNodes().size(), 6u);
+}
+
+GTEST_TEST(DCEL_Boolean, XorRhsContainedInLhs)
+{
+    // When Rhs is fully inside Lhs, XOR is the donut: outer Lhs boundary
+    // (filled ring) plus inner Rhs boundary (hole).
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 20, 20);
+    RectIndices rhs = addRect(edges, nodes, 5, 5, 5, 5);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = symmetricDifference(nodes, edges, rings);
+
+    ASSERT_EQ(result.size(), 2u);
+
+    size_t fills = 0;
+    size_t holes = 0;
+    for (const auto &r : result)
+    {
+        if (r.getFlags() & Ring::IsHole)
+            ++holes;
+        else
+            ++fills;
+    }
+    EXPECT_EQ(fills, 1u);
+    EXPECT_EQ(holes, 1u);
+}
+
+GTEST_TEST(DCEL_Boolean, XorOverlappingCorner)
+{
+    // Two overlapping rectangles produce two L-shaped components in the
+    // symmetric difference (Lhs - Rhs and Rhs - Lhs), meeting only at the
+    // two intersection vertices.
+    NodeTable nodes(Rect2D(-50, -50, 100, 100));
+    EdgeTable edges;
+
+    RectIndices lhs = addRect(edges, nodes, 0, 0, 10, 10);
+    RectIndices rhs = addRect(edges, nodes, 5, 5, 10, 10);
+
+    auto rings = prepareOperands(nodes, edges, lhs, rhs);
+
+    auto result = symmetricDifference(nodes, edges, rings);
+
+    EXPECT_EQ(result.size(), 2u);
+    for (const auto &r : result)
+    {
+        EXPECT_EQ(r.getNodes().size(), 6u);
+    }
 }
 
 } // Anonymous namespace
