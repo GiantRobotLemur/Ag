@@ -2,14 +2,14 @@
 //! @brief The declaration of an interface to an object which swaps bytes
 //! between particular byte orders.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2023
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_BYTE_ORDER_HPP__
-#define __AG_CORE_BYTE_ORDER_HPP__
+#ifndef _AG_CORE_BYTE_ORDER_HPP__
+#define _AG_CORE_BYTE_ORDER_HPP__
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -18,6 +18,25 @@
 
 namespace Ag {
 namespace Bin {
+
+////////////////////////////////////////////////////////////////////////////////
+// Data Types
+////////////////////////////////////////////////////////////////////////////////
+//! @brief An enumeration type describing byte order.
+enum class Endedness : uint8_t
+{
+    //! @brief The least significant byte is stored at the lowest address.
+    LittleEndian,
+
+    //! @brief The most significant byte is stored at the lowest address.
+    BigEndian,
+
+    //! @brief The byte order matches that of the host hardware.
+    Native,
+
+    //! @brief The byte order which is the reverse of the host hardware.
+    Reverse,
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -33,6 +52,7 @@ protected:
 
 public:
     // Accessors
+    static const ByteOrder *get(Endedness order);
     static const ByteOrder *getLittleEndian();
     static const ByteOrder *getBigEndian();
 
