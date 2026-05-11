@@ -183,9 +183,9 @@ using StreamCharacterSourceUPtr = std::unique_ptr<StreamCharacterSource>;
 // Function Declarations
 ////////////////////////////////////////////////////////////////////////////////
 StreamCharacterSourceUPtr createStreamCharacterSource(IStream *input,
+                                                      bool detectEncodingFromBOM = true,
                                                       Utf::Encoding encoding = Utf::Encoding::Utf8,
-                                                      Bin::Endedness byteOrder = Bin::Endedness::Native,
-                                                      bool detectFromBOM = false);
+                                                      Bin::Endedness byteOrder = Bin::Endedness::Native);
 
 }} // namespace Ag::Text
 

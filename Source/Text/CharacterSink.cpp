@@ -11,6 +11,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include <cassert>
+
 #include <algorithm>
 
 #include "Ag/Core/ByteOrder.hpp"
@@ -77,42 +79,67 @@ void StreamCharacterSink::writeBytes(const void *bytes, size_t count)
     if (bytes == nullptr)
         throw Ag::ArgumentNullException("bytes");
 
-    size_t freeSpace = _buffer.capacity() - _buffer.size();
-    size_t bytesWritten = 0;
     uint8_cptr_t input = reinterpret_cast<uint8_cptr_t>(bytes);
+    size_t bytesWritten = 0;
 
-    if (freeSpace > 0)
-    {
-        size_t bytesToWrite = std::min(freeSpace, count);
-        bytesWritten = bytesToWrite;
-
-        std::copy_n(input, bytesToWrite, std::back_inserter(_buffer));
-
-        if (_buffer.size() == _buffer.capacity())
-            flushCache();
-    }
-
-    // See if there are more bytes left to write.
-    freeSpace = _buffer.capacity() - _buffer.size();
-    size_t bytesLeft = count - bytesWritten;
-
-    if (bytesLeft < _buffer.capacity())
-    {
-        // Write trailing bytes to the buffer.
-        std::copy_n(input + bytesWritten, bytesLeft, std::back_inserter(_buffer));
-    }
-    else
+    if (_buffer.empty() && (count >= _buffer.capacity()))
     {
         // Write trailing bytes directly to the output stream.
-        while (bytesLeft > 0)
+        while (bytesWritten < count)
         {
-            size_t written = _sink->write(input + bytesWritten, bytesLeft);
+            size_t written = _sink->write(input + bytesWritten,
+                                          count - bytesWritten);
 
-            bytesLeft -= written;
             bytesWritten += written;
 
             if (written == 0)
                 throw OperationException("Failed to write any bytes to text sink.");
+        }
+
+        return;
+    }
+
+    size_t freeSpace = _buffer.capacity() - _buffer.size();
+
+    if (freeSpace > 0)
+    {
+        // Fill the remainder of the buffer.
+        size_t bytesToWrite = std::min(freeSpace, count);
+        bytesWritten = bytesToWrite;
+
+        std::copy_n(input, bytesToWrite, std::back_inserter(_buffer));
+    }
+
+    // Flush if we filled the buffer with the leading bytes.
+    if (_buffer.size() == _buffer.capacity())
+        flushCache();
+
+    // See if there are more bytes left to write.
+    size_t bytesLeft = count - bytesWritten;
+
+    if (bytesLeft > 0)
+    {
+        freeSpace = _buffer.capacity() - _buffer.size();
+
+        if (bytesLeft < freeSpace)
+        {
+            // Write trailing bytes to the buffer.
+            std::copy_n(input + bytesWritten, bytesLeft,
+                        std::back_inserter(_buffer));
+        }
+        else
+        {
+            // Write trailing bytes directly to the output stream.
+            while (bytesWritten < count)
+            {
+                size_t written = _sink->write(input + bytesWritten,
+                                              count - bytesWritten);
+
+                bytesWritten += written;
+
+                if (written == 0)
+                    throw OperationException("Failed to write any bytes to text sink.");
+            }
         }
     }
 }
@@ -182,11 +209,19 @@ void Utf8StreamCharacterSink::writeUtf16(utf16_cptr_t characters, size_t count)
                 continue;
 
             // Now encode the code point as UTF-8 bytes.
-            outputConverter.setCodePoint(codePoint);
-            size_t encodedBytes = 0;
+            size_t encodedBytes;
+            uint32_t sequenceLength = outputConverter.setCodePoint(codePoint);
 
-            while (outputConverter.tryGetNextByte(encodingBuffer[encodedBytes]))
-                ++encodedBytes;
+            // The buffer should ALWAYS be big enough for any valid encoding.
+            assert(sequenceLength <= std::size(encodingBuffer));
+
+            for (encodedBytes = 0;
+                 (encodedBytes < sequenceLength) &&
+                 outputConverter.tryGetNextByte(encodingBuffer[encodedBytes]);
+                 ++encodedBytes)
+            {
+                // Deliberately empty.
+            }
 
             // Write the entire UTF-8 encoded code point.
             writeBytes(encodingBuffer, encodedBytes);
@@ -206,11 +241,19 @@ void Utf8StreamCharacterSink::writeUtf32(utf32_cptr_t characters, size_t count)
     for (size_t i = 0; i < count; ++i)
     {
         // Encode the code point as UTF-8 bytes.
-        outputConverter.setCodePoint(characters[i]);
-        size_t encodedBytes = 0;
+        size_t encodedBytes;
+        uint32_t sequenceLength = outputConverter.setCodePoint(characters[i]);
 
-        while (outputConverter.tryGetNextByte(encodingBuffer[encodedBytes]))
-            ++encodedBytes;
+        // The encoding should NEVER be larger than the buffer.
+        assert(sequenceLength <= Utf::MaxUTF8EncodingLength);
+
+        for (encodedBytes = 0;
+             (encodedBytes < sequenceLength) &&
+             outputConverter.tryGetNextByte(encodingBuffer[encodedBytes]);
+             ++encodedBytes)
+        {
+            // Deliberately empty.
+        }
 
         // Write the entire UTF-8 encoded code point.
         writeBytes(encodingBuffer, encodedBytes);

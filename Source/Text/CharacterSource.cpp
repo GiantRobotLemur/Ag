@@ -192,6 +192,7 @@ bool StreamCharacterSource::tryRefillBuffer()
         // All bytes in the buffer had been read.
         _commitOffset = 0;
         _readOffset = 0;
+        _buffer.clear();
     }
 
     size_t initialSize = _buffer.size();
@@ -391,52 +392,61 @@ bool Utf8StreamCharacterSource::tryGetBufferedCodePoint(char32_t &next)
     uint32_t sequenceLength;
     uint8_t nextByte;
 
-    if ((maxRead == 0) || (tryGetNextByte(nextByte) == false))
+    if (maxRead == 0)
         return false;
 
-    if (Utf::tryGetUTF8ByteCountFromLeadingByte(nextByte, sequenceLength))
+    while (tryGetNextByte(nextByte))
     {
-        if (maxRead < sequenceLength)
+        if (Utf::tryGetUTF8ByteCountFromLeadingByte(nextByte, sequenceLength))
         {
-            // There aren't enough buffered bytes to interpret the entire
-            // code point.
-            rollback(baseOffset);
-            return false;
-        }
-
-        Utf::FromUtf8Converter converter;
-        bool error = false;
-
-        while (converter.tryConvert(nextByte, next, error) == false)
-        {
-            if (error)
+            if (maxRead < sequenceLength)
             {
-                // Ignore the previous bytes.
-                commit();
-
-                return false;
-            }
-
-            if (tryGetNextByte(nextByte) == false)
-            {
-                // We ran out of bytes? We shouldn't have.
+                // There aren't enough buffered bytes to interpret the entire
+                // code point.
                 rollback(baseOffset);
-
                 return false;
             }
+
+            Utf::FromUtf8Converter converter;
+            bool error = false;
+
+            while (converter.tryConvert(nextByte, next, error) == false)
+            {
+                if (error)
+                {
+                    // Ignore the previous bytes.
+                    commit();
+
+                    // Try again.
+                    break;
+                }
+
+                if (tryGetNextByte(nextByte) == false)
+                {
+                    // We ran out of bytes? We shouldn't have.
+                    rollback(baseOffset);
+
+                    return false;
+                }
+            }
+
+            // Skip bytes which couldn't produce a valid code point.
+            if (error)
+                continue;
+
+            // If we got this far, we fed enough bytes into the converter to get a
+            // single Unicode code point out.
+            return true;
         }
-
-        // If we got this far, we fed enough bytes into the converter to get a
-        // single Unicode code point out.
-        return true;
+        else
+        {
+            // The leading byte was invalid, ignore it.
+            commit();
+        }
     }
-    else
-    {
-        // The leading byte was invalid, ignore it.
-        commit();
 
-        return false;
-    }
+    // If we can't get a leading byte, we can't produce a code point.
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -850,17 +860,17 @@ bool Utf32StreamCharacterSource::tryGetBufferedCodePoint(char32_t &next)
 //! @brief Creates an ICharacterSource implementation instances to read
 //! characters from a binary input stream.
 //! @param[in] input The input stream to read from.
+//! @param[in] detectEncodingFromBOM True to try use the initial bytes of the input
+//! stream to detect the character encoding. If no BOM is detected, use the
+//! preferred encoding. False to use the preferred encoding.
 //! @param[in] encoding The preferred character encoding.
 //! @param[in] byteOrder The preferred byte order of multi-byte character encodings.
-//! @param[in] detectFromBOM True to try use the initial bytes of the input
-//! stream to detect the character encoding. If no BOM is detected, use the
-//! preferred encoding.
 //! @return An instance of ICharacterSource which will read characters from
 //! @p input.
 StreamCharacterSourceUPtr createStreamCharacterSource(IStream *input,
+                                                      bool detectEncodingFromBOM /*= true */,
                                                       Utf::Encoding encoding /*= Utf::Encoding::Utf8*/,
-                                                      Bin::Endedness byteOrder /*= Bin::Endedness::Native*/,
-                                                      bool detectFromBOM /*= false*/)
+                                                      Bin::Endedness byteOrder /*= Bin::Endedness::Native*/)
 {
     if (input == nullptr)
         throw Ag::ArgumentNullException("input");
@@ -869,10 +879,10 @@ StreamCharacterSourceUPtr createStreamCharacterSource(IStream *input,
     uint8_ptr_t initialBytes = nullptr;
     uint8_t headerBuffer[4];
 
-    if (detectFromBOM)
+    if (detectEncodingFromBOM)
     {
-        static const uint8_t Utf8Bom[]      = { 0xEF, 0xBB, 0xFF };
-        static const uint8_t Utf16LeBom[]   = { 0xFF, 0xEF };
+        static const uint8_t Utf8Bom[]      = { 0xEF, 0xBB, 0xBF };
+        static const uint8_t Utf16LeBom[]   = { 0xFF, 0xFE };
         static const uint8_t Utf16BeBom[]   = { 0xFE, 0xFF };
         static const uint8_t Utf32LeBom[]   = { 0xFF, 0xFE, 0x00, 0x00 };
         static const uint8_t Utf32BeBom[]   = { 0x00, 0x00, 0xFE, 0xFF };
