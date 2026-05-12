@@ -131,6 +131,152 @@ GTEST_TEST(StreamCharacterSource, NullInitialBytesWithPositiveCountThrows)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// StringCharacterSource — backed by an Ag::String (UTF-8 internally)
+////////////////////////////////////////////////////////////////////////////////
+GTEST_TEST(StringCharacterSource, EmptyStringReadsReturnZero)
+{
+    String empty;
+    StringCharacterSource src(empty);
+
+    char     u8Buffer[8] = {};
+    char16_t u16Buffer[8] = {};
+    char32_t u32Buffer[8] = {};
+    wchar_t  wBuffer[8] = {};
+
+    EXPECT_EQ(src.readUtf8(u8Buffer, std::size(u8Buffer)), 0u);
+    EXPECT_EQ(src.readUtf16(u16Buffer, std::size(u16Buffer)), 0u);
+    EXPECT_EQ(src.readUtf32(u32Buffer, std::size(u32Buffer)), 0u);
+    EXPECT_EQ(src.readWide(wBuffer, std::size(wBuffer)), 0u);
+}
+
+GTEST_TEST(StringCharacterSource, ReadsAsciiAsUtf8)
+{
+    String text("Hello");
+    StringCharacterSource src(text);
+
+    char buffer[16] = {};
+    size_t got = src.readUtf8(buffer, std::size(buffer));
+
+    ASSERT_EQ(got, 5u);
+    EXPECT_EQ(std::memcmp(buffer, "Hello", 5), 0);
+}
+
+GTEST_TEST(StringCharacterSource, ReadsMultiByteAsUtf8)
+{
+    // Construct the String from UTF-32 code points so the test is independent
+    // of how the source file is encoded.
+    String text(kSampleUtf32, kSampleCodePointCount);
+    StringCharacterSource src(text);
+
+    char buffer[32] = {};
+    size_t got = src.readUtf8(buffer, std::size(buffer));
+
+    ASSERT_EQ(got, kSampleUtf8ByteCount);
+    EXPECT_EQ(std::memcmp(buffer, kSampleUtf8, got), 0);
+}
+
+GTEST_TEST(StringCharacterSource, ReadUtf16FromMultiByteString)
+{
+    String text(kSampleUtf32, kSampleCodePointCount);
+    StringCharacterSource src(text);
+
+    char16_t buffer[16] = {};
+    size_t got = src.readUtf16(buffer, std::size(buffer));
+
+    EXPECT_TRUE(chunksEqual(kSampleUtf16, kSampleUtf16WordCount, buffer, got));
+}
+
+GTEST_TEST(StringCharacterSource, ReadUtf32FromMultiByteString)
+{
+    String text(kSampleUtf32, kSampleCodePointCount);
+    StringCharacterSource src(text);
+
+    char32_t buffer[16] = {};
+    size_t got = src.readUtf32(buffer, std::size(buffer));
+
+    EXPECT_TRUE(chunksEqual(kSampleUtf32, kSampleCodePointCount, buffer, got));
+}
+
+GTEST_TEST(StringCharacterSource, ReadWideFromMultiByteString)
+{
+    String text(kSampleUtf32, kSampleCodePointCount);
+    StringCharacterSource src(text);
+
+    wchar_t buffer[16] = {};
+    size_t got = src.readWide(buffer, std::size(buffer));
+
+#ifdef WCHAR_IS_32BIT
+    ASSERT_EQ(got, kSampleCodePointCount);
+    for (size_t i = 0; i < got; ++i)
+        EXPECT_EQ(static_cast<char32_t>(buffer[i]), kSampleUtf32[i]);
+#else
+    ASSERT_EQ(got, kSampleUtf16WordCount);
+    for (size_t i = 0; i < got; ++i)
+        EXPECT_EQ(static_cast<char16_t>(buffer[i]), kSampleUtf16[i]);
+#endif
+}
+
+GTEST_TEST(StringCharacterSource, SequentialReadsContinueFromPriorPosition)
+{
+    // Reading the string one code point at a time should yield exactly the
+    // same characters as reading it all in one shot.
+    String text(kSampleUtf32, kSampleCodePointCount);
+    StringCharacterSource src(text);
+
+    char32_t collected[kSampleCodePointCount] = {};
+    for (size_t i = 0; i < kSampleCodePointCount; ++i)
+    {
+        char32_t next = 0;
+        size_t got = src.readUtf32(&next, 1);
+        ASSERT_EQ(got, 1u) << "stalled at index " << i;
+        collected[i] = next;
+    }
+
+    char32_t terminator = 0;
+    EXPECT_EQ(src.readUtf32(&terminator, 1), 0u);
+
+    EXPECT_TRUE(chunksEqual(kSampleUtf32, kSampleCodePointCount,
+                            collected, kSampleCodePointCount));
+}
+
+GTEST_TEST(StringCharacterSource, ReadsAfterExhaustionReturnZero)
+{
+    String text("AB");
+    StringCharacterSource src(text);
+
+    char buffer[8] = {};
+    EXPECT_EQ(src.readUtf8(buffer, std::size(buffer)), 2u);
+    EXPECT_EQ(src.readUtf8(buffer, std::size(buffer)), 0u);
+    EXPECT_EQ(src.readUtf8(buffer, std::size(buffer)), 0u);
+}
+
+GTEST_TEST(StringCharacterSource, SmallerMaxBytesReturnsPartialUtf8)
+{
+    // The string-backed source reads bytes directly without enforcing UTF-8
+    // code-point boundaries — a caller can therefore retrieve a long string
+    // in chunks even if a chunk boundary falls inside a multi-byte encoding.
+    // This test documents that the bytes across two reads concatenate back
+    // into the full UTF-8 sequence.
+    String text(kSampleUtf32, kSampleCodePointCount);
+    StringCharacterSource src(text);
+
+    uint8_t firstHalf[6] = {};
+    uint8_t secondHalf[16] = {};
+
+    size_t got1 = src.readUtf8(reinterpret_cast<char *>(firstHalf), 6);
+    size_t got2 = src.readUtf8(reinterpret_cast<char *>(secondHalf),
+                               std::size(secondHalf));
+
+    ASSERT_EQ(got1 + got2, kSampleUtf8ByteCount);
+
+    uint8_t combined[kSampleUtf8ByteCount];
+    std::memcpy(combined, firstHalf, got1);
+    std::memcpy(combined + got1, secondHalf, got2);
+
+    EXPECT_EQ(std::memcmp(combined, kSampleUtf8, kSampleUtf8ByteCount), 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Utf8StreamCharacterSource
 ////////////////////////////////////////////////////////////////////////////////
 GTEST_TEST(Utf8StreamCharacterSource, EmptyStreamReturnsZero)

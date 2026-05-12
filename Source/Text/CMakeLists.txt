@@ -33,7 +33,8 @@ ag_add_test_app(Text_Tests TEST_LIB   Text
                            SOURCES    Test_MemoryStream.hpp
                                       Test_MemoryStream.cpp
                                       Test_CharacterSource.cpp
-                                      Test_CharacterSink.cpp)
+                                      Test_CharacterSink.cpp
+                                      Test_CharacterAnalyser.cpp)
 
 target_precompile_headers(Text_Tests PRIVATE <gtest/gtest.h>
                                              [["PreCompiledHeader.hpp"]])
