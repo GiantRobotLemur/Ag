@@ -9,6 +9,8 @@ ag_add_library(Text FOLDER      Core
                                 ${TEXT_INCLUDE_DIR}/CharacterSource.hpp
                                 CharacterSink.cpp
                                 ${TEXT_INCLUDE_DIR}/CharacterSink.hpp
+                                CharacterAnalyser.cpp
+                                ${TEXT_INCLUDE_DIR}/CharacterAnalyser.hpp
                                 Json.cpp
                                 ${TEXT_INCLUDE_DIR}/Json.hpp
                     HEADERS     ${AG_INCLUDE_DIR}/Ag/Text.hpp

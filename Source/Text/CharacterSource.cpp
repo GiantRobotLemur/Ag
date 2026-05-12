@@ -26,6 +26,116 @@ static constexpr size_t MinBufferSize = 32;
 } // Anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// StringCharacterSource Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Constructs an object which produces characters from an immutable string.
+//! @param[in] sourceText The string which will provide characters.
+StringCharacterSource::StringCharacterSource(Ag::string_cref_t &sourceText) :
+    _sourceText(sourceText),
+    _offset(0)
+{
+}
+
+// Inherited from ICharacterSource.
+size_t StringCharacterSource::readUtf8(utf8_ptr_t characters, size_t maxBytes)
+{
+    size_t stringLeft = _sourceText.getUtf8Length() - _offset;
+    size_t bytesToWrite = std::min(stringLeft, maxBytes);
+
+    if (bytesToWrite > 0)
+    {
+        memcpy(characters, _sourceText.getUtf8Bytes() + _offset, bytesToWrite);
+        _offset += bytesToWrite;
+    }
+
+    return bytesToWrite;
+}
+
+// Inherited from ICharacterSource.
+size_t StringCharacterSource::readUtf16(utf16_ptr_t characters, size_t maxWords)
+{
+    size_t stringLen = _sourceText.getUtf8Length();
+    size_t stringLeft = stringLen - _offset;
+    size_t written = 0;
+
+    if (stringLeft > 0)
+    {
+        // If we were in the middle of a character, we need to skip the
+        // remaining bytes of its encoding.
+        uint8_cptr_t utf8Bytes = reinterpret_cast<uint8_cptr_t>(_sourceText.getUtf8Bytes());
+        Utf::FromUtf8Converter inputConverter;
+        Utf::ToUtf16Converter outputConverter;
+        char32_t codePoint = U'\0';
+        char16_t outChar = u'\0';
+        bool isError = false;
+
+        while ((_offset < stringLen) &&
+               (written < maxWords))
+        {
+            if (inputConverter.tryConvert(utf8Bytes[_offset], codePoint, isError))
+            {
+                if (isError)
+                    continue;
+
+                outputConverter.setCodePoint(codePoint);
+
+                while ((written < maxWords) &&
+                       outputConverter.tryGetNextCharacter(outChar))
+                {
+                    characters[written++] = outChar;
+                }
+            }
+
+            ++_offset;
+        }
+    }
+
+    return written;
+}
+
+// Inherited from ICharacterSource.
+size_t StringCharacterSource::readUtf32(utf32_ptr_t characters, size_t maxCodePoints)
+{
+    size_t stringLen = _sourceText.getUtf8Length();
+    size_t stringLeft = stringLen - _offset;
+    size_t written = 0;
+
+    if (stringLeft > 0)
+    {
+        // If we were in the middle of a character, we need to skip the
+        // remaining bytes of its encoding.
+        uint8_cptr_t utf8Bytes = reinterpret_cast<uint8_cptr_t>(_sourceText.getUtf8Bytes());
+        Utf::FromUtf8Converter inputConverter;
+        char32_t codePoint = U'\0';
+        bool isError = false;
+
+        while ((_offset < stringLen) &&
+               (written < maxCodePoints))
+        {
+            if (inputConverter.tryConvert(utf8Bytes[_offset], codePoint, isError))
+            {
+                if (!isError)
+                    characters[written++] = codePoint;
+            }
+
+            ++_offset;
+        }
+    }
+
+    return written;
+}
+
+// Inherited from ICharacterSource.
+size_t StringCharacterSource::readWide(wchar_ptr_t characters, size_t maxChars)
+{
+#ifdef WCHAR_IS_32BIT
+    return readUtf32(reinterpret_cast<utf32_ptr_t>(characters), maxChars);
+#else
+    return readUtf16(reinterpret_cast<utf16_ptr_t>(characters), maxChars);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // StreamCharacterSource Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs an object which produces characters by decoding a binary

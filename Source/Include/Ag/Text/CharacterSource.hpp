@@ -74,6 +74,25 @@ public:
 //! @brief An alias for a unique pointer to an ICharacterSource implementation.
 using ICharacterSourceUPtr = std::unique_ptr<ICharacterSource>;
 
+//! @brief An ICharacterSource implementation fed from an immutable Ag string.
+class StringCharacterSource : public ICharacterSource
+{
+public:
+    // Construction/Destruction
+    StringCharacterSource(Ag::string_cref_t &sourceText);
+    virtual ~StringCharacterSource() = default;
+
+    // Overrides
+    virtual size_t readUtf8(utf8_ptr_t characters, size_t maxBytes) override;
+    virtual size_t readUtf16(utf16_ptr_t characters, size_t maxWords) override;
+    virtual size_t readUtf32(utf32_ptr_t characters, size_t maxCodePoints) override;
+    virtual size_t readWide(wchar_ptr_t characters, size_t maxChars) override;
+private:
+    // Internal Fields
+    Ag::String _sourceText;
+    size_t _offset;
+};
+
 //! @brief A base class for implementations of ICharacterSource which read from
 //! binary input streams.
 class StreamCharacterSource : public ICharacterSource
