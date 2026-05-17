@@ -17,6 +17,9 @@
 // The headers of the library roughly in dependency order.
 #include "Text/CharacterSource.hpp"
 #include "Text/CharacterSink.hpp"
+#include "Text/CharacterAnalyser.hpp"
+#include "Text/Tokeniser.hpp"
+#include "Text/Parser.hpp"
 #include "Text/Json.hpp"
 
 #endif // Header guard

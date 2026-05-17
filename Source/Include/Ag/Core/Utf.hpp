@@ -2,7 +2,7 @@
 //! @brief The declaration of various objects and functions for converting
 //! between different encodings of Unicode characters.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -220,6 +220,10 @@ void appendNative(std::wstring &destination, const char *nativeBytes,
                   size_t byteCount);
 void appendWide(std::string &destination, wchar_cptr_t wideChars,
                 size_t charCount);
+void appendUTF16(std::string &destination, utf16_cptr_t wordChars,
+                 size_t charCount);
+void appendUTF32(std::string &destination, utf32_cptr_t codePoints,
+                 size_t charCount);
 bool appendCodePoint(std::string &destination, char32_t codePoint);
 bool isValidCodePoint(char32_t codePoint);
 bool isWhiteSpace(char32_t codePoint);

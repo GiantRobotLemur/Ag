@@ -1,7 +1,7 @@
 //! @file Core/String.cpp
 //! @brief The definition of an immutable UTF-8-encoded string value data type.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -18,6 +18,7 @@
 
 #include "StringPrivate.hpp"
 #include "Win32API.hpp"
+#include "Ag/Core/CodePoint.hpp"
 #include "Ag/Core/Format.hpp"
 #include "Ag/Core/ScalarParser.hpp"
 #include "Ag/Core/String.hpp"
@@ -213,25 +214,37 @@ public:
 
 void processScalarCharacters(ScalarParser &parser, const std::string &source)
 {
+    Utf::FromUtf8Converter converter;
+    char32_t codePoint;
     bool isLeading = true;
+    bool hasError = false;
 
     for (char next : source)
     {
-        // Skip leading white space.
-        if (isLeading)
+        // Convert the text from UTF-8 to Unicode.
+        if (converter.tryConvert(static_cast<uint8_t>(next), codePoint, hasError))
         {
-            if (std::isspace(next) == 0)
+            // Skip leading white space.
+            if (isLeading)
             {
-                isLeading = false;
+                if (CodePoint::isWhiteSpace(next))
+                {
+                    continue;
+                }
+                else
+                {
+                    isLeading = false;
+                }
             }
-            else
+
+            if (parser.tryProcessCharacter(codePoint) == false)
             {
-                continue;
+                break;
             }
         }
-
-        if (parser.tryProcessCharacter(next) == false)
+        else if (hasError)
         {
+            parser.reset();
             break;
         }
     }

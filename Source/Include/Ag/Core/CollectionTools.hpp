@@ -176,11 +176,12 @@ public:
         // Create a pointer to a mapping from just the key knowing that
         // the value element of the pair will NEVER be accessed.
         MappingCPtr keyMapping = reinterpret_cast<MappingCPtr>(&key);
+        auto endMapping = _mappings + _count;
 
-        auto pos = std::lower_bound(_mappings, _mappings + _count,
+        auto pos = std::lower_bound(_mappings, endMapping,
                                     *keyMapping, KeyCompare());
 
-        if (TKeyComp()(key, pos->first) == false)
+        if ((pos != endMapping) && (TKeyComp()(key, pos->first) == false))
         {
             index = std::distance(_mappings, pos);
             return true;

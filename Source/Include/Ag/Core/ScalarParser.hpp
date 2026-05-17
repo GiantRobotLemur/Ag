@@ -1,7 +1,7 @@
 //! @file Ag/Core/ScalarParser.hpp
 //! @brief The declaration of an object which parses scalar values from text.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -17,6 +17,7 @@
 #include <limits>
 #include <vector>
 
+#include "Binary.hpp"
 #include "Format.hpp"
 #include "String.hpp"
 
@@ -44,10 +45,19 @@ public:
     void enableFraction(bool isEnabled);
     bool allowExponent() const;
     void enableExponent(bool isEnabled);
+    bool allowLeadingWhiteSpace() const;
+    void enableLeadingWhiteSpace(bool isEnabled);
+    bool allowTrailingWhiteSpace() const;
+    void enableTrailingWhiteSpace(bool isEnabled);
+
+    bool hasWholeDigits() const noexcept;
+    bool hasFraction() const noexcept;
+    bool hasExponent() const noexcept;
+    bool isComplete() const noexcept;
 
     // Operations
     void reset();
-    bool tryProcessCharacter(char character);
+    bool tryProcessCharacter(char32_t character);
     bool tryProcessString(const std::string_view &str);
 
     //! @brief Attempts to extract a value from the characters parsed.
@@ -163,7 +173,7 @@ public:
     }
 private:
     // Internal Types
-    typedef bool (ScalarParser:: *HandlerFnPtr)(char next);
+    typedef bool (ScalarParser:: *HandlerFnPtr)(char32_t next);
     // Format:
     // { White Space }
     // { Sign }
@@ -203,29 +213,32 @@ private:
         Flag_AllowRadixPrefix = 0x01,
         Flag_AllowSign = 0x02,
         Flag_AllowFraction = 0x04,
-        Flag_AllowExponent = 0x08
+        Flag_AllowExponent = 0x08,
+        Flag_AllowLeadingWhiteSpace = 0x10,
+        Flag_AllowTrailingWhiteSpace = 0x20
     };
 
     typedef std::vector<uint8_t> DigitVector;
 
     // Internal Functions
+    void initialise(const LocaleInfo &locale);
     bool hasFlag(uint32_t flag) const;
     void setFlag(uint32_t flag, bool isSet);
-    bool handleStart(char next);
-    bool handleBeforePrefix(char next);
-    bool handleBeforeWholeDigits(char next);
-    bool handleBeforeWholeHexDigits(char next);
-    bool handleAfterZeroPrefix(char next);
-    bool handleInWholeDigits(char next);
-    bool handleExpectingWholeDigit(char next);
-    bool handleInThousandSeparator(char next);
-    bool handleInDecimalPoint(char next);
-    bool handleBeforeFraction(char next);
-    bool handleInFraction(char next);
-    bool handleAfterExponentSymbol(char next);
-    bool handleBeforeExponentDigits(char next);
-    bool handleInExponent(char next);
-    bool handleInTrailingWhiteSpace(char next);
+    bool handleStart(char32_t next);
+    bool handleBeforePrefix(char32_t next);
+    bool handleBeforeWholeDigits(char32_t next);
+    bool handleBeforeWholeHexDigits(char32_t next);
+    bool handleAfterZeroPrefix(char32_t next);
+    bool handleInWholeDigits(char32_t next);
+    bool handleExpectingWholeDigit(char32_t next);
+    bool handleInThousandSeparator(char32_t next);
+    bool handleInDecimalPoint(char32_t next);
+    bool handleBeforeFraction(char32_t next);
+    bool handleInFraction(char32_t next);
+    bool handleAfterExponentSymbol(char32_t next);
+    bool handleBeforeExponentDigits(char32_t next);
+    bool handleInExponent(char32_t next);
+    bool handleInTrailingWhiteSpace(char32_t next);
     static bool isTerminalState(State state);
     static int8_t pow(int8_t value, int power);
     static uint8_t pow(uint8_t value, int power);
@@ -246,8 +259,9 @@ private:
     int _sign;
     int _exponentSign;
     uint32_t _flags;
-    String _thousandSeparator;
-    String _decimalPoint;
+    ByteBlock _source;
+    std::u32string_view _thousandSeparator;
+    std::u32string_view _decimalPoint;
     DigitVector _wholeDigits;
     DigitVector _fractionalDigits;
     DigitVector _exponentDigits;

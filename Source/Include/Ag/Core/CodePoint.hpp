@@ -2,7 +2,7 @@
 //! @brief The declaration of functions which manipulate and test Unicode
 //! code point values.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -22,9 +22,12 @@ namespace CodePoint {
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
 ////////////////////////////////////////////////////////////////////////////////
+// TODO: Create a non-locale-specific implementation of these functions based
+// on the ISO 30112 standard rather than the C runtime library.
 char32_t toUpper(char32_t codePoint);
 char32_t toLower(char32_t codePoint);
 bool isWhiteSpace(char32_t codePoint);
+bool isBlank(char32_t codePoint);
 bool isAlphaNumeric(char32_t codePoint);
 bool isNumeric(char32_t codePoint);
 bool isHexDigit(char32_t codePoint);

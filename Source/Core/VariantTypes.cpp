@@ -1,7 +1,7 @@
 //! @file Core/VariantTypes.cpp
 //! @brief The definition of various implementations of the VariantType class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -124,17 +124,29 @@ void parseScalar(ScalarParser &parser, utf8_cptr_t source, size_t &length)
     parser.enableExponent(TypeInfo::is_exact == false);
     parser.enableSign(TypeInfo::is_signed);
 
+    Utf::FromUtf8Converter converter;
+    size_t committedLength = 0;
+    char32_t codePoint;
     bool isOK = true;
+    bool hasError = false;
 
-    for (size_t index = 0; isOK && (index < length);)
+    for (size_t index = 0; isOK && (index < length); ++index)
     {
-        if (parser.tryProcessCharacter(source[index]))
+        // Convert from UTF-8 encoding to Unicode.
+        if (converter.tryConvert(static_cast<uint8_t>(source[index]),
+                                 codePoint, hasError))
         {
-            ++index;
+            committedLength = index + 1;
+
+            if (parser.tryProcessCharacter(codePoint) == false)
+            {
+                length = committedLength;
+                isOK = false;
+            }
         }
-        else
+        else if (hasError)
         {
-            length = index;
+            length = committedLength;
             isOK = false;
         }
     }
@@ -894,18 +906,30 @@ bool PointerVariantType::tryParse(const LocaleInfo &format, utf8_cptr_t source,
     parser.enableExponent(false);
     parser.enableSign(false);
 
+    Utf::FromUtf8Converter converter;
+    size_t committedLength = 0;
+    char32_t codePoint;
     bool isOK = true;
+    bool hasError = false;
 
-    for (size_t index = 0; isOK && (index < length); )
+    for (size_t index = 0; isOK && (index < length); ++index)
     {
-        if (parser.tryProcessCharacter(source[index]))
+        // Convert from UTF-8 encoding to Unicode.
+        if (converter.tryConvert(static_cast<uint8_t>(source[index]),
+                                 codePoint, hasError))
         {
-            ++index;
+            // Only update the committed length after a whole code point.
+            committedLength = index + 1;
+
+            if (!parser.tryProcessCharacter(codePoint))
+            {
+                length = committedLength;
+                isOK = false;
+            }
         }
-        else
+        else if (hasError)
         {
-            // We've reached the end of the value.
-            length = index;
+            length = committedLength;
             isOK = false;
         }
     }

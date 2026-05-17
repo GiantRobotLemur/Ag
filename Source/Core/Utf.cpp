@@ -2,7 +2,7 @@
 //! @brief The definition of various objects and functions used to convert
 //! between the different encodings of Unicode characters.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -1727,22 +1727,21 @@ void appendNative(std::wstring &destination, const char *nativeBytes,
 void appendWide(std::string &destination, wchar_cptr_t wideChars,
                 size_t charCount)
 {
-    ToUtf8Converter outputConverter;
 #ifdef WCHAR_IS_32BIT
-    for (size_t sourceIndex = 0; sourceIndex < charCount; ++sourceIndex)
-    {
-        // No need for conversion from wide characters to code points.
-        if (outputConverter.setCodePoint(static_cast<char32_t>(wideChars[sourceIndex])) > 0)
-        {
-            uint8_t utf8Byte;
-
-            while (outputConverter.tryGetNextByte(utf8Byte))
-            {
-                destination.push_back(static_cast<char>(utf8Byte));
-            }
-        }
-    }
+    appendUTF32(destination, reinterpret_cast<utf32_cptr_t>(wideChars), charCount);
 #else
+    appendUTF16(destination, reinterpret_cast<utf16_cptr_t>(wideChars), charCount);
+#endif
+}
+
+//! @brief Appends a UTF-16 character string to a UTF-8 encoded STL string.
+//! @param[out] destination The UTF-8 string to append to.
+//! @param[in] wordChars The array of wide characters to convert.
+//! @param[in] charCount The count of elements in the @p wordChars array.
+void appendUTF16(std::string &destination, utf16_cptr_t wordChars,
+                 size_t charCount)
+{
+    ToUtf8Converter outputConverter;
     FromWideConverter inputConverter;
     char32_t codePoint;
     bool hasError;
@@ -1750,7 +1749,7 @@ void appendWide(std::string &destination, wchar_cptr_t wideChars,
     for (size_t sourceIndex = 0; sourceIndex < charCount; ++sourceIndex)
     {
         // Convert one or more characters to a single code point.
-        if (inputConverter.tryConvert(wideChars[sourceIndex],
+        if (inputConverter.tryConvert(wordChars[sourceIndex],
                                       codePoint, hasError))
         {
             // Encode the code point as UTF-8.
@@ -1769,7 +1768,30 @@ void appendWide(std::string &destination, wchar_cptr_t wideChars,
             inputConverter.reset();
         }
     }
-#endif
+}
+
+//! @brief Appends Unicode code points to a UTF-8 encoded STL string.
+//! @param[out] destination The UTF-8 string to append to.
+//! @param[in] codePoints The array of code points to convert and append.
+//! @param[in] charCount The count of elements in the @p codePoints array.
+void appendUTF32(std::string &destination, utf32_cptr_t codePoints,
+                 size_t charCount)
+{
+    ToUtf8Converter outputConverter;
+
+    for (size_t sourceIndex = 0; sourceIndex < charCount; ++sourceIndex)
+    {
+        // No need for conversion from wide characters to code points.
+        if (outputConverter.setCodePoint(codePoints[sourceIndex]) > 0)
+        {
+            uint8_t utf8Byte;
+
+            while (outputConverter.tryGetNextByte(utf8Byte))
+            {
+                destination.push_back(static_cast<char>(utf8Byte));
+            }
+        }
+    }
 }
 
 //! @brief Appends a Unicode code point to a UTF-8 encoded STL string.

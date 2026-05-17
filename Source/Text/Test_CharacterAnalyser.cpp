@@ -274,6 +274,8 @@ GTEST_TEST(CharacterAnalyser, ReadsAcrossBufferRefill)
     StringCharacterSource src(text);
     CharacterAnalyser analyser(&src);
 
+    analyser.setBufferSize(256);
+
     for (size_t i = 0; i < kLength; ++i)
     {
         char32_t next = 0;
@@ -305,6 +307,8 @@ GTEST_TEST(CharacterAnalyser, RollbackAfterRefillBoundary)
 
     // Consume 300 chars, committing the first 250 so the rollback window
     // tracks 50 uncommitted chars across an internal refill.
+    analyser.setBufferSize(300);
+
     char32_t next = 0;
     for (size_t i = 0; i < 250; ++i)
         ASSERT_TRUE(analyser.tryGetNextCharacter(next));

@@ -1,7 +1,7 @@
 //! @file Core/ScalarParser.cpp
 //! @brief The definition of an object which parses scalar values from text.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -13,8 +13,11 @@
 #include <algorithm>
 #include <cctype>
 
+#include "Ag/Core/CodePoint.hpp"
 #include "Ag/Core/ScalarParser.hpp"
 #include "Ag/Core/Exception.hpp"
+#include "Ag/Core/InlineMemory.hpp"
+#include "Ag/Core/Utf.hpp"
 #include "Ag/Core/Utils.hpp"
 
 namespace Ag {
@@ -74,10 +77,10 @@ ScalarParser::ScalarParser() :
     _radix(-1),
     _sign(1),
     _exponentSign(1),
-    _flags(Flag_AllowRadixPrefix | Flag_AllowSign),
-    _thousandSeparator(LocaleInfo::getNeutral().getThousandSeparator()),
-    _decimalPoint(LocaleInfo::getNeutral().getDecimalSeparator())
+    _flags(Flag_AllowRadixPrefix | Flag_AllowSign |
+           Flag_AllowLeadingWhiteSpace | Flag_AllowTrailingWhiteSpace)
 {
+    initialise(LocaleInfo::getNeutral());
 }
 
 //! @brief Constructs an object to parse scalar values expressed as text.
@@ -89,10 +92,10 @@ ScalarParser::ScalarParser(const LocaleInfo &locale) :
     _radix(-1),
     _sign(1),
     _exponentSign(1),
-    _flags(Flag_AllowRadixPrefix | Flag_AllowSign),
-    _thousandSeparator(locale.getThousandSeparator()),
-    _decimalPoint(locale.getDecimalSeparator())
+    _flags(Flag_AllowRadixPrefix | Flag_AllowSign |
+           Flag_AllowLeadingWhiteSpace | Flag_AllowTrailingWhiteSpace)
 {
+    initialise(locale);
 }
 
 //! @brief Gets whether the radix can be detected by a '0x' (hex) or '0' (octal)
@@ -183,6 +186,69 @@ void ScalarParser::enableExponent(bool isEnabled)
     setFlag(Flag_AllowExponent, isEnabled);
 }
 
+//! @brief Gets whether leading white space will be consumed.
+//! @retval true Any leading white space characters will be consumed.
+//! @retval false Any leading white space characters will be rejected.
+bool ScalarParser::allowLeadingWhiteSpace() const
+{
+    return hasFlag(Flag_AllowLeadingWhiteSpace);
+}
+
+//! @brief Sets whether an leading white space will be consumed.
+//! @param[in] isEnabled True to consume leading white space characters, false
+//! to cause it to end parsing.
+void ScalarParser::enableLeadingWhiteSpace(bool isEnabled)
+{
+    setFlag(Flag_AllowLeadingWhiteSpace, isEnabled);
+}
+
+//! @brief Gets whether trailing white space will be consumed.
+//! @retval true Any trailing white space characters will be consumed.
+//! @retval false Any trailing white space characters will be rejected.
+bool ScalarParser::allowTrailingWhiteSpace() const
+{
+    return hasFlag(Flag_AllowTrailingWhiteSpace);
+}
+
+//! @brief Sets whether an trailing white space will be consumed.
+//! @param[in] isEnabled True to consume trailing white space characters, false
+//! to cause it to end parsing.
+void ScalarParser::enableTrailingWhiteSpace(bool isEnabled)
+{
+    setFlag(Flag_AllowTrailingWhiteSpace, isEnabled);
+}
+
+//! @brief Indicates whether any whole-number digits have been parsed.
+bool ScalarParser::hasWholeDigits() const noexcept
+{
+    // We have to be careful with this one as we don't store leading zeros.
+    return (_wholeDigits.empty() == false) ||
+        (_currentState >= State_InWholeDigits);
+}
+
+//! @brief Indicates whether any fraction-component digits have been parsed.
+bool ScalarParser::hasFraction() const noexcept
+{
+    return _fractionalDigits.empty() == false;
+}
+
+//! @brief Indicates whether any exponent digits have been parsed.
+bool ScalarParser::hasExponent() const noexcept
+{
+    return _exponentDigits.empty() == false;
+}
+
+//! @brief Determines if enough characters have been processed to produce
+//! a valid scalar value.
+//! @retval true A valid scalar value has been parsed.
+//! @retval false Either not enough digits have been parsed for a valid scalar
+//! value, or the object is in an intermediate state, and needs to process more
+//! characters to be valid (like after a decimal point).
+bool ScalarParser::isComplete() const noexcept
+{
+    return isTerminalState(_currentState);
+}
+
 //! @brief Resets the parser back to the start state.
 void ScalarParser::reset()
 {
@@ -202,7 +268,7 @@ void ScalarParser::reset()
 //! @retval true The character was processed successfully.
 //! @retval false The character was unexpected given the previously parsed
 //! characters. The parse state is not altered.
-bool ScalarParser::tryProcessCharacter(char character)
+bool ScalarParser::tryProcessCharacter(char32_t character)
 {
     // Re-direct parsing depending on the current state.
     static HandlerFnPtr handlerFunctions[] =
@@ -243,13 +309,50 @@ bool ScalarParser::tryProcessString(const std::string_view &str)
 {
     reset();
 
+    Utf::FromUtf8Converter converter;
+    char32_t codePoint;
     bool isOK = true;
+    bool hasError = false;
+
     for (auto pos = str.begin(); isOK && (pos != str.end()); ++pos)
     {
-        isOK &= tryProcessCharacter(*pos);
+        if (converter.tryConvert(static_cast<uint8_t>(*pos),
+                                 codePoint, hasError))
+        {
+            isOK &= tryProcessCharacter(codePoint);
+        }
+        else
+        {
+            isOK = (hasError == false);
+        }
     }
 
     return isOK;
+}
+
+//! @brief Performs shared initialisation for the object.
+//! @param[in] locale The locale used to define digit separators.
+void ScalarParser::initialise(const LocaleInfo &locale)
+{
+    // Cache the separators as Unicode code points in a single buffer.
+    string_cref_t thousandSep = locale.getThousandSeparator();
+    string_cref_t decimalSep = locale.getDecimalSeparator();
+
+    // Calculate the size of the buffer and position of elements within it.
+    InlineAllocator allocator;
+
+    // Allocate space for the fields.
+    auto thousandField = allocator.allocateUTF32(thousandSep);
+    auto decimalField = allocator.allocateUTF32(decimalSep);
+
+    // Size the buffer accordingly.
+    _source.resize(allocator.getSize());
+
+    // Fill the buffer with field data.
+    InlineInitialiser initialiser(_source.data(), _source.size());
+
+    _thousandSeparator = initialiser.initialiseFieldUTF32(thousandField, thousandSep);
+    _decimalPoint = initialiser.initialiseFieldUTF32(decimalField, decimalSep);
 }
 
 //! @brief Determines if one or more internal option flags are set.
@@ -277,17 +380,17 @@ void ScalarParser::setFlag(uint32_t flag, bool isSet)
 }
 
 //! @brief Processes a character when in the State_Start state.
-bool ScalarParser::handleStart(char next)
+bool ScalarParser::handleStart(char32_t next)
 {
     bool isProcessed = false;
     uint8_t digit = 0xFF;
 
-    if (std::isspace(next))
+    if (hasFlag(Flag_AllowLeadingWhiteSpace) && CodePoint::isWhiteSpace(next))
     {
         // Skip leading white space.
         isProcessed = true;
     }
-    else if (next == '-')
+    else if (next == U'-')
     {
         _sign = -1;
         isProcessed = hasFlag(Flag_AllowSign);
@@ -295,7 +398,7 @@ bool ScalarParser::handleStart(char next)
         _currentState = hasFlag(Flag_AllowRadixPrefix) ? State_BeforePrefix :
                                                          State_BeforeWholeDigits;
     }
-    else if (next == '+')
+    else if (next == U'+')
     {
         _sign = 1;
         isProcessed = hasFlag(Flag_AllowSign);
@@ -303,24 +406,24 @@ bool ScalarParser::handleStart(char next)
         _currentState = hasFlag(Flag_AllowRadixPrefix) ? State_BeforePrefix :
                                                          State_BeforeWholeDigits;
     }
-    else if ((next == '0') && hasFlag(Flag_AllowRadixPrefix))
+    else if ((next == U'0') && hasFlag(Flag_AllowRadixPrefix))
     {
         isProcessed = true;
         _currentState = State_AfterZeroPrefix;
     }
     else
     {
-        if ((next >= '0') && (next <= '9'))
+        if ((next >= U'0') && (next <= U'9'))
         {
-            digit = static_cast<uint8_t>(next - '0');
+            digit = static_cast<uint8_t>(next - U'0');
         }
-        else if ((next >= 'A') && (next <= 'Z'))
+        else if ((next >= U'A') && (next <= U'Z'))
         {
-            digit = static_cast<uint8_t>(next - 'A') + 10;
+            digit = static_cast<uint8_t>(next - U'A') + 10;
         }
-        else if ((next >= 'a') && (next <= 'z'))
+        else if ((next >= U'a') && (next <= U'z'))
         {
-            digit = static_cast<uint8_t>(next - 'a') + 10;
+            digit = static_cast<uint8_t>(next - U'a') + 10;
         }
 
         if (digit < _preferredRadix)
@@ -343,30 +446,30 @@ bool ScalarParser::handleStart(char next)
 }
 
 //! @brief Processes a character when in the State_BeforePrefix state.
-bool ScalarParser::handleBeforePrefix(char next)
+bool ScalarParser::handleBeforePrefix(char32_t next)
 {
     bool isProcessed = false;
     uint8_t digit = 0xFF;
 
     // We are only in this state because radix prefixes are enabled.
-    if (next == '0')
+    if (next == U'0')
     {
         isProcessed = true;
         _currentState = State_AfterZeroPrefix;
     }
     else
     {
-        if ((next >= '1') && (next <= '9'))
+        if ((next >= U'1') && (next <= U'9'))
         {
-            digit = static_cast<uint8_t>(next - '0');
+            digit = static_cast<uint8_t>(next - U'0');
         }
-        else if ((next >= 'A') && (next <= 'Z'))
+        else if ((next >= U'A') && (next <= U'Z'))
         {
-            digit = static_cast<uint8_t>(next - 'A') + 10;
+            digit = static_cast<uint8_t>(next - U'A') + 10;
         }
-        else if ((next >= 'a') && (next <= 'z'))
+        else if ((next >= U'a') && (next <= U'z'))
         {
-            digit = static_cast<uint8_t>(next - 'a') + 10;
+            digit = static_cast<uint8_t>(next - U'a') + 10;
         }
 
         if (digit < _preferredRadix)
@@ -389,23 +492,23 @@ bool ScalarParser::handleBeforePrefix(char next)
 }
 
 //! @brief Processes a character when in the State_BeforeWholeDigits state.
-bool ScalarParser::handleBeforeWholeDigits(char next)
+bool ScalarParser::handleBeforeWholeDigits(char32_t next)
 {
     bool isProcessed = false;
     uint8_t digit = 0xFF;
 
     // We are in this state is we are not detecting radix prefixes.
-    if ((next >= '0') && (next <= '9'))
+    if ((next >= U'0') && (next <= U'9'))
     {
-        digit = static_cast<uint8_t>(next - '0');
+        digit = static_cast<uint8_t>(next - U'0');
     }
-    else if ((next >= 'A') && (next <= 'Z'))
+    else if ((next >= U'A') && (next <= U'Z'))
     {
-        digit = static_cast<uint8_t>(next - 'A') + 10;
+        digit = static_cast<uint8_t>(next - U'A') + 10;
     }
-    else if ((next >= 'a') && (next <= 'z'))
+    else if ((next >= U'a') && (next <= U'z'))
     {
-        digit = static_cast<uint8_t>(next - 'a') + 10;
+        digit = static_cast<uint8_t>(next - U'a') + 10;
     }
 
     if (digit < _preferredRadix)
@@ -428,23 +531,23 @@ bool ScalarParser::handleBeforeWholeDigits(char next)
 }
 
 //! @brief Processes a character when in the State_AfterZeroPrefix state.
-bool ScalarParser::handleBeforeWholeHexDigits(char next)
+bool ScalarParser::handleBeforeWholeHexDigits(char32_t next)
 {
     bool isProcessed = false;
     uint8_t digit = 0xFF;
 
     // The radix is set, but we haven't seen a digit yet.
-    if ((next >= '0') && (next <= '9'))
+    if ((next >= U'0') && (next <= U'9'))
     {
-        digit = static_cast<uint8_t>(next - '0');
+        digit = static_cast<uint8_t>(next - U'0');
     }
-    else if ((next >= 'A') && (next <= 'F'))
+    else if ((next >= U'A') && (next <= U'F'))
     {
-        digit = static_cast<uint8_t>(next - 'A') + 10;
+        digit = static_cast<uint8_t>(next - U'A') + 10;
     }
-    else if ((next >= 'a') && (next <= 'f'))
+    else if ((next >= U'a') && (next <= U'f'))
     {
-        digit = static_cast<uint8_t>(next - 'a') + 10;
+        digit = static_cast<uint8_t>(next - U'a') + 10;
     }
 
     if (digit < _radix)
@@ -464,45 +567,46 @@ bool ScalarParser::handleBeforeWholeHexDigits(char next)
 }
 
 //! @brief Processes a character when in the State_AfterZeroPrefix state.
-bool ScalarParser::handleAfterZeroPrefix(char next)
+bool ScalarParser::handleAfterZeroPrefix(char32_t next)
 {
     bool isProcessed = false;
     uint8_t digit = 0xFF;
 
-    if ((next == 'X') || (next == 'x'))
+    if ((next == U'X') || (next == U'x'))
     {
         // Its hexadecimal.
         _radix = 16;
         isProcessed = true;
         _currentState = State_BeforeWholeHexDigits;
     }
-    else if (std::isspace(next) != 0)
+    else if (hasFlag(Flag_AllowTrailingWhiteSpace) &&
+             CodePoint::isWhiteSpace(next))
     {
         // The value was zero, the radix irrelevant.
         isProcessed = true;
         _radix = _preferredRadix;
         _currentState = State_InTrailingWhiteSpace;
     }
-    else if ((next >= '0') && (next <= '7'))
+    else if ((next >= U'0') && (next <= U'7'))
     {
         // It's octal.
         _radix = 8;
-        digit = static_cast<uint8_t>(next - '0');
+        digit = static_cast<uint8_t>(next - U'0');
     }
-    else if ((next == '8') || (next == '9'))
+    else if ((next == U'8') || (next == U'9'))
     {
         // The leading zero wasn't a prefix.
-        digit = static_cast<uint8_t>(next - '0');
+        digit = static_cast<uint8_t>(next - U'0');
         _radix = _preferredRadix;
     }
-    else if ((next >= 'A') && (next <= 'Z'))
+    else if ((next >= U'A') && (next <= U'Z'))
     {
-        digit = static_cast<uint8_t>(next - 'A') + 10;
+        digit = static_cast<uint8_t>(next - U'A') + 10;
         _radix = _preferredRadix;
     }
-    else if ((next >= 'a') && (next <= 'z'))
+    else if ((next >= U'a') && (next <= U'z'))
     {
-        digit = static_cast<uint8_t>(next - 'a') + 10;
+        digit = static_cast<uint8_t>(next - U'a') + 10;
         _radix = _preferredRadix;
     }
 
@@ -511,7 +615,7 @@ bool ScalarParser::handleAfterZeroPrefix(char next)
         isProcessed = true;
 
         // Don't store leading zeros.
-        if (digit != '0')
+        if (digit != 0)
         {
             _wholeDigits.push_back(digit);
         }
@@ -523,7 +627,7 @@ bool ScalarParser::handleAfterZeroPrefix(char next)
 }
 
 //! @brief Processes a character when in the State_InWholeDigits state.
-bool ScalarParser::handleInWholeDigits(char next)
+bool ScalarParser::handleInWholeDigits(char32_t next)
 {
     bool isProcessed = false;
     uint8_t digit = 0xFF;
@@ -531,20 +635,20 @@ bool ScalarParser::handleInWholeDigits(char next)
     // If we are here, we have already encountered at least one digit character
     // and the radix is set.
     if ((_radix == 10) && hasFlag(Flag_AllowExponent) &&
-        ((next == 'E') || (next == 'e')))
+        ((next == U'E') || (next == U'e')))
     {
         // We've reached the end of the whole number component.
         _currentState = State_AfterExponentSymbol;
         isProcessed = true;
     }
     else if ((_radix == 10) && hasFlag(Flag_AllowFraction) &&
-             (_decimalPoint.isEmpty() == false) &&
-             (next == _decimalPoint.getUtf8Bytes()[0]))
+             (_decimalPoint.empty() == false) &&
+             (next == _decimalPoint.front()))
     {
         // We've found the start of a decimal point.
         isProcessed = true;
 
-        if (_decimalPoint.getUtf8Length() > 1)
+        if (_decimalPoint.length() > 1)
         {
             // We need to recognise the rest.
             _stateIndex = 1;
@@ -556,13 +660,13 @@ bool ScalarParser::handleInWholeDigits(char next)
             _currentState = State_BeforeFraction;
         }
     }
-    else if ((_thousandSeparator.isEmpty() == false) &&
-             (_thousandSeparator.getUtf8Bytes()[0] == next))
+    else if ((_thousandSeparator.empty() == false) &&
+             (_thousandSeparator.front() == next))
     {
         // We've found the beginning of a thousand separator.
         isProcessed = true;
 
-        if (_thousandSeparator.getUtf8Length() > 1)
+        if (_thousandSeparator.length() > 1)
         {
             _stateIndex = 1;
             _currentState = State_InThousandSeparator;
@@ -572,19 +676,20 @@ bool ScalarParser::handleInWholeDigits(char next)
             _currentState = State_ExpectingWholeDigit;
         }
     }
-    else if ((next >= '0') && (next <= '9'))
+    else if ((next >= U'0') && (next <= U'9'))
     {
-        digit = static_cast<uint8_t>(next - '0');
+        digit = static_cast<uint8_t>(next - U'0');
     }
-    else if ((next >= 'A') && (next <= 'Z'))
+    else if ((next >= U'A') && (next <= U'Z'))
     {
-        digit = static_cast<uint8_t>(next - 'A') + 10;
+        digit = static_cast<uint8_t>(next - U'A') + 10;
     }
-    else if ((next >= 'a') && (next <= 'z'))
+    else if ((next >= U'a') && (next <= U'z'))
     {
-        digit = static_cast<uint8_t>(next - 'a') + 10;
+        digit = static_cast<uint8_t>(next - U'a') + 10;
     }
-    else if (std::isspace(next) != 0)
+    else if (hasFlag(Flag_AllowTrailingWhiteSpace) &&
+             CodePoint::isWhiteSpace(next))
     {
         isProcessed = true;
         _currentState = State_InTrailingWhiteSpace;
@@ -606,24 +711,24 @@ bool ScalarParser::handleInWholeDigits(char next)
 }
 
 //! @brief Processes a character when in the State_ExpectingWholeDigit state.
-bool ScalarParser::handleExpectingWholeDigit(char next)
+bool ScalarParser::handleExpectingWholeDigit(char32_t next)
 {
     bool isProcessed = false;
     uint8_t digit = 0xFF;
 
     // If we get here, it is after a thousand separator. We need at least one
     // more digit before an exponent, decimal point or the end of the value.
-    if ((next >= '0') && (next <= '9'))
+    if ((next >= U'0') && (next <= U'9'))
     {
-        digit = static_cast<uint8_t>(next - '0');
+        digit = static_cast<uint8_t>(next - U'0');
     }
-    else if ((next >= 'A') && (next <= 'Z'))
+    else if ((next >= U'A') && (next <= U'Z'))
     {
-        digit = static_cast<uint8_t>(next - 'A') + 10;
+        digit = static_cast<uint8_t>(next - U'A') + 10;
     }
-    else if ((next >= 'a') && (next <= 'z'))
+    else if ((next >= U'a') && (next <= U'z'))
     {
-        digit = static_cast<uint8_t>(next - 'a') + 10;
+        digit = static_cast<uint8_t>(next - U'a') + 10;
     }
 
     if (digit < _radix)
@@ -644,16 +749,16 @@ bool ScalarParser::handleExpectingWholeDigit(char next)
 }
 
 //! @brief Processes a character when in the State_InThousandSeparator state.
-bool ScalarParser::handleInThousandSeparator(char next)
+bool ScalarParser::handleInThousandSeparator(char32_t next)
 {
     bool isProcessed = false;
 
-    if (next == _thousandSeparator.getUtf8Bytes()[_stateIndex])
+    if (next == _thousandSeparator[_stateIndex])
     {
         isProcessed = true;
         ++_stateIndex;
 
-        if (_stateIndex >= _thousandSeparator.getUtf8Length())
+        if (_stateIndex >= _thousandSeparator.length())
         {
             // We have recognised the entire string.
             _currentState = State_ExpectingWholeDigit;
@@ -664,18 +769,17 @@ bool ScalarParser::handleInThousandSeparator(char next)
     return isProcessed;
 }
 
-
 //! @brief Processes a character when in the State_InDecimalPoint state.
-bool ScalarParser::handleInDecimalPoint(char next)
+bool ScalarParser::handleInDecimalPoint(char32_t next)
 {
     bool isProcessed = false;
 
-    if (next == _decimalPoint.getUtf8Bytes()[_stateIndex])
+    if (next == _decimalPoint[_stateIndex])
     {
         isProcessed = true;
         ++_stateIndex;
 
-        if (_stateIndex >= _decimalPoint.getUtf8Length())
+        if (_stateIndex >= _decimalPoint.length())
         {
             // We have recognised the entire string.
             _currentState = State_BeforeFraction;
@@ -686,19 +790,18 @@ bool ScalarParser::handleInDecimalPoint(char next)
     return isProcessed;
 }
 
-
 //! @brief Processes a character when in the State_BeforeFraction state.
-bool ScalarParser::handleBeforeFraction(char next)
+bool ScalarParser::handleBeforeFraction(char32_t next)
 {
     bool isProcessed = false;
 
     // If we get here, it is after a decimal point. We need at least one
     // more digit before an exponent or the end of the value.
-    if ((next >= '0') && (next <= '9'))
+    if ((next >= U'0') && (next <= U'9'))
     {
         // We only read fractions on decimal values.
         isProcessed = true;
-        _fractionalDigits.push_back(static_cast<uint8_t>(next - '0'));
+        _fractionalDigits.push_back(static_cast<uint8_t>(next - U'0'));
         _currentState = State_InFraction;
     }
 
@@ -706,26 +809,27 @@ bool ScalarParser::handleBeforeFraction(char next)
 }
 
 //! @brief Processes a character when in the State_InFraction state.
-bool ScalarParser::handleInFraction(char next)
+bool ScalarParser::handleInFraction(char32_t next)
 {
     bool isProcessed = false;
 
     // If we get here, it is after a decimal point. We need at least one
     // more digit before an exponent or the end of the value.
-    if ((next >= '0') && (next <= '9'))
+    if ((next >= U'0') && (next <= U'9'))
     {
         // We only read fractions on decimal values.
         isProcessed = true;
-        _fractionalDigits.push_back(static_cast<uint8_t>(next - '0'));
+        _fractionalDigits.push_back(static_cast<uint8_t>(next - U'0'));
         _currentState = State_InFraction;
     }
     else if (hasFlag(Flag_AllowExponent) &&
-             ((next == 'E') || (next == 'e')))
+             ((next == U'E') || (next == U'e')))
     {
         isProcessed = true;
         _currentState = State_AfterExponentSymbol;
     }
-    else if (std::isspace(next) != 0)
+    else if (hasFlag(Flag_AllowTrailingWhiteSpace) &&
+             CodePoint::isWhiteSpace(next))
     {
         isProcessed = true;
         _currentState = State_InTrailingWhiteSpace;
@@ -735,45 +839,28 @@ bool ScalarParser::handleInFraction(char next)
 }
 
 //! @brief Processes a character when in the State_AfterExponentSymbol state.
-bool ScalarParser::handleAfterExponentSymbol(char next)
+bool ScalarParser::handleAfterExponentSymbol(char32_t next)
 {
     bool isProcessed = false;
 
-    if (next == '+')
+    if (next == U'+')
     {
         isProcessed = true;
         _exponentSign = 1;
         _currentState = State_BeforeExponentDigits;
     }
-    else if (next == '-')
+    else if (next == U'-')
     {
         isProcessed = true;
         _exponentSign = -1;
         _currentState = State_BeforeExponentDigits;
     }
-    else if ((next >= '0') && (next <= '9'))
+    else if ((next >= U'0') && (next <= U'9'))
     {
         // We only read exponents on decimal values.
         isProcessed = true;
 
-        _exponentDigits.push_back(static_cast<uint8_t>(next - '0'));
-        _currentState = State_InExponent;
-    }
-
-
-    return isProcessed;
-}
-
-//! @brief Processes a character when in the State_AfterExponentSymbol state.
-bool ScalarParser::handleBeforeExponentDigits(char next)
-{
-    bool isProcessed = false;
-
-    if ((next >= '0') && (next <= '9'))
-    {
-        // We only read fractions on decimal values.
-        isProcessed = true;
-        _exponentDigits.push_back(static_cast<uint8_t>(next - '0'));
+        _exponentDigits.push_back(static_cast<uint8_t>(next - U'0'));
         _currentState = State_InExponent;
     }
 
@@ -781,17 +868,34 @@ bool ScalarParser::handleBeforeExponentDigits(char next)
 }
 
 //! @brief Processes a character when in the State_AfterExponentSymbol state.
-bool ScalarParser::handleInExponent(char next)
+bool ScalarParser::handleBeforeExponentDigits(char32_t next)
 {
     bool isProcessed = false;
 
-    if ((next >= '0') && (next <= '9'))
+    if ((next >= U'0') && (next <= U'9'))
     {
         // We only read fractions on decimal values.
         isProcessed = true;
-        _exponentDigits.push_back(static_cast<uint8_t>(next - '0'));
+        _exponentDigits.push_back(static_cast<uint8_t>(next - U'0'));
+        _currentState = State_InExponent;
     }
-    else if (std::isspace(next) != 0)
+
+    return isProcessed;
+}
+
+//! @brief Processes a character when in the State_AfterExponentSymbol state.
+bool ScalarParser::handleInExponent(char32_t next)
+{
+    bool isProcessed = false;
+
+    if ((next >= U'0') && (next <= U'9'))
+    {
+        // We only read fractions on decimal values.
+        isProcessed = true;
+        _exponentDigits.push_back(static_cast<uint8_t>(next - U'0'));
+    }
+    else if (hasFlag(Flag_AllowTrailingWhiteSpace) &&
+             CodePoint::isWhiteSpace(next))
     {
         isProcessed = true;
         _currentState = State_InTrailingWhiteSpace;
@@ -801,9 +905,9 @@ bool ScalarParser::handleInExponent(char next)
 }
 
 //! @brief Processes a character when in the State_InTrailingWhiteSpace state.
-bool ScalarParser::handleInTrailingWhiteSpace(char next)
+bool ScalarParser::handleInTrailingWhiteSpace(char32_t next)
 {
-    return std::isspace(next) != 0;
+    return CodePoint::isWhiteSpace(next);
 }
 
 //! @brief Determines if the specified state is valid for producing a scalar

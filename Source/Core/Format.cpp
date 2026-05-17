@@ -1,7 +1,7 @@
 //! @file Core/Format.cpp
 //! @brief The definition of objects and functions used to format values as text.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -23,6 +23,7 @@
 #include "Ag/Core/Format.hpp"
 #include "Ag/Core/ScalarParser.hpp"
 #include "Ag/Core/Utils.hpp"
+#include "Ag/Core/Utf.hpp"
 #include "Ag/Core/Variant.hpp"
 #include "Ag/Core/VariantTypes.hpp"
 #include "CoreInternal.hpp"
@@ -866,22 +867,38 @@ bool tryParseInsertionToken(const std::string_view &source, size_t &offset,
     // The initial opening brace should already have been recognised, so offset
     // should point to the first digit.
     ScalarParser parser(LocaleInfo::getNeutral());
+    Utf::FromUtf8Converter converter;
+
     parser.enableExponent(false);
     parser.enableFraction(false);
     parser.enableSign(false);
     parser.enableRadixPrefix(false);
 
+    size_t codePointOffset = offset;
+    char32_t codePoint;
     bool hasDigits = true;
+    bool hasError = false;
 
-    while (hasDigits && (offset < source.length()))
+    while (hasDigits && (codePointOffset < source.length()))
     {
-        if (parser.tryProcessCharacter(source[offset]))
+        if (converter.tryConvert(static_cast<uint8_t>(source[codePointOffset]),
+                                 codePoint, hasError))
         {
-            ++offset;
+            if (parser.tryProcessCharacter(codePoint))
+            {
+                ++codePointOffset;
+
+                // Only increment offset by whole code points.
+                offset = codePointOffset;
+            }
+            else
+            {
+                hasDigits = false;
+            }
         }
-        else
+        else if (hasError)
         {
-            hasDigits = false;
+            return false;
         }
     }
 
@@ -921,13 +938,25 @@ bool tryParseInsertionToken(const std::string_view &source, size_t &offset,
                             {
                                 // Parse the precision digits.
                                 parser.reset();
+                                converter.reset();
+                                codePointOffset = offset;
+                                hasError = false;
                                 hasDigits = true;
 
-                                while (hasDigits && (offset < source.length()))
+                                while (hasDigits && (codePointOffset < source.length()))
                                 {
-                                    if (parser.tryProcessCharacter(source[offset]))
+                                    if (converter.tryConvert(source[codePointOffset],
+                                                             codePoint, hasError))
                                     {
-                                        ++offset;
+                                        if (parser.tryProcessCharacter(codePoint))
+                                        {
+                                            ++codePointOffset;
+                                            offset = codePointOffset;
+                                        }
+                                        else
+                                        {
+                                            hasDigits = false;
+                                        }
                                     }
                                     else
                                     {

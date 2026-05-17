@@ -2,7 +2,7 @@
 //! @brief The definition of functions which manipulate and test Unicode
 //! code point values.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -108,13 +108,24 @@ char32_t toLower(char32_t codePoint)
     return transformCodePoint<towlower>(codePoint);
 }
 
-//! @brief Determines if a Unicode code point represents a white space character.
+//! @brief Determines if a Unicode code point represents a white space character,
+//! which includes line breaks.
 //! @param[in] codePoint The code point to test.
 //! @retval true The code point represents white space.
 //! @retval false The code point is not white space.
 bool isWhiteSpace(char32_t codePoint)
 {
     return classifyCodePoint<iswspace>(codePoint);
+}
+
+//! @brief Determines if a Unicode code point represents a character designed
+//! to separate words, this does not include line breaks.
+//! @param[in] codePoint The code point to test.
+//! @retval true The code point represents white space.
+//! @retval false The code point is not white space.
+bool isBlank(char32_t codePoint)
+{
+    return classifyCodePoint<iswblank>(codePoint);
 }
 
 //! @brief Determines if a Unicode code point represents a letter or number.

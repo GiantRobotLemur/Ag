@@ -28,13 +28,62 @@ static constexpr size_t MinBufferSize = 256;
 ////////////////////////////////////////////////////////////////////////////////
 // CharacterAnalyser Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
+//! @brief Constructs an empty source reference.
+SourceReference::SourceReference() :
+    _line(-1),
+    _column(-1)
+{
+}
+
+//! @brief Constructs an initialised source reference.
+//! @param[in] identifier Text describing the source, such as a file path of URI.
+//! @param[in] line The 1-based index of the line within the source text.
+//! @param[in] column The 1-based index of the column within the specified line.
+SourceReference::SourceReference(string_cref_t identifier, int32_t line /*= -1*/,
+                                 int32_t column /*= -1*/) :
+    _identifier(identifier),
+    _line(line),
+    _column(column)
+{
+}
+
+//! @brief Gets text describing the source, such as a file path of URI.
+string_cref_t SourceReference::getIdentifier() const
+{
+    return _identifier;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CharacterAnalyser Member Definitions
+////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs an object to create a moving window on a stream of
 //! Unicode characters being analysed.
 //! @param[in] input The source of characters to analyse.
 CharacterAnalyser::CharacterAnalyser(ICharacterSource *input) :
     _source(input),
     _committed(0),
-    _read(0)
+    _read(0),
+    _line(1),
+    _column(1),
+    _isInLinebreakSequence(false)
+{
+    _buffer.reserve(MinBufferSize);
+}
+
+//! @brief Constructs an object to create a moving window on a stream of
+//! Unicode characters being analysed.
+//! @param[in] input The source of characters to analyse.
+//! @param[in] sourceIdentifier A text identifier for the input source, such as
+//! a file path or URI.
+CharacterAnalyser::CharacterAnalyser(ICharacterSource *input,
+                                     string_cref_t sourceIdentifier) :
+    _source(input),
+    _sourceIdentifier(sourceIdentifier),
+    _committed(0),
+    _read(0),
+    _line(1),
+    _column(1),
+    _isInLinebreakSequence(false)
 {
     _buffer.reserve(MinBufferSize);
 }
@@ -51,6 +100,12 @@ size_t CharacterAnalyser::getRollbackLimit() const
 void CharacterAnalyser::setBufferSize(size_t characterCount)
 {
     _buffer.reserve(std::max(MinBufferSize, characterCount));
+}
+
+//! @brief Gets the position of the next character to be read.
+SourceReference CharacterAnalyser::getPosition() const
+{
+    return SourceReference(_sourceIdentifier, _line, _column);
 }
 
 //! @brief Commits all characters read up to this point.
@@ -80,6 +135,20 @@ void CharacterAnalyser::rollback(size_t count)
     if (count > maxRollback)
         throw OperationException("Cannot rollback that many characters.");
 
+    // Decrement the line count for line breaks we uncommitted.
+    for (size_t i = _committed; i < _read; ++i)
+    {
+        if (_buffer.at(i) == U'\n')
+        {
+            --_line;
+            _column = 0;
+        }
+        else
+        {
+            --_column;
+        }
+    }
+
     _read -= count;
 }
 
@@ -89,23 +158,37 @@ void CharacterAnalyser::rollback(size_t count)
 //! @retval false There were no more characters to read.
 bool CharacterAnalyser::tryGetNextCharacter(char32_t &next)
 {
+    bool hasCodePoint = false;
+
     if (_read < _buffer.size())
     {
         next = _buffer.at(_read++);
-
-        return true;
+        hasCodePoint = true;
     }
-
-    if (tryRefillBuffer())
+    else if (tryRefillBuffer())
     {
         next = _buffer.at(_read++);
-
-        return true;
+        hasCodePoint = true;
+    }
+    else
+    {
+        // We couldn't read any more characters.
+        next = U'\0';
     }
 
-    // We couldn't read any more characters.
-    next = U'\0';
-    return false;
+    if (hasCodePoint)
+    {
+        // Process the code point obtained.
+        ++_column;
+
+        if (next == U'\n')
+        {
+            ++_line;
+            _column = 1;
+        }
+    }
+
+    return hasCodePoint;
 }
 
 //! @brief Attempts to ensure the next character has a specified value.
@@ -131,6 +214,72 @@ bool CharacterAnalyser::tryEnsureNextCharacter(char32_t expectedNext)
     return false;
 }
 
+//! @brief Skips discards white space characters until the first non-white-space
+//! character or the end of the stream is encountered.
+//! @retval true A non-white-space character was encountered.
+//! @retval false There were no non-white-space characters before the end of
+//! the stream.
+//! @remarks All skipped characters are committed, i.e. they cannot be
+//! rolled back.
+bool CharacterAnalyser::skipWhiteSpaceCharacters()
+{
+    char32_t next;
+    bool hasNonWhiteSpace = false;
+
+    // We don't care about any previous characters.
+    commit();
+
+    while (!hasNonWhiteSpace && tryGetNextCharacter(next))
+    {
+        hasNonWhiteSpace = (CodePoint::isWhiteSpace(next) == false);
+
+        if (hasNonWhiteSpace)
+        {
+            // We found a non-white-space character. Put it back to be
+            // read later.
+            rollback(1);
+        }
+
+        // We don't care about previously read white space.
+        commit();
+    }
+
+    return hasNonWhiteSpace;
+}
+
+//! @brief Skips discards word-separator characters until the first word
+//! character or the end of the stream is encountered.
+//! @retval true A non-word-separator character was encountered.
+//! @retval false There were no non-word separator characters before the end of
+//! the stream.
+//! @remarks All skipped characters are committed, i.e. they cannot be
+//! rolled back.
+bool CharacterAnalyser::skipBlankCharacters()
+{
+    char32_t next;
+    bool hasNonBlank = false;
+
+    // We don't care about any previous characters.
+    commit();
+
+    while (!hasNonBlank && tryGetNextCharacter(next))
+    {
+        hasNonBlank = CodePoint::isBlank(next);
+
+        if (!hasNonBlank)
+        {
+            // We found a non-blank character. Put it back to be
+            // read later.
+            rollback(1);
+        }
+
+        // We don't care about previously read white space.
+        commit();
+    }
+
+    return hasNonBlank;
+}
+
 //! @brief Attempts to add more characters to the internal buffer, preserving
 //! any uncommitted characters in the buffer.
 //! @retval true At least one more character was added to the buffer.
@@ -150,8 +299,8 @@ bool CharacterAnalyser::tryRefillBuffer()
 
         size_t charsRead = _source->readUtf32(_buffer.data(), _buffer.size());
 
-        // Truncate the buffer to only the characters read.
-        _buffer.erase(_buffer.begin() + charsRead, _buffer.end());
+        // Compact line breaks and truncate the buffer to only the characters read.
+        compactLineBreaks(0, charsRead);
 
         return charsRead > 0;
     }
@@ -176,11 +325,63 @@ bool CharacterAnalyser::tryRefillBuffer()
         // Read as much as we can into the buffer.
         size_t charsRead = _source->readUtf32(_buffer.data() + _read, bufferLeft);
 
-        // Truncate the buffer to remaining uncommitted characters.
-        _buffer.erase(_buffer.begin() + _read + charsRead, _buffer.end());
+        // Compact line breaks and truncate the buffer to only the characters read.
+        compactLineBreaks(_read, charsRead);
 
         return charsRead > 0;
     }
+}
+
+//! @brief Compacts recently buffered characters so that line breaks are
+//! represented by a single '\n' character and to the proper size.
+//! @param[in] start The index of the first character newly read into the buffer.
+//! @param[in] length The count of code points read into the buffer.
+void CharacterAnalyser::compactLineBreaks(size_t start, size_t length)
+{
+    // We want to collapse various encodings of line breaks encoded in a
+    // newly read buffer to '\n'/LF/U'\x00000A'
+    static constexpr char32_t LF = U'\x0000000A';
+    static constexpr char32_t CR = U'\x0000000D';
+
+    size_t effectiveOffset = start;
+
+    for (size_t i = 0; i < length; ++i)
+    {
+        char32_t current = _buffer.at(start + i);
+
+        if (_isInLinebreakSequence)
+        {
+            if (current == LF)
+            {
+                // It's the end of a newline sequence.
+                _isInLinebreakSequence = false;
+                _buffer[effectiveOffset++] = LF;
+            }
+            else if (current != CR)
+            {
+                // We encountered one or more CR characters followed by
+                // a non-LF character. Add a single new line and move on.
+                _isInLinebreakSequence = false;
+                _buffer[effectiveOffset++] = LF;
+                _buffer[effectiveOffset++] = current;
+            }
+        }
+        else if (current == CR)
+        {
+            // The start of a line-break sequence.
+            _isInLinebreakSequence = true;
+        }
+        else
+        {
+            // Copy the character.
+            _buffer[effectiveOffset++] = current;
+        }
+    }
+
+    // Trim the buffer to the processed length.
+    // NOTE: The _isInLinebreakSequence member variable will remember between
+    // buffer fills if the previous character was CR.
+    _buffer.erase(_buffer.begin() + effectiveOffset, _buffer.end());
 }
 
 }} // namespace Ag::Text

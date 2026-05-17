@@ -11,6 +11,8 @@ ag_add_library(Text FOLDER      Core
                                 ${TEXT_INCLUDE_DIR}/CharacterSink.hpp
                                 CharacterAnalyser.cpp
                                 ${TEXT_INCLUDE_DIR}/CharacterAnalyser.hpp
+                                ${TEXT_INCLUDE_DIR}/Tokeniser.hpp
+                                ${TEXT_INCLUDE_DIR}/Parser.hpp
                                 Json.cpp
                                 ${TEXT_INCLUDE_DIR}/Json.hpp
                     HEADERS     ${AG_INCLUDE_DIR}/Ag/Text.hpp
@@ -23,7 +25,6 @@ list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
                      "${AG_INCLUDE_DIR}/Ag/Text.hpp"
                      "${TEXT_INCLUDE_DIR}")
 
-
 source_group("Build" FILES  PreCompiledHeader.hpp
                             ${AG_INCLUDE_DIR}/Ag/Text.hpp
 )
@@ -34,7 +35,11 @@ ag_add_test_app(Text_Tests TEST_LIB   Text
                                       Test_MemoryStream.cpp
                                       Test_CharacterSource.cpp
                                       Test_CharacterSink.cpp
-                                      Test_CharacterAnalyser.cpp)
+                                      Test_CharacterAnalyser.cpp
+                                      Test_ExampleParser.cpp
+                                      Test_ExampleParser.hpp
+                                      Test_Tokeniser.cpp
+                                      Test_Parser.cpp)
 
 target_precompile_headers(Text_Tests PRIVATE <gtest/gtest.h>
                                              [["PreCompiledHeader.hpp"]])
