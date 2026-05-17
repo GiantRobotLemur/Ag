@@ -194,6 +194,8 @@ bool ExpressionTokeniser::tryRecogniseToken(CharacterAnalyser &analyser,
             ScalarParser valueParser;
             valueParser.enableLeadingWhiteSpace(false);
             valueParser.enableTrailingWhiteSpace(false);
+            valueParser.enableFraction(true);
+            valueParser.enableExponent(true);
 
             if (valueParser.tryProcessCharacter(next))
             {

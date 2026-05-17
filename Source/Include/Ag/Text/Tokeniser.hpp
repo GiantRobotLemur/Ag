@@ -465,9 +465,9 @@ public:
         size_t prevSize = _sourceStack.size();
         IStreamUPtr noStream;
 
-        _sourceStack->emplace_back(tokenStream, sourceIdentifier,
-                                   std::move(characterStream),
-                                   std::move(noStream));
+        _sourceStack.emplace_back(tokenStream, identifier,
+                                  std::move(characterStream),
+                                  std::move(noStream));
 
         return prevSize;
     }
@@ -477,16 +477,16 @@ public:
     //! @param[in] oldPos The value representing the state to restore.
     void restoreTokenStream(size_t oldPos)
     {
-        while (oldPos > _streamStack.size())
-            _streamStack.pop_back();
+        while (oldPos < _sourceStack.size())
+            _sourceStack.pop_back();
     }
 
     //! @brief Pops the last token stream from the top of the stack of streams
     //! being processed.
     void popTokenStream()
     {
-        if (!_streamStack.empty())
-            _streamStack.pop_back();
+        if (!_sourceStack.empty())
+            _sourceStack.pop_back();
     }
 
     //! @brief Pushes a new tokeniser implementation to recognise subsequent
@@ -496,10 +496,10 @@ public:
     //! previous state of the token source.
     size_t pushTokeniser(TokeniserCPtr tokeniser)
     {
-        if (_streamStack.empty())
+        if (_sourceStack.empty())
             return 0;
 
-        return _streamStack.back().pushTokeniser(tokeniser);
+        return _sourceStack.back().pushTokeniser(tokeniser);
     }
 
     //! @brief Restores the current token source to some previous state.
@@ -509,9 +509,9 @@ public:
         if (oldState == 0)
             throw ArgumentException("A value of 0 would leave no tokeniser left.", "oldState");
 
-        if (_straemStack.empty() == false)
+        if (_sourceStack.empty() == false)
         {
-            _streamStack.back().restoreTokeniser(oldState);
+            _sourceStack.back().restoreTokeniser(oldState);
         }
     }
 };
