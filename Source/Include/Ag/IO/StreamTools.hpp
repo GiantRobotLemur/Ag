@@ -1,34 +1,38 @@
-//! @file Core/PosixAPI.hpp
-//! @brief The declaration of some helper functions which assist the user of
-//! the POSIX API.
+//! @file Ag/IO/StreamTools.hpp
+//! @brief The declaration of various utilities related to IStream and
+//! ISeekableStream implementations.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2026
+//! @date 2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef HEADER_AG_CORE_POSIX_API_HPP_
-#define HEADER_AG_CORE_POSIX_API_HPP_
+#ifndef HEADER_IO_STREAM_TOOLS_HPP_
+#define HEADER_IO_STREAM_TOOLS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
-// Dependant Header Files
+// Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
-#include "Ag/Core/String.hpp"
+#include "ISeekableStream.hpp"
 
 namespace Ag {
+namespace IO {
+
+////////////////////////////////////////////////////////////////////////////////
+// Data Declarations
+////////////////////////////////////////////////////////////////////////////////
+constexpr size_t MinBufferSize = 512;
+constexpr size_t MaxBufferSize = 1 * 1024 * 1024;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
 ////////////////////////////////////////////////////////////////////////////////
-String getProgramFileName();
-String getProgramDirectory();
-String getWorkingDirectory();
-String getTempDirectory();
-String getHomeDirectory();
-void getProgramArgs(std::vector<char> &buffer, std::vector<utf8_cptr_t> &args);
+StreamLength copyStream(IStream *input, IStream *output, size_t bufferSize = 0);
+StreamLength copyStream(IStream *input, StreamLength maxSize, IStream *output,
+                        size_t bufferSize = 0);
 
-} // namespace Ag
+}} // namespace Ag::IO
 
 #endif // Header guard
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
 //! @brief The declaration of header-only elements useful in Google Test-based
 //! unit test subroutines.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -13,6 +13,8 @@
 
 #ifndef __AG_CORE_GTEST_CORE_HPP__
 #define __AG_CORE_GTEST_CORE_HPP__
+
+#include <ostream>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions
@@ -49,6 +51,16 @@ _Pragma("GCC optimize(\"-O0\")")
 #else // ifndef _MSC_VER
 #define NO_OPTIMIZE_FN_END
 #endif
+
+namespace Ag {
+namespace Fs {
+}} // namespace Ag::Fs
+
+inline void PrintTo(const Ag::Fs::Path &value, std::ostream *os)
+{
+    *os << value.toString().getUtf8Bytes();
+}
+
 
 #endif // Header guard
 

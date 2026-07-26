@@ -2,14 +2,14 @@
 //! @brief The declaration of a simple interface for reading and writing
 //! binary data.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_STREAM_HPP__
-#define __AG_CORE_STREAM_HPP__
+#ifndef HEADER_AG_CORE_STREAM_HPP_
+#define HEADER_AG_CORE_STREAM_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -20,6 +20,7 @@
 #include <optional>
 
 #include "Binary.hpp"
+#include "Memory.hpp"
 #include "FsPath.hpp"
 
 // A header shared between SymbolPackager and AgCore.
@@ -39,6 +40,14 @@ public:
 
     // Operations
 
+    //! @brief Determines whether the stream is buffered, as opposed to accessing
+    //! a raw device.
+    //! @retval true The stream is buffered already, so reads and writes to
+    //! the underlying device are batched.
+    //! @retval false The stream writes directly to the underlying device,
+    //! buffering maybe required if lots of small reads/writes are expected.
+    virtual bool isBuffered() const { return false; }
+
     //! @brief Executes any outstanding writes which were batched or buffered.
     virtual void flush() = 0;
 
@@ -57,12 +66,7 @@ public:
     virtual size_t write(const void *sourceBuffer, size_t sourceByteCount) = 0;
 };
 
-//! @brief An object which deletes implementations of IStream as part of a
-//! unique_ptr to a stream implementation.
-struct IStreamDeleter
-{
-    void operator()(IStream *stream) const;
-};
+DECLARE_UNIQUE_PTR(IStream);
 
 //! @brief An alias for a unique pointer to a stream.
 using IStreamUPtr = std::unique_ptr<IStream, IStreamDeleter>;
@@ -76,6 +80,7 @@ public:
     virtual ~BufferedStream();
 
     // Overrides
+    virtual bool isBuffered() const override;
     virtual void flush() override;
     virtual size_t read(void *targetBuffer, size_t requiredByteCount) override;
     virtual size_t write(const void *sourceBuffer, size_t sourceByteCount) override;
@@ -96,6 +101,7 @@ struct FileAccess
 {
     static constexpr FileAccessBits Read = 0x01;
     static constexpr FileAccessBits Write = 0x02;
+    static constexpr FileAccessBits ReadWrite = 0x03;
     static constexpr FileAccessBits CreateNew = 0x04;
     static constexpr FileAccessBits CreateAlways = 0x04;
     static constexpr FileAccessBits OpenExisting = 0x08;
@@ -167,6 +173,7 @@ public:
     void disableExceptions();
 
     // Overrides
+    virtual bool isBuffered() const override;
     virtual void flush() override;
     virtual size_t read(void *targetBuffer, size_t requiredByteCount) override;
     virtual size_t write(const void *sourceBuffer, size_t sourceByteCount) override;
@@ -196,6 +203,7 @@ public:
     void disableExceptions();
 
     // Overrides
+    virtual bool isBuffered() const override;
     virtual void flush() override;
     virtual size_t read(void *targetBuffer, size_t requiredByteCount) override;
     virtual size_t write(const void *sourceBuffer, size_t sourceByteCount) override;

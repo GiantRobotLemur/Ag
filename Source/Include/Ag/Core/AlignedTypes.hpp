@@ -2,14 +2,14 @@
 //! @brief The declaration of compile-time utilities for creating classes and
 //! structures which are properly aligned on specific address boundaries.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_ALIGNED_TYPES_HPP__
-#define __AG_CORE_ALIGNED_TYPES_HPP__
+#ifndef HEADER_AG_CORE_ALIGNED_TYPES_HPP_
+#define HEADER_AG_CORE_ALIGNED_TYPES_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -18,10 +18,6 @@
 #include <type_traits>
 
 namespace Ag {
-
-////////////////////////////////////////////////////////////////////////////////
-// Data Type Declarations
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -36,6 +32,9 @@ public:
     SharedVirtualBase() = default;
     virtual ~SharedVirtualBase() = default;
 };
+
+//! @brief An alias for a shared pointer to an object which can be shared.
+using SharedVirtualBaseSPtr = std::shared_ptr<SharedVirtualBase>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Templates
@@ -56,7 +55,7 @@ template<typename T, size_t N> struct IsSizeAlignedN
 //! data type has a size which allows consecutive instances to be contiguous
 //! in memory without padding.
 //! @tparam T The data type to test.
-//! @tparam N The data type with an alignment which defines the address boundary
+//! @tparam U The data type with an alignment which defines the address boundary
 //! on which the size of T must be aligned.
 template<typename T, typename U> struct IsSizeAligned :
     public IsSizeAlignedN<T, alignof(U)> {
@@ -102,7 +101,7 @@ template<typename T, size_t N> struct AlignedBaseN
 
         template<typename ... TArgs>
         PaddedBase(TArgs && ... args) :
-            T(std::forward(args))
+            T(std::forward(args)...)
         {
             std::fill_n(Padding, std::size(Padding), static_cast<uint8_t>(0));
         }

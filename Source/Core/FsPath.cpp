@@ -1,7 +1,7 @@
 //! @file FsPath.cpp
 //! @brief The definition of an object representing a file path.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -641,7 +641,7 @@ void PathBuilder::assignHomeDirectory()
     }
 }
 
-//! @brief Overwrites the object with the fill path of the working directory
+//! @brief Overwrites the object with the full path of the working directory
 //! of the current process.
 void PathBuilder::assignWorkingDirectory()
 {
@@ -652,6 +652,19 @@ void PathBuilder::assignWorkingDirectory()
     if (tryParse(workingDir, error) == false)
     {
         throw InvalidFilePathException(workingDir, error);
+    }
+}
+
+//! @brief Overwrites the object with full path of the default temp directory.
+void PathBuilder::assignTempDirectory()
+{
+    String tempDir = getTempDirectory();
+    String error;
+    _schema = getNativeSchema();
+
+    if (tryParse(tempDir, error) == false)
+    {
+        throw InvalidFilePathException(tempDir, error);
     }
 }
 
@@ -1414,6 +1427,12 @@ Path Path::getHomeDirectory()
 Path Path::getWorkingDirectory()
 {
     return Path(Ag::getWorkingDirectory());
+}
+
+//! @brief Gets the full path of the directory used to store temporary files.
+Path Path::getTempDirectory()
+{
+    return Path(Ag::getTempDirectory());
 }
 
 //! @brief Removes all relative references within the path.

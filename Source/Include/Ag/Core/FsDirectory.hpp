@@ -1,14 +1,14 @@
 //! @file Ag/Core/FsDirectory.hpp
 //! @brief The declaration of abstractions of file system elements.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_FS_DIRECTORY_HPP__
-#define __AG_CORE_FS_DIRECTORY_HPP__
+#ifndef HEADER_AG_CORE_FS_DIRECTORY_HPP_
+#define HEADER_AG_CORE_FS_DIRECTORY_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -45,6 +45,7 @@ public:
     int64_t getSize() const;
 
     // Operations
+    bool remove(bool reportError = true);
     void refresh();
 private:
     // Internal Fields
@@ -97,8 +98,6 @@ public:
     StringCollection getNames(string_cref_t pattern, uint32_t queryFlags) const;
     EntryVector getEntries() const;
     EntryVector getEntries(string_cref_t pattern, uint32_t queryFlags) const;
-
-    // Operations
 private:
     // Internal Fields
     std::shared_ptr<EntryPrivate> _dir;

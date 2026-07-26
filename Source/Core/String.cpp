@@ -1,7 +1,7 @@
 //! @file Core/String.cpp
 //! @brief The definition of an immutable UTF-8-encoded string value data type.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -245,6 +245,51 @@ char toHexDigit(uint32_t value)
     static const char digits[] = "0123456789ABCDEF";
 
     return digits[value & 0x0F];
+}
+
+//! @brief Attempts to parse a string as an integer value.
+//! @tparam T The integer data type to interpret.
+//! @param[in] text The text to parse.
+//! @param[in] radix The radix base used to interpret digits.
+//! @param[out] scalar Receives the interpreted value on success.
+//! @retval true The string was successfully interpreted as an integer value
+//! of appropriate size.
+//! @retval false The string did not represent a valid integer value.
+template<typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+bool tryParseScalarInternal(const std::string &text, int radix, T &scalar)
+{
+    ScalarParser parser;
+    parser.enableSign(true);
+    parser.enableExponent(false);
+    parser.enableFraction(false);
+    parser.enableRadixPrefix(false);
+    parser.setPreferredRadix(radix);
+
+    processScalarCharacters(parser, text);
+
+    return parser.tryGetValue(scalar);
+}
+
+//! @brief Attempts to parse a string as a real value.
+//! @tparam T The floating point data type to interpret.
+//! @param[in] text The text to parse.
+//! @param[out] scalar Receives the interpreted value on success.
+//! @retval true The string was successfully interpreted as an real value
+//! of appropriate size.
+//! @retval false The string did not represent a valid real value.
+template<typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
+bool tryParseScalarInternal(const std::string &text, T &scalar)
+{
+    ScalarParser parser;
+    parser.enableSign(true);
+    parser.enableExponent(true);
+    parser.enableFraction(true);
+    parser.enableRadixPrefix(false);
+    parser.setPreferredRadix(10);
+
+    processScalarCharacters(parser, text);
+
+    return parser.tryGetValue(scalar);
 }
 
 } // Anonymous namespace
@@ -1661,21 +1706,34 @@ int String::compareIgnoreCase(const String &rhs) const
 
     if (rhs._str.get() != _str.get())
     {
-        utf8_cptr_t lhsText = _str->getData().c_str();
-        size_t lhsLength = _str->getData().length();
-        utf8_cptr_t rhsText = rhs._str->getData().c_str();
-        size_t rhsLength = rhs._str->getData().length();
+        diff = compareIgnoreCase(rhs.toUtf8View());
+    }
 
-        size_t commonSize = std::min(lhsLength, rhsLength);
+    return diff;
+}
 
-        diff = compareBoundedStringsIgnoreCase(lhsText, rhsText,
+//! @brief Performs a per-character comparison of two string ignoring
+//! difference between upper and lower case.
+//! @param[in] rhs A view of the string to compare against the current one.
+//! @retval <0 The current string has a lower value than rhs.
+//! @retval 0 The values are identical.
+//! @retval >0 The current string has a higher value than rhs.
+int String::compareIgnoreCase(const std::string_view &rhs) const
+{
+    utf8_cptr_t lhsText = _str->getData().c_str();
+    size_t lhsLength = _str->getData().length();
+    utf8_cptr_t rhsText = rhs.data();
+    size_t rhsLength = rhs.length();
+
+    size_t commonSize = std::min(lhsLength, rhsLength);
+
+    int diff = compareBoundedStringsIgnoreCase(lhsText, rhsText,
                                                commonSize);
 
-        if ((diff == 0) && (lhsLength != rhsLength))
-        {
-            // The shortest string has the lowest value.
-            diff = (lhsLength < rhsLength) ? -1 : 1;
-        }
+    if ((diff == 0) && (lhsLength != rhsLength))
+    {
+        // The shortest string has the lowest value.
+        diff = (lhsLength < rhsLength) ? -1 : 1;
     }
 
     return diff;
@@ -1701,6 +1759,54 @@ bool String::startsWith(const std::string_view &prefix) const
 }
 
 //! @brief Attempts to parse a scalar integer from the contents of the string.
+//! @param[out] scalar Receives a 8-bit signed integer if the leading
+//! contents of the string could be interpreted as such.
+//! @param[in] radix The radix value used to convert the value.
+//! @retval true An integer was successfully extracted from the string.
+//! @retval false The string could not be interpreted as an integer, or if it
+//! could, its value overflowed.
+bool String::tryParseScalar(int8_t &scalar, int radix /* = 10 */) const
+{
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
+}
+
+//! @brief Attempts to parse a scalar integer from the contents of the string.
+//! @param[out] scalar Receives a 8-bit unsigned integer if the leading
+//! contents of the string could be interpreted as such.
+//! @param[in] radix The radix value used to convert the value.
+//! @retval true An integer was successfully extracted from the string.
+//! @retval false The string could not be interpreted as an integer, or if it
+//! could, its value overflowed.
+bool String::tryParseScalar(uint8_t &scalar, int radix /* = 10 */) const
+{
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
+}
+
+//! @brief Attempts to parse a scalar integer from the contents of the string.
+//! @param[out] scalar Receives a 16-bit signed integer if the leading
+//! contents of the string could be interpreted as such.
+//! @param[in] radix The radix value used to convert the value.
+//! @retval true An integer was successfully extracted from the string.
+//! @retval false The string could not be interpreted as an integer, or if it
+//! could, its value overflowed.
+bool String::tryParseScalar(int16_t &scalar, int radix /* = 10 */) const
+{
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
+}
+
+//! @brief Attempts to parse a scalar integer from the contents of the string.
+//! @param[out] scalar Receives a 16-bit unsigned integer if the leading
+//! contents of the string could be interpreted as such.
+//! @param[in] radix The radix value used to convert the value.
+//! @retval true An integer was successfully extracted from the string.
+//! @retval false The string could not be interpreted as an integer, or if it
+//! could, its value overflowed.
+bool String::tryParseScalar(uint16_t &scalar, int radix /* = 10 */) const
+{
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
+}
+
+//! @brief Attempts to parse a scalar integer from the contents of the string.
 //! @param[out] scalar Receives a 32-bit signed integer if the leading
 //! contents of the string could be interpreted as such.
 //! @param[in] radix The radix value used to convert the value.
@@ -1709,16 +1815,7 @@ bool String::startsWith(const std::string_view &prefix) const
 //! could, its value overflowed.
 bool String::tryParseScalar(int32_t &scalar, int radix /* = 10 */) const
 {
-    ScalarParser parser;
-    parser.enableSign(true);
-    parser.enableExponent(false);
-    parser.enableFraction(false);
-    parser.enableRadixPrefix(false);
-    parser.setPreferredRadix(radix);
-
-    processScalarCharacters(parser, _str->getData());
-
-    return parser.tryGetValue(scalar);
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
 }
 
 //! @brief Attempts to parse a scalar integer from the contents of the string.
@@ -1730,16 +1827,7 @@ bool String::tryParseScalar(int32_t &scalar, int radix /* = 10 */) const
 //! could, its value overflowed.
 bool String::tryParseScalar(uint32_t &scalar, int radix /* = 10 */) const
 {
-    ScalarParser parser;
-    parser.enableSign(false);
-    parser.enableExponent(false);
-    parser.enableFraction(false);
-    parser.enableRadixPrefix(false);
-    parser.setPreferredRadix(radix);
-
-    processScalarCharacters(parser, _str->getData());
-
-    return parser.tryGetValue(scalar);
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
 }
 
 //! @brief Attempts to parse a scalar integer from the contents of the string.
@@ -1751,16 +1839,7 @@ bool String::tryParseScalar(uint32_t &scalar, int radix /* = 10 */) const
 //! could, its value overflowed.
 bool String::tryParseScalar(int64_t &scalar, int radix /* = 10 */) const
 {
-    ScalarParser parser;
-    parser.enableSign(true);
-    parser.enableExponent(false);
-    parser.enableFraction(false);
-    parser.enableRadixPrefix(false);
-    parser.setPreferredRadix(radix);
-
-    processScalarCharacters(parser, _str->getData());
-
-    return parser.tryGetValue(scalar);
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
 }
 
 //! @brief Attempts to parse a scalar integer from the contents of the string.
@@ -1772,18 +1851,30 @@ bool String::tryParseScalar(int64_t &scalar, int radix /* = 10 */) const
 //! could, its value overflowed.
 bool String::tryParseScalar(uint64_t &scalar, int radix /* = 10 */) const
 {
-    ScalarParser parser;
-    parser.enableSign(false);
-    parser.enableExponent(false);
-    parser.enableFraction(false);
-    parser.enableRadixPrefix(false);
-    parser.setPreferredRadix(radix);
-
-    processScalarCharacters(parser, _str->getData());
-
-    return parser.tryGetValue(scalar);
+    return tryParseScalarInternal(_str->getData(), radix, scalar);
 }
 
+//! @brief Attempts to parse a real scalar value from the contents of the string.
+//! @param[out] scalar Receives a 32-bit floating point value if the leading
+//! contents of the string could be interpreted as such.
+//! @retval true An integer was successfully extracted from the string.
+//! @retval false The string could not be interpreted as an integer, or if it
+//! could, its value overflowed.
+bool String::tryParseScalar(float &scalar) const
+{
+    return tryParseScalarInternal(_str->getData(), scalar);
+}
+
+//! @brief Attempts to parse a real scalar value from the contents of the string.
+//! @param[out] scalar Receives a 64-bit floating point value if the leading
+//! contents of the string could be interpreted as such.
+//! @retval true An integer was successfully extracted from the string.
+//! @retval false The string could not be interpreted as an integer, or if it
+//! could, its value overflowed.
+bool String::tryParseScalar(double &scalar) const
+{
+    return tryParseScalarInternal(_str->getData(), scalar);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Stand Alone Functions

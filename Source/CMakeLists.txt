@@ -7,6 +7,7 @@ set(AG_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Include")
 add_subdirectory(SymbolPackager)
 add_subdirectory(WriteGlyphGeometry)
 add_subdirectory(Core)
+add_subdirectory(IO)
 add_subdirectory(Geometry)
 
 if (WIN32 AND AG_CONFIG_WIN32)

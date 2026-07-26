@@ -2,14 +2,14 @@
 //! @brief Gathers macro defines and includes required to reference the Win32 API
 //! which are required internally by the AgCore module.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_WIN32_API_HPP__
-#define __AG_CORE_WIN32_API_HPP__
+#ifndef HEADER_AG_CORE_WIN32_API_HPP_
+#define HEADER_AG_CORE_WIN32_API_HPP_
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,11 +34,7 @@
 
 #include "Ag/Core/String.hpp"
 
-namespace Ag
-{
-////////////////////////////////////////////////////////////////////////////////
-// Data Type Definitions
-////////////////////////////////////////////////////////////////////////////////
+namespace Ag {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global Functions
@@ -47,6 +43,7 @@ String getProgramFileName();
 String getModuleFileName(uintptr_t moduleHandle);
 String getModuleDirectory(uintptr_t moduleHandle);
 String getWorkingDirectory();
+String getTempDirectory();
 String getHomeDirectory();
 
 } // namespace Ag

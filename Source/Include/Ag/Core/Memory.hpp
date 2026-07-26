@@ -1,14 +1,14 @@
 //! @file Ag/Core/Memory.hpp
 //! @brief The declaration of utility functions related to memory management.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2025
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_MEMORY_HPP__
-#define __AG_CORE_MEMORY_HPP__
+#ifndef HEADER_AG_CORE_MEMORY_HPP_
+#define HEADER_AG_CORE_MEMORY_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,6 +27,19 @@ namespace std {
     constexpr std::size_t hardware_destructive_interference_size = 64;
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Macro Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Declares a unique pointer type with its own deleter.
+//! @param[in] name The name of the type which needs a unique pointer, which
+//! will be defined as <name>UPtr.
+#define DECLARE_UNIQUE_PTR(name) struct name ## Deleter { void operator()(name *ptr) const; }; \
+    using name ## UPtr = std::unique_ptr<name, name ## Deleter>
+
+//! @brief Implements a custom deleter for a type declared using DECLARE_UNIQUE_PTR().
+//! @param[in] name The name of the data type which needs a unique pointer.
+#define IMPLEMENT_UNIQUE_PTR(name) void name ## Deleter::operator()(name *ptr) const { if (ptr) delete ptr; }
 
 namespace Ag {
 

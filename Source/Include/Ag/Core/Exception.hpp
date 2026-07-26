@@ -1,14 +1,14 @@
 //! @file Ag/Core/Exception.hpp
 //! @brief The declaration of basic Exception types used throughout the library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details..
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_EXCEPTION_HPP__
-#define __AG_CORE_EXCEPTION_HPP__
+#ifndef HEADER_AG_CORE_EXCEPTION_HPP_
+#define HEADER_AG_CORE_EXCEPTION_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -214,6 +214,19 @@ public:
     NotSupportedException(const char *feature);
     NotSupportedException(const char *feature, const Exception &inner);
     ~NotSupportedException() = default;
+};
+
+//! @brief An exception thrown when a memory allocation fails.
+class OutOfMemoryException : public Exception
+{
+public:
+    // Public Data
+    //! @brief The domain used to annotate exceptions of this type.
+    static const char *Domain;
+
+    // Construction
+    OutOfMemoryException(size_t allocationSize);
+    ~OutOfMemoryException() = default;
 };
 
 #ifdef _WIN32

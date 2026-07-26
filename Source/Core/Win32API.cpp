@@ -2,7 +2,7 @@
 //! @brief The definition of some helper functions which assist the user of
 //! the Win32 API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -21,20 +21,9 @@
 #include <memory>
 #include <vector>
 
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-
 namespace Ag {
 
 namespace {
-////////////////////////////////////////////////////////////////////////////////
-// Local Data Types
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Local Data
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
@@ -151,6 +140,30 @@ String getWorkingDirectory()
     }
 
     return String::Empty;
+}
+
+//! @brief Gets the full path of the directory used to store temporary files.
+String getTempDirectory()
+{
+    std::vector<wchar_t> buffer;
+    buffer.resize(MAX_PATH, L'\0');
+
+    DWORD bufferSize = static_cast<DWORD>(buffer.size());
+    DWORD result = ::GetTempPath2W(bufferSize, buffer.data());
+
+    if (result == 0)
+    {
+        throw Win32Exception("GetTempPath2()", ::GetLastError());
+    }
+    else if (result > bufferSize)
+    {
+        buffer.resize(result + 1, L'\0');
+        bufferSize = result + 1;
+
+        result = ::GetTempPath2W(bufferSize, buffer.data());
+    }
+
+    return String(buffer.data(), static_cast<size_t>(result));
 }
 
 //! @brief Gets the profile directory of the current user.
