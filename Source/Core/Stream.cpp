@@ -2,7 +2,7 @@
 //! @brief The definition of a simple interface for reading and writing
 //! binary data.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -131,29 +131,30 @@ struct FileTraits
 
         if (access & FileAccess::Read)
         {
-            handleAccess = GENERIC_READ;
+            handleAccess |= GENERIC_READ;
         }
 
         if (access & FileAccess::Write)
         {
-            handleAccess = GENERIC_WRITE;
+            handleAccess |= GENERIC_WRITE;
+            shareMode = 0;
         }
 
         if (access & FileAccess::CreateAlways)
         {
-            createMode = CREATE_ALWAYS;
+            createMode |= CREATE_ALWAYS;
         }
         else if (access & FileAccess::CreateNew)
         {
-            createMode = CREATE_NEW;
+            createMode |= CREATE_NEW;
         }
         else if (access & FileAccess::OpenExisting)
         {
-            createMode = OPEN_EXISTING;
+            createMode |= OPEN_EXISTING;
         }
         else
         {
-            createMode = OPEN_ALWAYS;
+            createMode |= OPEN_ALWAYS;
         }
 
         fd = ::CreateFileW(filename.c_str(), handleAccess,
@@ -545,15 +546,7 @@ public:
     }
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// IStreamDeleter Member Definitions
-////////////////////////////////////////////////////////////////////////////////
-//! @brief Deletes an IStream implementation embedded in an IStreamUPtr.
-//! @param[in] stream The implementation to delete.
-void IStreamDeleter::operator()(IStream *stream) const
-{
-    safeDelete(stream);
-}
+IMPLEMENT_UNIQUE_PTR(IStream);
 
 ////////////////////////////////////////////////////////////////////////////////
 // BufferedStream Member Definitions
@@ -572,6 +565,13 @@ BufferedStream::~BufferedStream()
     }
 }
 
+// Inherited from IStream.
+bool BufferedStream::isBuffered() const
+{
+    return true;
+}
+
+// Inherited from IStream.
 void BufferedStream::flush()
 {
     if (_isInput.value_or(true))
@@ -588,6 +588,7 @@ void BufferedStream::flush()
     }
 }
 
+// Inherited from IStream.
 size_t BufferedStream::read(void *targetBuffer, size_t requiredByteCount)
 {
     if (_isInput.value_or(true) == false)
@@ -645,6 +646,7 @@ size_t BufferedStream::read(void *targetBuffer, size_t requiredByteCount)
     return bytesRead;
 }
 
+// Inherited from IStream.
 size_t BufferedStream::write(const void *sourceBuffer, size_t sourceByteCount)
 {
     if (_isInput.value_or(false))
@@ -831,15 +833,25 @@ void Bz2CompressionStream::disableExceptions()
     _context->disableExceptions();
 }
 
+// Inherited from IStream.
+bool Bz2CompressionStream::isBuffered() const
+{
+    // The Bz2 library implicitly batches writes to the inner stream.
+    return true;
+}
+
+// Inherited from IStream.
 void Bz2CompressionStream::flush()
 {
 }
 
+// Inherited from IStream.
 size_t Bz2CompressionStream::read(void */*targetBuffer*/, size_t /*requiredByteCount*/)
 {
     throw NotSupportedException("Reading for a compression writer stream.");
 }
 
+// Inherited from IStream.
 size_t Bz2CompressionStream::write(const void *sourceBuffer, size_t sourceByteCount)
 {
     size_t bytesWritten = 0;
@@ -897,6 +909,13 @@ void Bz2DecompressionStream::disableExceptions()
     _context->disableExceptions();
 }
 
+// Inherited from IStream.
+bool Bz2DecompressionStream::isBuffered() const
+{
+    // The Bz2 library implicitly batches writes to the inner stream.
+    return true;
+}
+
 void Bz2DecompressionStream::flush()
 {
 }
@@ -939,62 +958,6 @@ size_t Bz2DecompressionStream::read(void *targetBuffer, size_t requiredByteCount
     }
 
     return bytesRead;
-
-
-    //uint8_ptr_t dest = reinterpret_cast<uint8_ptr_t>(targetBuffer);
-    //auto &decompressionBuffer = context->getDecompressionBuffer();
-    //size_t bytesWritten = 0;
-
-    //while (bytesWritten < requiredByteCount)
-    //{
-    //    // Try to satisfy the read from the output buffer.
-    //    size_t bytesCopied = context->readBufferedData(dest + bytesWritten,
-    //                                                   requiredByteCount - bytesWritten);
-
-    //    if (bytesCopied > 0)
-    //    {
-    //        // We grabbed some already decompressed data from the buffer.
-    //        bytesWritten += bytesCopied;
-    //    }
-    //    else if ((_bufferedCompressedBytes > 0) || tryRefillCompressedBuffer())
-    //    {
-    //        // Read some more decompress some more data from the input buffer.
-    //        size_t compressedBytesRead = context->decompress(_compressedBuffer.data(),
-    //                                                         _bufferedCompressedBytes);
-
-    //        if (compressedBytesRead < _bufferedCompressedBytes)
-    //        {
-    //            if (compressedBytesRead > 0)
-    //            {
-    //                // Shuffle the input buffer down.
-    //                memmove(_compressedBuffer.data(),
-    //                        _compressedBuffer.data() + compressedBytesRead,
-    //                        _bufferedCompressedBytes - compressedBytesRead);
-
-    //                _bufferedCompressedBytes -= compressedBytesRead;
-    //            }
-    //            else
-    //            {
-    //                // The compression algorithm doesn't want more bytes,
-    //                // it needs to output decompressed data before it can
-    //                // take more.
-    //                break;
-    //            }
-    //        }
-    //        else
-    //        {
-    //            // The input buffer was completely drained.
-    //            _bufferedCompressedBytes = 0;
-    //        }
-    //    }
-    //    else if (context->finishDecompression())
-    //    {
-    //        // There is nothing more we can do?
-    //        break;
-    //    }
-    //}
-
-    //return bytesWritten;
 }
 
 size_t Bz2DecompressionStream::write(const void */*sourceBuffer*/, size_t /*sourceByteCount*/)
@@ -1004,34 +967,6 @@ size_t Bz2DecompressionStream::write(const void */*sourceBuffer*/, size_t /*sour
 
 bool Bz2DecompressionStream::tryFillInputBuffer()
 {
-    //size_t bytesRead = 0;
-
-    //if (_bufferedCompressedBytes < _compressedBuffer.size())
-    //{
-    //    size_t maxBytesToRead = _compressedBuffer.size() - _bufferedCompressedBytes;
-
-    //    // Apply the compressed data read limit.
-    //    if (_maxBytesToRead > 0)
-    //    {
-    //        size_t readLimit = static_cast<size_t>(std::min(static_cast<uint64_t>(_maxBytesToRead - _compressedBytesRead),
-    //                                                        static_cast<uint64_t>(SIZE_MAX)));
-
-    //        maxBytesToRead = std::min(maxBytesToRead, readLimit);
-    //    }
-
-    //    if (maxBytesToRead > 0)
-    //    {
-    //        bytesRead = _innerStream->read(_compressedBuffer.data() + _bufferedCompressedBytes,
-    //                                       maxBytesToRead);
-    //        _bufferedCompressedBytes += bytesRead;
-
-    //        _compressedBytesRead += static_cast<int64_t>(bytesRead);
-    //    }
-    //}
-
-    //return bytesRead > 0;
-
-
     if (_compressedData.canConsume() == false)
         return false;
 

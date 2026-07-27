@@ -1,7 +1,7 @@
 //! @file FsDirectory.cpp
 //! @brief The definition of various abstractions of file system elements.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,10 +10,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include <cstdio>
 #include <cstdlib>
 
 #include <algorithm>
 #include <memory>
+
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 #include "CoreInternal.hpp"
 #include "Ag/Core/CodePoint.hpp"
@@ -169,6 +174,87 @@ public:
     int64_t getSize() const { return _size; }
 
     // Operations
+    bool remove(bool reportError)
+    {
+        if (exists() == false)
+            return true;
+
+#ifdef _WIN32
+        std::wstring wideName = _location.toWideString(PathUsage::Kernel);
+        utf8_cptr_t fnName;
+        BOOL isOK = FALSE;
+
+        if (isDirectory())
+        {
+            fnName = "RemoveDirectoryW";
+            isOK = ::RemoveDirectoryW(wideName.c_str());
+        }
+        else
+        {
+            fnName = "DeleteFileW";
+            isOK = ::DeleteFileW(wideName.c_str());
+        }
+
+        if (isOK == FALSE)
+        {
+            if (reportError)
+            {
+                uint32_t errorCode = ::GetLastError();
+
+                std::string fn(fnName);
+                fn.push_back('(');
+                fn.push_back('\"');
+                Utf::appendWide(fn, wideName.c_str(), wideName.length());
+                fn.push_back('\"');
+                fn.push_back(')');
+
+                throw Win32Exception(fn.c_str(), errorCode);
+            }
+
+            return false;
+        }
+#else
+        String fullPath = _location.toString(PathUsage::Kernel);
+        utf8_cptr_t fn;
+        int error = 0;
+
+        if (isDirectory())
+        {
+            fn = "rmdir";
+            error = rmdir(fullPath.getUtf8Bytes());
+        }
+        else
+        {
+            fn = "unlink";
+            error = unlink(fullPath.getUtf8Bytes());
+        }
+
+        if (error != 0)
+        {
+            if (reportError)
+            {
+            // Capture the error code.
+                int errorCode = errno;
+
+                // Throw and exception using the error code and file path.
+                std::string fnName(fn);
+
+                fnName.push_back('(');
+                fnName.push_back('\"');
+                appendAgString(fnName, fullPath);
+                fnName.push_back('\"');
+                fnName.push_back(')');
+
+                throw RuntimeLibraryException(fnName.c_str(), errorCode);
+            }
+
+            return false;
+        }
+#endif
+
+        return true;
+    }
+
     void refresh()
     {
         _flags = 0;
@@ -556,6 +642,19 @@ const Path &Entry::getPath() const
 int64_t Entry::getSize() const
 {
     return _entry ? _entry->getSize() : 0ll;
+}
+
+//! @brief Removes the object from the file system.
+//! @param[in] reportError True to throw an exception on failure, false to
+//! silently ignore errors.
+//! @retval true The file system object was successfully removed.
+//! @retval false An error occurred during removal, but @p reportError was false.
+bool Entry::remove(bool reportError /*= true*/)
+{
+    if (_entry)
+        return _entry->remove(reportError);
+
+    return false;
 }
 
 //! @brief Updates the information about the object by re-querying the

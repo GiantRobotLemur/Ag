@@ -2,7 +2,7 @@
 //! @brief The definition of some helper functions which assist the user of
 //! the POSIX API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -18,20 +18,9 @@
 #include "Ag/Core/Utils.hpp"
 #include "Platform.hpp"
 
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-
 namespace Ag {
 
 namespace {
-////////////////////////////////////////////////////////////////////////////////
-// Local Data Types
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Local Data
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
@@ -113,6 +102,21 @@ String getWorkingDirectory()
     else
     {
         return String("/", 1);
+    }
+}
+
+//! @brief Gets the full path of the directory used to store temporary files.
+String getTempDirectory()
+{
+    const char *tmpDir = getenv("TMPDIR");
+
+    if (tmpDir == nullptr)
+    {
+        return String("/tmp");
+    }
+    else
+    {
+        return String(tmpDir);
     }
 }
 

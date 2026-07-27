@@ -2,7 +2,7 @@
 //! @brief The definition of the base exception class used throughout the
 //! Ag libraries.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -21,6 +21,7 @@
 
 #include "CoreInternal.hpp"
 #include "Ag/Core/Exception.hpp"
+#include "Ag/Core/Format.hpp"
 #include "Ag/Core/InlineMemory.hpp"
 #include "Ag/Core/String.hpp"
 #include "Ag/Core/Utf.hpp"
@@ -607,8 +608,8 @@ static const char *objNotBoundMessage =
 //! wrapper object not bound to an underlying resource.
 //! @param[in] objectTypeName The type of resource the object should be bound to.
 //! @param[in] operation The operation which the program attempted to perform.
-ObjectNotBoundException::ObjectNotBoundException(const char *objectTypeName,
-                                                 const char *operation)
+ObjectNotBoundException::ObjectNotBoundException(utf8_cptr_t objectTypeName,
+                                                 utf8_cptr_t operation)
 {
     std::string detail;
     appendPrintf(detail, "A '%s' object could not perform the '%s' function "
@@ -648,6 +649,25 @@ NotSupportedException::NotSupportedException(const char *feature, const Exceptio
     initialise(Domain, notSupportedMessage, detail);
 
     setInnerException(inner);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OutOfMemoryException Members
+////////////////////////////////////////////////////////////////////////////////
+const char *OutOfMemoryException::Domain = "OutOfMemoryException";
+static const char *outOfMemoryMessage = "The system failed to satisfy the programs request for memory.";
+
+//! @brief Constructs an exception indicating that a memory allocation failed.
+//! @param[in] allocationSize The count of bytes in the block of memory the system
+//! failed to allocate.
+OutOfMemoryException::OutOfMemoryException(size_t allocationSize)
+{
+    std::string detail;
+    detail.assign("The program failed to allocate a ");
+    appendFileSize(FormatInfo::getDisplay(), detail, allocationSize);
+    detail.append(" block of memory.");
+
+    initialise(Domain, notSupportedMessage, detail);
 }
 
 #ifdef _WIN32
