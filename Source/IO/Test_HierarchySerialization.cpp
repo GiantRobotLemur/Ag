@@ -888,19 +888,12 @@ GTEST_TEST(HierarchySerialization, A04_WriteNestedObject)
     SampleData original;
 
     original.makeRandom(entropySource, true);
+    ObjectWriter writer = beginSerializeObject(&dataSource, false);
 
-    if (dataSource.getPosition() == 0)
-    {
-        // Ensure the writer is in a lexical scope so that
-        // serialization completes at exit.
-        ObjectWriter writer = beginSerializeObject(&dataSource, false);
+    original.write(writer);
 
-        original.write(writer);
-    }
-    else
-    {
-        FAIL() << "Data source non-empty.";
-    }
+    // Ensure the writer is closed to simulate destruction.
+    writer.close();
 
     EXPECT_GT(dataSource.getSize(), 0);
 }
@@ -913,19 +906,12 @@ GTEST_TEST(HierarchySerialization, A04_WriteNestedArray)
     constexpr size_t ChildCount = 3;
 
     originalData.makeRandom(entropySource, false, ChildCount);
+    ArrayWriter writer = beginSerializeArray(&dataSource, false);
 
-    if (dataSource.getPosition() == 0)
-    {
-        // Ensure the writer is in a lexical scope so that
-        // serialization completes at exit.
-        ArrayWriter writer = beginSerializeArray(&dataSource, false);
+    originalData.write(writer);
 
-        originalData.write(writer);
-    }
-    else
-    {
-        FAIL() << "Data source non-empty.";
-    }
+    // Ensure the writer is closed to simulate destruction.
+    writer.close();
 
     EXPECT_GT(dataSource.getSize(), 0);
 }
@@ -938,18 +924,12 @@ GTEST_TEST(HierarchySerialization, A05_ReadNestedObject)
 
     original.makeRandom(entropySource, true);
 
-    if (dataSource.getPosition() == 0)
-    {
-        // Ensure the writer is in a lexical scope so that
-        // serialization completes at exit.
-        ObjectWriter writer = beginSerializeObject(&dataSource, false);
+    ObjectWriter writer = beginSerializeObject(&dataSource, false);
 
-        original.write(writer);
-    }
-    else
-    {
-        FAIL() << "Data source non-empty.";
-    }
+    original.write(writer);
+
+    // Ensure the writer is closed to simulate destruction.
+    writer.close();
 
     // Reset the stream back to the beginning.
     dataSource.setPosition(StreamRelative::Beginning, 0);
@@ -975,18 +955,12 @@ GTEST_TEST(HierarchySerialization, A05_ReadNestedArray)
 
     originalData.makeRandom(entropySource, false, ChildCount);
 
-    if (dataSource.getPosition() == 0)
-    {
-        // Ensure the writer is in a lexical scope so that
-        // serialization completes at exit.
-        ArrayWriter writer = beginSerializeArray(&dataSource, false);
+    ArrayWriter writer = beginSerializeArray(&dataSource, false);
 
-        originalData.write(writer);
-    }
-    else
-    {
-        FAIL() << "Data source non-empty.";
-    }
+    originalData.write(writer);
+
+    // Ensure the writer is closed to simulate destruction.
+    writer.close();
 
     // Reset the stream back to the beginning.
     dataSource.setPosition(StreamRelative::Beginning, 0);

@@ -49,6 +49,7 @@ public:
     bool tryGetPropertySize(string_cref_t tag, StreamLength &propSize) const;
 
     // Operations
+    void close();
     ObjectReader &operator=(const ObjectReader &) = delete;
     ObjectReader &operator=(ObjectReader &&rhs) noexcept;
 
@@ -139,6 +140,7 @@ public:
     bool isBound() const;
 
     // Operations
+    void close();
     ObjectWriter &operator=(const ObjectWriter &) = delete;
     ObjectWriter &operator=(ObjectWriter &&rhs) noexcept;
 
@@ -188,6 +190,7 @@ public:
     StreamPosition getCurrentElementIndex() const;
 
     // Operations
+    void close();
     void reset();
     void skip(StreamLength count);
 
@@ -281,6 +284,7 @@ public:
     bool isBound() const;
 
     // Operations
+    void close();
     ArrayWriter &operator=(const ArrayWriter &) = delete;
     ArrayWriter &operator=(ArrayWriter &&) noexcept;
 

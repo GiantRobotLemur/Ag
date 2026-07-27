@@ -22,14 +22,12 @@ namespace IO {
 //! @brief Constructs a stream to batch reads to an underlying stream.
 //! @param[in] input The underlying stream to read form.
 //! @param[in] bufferSize A hint at the size of the buffer to use, in bytes.
+//! @remarks The buffer size will be clamped to a value between MinBufferSize,
+//! and MaxBufferSize.
 BufferedInputStream::BufferedInputStream(IStream *input, size_t bufferSize /*= 0*/) :
     _innerStream(input),
     _bytesRead(0)
 {
-    // Calculate a reasonable buffer size from the hint.
-    const size_t MinBufferSize = 512;
-    const size_t MaxBufferSize = 1024 * 1024;
-
     size_t safeBufferSize = std::clamp(bufferSize, MinBufferSize, MaxBufferSize);
 
     // Ensure the buffer is allocated once only.

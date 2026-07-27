@@ -24,15 +24,14 @@ namespace IO {
 //! @brief Constructs a wrapper for a stream which batches write operations.
 //! @param[in] innerStream The stream to wrap.
 //! @param[in] bufferSize The suggested size of the buffer used to batch writes.
+//! @remarks The buffer size will be clamped to a value between MinBufferSize,
+//! and MaxBufferSize.
 BufferedOutputStream::BufferedOutputStream(IStream *innerStream,
                                            size_t bufferSize /*= 0*/) :
     _innerStream(innerStream)
 {
     if (_innerStream == nullptr)
         throw ArgumentNullException("innerStream");
-
-    const size_t MinBufferSize = 512;
-    const size_t MaxBufferSize = 1024 * 1024;
 
     size_t bufferSizeHint = std::clamp(bufferSize, MinBufferSize, MaxBufferSize);
 

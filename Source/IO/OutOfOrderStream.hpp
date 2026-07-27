@@ -43,7 +43,7 @@ public:
 
     public:
         // Construction/Destruction
-        BlockWriterStream(OutOfOrderStream *parent);
+        BlockWriterStream(OutOfOrderStream *parent, bool bigBuffer);
 
         // Accessors
         bool isActive() const;
@@ -65,7 +65,7 @@ public:
 
     // Construction/Destruction
     OutOfOrderStream();
-    ~OutOfOrderStream() = default;
+    ~OutOfOrderStream();
 
     // Accessors
     BlockRef getEndBlock();
@@ -86,6 +86,7 @@ private:
 
     BlockRef accountForWrite(BlockRef block, size_t bytesWritten);
     StreamLength calculateSizeToEnd(BlockRef startBlock) const;
+    void checkForUpgrade(size_t bytesToAdd);
 
     // Internal Fields
     StreamRegionList _orderedBlocks;

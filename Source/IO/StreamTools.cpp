@@ -53,8 +53,8 @@ StreamLength copyStream(IStream *input, IStream *output,
             bytesCopied += static_cast<StreamLength>(bufferCopied);
         }
 
-        // Continue until we fail to completely fill the input buffer.
-    } while (bufferUsed == buffer.size());
+        // Continue until we fail to read anything.
+    } while (bufferUsed > 0);
 
     return bytesCopied;
 }

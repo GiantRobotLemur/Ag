@@ -98,6 +98,13 @@ bool ObjectReader::tryGetPropertySize(string_cref_t tag,
     return (_reader != nullptr) && _reader->tryGetPropertySize(tag, propSize);
 }
 
+//! @brief Explicitly disposes of the underlying reader, returning the object
+//! to an unbound state.
+void ObjectReader::close()
+{
+    safeDelete(_reader);
+}
+
 //! @brief Replaces the currently wrapped reader implementation with another.
 //! @param[in] rhs The wrapper to acquire the reader implementation from.
 //! @return A reference to the current object.
@@ -644,6 +651,13 @@ bool ObjectWriter::isBound() const
     return (_writer != nullptr);
 }
 
+//! @brief Forces the writer to complete the current object so that new
+//! elements can be written to the parent.
+void ObjectWriter::close()
+{
+    safeDelete(_writer);
+}
+
 //! @brief Acquires a writer implementation from another wrapper.
 //! @param[in] rhs The wrapper to acquire the writer from.
 //! @return A reference to the current object.
@@ -905,7 +919,14 @@ StreamPosition ArrayReader::getCurrentElementIndex() const
     return (_reader == nullptr) ? 0 : _reader->getCurrentElementIndex();
 }
 
-// Resets the array so that the next value read will be the first.
+//! @brief Explicitly disposes of the underlying reader, setting the object
+//! back to an unbound state.
+void ArrayReader::close()
+{
+    safeDelete(_reader);
+}
+
+//! @brief Resets the array so that the next value read will be the first.
 void ArrayReader::reset()
 {
     verifyAccess("reset position")->reset();
@@ -1383,6 +1404,13 @@ ArrayWriter::~ArrayWriter()
 bool ArrayWriter::isBound() const
 {
     return (_writer != nullptr);
+}
+
+//! @brief Forces the underlying writer to finish so that other elements
+//! can be written to the writer's parent.
+void ArrayWriter::close()
+{
+    safeDelete(_writer);
 }
 
 //! @brief Acquires a writer implementation from another wrapper.

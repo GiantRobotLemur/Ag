@@ -22,6 +22,8 @@ explanation about various topics.
 * [Symbol Packager](Doc/SymbolPackager.md) - A stand-alone tools to extract
   symbols from binaries and packages them for use at runtime to create readable
   stack traces by the Core library.
+* [IO](Doc/IO.md) - A platform agnostic Input/Output interface that also provides
+  support for serialization of complex data.
 * QtInterop - A library which integrates Core with Qt6.
 * [Geometry](Doc/Geometry.md) - A 2D geometry library which implements
   primitives and low-complexity algorithms for line intersection, polygon/hole

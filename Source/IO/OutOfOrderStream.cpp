@@ -14,11 +14,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/IO/MemoryStream.hpp"
 #include "Ag/IO/SeekableFileStream.hpp"
-#include "OutOfOrderStream.hpp"
+#include "Ag/IO/StreamTools.hpp"
 
+#include "OutOfOrderStream.hpp"
 
 namespace Ag {
 namespace IO {
+
+namespace {
+
+////////////////////////////////////////////////////////////////////////////////
+// Local Data
+////////////////////////////////////////////////////////////////////////////////
+//! @brief The threshold beyond which data should be backed by a file rather
+//! than an in-memory buffer.
+constexpr StreamLength MaxMemoryStreamSize = 4 * 1024 * 1024;
+
+} // Anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // OutOfOrderStream Member Definitions
@@ -26,8 +38,11 @@ namespace IO {
 //! @brief Constructs a stream which will batch writes to an underlying stream
 //! and keep track of how many bytes were written where.
 //! @param[in] parent The OutOfOrderStream this stream serves.
-OutOfOrderStream::BlockWriterStream::BlockWriterStream(OutOfOrderStream *parent) :
-    BufferedOutputStream(parent->_baseStream.get()),
+//! @param[in] bigBuffer True to use the maximum size of buffer.
+OutOfOrderStream::BlockWriterStream::BlockWriterStream(OutOfOrderStream *parent,
+                                                       bool bigBuffer) :
+    BufferedOutputStream(parent->_baseStream.get(),
+                         bigBuffer ? MaxBufferSize : MinBufferSize),
     _parent(parent),
     _block(parent->_orderedBlocks.end())
 {
@@ -82,8 +97,10 @@ size_t OutOfOrderStream::BlockWriterStream::read(void */*targetBuffer*/,
 size_t OutOfOrderStream::BlockWriterStream::write(const void *sourceBuffer,
                                                   size_t sourceByteCount)
 {
-    // TODO: Assess whether the underlying stream needs to be "upgraded" from a
+    // Assess whether the underlying stream needs to be "upgraded" from a
     // memory buffer to a temporary file.
+    _parent->checkForUpgrade(sourceByteCount);
+
     size_t bytesWritten = BufferedOutputStream::write(sourceBuffer, sourceByteCount);
 
     // Keep track of the write position in parallel with the underlying stream.
@@ -96,9 +113,29 @@ size_t OutOfOrderStream::BlockWriterStream::write(const void *sourceBuffer,
 //! it to another stream in the correct order.
 OutOfOrderStream::OutOfOrderStream() :
     _baseStream(new MemoryStream()),
-    _currentBlock(this),
+    _currentBlock(this, /* bigBufferSize = */ false),
     _writeOffset(0)
 {
+}
+
+//! @brief Ensures that any temporary file is closed and deleted.
+OutOfOrderStream::~OutOfOrderStream()
+{
+    _currentBlock.flush();
+
+    auto fileStream = dynamic_cast<SeekableFileStream *>(_baseStream.get());
+
+    if (fileStream != nullptr)
+    {
+        // We need to dispose of the temporary file.
+        Fs::Path tempFilePath = fileStream->getPath();
+
+        // Close the stream before we delete the file.
+        _baseStream.reset();
+
+        Fs::Entry fileEntry(tempFilePath);
+        fileEntry.remove(/* reportError = */ false);
+    }
 }
 
 //! @brief Gets the block after the last one in the ordered sequence.
@@ -355,6 +392,42 @@ StreamLength OutOfOrderStream::calculateSizeToEnd(BlockRef startBlock) const
         blockLength += pos->getLength();
 
     return blockLength;
+}
+
+//! @brief Assesses whether the stream has accumulated enough data that it
+//! should be switched from being backed by memory to being backed by a file,
+//! and performs the upgrade if necessary.
+//! @param[in] bytesToAdd The count of bytes about to be added to the stream.
+void OutOfOrderStream::checkForUpgrade(size_t bytesToAdd)
+{
+    // Trivially reject if the stream has already been upgraded.
+    if (_writeOffset > MaxMemoryStreamSize)
+        return;
+
+    StreamLength expectedLength = _writeOffset + bytesToAdd;
+
+    if (expectedLength <= MaxMemoryStreamSize)
+        return;
+
+    // Flush what we have out of the buffer.
+    _currentBlock.flush();
+    BlockRef currentRef = _currentBlock._block;
+
+    // Create a temporary file to be the new backing store.
+    ISeekableStreamUPtr tempFile = SeekableFileStream::createTempFile("hierarchy");
+
+    // Copy the memory stream to the file.
+    _baseStream->setPosition(StreamRelative::Beginning, 0);
+
+    copyStream(_baseStream.get(), tempFile.get(), 0x10000);
+
+    // Overwrite the memory stream with the file stream.
+    _baseStream = std::move(tempFile);
+
+    // Reset the buffered writer to point to the new base stream.
+    // Use a larger buffer now that we are writing large volumes out to a file.
+    _currentBlock = BlockWriterStream(this, true);
+    _currentBlock._block = currentRef;
 }
 
 }} // namespace Ag::IO

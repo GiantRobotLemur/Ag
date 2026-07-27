@@ -20,8 +20,10 @@
 #include "IO/ISeekableStream.hpp"
 #include "IO/MemoryStream.hpp"
 #include "IO/SeekableFileStream.hpp"
+#include "IO/MemoryMappedFile.hpp"
 #include "IO/BufferedInputStream.hpp"
 #include "IO/BufferedOutputStream.hpp"
+#include "IO/StreamTools.hpp"
 
 #include "IO/HierarchySerialization.hpp"
 

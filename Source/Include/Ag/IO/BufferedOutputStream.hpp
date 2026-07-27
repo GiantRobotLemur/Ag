@@ -36,6 +36,10 @@ namespace IO {
 class BufferedOutputStream : public IStream
 {
 public:
+    // Public Constants
+    static constexpr size_t MinBufferSize = 512;
+    static constexpr size_t MaxBufferSize = 1024 * 1024;
+
     // Construction/Destruction
     BufferedOutputStream(IStream *innerStream, size_t bufferSize = 0);
     virtual ~BufferedOutputStream();

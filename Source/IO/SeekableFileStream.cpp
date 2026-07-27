@@ -551,8 +551,8 @@ ISeekableStreamUPtr SeekableFileStream::createTempFile(const Fs::Path &tempDir,
         fileName.assign(templateName);
 
     size_t baseSize = fileName.length();
-    FormatInfo sequenceFormat = FormatInfo::getDisplay();
-    sequenceFormat.setRequiredSignificantFigures(4);
+    FormatInfo sequenceFormat = FormatInfo::getNeutral();
+    sequenceFormat.setMinimumWholeDigits(4);
 
     constexpr FileAccessBits flags = FileAccess::CreateNew | FileAccess::ReadWrite;
     ISeekableStreamUPtr stream;
