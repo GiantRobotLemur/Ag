@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
+#include "Ag/IO/Exceptions.hpp"
 #include "Ag/IO/ISeekableStream.hpp"
 #include "ReadOnlyDataSource.hpp"
 
@@ -68,7 +69,7 @@ enum class FieldType : uint8_t
     //! @remarks The value is combined with a count of bytes which give the
     //! little-endian-encoded significant bits of the count of bytes in
     //! the block of object data which follows.
-    //! 
+    //!
     //! The object data is encoded as pairs of fields, a string giving the
     //! identifier of the field (the tag) and the field data.
     Object,
@@ -77,7 +78,7 @@ enum class FieldType : uint8_t
     //! @remarks The value is combined with a count of bytes which give the
     //! little-endian-encoded significant bits of the count of bytes in
     //! the block of array data which follows.
-    //! 
+    //!
     //! The first value in the array is always an anonymously encoded
     //! size value giving the, up to 64-bit, count of elements in the array.
     Array,
@@ -302,7 +303,6 @@ bool tryReadRealEncoding(ReadOnlyDataSource *source, const StreamRegion &region,
 {
     // Read the raw bits of the floating point value, allowing for byte order.
     using RealType = T;
-    using RealLimits = std::numeric_limits<RealType>;
     constexpr RealType Zero = static_cast<RealType>(0);
 
     if (region.getLength() != static_cast<StreamLength>(sizeof(T)))
@@ -332,7 +332,6 @@ template<typename T, std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
 void writeReal(IStream *output, T value)
 {
     using RealType = T;
-    using RealLimits = std::numeric_limits<RealType>;
 
     uint8_t buffer[sizeof(RealType) + 1];
 

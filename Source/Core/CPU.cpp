@@ -2,7 +2,7 @@
 //! @brief The definition of functions to verify the CPU architecture and
 //! features available to the application.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -15,13 +15,82 @@
 
 #ifdef _MSC_VER
 #include <intrin.h>
-#else
-#error CPU detection code needs a g++ alternative.
+#elif defined(__x86_64__)
+#include <cpuid.h>
 #endif
 
+#include "Ag/Core/Configuration.hpp"
 #include "Ag/Core/CPU.hpp"
 
 namespace Ag {
+
+namespace {
+////////////////////////////////////////////////////////////////////////////////
+//Local Definitions
+////////////////////////////////////////////////////////////////////////////////
+// See https://zenn.dev/mod_poppo/articles/detect-processor-features-x86?locale=en
+
+//! @brief Performs the CPUID instruction on x64 platforms, otherwise does nothing.
+//! @param[out] cpuInfo An arrary to receive the contents of the EAX, EBX, ECX and EDX
+//! registers.
+//! @param[in] fn The value to set EAX to when the instruction is executed.
+//! @retval true We are on an x64 system and the instruction was executed.
+//! @retval false We are on a non-x64 system and the elements of @p cpuInfo
+//! were zeroed.
+bool x86cpuID(int cpuInfo[4], int fn)
+{
+#if defined(_M_AMD64) || defined(__x86_64__)
+#ifdef _MSC_VER
+    // MSVC-specific x64 feature detection code.
+
+    // Determine the highest extended feature register available.
+    __cpuid(cpuInfo, fn);
+#else
+    // gcc/Clang-specific x64 feature detection code.
+    __cpuid(fn, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
+#endif
+    return true;
+#else // NOT _M_AMD64
+    AG_UNUSED_PARAM(fn);
+
+    std::fill_n(cpuInfo, 4, 0);
+
+    return false;
+#endif
+}
+
+//! @brief Performs the CPUID_Ex instruction on x64 platforms, otherwise does nothing.
+//! @param[out] cpuInfo An arrary to receive the contents of the EAX, EBX, ECX and EDX
+//! registers.
+//! @param[in] fn The value to set EAX to when the instruction is executed.
+//! @param[in] subFn The value to set ECX to when the instruction is executed.
+//! @retval true We are on an x64 system and the instruction was executed.
+//! @retval false We are on a non-x64 system and the elements of @p cpuInfo
+//! were zeroed.
+bool x86cpuID(int cpuInfo[4], int fn, int subFn)
+{
+#ifdef _M_AMD64
+#ifdef _MSC_VER
+    // MSVC-specific x64 feature detection code.
+
+    // Determine the highest extended feature register available.
+    __cpuidex(cpuInfo, fn, subfn);
+#else
+    // gcc/Clang-specific x64 feature detection code.
+    __cpuid_count(fn, subfn, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
+#endif
+    return true;
+#else // NOT AMD64
+    AG_UNUSED_PARAM(fn);
+    AG_UNUSED_PARAM(subFn);
+
+    std::fill_n(cpuInfo, 4, 0);
+
+    return false;
+#endif
+}
+
+} // Anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global Function Definitions
@@ -33,15 +102,15 @@ namespace Ag {
 //! @remarks See https://en.wikipedia.org/wiki/X86-64#Microarchitecture_levels
 int getX86_64ArchVersion()
 {
-    int version = 0;
-
-#ifdef _M_AMD64
-#ifdef _MSC_VER
     // MSVC-specific x64 feature detection code.
     int featureInfo[4];
 
-    // Determine the highest extended feature register available.
-    __cpuid(featureInfo, 1);
+    // Determine the highest extended feature register available - will return
+    // false if not an x64 architecture.
+    if (x86cpuID(featureInfo, 1) == false)
+        return 0;
+
+    int version = 0;
 
     // V1 = { CMOV, CX8, FPU, FXSR, MMX, OSFXSR, SCE, SSE, SSE2 }
     // https://en.wikipedia.org/wiki/CPUID#EAX=1:_Processor_Info_and_Feature_Bits
@@ -75,7 +144,7 @@ int getX86_64ArchVersion()
             ++version;
             int extendedInfo[4];
 
-            __cpuidex(extendedInfo, 7, 0);
+            x86cpuID(extendedInfo, 7, 0);
 
             // V3 = { AVX, AVX2, BMI1, BMI2, F16C, FMA, LZCNT, MOVBE, OSXSAVE }
             constexpr int ECX_FMA   = 0x00001000;
@@ -115,9 +184,6 @@ int getX86_64ArchVersion()
 
     return version;
 }
-
-#endif
-#endif
 
 } // namespace Ag
 ////////////////////////////////////////////////////////////////////////////////

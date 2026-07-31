@@ -15,8 +15,13 @@
 
 #include <vector>
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+
 #include "Ag/Core/Utils.hpp"
-#include "Platform.hpp"
+#include "PosixAPI.hpp"
 
 namespace Ag {
 

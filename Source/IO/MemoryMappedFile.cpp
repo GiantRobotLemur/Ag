@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
-#include "Ag/IO/MemoryMappedFile.hpp"
+#include <utility>
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -19,6 +19,10 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #endif
+
+#include <Ag/Core.hpp>
+
+#include "Ag/IO/MemoryMappedFile.hpp"
 
 namespace Ag {
 namespace IO {
@@ -331,7 +335,7 @@ void MappingHandle::closeNoExcept() noexcept
 //! @brief Constructs an empty mapping handle object.
 MappingHandle::MappingHandle() :
     _length(-1),
-    
+
     _mappingFd(-1),
     _originalAccess(0)
 {
@@ -377,7 +381,6 @@ MappingHandle &MappingHandle::operator=(MappingHandle &&rhs) noexcept
     {
         closeNoExcept();
 
-        _blockSize = rhs._blockSize;
         _mappingFd = std::exchange(rhs._mappingFd, -1);
         _originalAccess = rhs._originalAccess;
     }
@@ -452,7 +455,7 @@ void MappingHandle::open(const Fs::Path &filePath, FileAccessBits access,
     }
 
     // Ensure the file is closed if something goes wrong.
-    AtScopeExit1 closeFileOnExit(close, fd);
+    AtScopeExit1 closeFileOnExit(::close, fd);
 
     if (needsInitialSize)
     {
@@ -515,7 +518,7 @@ void *MappingHandle::createView(StreamPosition blockIndex,
         throw ArgumentException("A view of a file must have a positive size.");
 
     int protect = 0;
-    int flags = 0;
+    int flags = MAP_SHARED;
 
     if (_originalAccess & FileAccess::Read)
     {
@@ -527,7 +530,7 @@ void *MappingHandle::createView(StreamPosition blockIndex,
         protect |= PROT_WRITE;
     }
 
-    void *ptr = mmap64(nullptr, static_cast<size_t>(length), protect, flags, _mappingFd,
+    void *ptr = mmap64(nullptr, streamToMemorySize(length), protect, flags, _mappingFd,
                        static_cast<off64_t>(blockIndex) * getBlockSize());
 
     if (ptr == MAP_FAILED)
@@ -545,7 +548,7 @@ void *MappingHandle::createView(StreamPosition blockIndex,
 //! true if throwExceptions is true.
 bool MappingHandle::destroyView(void *viewPtr, StreamLength length, bool throwExceptions /*= false*/)
 {
-    if (munmap(viewPtr, static_cast<size_t>(length) < 0))
+    if (munmap(viewPtr, streamToMemorySize(length)) < 0)
     {
         if (throwExceptions)
             throw RuntimeLibraryException("munmap()", errno);
@@ -564,7 +567,7 @@ void MappingHandle::close()
 
     if (fd >= 0)
     {
-        if (close(fd) != 0)
+        if (::close(fd) != 0)
             throw RuntimeLibraryException("close()", errno);
     }
 }
@@ -577,7 +580,7 @@ void MappingHandle::closeNoExcept() noexcept
 
     if (fd >= 0)
     {
-        close(fd);
+        ::close(fd);
     }
 }
 #endif
@@ -585,7 +588,7 @@ void MappingHandle::closeNoExcept() noexcept
 ////////////////////////////////////////////////////////////////////////////////
 // MemoryMappedView Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief Creates an empty object intended to wrap a view of a portion of 
+//! @brief Creates an empty object intended to wrap a view of a portion of
 //! a file mapped into memory.
 MemoryMappedView::MemoryMappedView() :
     _baseAddr(nullptr)
@@ -668,14 +671,12 @@ void MemoryMappedView::release()
 {
     if (_baseAddr != nullptr)
     {
-        _position = StreamRegion();
+        StreamLength originalLength = _position.getLength();
         void *ptr = _baseAddr;
+        _position = StreamRegion();
         _baseAddr = nullptr;
 
-        if (::UnmapViewOfFile(ptr) == FALSE)
-        {
-            throw Win32Exception("UnmapViewOfFile()", ::GetLastError());
-        }
+        MappingHandle::destroyView(ptr, originalLength, /* throwException = */ true);
     }
 }
 
@@ -685,11 +686,12 @@ void MemoryMappedView::releaseNoThrow() noexcept
 {
     if (_baseAddr != nullptr)
     {
-        _position = StreamRegion();
+        StreamLength originalLength = _position.getLength();
         void *ptr = _baseAddr;
+        _position = StreamRegion();
         _baseAddr = nullptr;
 
-        ::UnmapViewOfFile(ptr);
+        MappingHandle::destroyView(ptr, originalLength, /* throwException = */ false);
     }
 }
 

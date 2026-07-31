@@ -15,7 +15,11 @@
 #ifndef _WIN32
 // POSIX Headers required.
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #endif
+
+#include <Ag/Core.hpp>
 
 #include "Ag/IO/SeekableFileStream.hpp"
 
@@ -401,8 +405,6 @@ struct FileTraits
             flags = O_RDONLY;
         }
 
-        FileDescriptor fd;
-
         if (access & Create)
         {
             fd = ::open64(pathText.getUtf8Bytes(), flags | O_EXCL | O_CREAT, mode);
@@ -426,12 +428,12 @@ struct FileTraits
         // Capture the last error.
         errorCode = static_cast<uintptr_t>(errno);
 
-        return (fd < 0);
+        return (fd >= 0);
     }
 
     static FileDescriptor open(const Fs::Path &path, FileAccessBits access)
     {
-        uintptr_t errorCode;
+        ErrorCode errorCode;
         int fd;
 
         if (tryOpen(path, access, fd, errorCode))

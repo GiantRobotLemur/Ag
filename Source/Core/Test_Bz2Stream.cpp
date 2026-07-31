@@ -113,7 +113,9 @@ void testCompressionAndDecompression(const void *sampleData, size_t sampleSize, 
 
     // NOTE: With pseudo-random data, this assertion doesn't always hold.
     if (isRandom == false)
+    {
         EXPECT_LT(specimen.CompressedData.size(), sampleSize);
+    }
 
     // Decompress the previously compressed data.
     specimen.initialiseDecompression();

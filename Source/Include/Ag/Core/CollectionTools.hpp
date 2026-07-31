@@ -19,6 +19,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Exception.hpp"
+
 namespace Ag {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -484,7 +486,7 @@ void ensureCapacity(TCollection &collection, size_t totalCapacity)
         collection.reserve(totalCapacity);
 }
 
-//! @brief Ensures a vector has capacity to append a specified number of 
+//! @brief Ensures a vector has capacity to append a specified number of
 //! additional elements.
 //! @tparam TCollection The data type of vector to extend.
 //! @param[in] collection The vector to ensure the capacity of.

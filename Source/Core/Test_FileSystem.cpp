@@ -1,7 +1,6 @@
 //! @file Test_FileSystem.cpp
 //! @brief The definition of unit tests for file system related classes.
-//! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @author GiantRo65
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -14,6 +13,13 @@
 
 #include <Ag/Core.hpp>
 #include <Ag/GTest_Core.hpp>
+
+////////////////////////////////////////////////////////////////////////////////
+// Macro Definitions
+////////////////////////////////////////////////////////////////////////////////
+#ifndef _MAX_PATH
+#define _MAX_PATH 260
+#endif
 
 namespace Ag {
 namespace Fs {

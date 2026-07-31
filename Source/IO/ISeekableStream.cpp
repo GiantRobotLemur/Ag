@@ -13,12 +13,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <algorithm>
 
-#include <Ag/Core/Exception.hpp>
+#include <Ag/Core.hpp>
 
 #include "Ag/IO/ISeekableStream.hpp"
 
 namespace Ag {
 namespace IO {
+
+namespace {
+////////////////////////////////////////////////////////////////////////////////
+// Local Data
+////////////////////////////////////////////////////////////////////////////////
+
+#ifdef IS_32_BIT
+//! @brief The largest stream size that can be stored in memory (2G).
+constexpr StreamLength MaxMemStreamSize = 0x7FFFFFFFl;
+#else
+//! @brief The largest stream size that can be stored in memory (2^63 bytes).
+constexpr StreamLength MaxMemStreamSize = 0x7FFFFFFFFFFFFFFFl;
+#endif
+
+} // Anonymous namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // StreamRegion Member Definitions
@@ -145,6 +160,62 @@ bool StreamRegion::operator!=(const StreamRegion &rhs) const
 // ISeekableStream Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
 IMPLEMENT_UNIQUE_PTR(ISeekableStream);
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Global Function Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Determines if the size of a stream is larger than anything that
+//! will fit into memory.
+//! @remarks This is particularly pertinent if the host system is 32-bit.
+bool isStreamSizeTooLargeForMemory(StreamLength streamSize)
+{
+    return streamSize > MaxMemStreamSize;
+}
+
+//! @brief Converts a signed 64-bit stream size to a memory size.
+//! @param[in] streamSize The count of bytes from the stream, could be negative.
+//! @param[in] throwOnFailure True to throw an exception if @p streamSize is
+//! negative or too big, false to return 0 is SIZE_MAX in such situations.
+//! @returns The signed stream size as an unsigned memory size.
+//! @throws ArgumentException Thrown if @p streamSize is negative and
+//! @p throwOnNegative is true.
+size_t streamToMemorySize(StreamLength streamSize,
+                          bool throwOnFailure /* = true */)
+{
+    if (streamSize < 0)
+    {
+        if (throwOnFailure)
+            throw ArgumentException("A valid stream size cannot be negative.");
+
+        return 0;
+    }
+    else if (streamSize > MaxMemStreamSize)
+    {
+        if (throwOnFailure)
+            throw ArgumentException("The stream size is too big to fit into memory.");
+
+        return SIZE_MAX;
+    }
+
+    return static_cast<size_t>(streamSize);
+}
+
+//! @brief Converts a memory size to a stream size, ensuring there is no overflow.
+//! @throws ArgumentException Thrown on 64-bit systems if the MSB of
+//! @p memorySize is set.
+StreamLength memoryToStreamSize(size_t memorySize)
+{
+#ifdef IS_32_BIT
+    return static_cast<StreamLength>(memorySize);
+#else
+    if (memorySize >> 63)
+        throw ArgumentException("The size it too big.");
+
+    return static_cast<StreamLength>(memorySize);
+#endif
+}
+
 
 }} // namespace Ag::IO
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,19 +2,20 @@
 //! @brief The declaration of stand-alone helper functions for use by the
 //! symbol packager tool.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SYMBOL_PACKAGER_HPP__
-#define __AG_SYMBOL_PACKAGER_HPP__
+#ifndef HEADER_AG_SYMBOL_PACKAGER_HPP_
+#define HEADER_AG_SYMBOL_PACKAGER_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include <cstdarg>
+#include <cstring>
 #include <string>
 #include <memory>
 
@@ -69,7 +70,7 @@ public:
     virtual ~IStream() = default;
 
     // Operations
- 
+
     //! @brief Reads bytes from the stream.
     //! @param[in] targetBuffer The buffer to receive the bytes read.
     //! @param[in] requiredByteCount The maximum number of bytes to read.

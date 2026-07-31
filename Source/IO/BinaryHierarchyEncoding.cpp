@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
-#include "Ag/Core/ByteOrder.hpp"
+#include <Ag/Core.hpp>
 
 #include "Ag/IO/Exceptions.hpp"
 #include "Ag/IO/ISeekableStream.hpp"
@@ -350,10 +350,7 @@ size_t readSize(IStream *stream, const Bin::ByteOrder *encoding)
 {
     StreamLength streamSize = readStreamSize(stream, encoding);
 
-    if (streamSize > SIZE_MAX)
-        throw OperationException("The size is to big for the current system.");
-
-    return static_cast<size_t>(streamSize);
+    return streamToMemorySize(streamSize);
 }
 
 //! @brief Reads an anonymous file size value directly from a stream.
@@ -485,9 +482,9 @@ StreamLength writeStreamSize(IStream *stream, StreamLength length)
 }
 
 //! @brief Combines a field type with the low nibble of a supplementary value.
-//! @param fieldType 
-//! @param supplemental 
-//! @return 
+//! @param fieldType
+//! @param supplemental
+//! @return
 uint8_t makeFieldHeader(FieldType fieldType, uint8_t supplemental)
 {
     return (toScalar(fieldType) << 4) | (supplemental & 0x0F);

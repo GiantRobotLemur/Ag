@@ -2,14 +2,14 @@
 //! @brief The declaration of various data types and macros used throughout the
 //! core library component and beyond.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_CONFIGURATION_HPP__
-#define __AG_CORE_CONFIGURATION_HPP__
+#ifndef HEADER_AG_CORE_CONFIGURATION_HPP_
+#define HEADER_AG_CORE_CONFIGURATION_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -73,6 +73,12 @@
 #define DISABLE_WARNING_UNREF_FUNCITON
 #define DISABLE_WARNING_ALIGN_PADDING
 #endif
+
+//! @brief A macro to use when a parameter is not referenced to supporess the
+//! warning. This might legitimately occur due to compiler/architecture
+//! differences.
+//! @param[in] x The variable left unreferenced.
+#define AG_UNUSED_PARAM(x) (void)(x)
 
 namespace Ag {
 

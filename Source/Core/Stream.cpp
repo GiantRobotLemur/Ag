@@ -275,8 +275,6 @@ struct FileTraits
             flags = O_RDONLY;
         }
 
-        FileDescriptor fd;
-
         if (access & Create)
         {
             fd = ::open64(pathText.getUtf8Bytes(), flags | O_EXCL | O_CREAT, mode);
@@ -300,7 +298,7 @@ struct FileTraits
         // Capture the last error.
         errorCode = static_cast<uintptr_t>(errno);
 
-        return (fd < 0);
+        return (fd >= 0);
     }
 
     static FileDescriptor open(const Fs::Path &path, FileAccessBits access)
@@ -624,7 +622,7 @@ size_t BufferedStream::read(void *targetBuffer, size_t requiredByteCount)
                                                         requiredBytesLeft);
 
             // Given we are by-passing the cache, we should have read all we
-            // needed 
+            // needed
             bytesRead += directBytesRead;
             break;
         }

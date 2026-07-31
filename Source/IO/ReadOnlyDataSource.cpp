@@ -612,16 +612,9 @@ ReadOnlyDataSource::ReadOnlyDataSource(StreamLength rootExtent) :
 ReadOnlyDataSource::UPtr ReadOnlyDataSource::create(IStream *inputData,
                                                     StreamLength byteCount)
 {
-    StreamPosition startPos = 0;
-
     if (byteCount < 0)
         throw ArgumentException("The size of the data source must be non-negative.",
                                 "byteCount");
-
-    if (auto seekableStream = dynamic_cast<ISeekableStream *>(inputData))
-    {
-        startPos = seekableStream->getPosition();
-    }
 
     if (byteCount > MaxInMemorySize)
     {
