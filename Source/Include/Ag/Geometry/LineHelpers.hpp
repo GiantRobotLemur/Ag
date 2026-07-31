@@ -2,14 +2,14 @@
 //! @brief The declaration of template functions useful for manipulating line
 //! segments and curves.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_GEOMETRY_LINE_HELPERS_HPP__
-#define __AG_GEOMETRY_LINE_HELPERS_HPP__
+#ifndef HEADER_AG_GEOMETRY_LINE_HELPERS_HPP_
+#define HEADER_AG_GEOMETRY_LINE_HELPERS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -17,6 +17,7 @@
 #include <deque>
 #include <vector>
 
+#include "NumericDomain.hpp"
 #include "Point2D.hpp"
 
 namespace Ag {
@@ -113,6 +114,16 @@ struct MeasuredPoint : ParamPoint
     }
 };
 
+//! @brief A comparer of ParamPoint items which orders ParamPoints in
+//! descending order of their parameter values.
+struct ReverseParamPointCompare
+{
+    bool operator()(const ParamPoint &lhs, const ParamPoint &rhs) const
+    {
+        return rhs.Param < lhs.Param;
+    }
+};
+
 //! @brief Context used in the recursive simplification of a curve into a polyline.
 template<typename TLine>
 struct SimplifyContext
@@ -188,16 +199,6 @@ struct SimplifyContext
             // Sort the points by their parameter values.
             std::sort(Points.begin(), Points.end());
         }
-    }
-};
-
-//! @brief A comparer of ParamPoint items which orders ParamPoints in
-//! descending order of their parameter values.
-struct ReverseParamPointCompare
-{
-    bool operator()(const ParamPoint &lhs, const ParamPoint &rhs) const
-    {
-        return rhs.Param < lhs.Param;
     }
 };
 

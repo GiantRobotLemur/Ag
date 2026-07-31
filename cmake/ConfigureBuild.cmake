@@ -22,7 +22,13 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         if (DEFINED MSVC)
             add_compile_options("/W4")
         else()
-            add_compile_options(-Wall -Wextra -pedantic -Wshadow)
+            add_compile_options(-Wall -Wextra -pedantic -Wshadow -Wno-psabi -Wno-unknown-pragmas)
+            # NOTE: --Wno-psapi is to suppress warnings about code which is
+            # fine, but the effect has altered due to bugs in GCCs ABI being
+            # fixed. See: https://stackoverflow.com/questions/72052105/how-can-i-suppress-certain-abi-change-notes-embedded-c
+
+            # NOTE: -Wno-unknown-pragmas - g++ doesn't understand #pragma region,
+            # which makes code more readable in Visual Studio and the like.
 
             # Ensure _DEBUG is defined for debug builds, this is done automatically
             # for MSVC.

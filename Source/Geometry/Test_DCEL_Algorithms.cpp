@@ -81,7 +81,7 @@ GTEST_TEST(DCEL_Trace, Rectangle)
     NodeTable nodes(Rect2D(-100, -100, 100, 100));
     EdgeTable edges(8);
 
-    RectIndices firstIndices = addRect(edges, nodes, -10, -15, 20, 30);
+    addRect(edges, nodes, -10, -15, 20, 30);
 
     // Ensure the coincident points are represented by a single edge.
     EXPECT_EQ(edges.getCount(), 4u);
@@ -249,8 +249,8 @@ GTEST_TEST(DCEL_Trace, NestedRectangles)
     EdgeTable edges(8);
 
     // Create geometry of one rectangle inside another.
-    RectIndices firstIndices = addRect(edges, nodes, 5, 6, 5, 3);
-    RectIndices secondIndices = addRect(edges, nodes, 4, 5, 7, 5);
+    addRect(edges, nodes, 5, 6, 5, 3);
+    addRect(edges, nodes, 4, 5, 7, 5);
 
     // Ensure the coincident points are represented by a single edge.
     EXPECT_EQ(nodes.getCount(), 8u);
@@ -838,9 +838,9 @@ static const TestPath triangulationPaths[] = {
 INSTANTIATE_TEST_SUITE_P(Triangulate,
                          DCELTests,
                          testing::ValuesIn(triangulationPaths),
-                         [](const testing::TestParamInfo<DCELTests::ParamType> &info)
+                         [](const testing::TestParamInfo<DCELTests::ParamType> &testInfo)
                          {
-                             return std::string(info.param.Name);
+                             return std::string(testInfo.param.Name);
                          });
 
 

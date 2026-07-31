@@ -129,10 +129,10 @@ InvalidHalfEdgeIDException::InvalidHalfEdgeIDException(const HalfEdgeID &id)
 //! @param[in] flags The initial set of flags associated with the node.
 Node::Node(ID id, const Point2D &position, const SnapPoint &gridPosition,
            FlagsType flags /*= 0*/) :
-    _id(id),
-    _mappedIndex(0),
     _realPosition(position),
     _gridPosition(gridPosition),
+    _id(id),
+    _mappedIndex(0),
     _buddyEdge(nullptr),
     _flags(flags)
 {
@@ -399,10 +399,6 @@ Node *NodeTable::addNode(const Point2D &realPosition,
 void NodeTable::removeNode(ID nodeID)
 {
     // TODO: Linear search, not optimal.
-    auto matches = [nodeID](const NodeUPtr &rhs) {
-        return rhs && rhs->getID() == nodeID;
-        };
-
     auto pos = std::find_if(_allNodes.begin(), _allNodes.end(),
                             [nodeID](const NodeUPtr &rhs) {
                                 return rhs && rhs->getID() == nodeID; });
@@ -1475,7 +1471,7 @@ void EdgeTable::removeEdge(ID edgeID)
 //! @brief Resets the parent ring ID on all half edges to NullID.
 void EdgeTable::resetOwnership()
 {
-    std::for_each(std::execution::parallel_unsequenced_policy(),
+    std::for_each(std::execution::par_unseq,
                   _allEdges.begin(), _allEdges.end(),
                   [](EdgeUPtr &edgeUPtr) {
                       for (DirectionIndex i = 0; i < 2; ++i)
@@ -1487,7 +1483,7 @@ void EdgeTable::resetOwnership()
 //! edges in the table.
 void EdgeTable::resetConnections()
 {
-    std::for_each(std::execution::parallel_unsequenced_policy(),
+    std::for_each(std::execution::par_unseq,
                   _allEdges.begin(), _allEdges.end(),
                   [](EdgeUPtr &edgeUPtr) { edgeUPtr->resetConnections(); });
 }
@@ -1607,7 +1603,7 @@ size_t EdgeTable::batchSplitEdges(NodeTable &nodes,
                 {
                     // TODO: We can't maintain the linked list of half-edges.
                     //   in that case, is it worth bothering trying to maintain?
-                    // 
+                    //
                     // Should we create a mapping of original edge ID to the new
                     // set of edges created from it?
                 }
@@ -2411,24 +2407,6 @@ bool ExplicitRing::addIntersections(const SortedEdgeSubstituteMap &substitutes)
 
     _nodeIDs = std::move(newNodes);
     return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Global Function Definitions
-////////////////////////////////////////////////////////////////////////////////
-//! @brief Creates an index key used to look up an edge.
-constexpr EdgeKey makeEdgeKey(ID firstNode, ID secondNode) noexcept
-{
-    if (firstNode < secondNode)
-    {
-        return static_cast<EdgeKey>(firstNode) |
-               (static_cast<EdgeKey>(secondNode) << 32);
-    }
-    else
-    {
-        return static_cast<EdgeKey>(secondNode) |
-               (static_cast<EdgeKey>(firstNode) << 32);
-    }
 }
 
 }}} // namespace Ag::Geom:DCEL

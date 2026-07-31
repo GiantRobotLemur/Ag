@@ -2,7 +2,7 @@
 //! @brief The definition an object used to snap real points to a grid with
 //! arbitrary granularity.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -34,7 +34,6 @@ SnapContext::SnapContext(const Rect2D &domain) :
     _domain(std::min(domain.getMinimumX(), domain.getMinimumY()),
             std::max(domain.getMaximumX(), domain.getMaximumY()))
 {
-    using SnapType = std::numeric_limits<int64_t>;
     using RealType = std::numeric_limits<double>;
 
     // Calculate the maximum size of the snapping grid with some additional
