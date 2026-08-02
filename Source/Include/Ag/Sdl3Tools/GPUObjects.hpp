@@ -1,14 +1,14 @@
 //! @file Ag/Sdl3Tools/GPUObjects.hpp
 //! @brief The declaration of wrappers for GPU-related SDL 3 Data types.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SDL3_TOOLS_GPU_OBJECTS_HPP__
-#define __AG_SDL3_TOOLS_GPU_OBJECTS_HPP__
+#ifndef HEADER_AG_SDL3_TOOLS_GPU_OBJECTS_HPP_
+#define HEADER_AG_SDL3_TOOLS_GPU_OBJECTS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -249,7 +249,7 @@ public:
         _device(device._device),
         _defaultFormat(format)
     {
-        beginShader(reinterpret_cast<const uint8_t *>(values),
+        beginShader(reinterpret_cast<const uint8_t *>(code),
                     U * sizeof(T), stage, format);
     }
 
@@ -371,7 +371,7 @@ class CopyPass
 public:
     // Construction/Destruction
     CopyPass();
-    CopyPass(SDL_GPUCopyPass *CopyPass);
+    CopyPass(SDL_GPUCopyPass *copyPass);
     CopyPass(const CopyPass &) = delete;
     CopyPass(CopyPass &&rhs) noexcept;
     ~CopyPass();

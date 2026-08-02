@@ -57,7 +57,7 @@ void appendPropertyValue(std::string &buffer, const std::string_view &name,
     buffer.push_back('\n');
 }
 
-template<typename T> 
+template<typename T>
 void appendPropertyScalar(std::string &buffer, const std::string_view &name,
                           T value, size_t maxNameLength)
 {
@@ -79,11 +79,14 @@ void appendPropertyFileSize(std::string &buffer, const std::string_view &name,
     buffer.push_back('\n');
 }
 
-void appendPropertyBool(std::string &buffer, const std::string_view &name,
-                        bool value, size_t maxNameLength)
-{
-    appendPropertyValue(buffer, name, value ? "true" : "false", maxNameLength);
-}
+// TODO: This function i defined , but not used, but we may want  support for
+// bool properties in future, so I'm keeping the code.
+//
+//void appendPropertyBool(std::string &buffer, const std::string_view &name,
+//                        bool value, size_t maxNameLength)
+//{
+//    appendPropertyValue(buffer, name, value ? "true" : "false", maxNameLength);
+//}
 
 void appendPropertyFormatted(std::string &buffer, const std::string_view &name,
                              size_t maxNameLength, const std::string_view &format,
