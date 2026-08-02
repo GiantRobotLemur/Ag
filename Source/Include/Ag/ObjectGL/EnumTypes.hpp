@@ -2,7 +2,7 @@
 //! @brief The declaration of core profile OpenGL constants wrapped into
 //! C++ 11-compatible enumeration classes.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __EFCB0C06_7A7A_46A0_B04E_C3925634D0FD_INCLUDED__
-#define __EFCB0C06_7A7A_46A0_B04E_C3925634D0FD_INCLUDED__
+#ifndef HEADER_EFCB0C06_7A7A_46A0_B04E_C3925634D0FD_INCLUDED_
+#define HEADER_EFCB0C06_7A7A_46A0_B04E_C3925634D0FD_INCLUDED_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,18 +23,30 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Global Constants
 ////////////////////////////////////////////////////////////////////////////////
-// Tokens whose numeric value is intrinsically meaningful
-static const unsigned long long TimeoutIgnored = 0xFFFFFFFFFFFFFFFFull; // GL_TIMEOUT_IGNORED - Tagged as uint64
-static const GLenum False                      =                     0; // GL_FALSE
-static const GLenum NoError                    =                     0; // GL_NO_ERROR
-static const GLenum None                       =                     0; // GL_NONE
-static const GLenum Zero                       =                     0; // GL_ZERO
-static const GLenum One                        =                     1; // GL_ONE
-static const GLenum True                       =                     1; // GL_TRUE
-static const GLenum LuidSize                   =                     8; // GL_LUID_SIZE_EXT
-static const GLenum UuidSize                   =                    16; // GL_UUID_SIZE_EXT
-static const GLenum AllPixels                  =            0xFFFFFFFF; // GL_ALL_PIXELS_AMD
-static const unsigned int InvalidIndex         =           0xFFFFFFFFu; // GL_INVALID_INDEX - Tagged as uint
+// Tokens whose numeric value is intrinsically meaningful - encapsulated into
+// a structure to prevent name clashes.
+struct Constants {
+
+static constexpr unsigned long long TimeoutIgnored = 0xFFFFFFFFFFFFFFFFull; // GL_TIMEOUT_IGNORED - Tagged as uint64
+static constexpr GLenum False                      =                     0; // GL_FALSE
+static constexpr GLenum NoError                    =                     0; // GL_NO_ERROR
+static constexpr GLenum None                       =                     0; // GL_NONE
+static constexpr GLenum Zero                       =                     0; // GL_ZERO
+static constexpr GLenum One                        =                     1; // GL_ONE
+static constexpr GLenum True                       =                     1; // GL_TRUE
+static constexpr GLenum LuidSize                   =                     8; // GL_LUID_SIZE_EXT
+static constexpr GLenum UuidSize                   =                    16; // GL_UUID_SIZE_EXT
+static constexpr GLenum AllPixels                  =            0xFFFFFFFF; // GL_ALL_PIXELS_AMD
+static constexpr unsigned int InvalidIndex         =           0xFFFFFFFFu; // GL_INVALID_INDEX - Tagged as uint
+
+// Prevent the class from being instantiated.
+Constants() = delete;
+~Constants() = delete;
+Constants(Constants &&) = delete;
+Constants(const Constants &) = delete;
+Constants &operator=(Constants &&) = delete;
+Constants &operator=(const Constants &) = delete;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Enumeration Types

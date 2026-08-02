@@ -1,14 +1,14 @@
 //! @file ObjectGL/PreCompiledHeader.hpp
 //! @brief The root private pre-compiled header for the ObjectGL library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_PCH_HPP__
-#define __AG_OBJECT_GL_PCH_HPP__
+#ifndef HEADER_AG_OBJECT_GL_PCH_HPP_
+#define HEADER_AG_OBJECT_GL_PCH_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions
@@ -45,8 +45,14 @@
 #ifdef _WIN32
 #include <Windows.h>
 #else
-#include <X11/X.h>
-#include <X11/Xlib.h>
+// BEWARE:
+// X11/X.h and X11/XLib.h defined global macros for a number of nice values
+// used throughout the sanitized OpenGL API: None, True, False, Always, Bool,
+// So if the following are included, those macros might need to be immegiately
+// undefined for the ObjectGL API to compile.
+
+//#include <X11/X.h>
+//#include <X11/Xlib.h>
 #endif
 
 #include <KHR/khrplatform.h>

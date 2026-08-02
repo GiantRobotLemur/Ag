@@ -74,7 +74,7 @@ bool x86cpuID(int cpuInfo[4], int fn, int subFn)
     // MSVC-specific x64 feature detection code.
 
     // Determine the highest extended feature register available.
-    __cpuidex(cpuInfo, fn, subfn);
+    __cpuidex(cpuInfo, fn, subFn);
 #else
     // gcc/Clang-specific x64 feature detection code.
     __cpuid_count(fn, subfn, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
