@@ -59,14 +59,6 @@ ag_add_library(ObjectGL FOLDER      "Graphics"
                                     "${AG_INCLUDE_DIR}/Ag/ObjectGL/WGL_API.hpp"
                                     "WGL_CommandSets.cpp"
                                     "${AG_INCLUDE_DIR}/Ag/ObjectGL/WGL_CommandSets.hpp"
-                                    "Extensions/3DLabs.cpp"
-                                    "${AG_INCLUDE_DIR}/Ag/ObjectGL/Extensions/3DLabs.hpp"
-                                    "Extensions/3DLabs_CommandSets.cpp"
-                                    "${AG_INCLUDE_DIR}/Ag/ObjectGL/Extensions/3DLabs_CommandSets.hpp"
-                                    "Extensions/Intense3D.cpp"
-                                    "${AG_INCLUDE_DIR}/Ag/ObjectGL/Extensions/Intense3D.hpp"
-                                    "Extensions/Intense3D_CommandSets.cpp"
-                                    "${AG_INCLUDE_DIR}/Ag/ObjectGL/Extensions/Intense3D_CommandSets.hpp"
                         POSIX_SOURCES "${AG_INCLUDE_DIR}/Ag/ObjectGL/GLX_Types.hpp"
                                     "GLX_API.cpp"
                                     "${AG_INCLUDE_DIR}/Ag/ObjectGL/GLX_API.hpp"
@@ -76,9 +68,13 @@ ag_add_library(ObjectGL FOLDER      "Graphics"
                         PUBLIC_LIBS AgCore)
 
 if(WIN32)
-    set(glExts 3DFX 3DLabs AMD Apple ARB ATI Ext Gremedy HP IBM Ingr Intel Intense3D Khr Mesa NVidia OES OML Ovr PGI SGI Sun)
+    set(glExts 3DFX 3DLabs AMD Apple ARB ATI Ext
+               Gremedy HP IBM Ingr Intel Intense3D
+               Khr Mesa NVidia OES OML Ovr PGI SGI Sun)
 else()
-    set(glExts 3DFX AMD Apple ARB ATI Ext Gremedy HP IBM Ingr Intel Khr Mesa NVidia OES OML Ovr PGI SGI Sun)
+    set(glExts 3DFX AMD Apple ARB ATI Ext Gremedy
+               HP IBM Ingr Intel Khr Mesa NVidia
+               OES OML Ovr PGI SGI Sun)
 endif()
 
 foreach(extName IN LISTS "${glExts}")
