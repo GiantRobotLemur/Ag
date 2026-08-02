@@ -89,10 +89,12 @@ BaseAPI::BaseAPI() :
 
 //! @brief An action performed before a raw API command is executed.
 //! @param[in] commandName The name of the command about to be executed.
-//! @param[in] entryPoint A pointer to the command function about to be called.
-void BaseAPI::beforeCommand(const char *commandName, const void *entryPoint) const
+//! @param[in] hasEntryPoint True if the API entry point function has a non-null
+//! value.
+//! @throws NotSupportedException If hasEntryPoint is false.
+void BaseAPI::beforeCommand(const char *commandName, bool hasEntryPoint) const
 {
-    if (entryPoint != nullptr)
+    if (hasEntryPoint)
         return;
 
     std::string message;
