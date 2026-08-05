@@ -3,7 +3,7 @@
 //! extracts and packages up the symbols for a binary module in order to support
 //! symbolic stack traces.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -22,6 +22,9 @@
 #ifdef _WIN32
 // PDBs only supported under Windows.
 #include "PdbFileReader.hpp"
+#else
+// ELFs only supported under non-Windows.
+#include "ElfFileReader.hpp"
 #endif
 
 #include "SymbolDb.hpp"
@@ -153,6 +156,14 @@ int main(int argc, const char *argv[])
             {
                 writeSymbols(args, symbols, error);
             }
+            break;
+
+        case Command_PackageELFFile:
+#ifdef _WIN32
+            error.assign("Reading ELF binaries is not supported under Microsoft Windows.");
+#else
+            readSymbols<ElfFileReader>(args, symbols, error);
+#endif
             break;
 
         case Command_PackageGnuMapFile:

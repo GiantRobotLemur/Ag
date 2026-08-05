@@ -2,7 +2,7 @@
 //! @brief The definition of stand-alone helper functions for use by the
 //! symbol packager tool.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -347,6 +347,21 @@ bool tryRead(FILE *fp, void *buffer, size_t byteCount)
 bool tryRead(StdFilePtr &fp, void *buffer, size_t byteCount)
 {
     return fread(buffer, 1, byteCount, fp.get()) == byteCount;
+}
+
+//! @brief Attempts to set the new file position.
+//! @param[in] fp The file stream to update.
+//! @param[in] offset The non-negative offset from the beginning of the
+//! file to apply.
+//! @retval true If the operation was successful.
+//! @retval false If the operation failed.
+bool trySeek(FILE *fp, int64_t offset)
+{
+#ifdef _MSC_VER
+    return _fseeki64(fp, offset, SEEK_SET) >= 0;
+#else
+    return fseeko64(fp, offset, SEEK_SET) != 0;
+#endif
 }
 
 //! @brief Attempts to parse an integer from a string.
