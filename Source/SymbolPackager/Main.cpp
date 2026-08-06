@@ -164,6 +164,11 @@ int main(int argc, const char *argv[])
 #else
             readSymbols<ElfFileReader>(args, symbols, error);
 #endif
+
+            if (error.empty())
+            {
+                writeSymbols(args, symbols, error);
+            }
             break;
 
         case Command_PackageGnuMapFile:

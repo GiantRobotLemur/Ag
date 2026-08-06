@@ -360,7 +360,7 @@ bool trySeek(FILE *fp, int64_t offset)
 #ifdef _MSC_VER
     return _fseeki64(fp, offset, SEEK_SET) >= 0;
 #else
-    return fseeko64(fp, offset, SEEK_SET) != 0;
+    return fseeko64(fp, offset, SEEK_SET) == 0;
 #endif
 }
 

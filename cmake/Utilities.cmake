@@ -48,7 +48,7 @@ function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
     else()
         # Ensure the linker generates a .map file and use it to produce a stack
         # trace symbol file which sits alongside the binary.
-        target_link_options(${targetName} PRIVATE "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.map")
+        # target_link_options(${targetName} PRIVATE "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.map")
 
         # install(TARGETS "${targetName}_Symbols" RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
 
@@ -63,7 +63,7 @@ function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
         #                   COMMENT "Creating stack trace data for ${targetName}...")
 
         add_custom_command(TARGET ${targetName} POST_BUILD
-                           COMMAND "${SymTool}" ARGS "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.map"
+                           COMMAND "${SymTool}" ARGS "--format" "ELF" "$<TARGET_FILE:${targetName}>"
                                                   -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
                            COMMAND "${SymTool}" ARGS "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
                                                   -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.txt"

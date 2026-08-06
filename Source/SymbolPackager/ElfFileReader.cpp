@@ -172,7 +172,7 @@ std::string fixupSymbol(const std::string_view &symbol)
 //! @param[in] sectionHeader A pointer to the string table section header.
 //! @return The raw data read from the string table section.
 template<typename Elf_Shdr>
-std::vector<char> readElfStrings(FILE *fp, const typename Elf_Shdr *sectionHeader)
+std::vector<char> readElfStrings(FILE *fp, const Elf_Shdr *sectionHeader)
 {
     // Verify the section is a string table and try to find it within the file.
     if ((sectionHeader->sh_type != SHT_STRTAB) ||
@@ -214,7 +214,7 @@ template<typename Elf>
 void readElfSymbols(FILE *elfFile, const Elf_CommonHeader &commonHeader,
                     SymbolDb &symbols, std::string &error)
 {
-    Elf::Ehdr header;
+    typename Elf::Ehdr header;
     memcpy(&header, &commonHeader, sizeof(commonHeader));
 
     // Read the rest of the header.
@@ -249,8 +249,8 @@ void readElfSymbols(FILE *elfFile, const Elf_CommonHeader &commonHeader,
 
     // Get the pointer to the section table entry describing
     // the string table holding the names of the sections.
-    Elf::Shdr *sectionNameEntry =
-        offsetPtr<Elf::Shdr>(sectionTableBuffer.data(),
+    typename Elf::Shdr *sectionNameEntry =
+        offsetPtr<typename Elf::Shdr>(sectionTableBuffer.data(),
                              header.e_shentsize * header.e_shstrndx);
 
     if ((sectionNameEntry->sh_type != SHT_STRTAB) ||
@@ -273,14 +273,14 @@ void readElfSymbols(FILE *elfFile, const Elf_CommonHeader &commonHeader,
     sectionNameTable.push_back('\0');
 
     // Read the table defining the names of the sections.
-    Elf::Shdr *stringsEntry = nullptr;
-    Elf::Shdr *symbolsEntry = nullptr;
-    Elf::Addr baseOfCode = 0;
+    typename Elf::Shdr *stringsEntry = nullptr;
+    typename Elf::Shdr *symbolsEntry = nullptr;
+    typename Elf::Addr baseOfCode = 0;
 
     for (uint16_t index = 0; index < header.e_shnum; ++index)
     {
-        Elf::Shdr *entry = offsetPtr<Elf::Shdr>(sectionTableBuffer.data(),
-                                                header.e_shentsize * index);
+        typename Elf::Shdr *entry = offsetPtr<typename Elf::Shdr>(sectionTableBuffer.data(),
+                                                                  header.e_shentsize * index);
 
         const char *name = sectionNameTable.data() + entry->sh_name;
 
@@ -336,7 +336,7 @@ void readElfSymbols(FILE *elfFile, const Elf_CommonHeader &commonHeader,
     std::vector<uint8_t> symbolBuffer;
 
     symbolBuffer.resize(static_cast<size_t>(symbolsEntry->sh_entsize));
-    const Elf::Sym *symbolEntry = reinterpret_cast<Elf::Sym *>(symbolBuffer.data());
+    const typename Elf::Sym *symbolEntry = reinterpret_cast<typename Elf::Sym *>(symbolBuffer.data());
 
     for (size_t i = 0; i < symbolCount; ++i)
     {
@@ -348,8 +348,9 @@ void readElfSymbols(FILE *elfFile, const Elf_CommonHeader &commonHeader,
             return;
         }
 
-        // Ensure the symbol has a name.
-        if (symbolEntry->st_name == 0)
+        // Ensure the symbol has a name and points to something that
+        // takes up sapce.
+        if ((symbolEntry->st_name == 0) || (symbolEntry->st_size < 1))
             continue;
 
         // Ignore symbols which aren't functions.
@@ -360,7 +361,9 @@ void readElfSymbols(FILE *elfFile, const Elf_CommonHeader &commonHeader,
         //size_t fnStart = static_cast<size_t>(entry.Symbol.st_value) - baseOfCode;
         //size_t fnEnd = static_cast<size_t>(entry.Symbol.st_size) + fnStart;
 
-        Elf::Addr fnOffset = symbolEntry->st_value - baseOfCode;
+        typename Elf::Addr fnOffset = symbolEntry->st_value - baseOfCode;
+
+        // Ignore unhelpful symbols.
         std::string_view rawSymbolName(stringTable.data() + symbolEntry->st_name);
         std::string symbolName = fixupSymbol(rawSymbolName);
 
@@ -397,7 +400,7 @@ void ElfFileReader::readSymbols(SymbolDb &symbols, std::string &error)
         // Read and validate the initial ELF header.
         Elf_CommonHeader signatureHeader;
 
-        if (tryRead(elfFile.get(), &signatureHeader, sizeof(signatureHeader)))
+        if (tryRead(elfFile.get(), &signatureHeader, sizeof(signatureHeader)) == false)
         {
             error.assign("Failed to read initial ELF header.");
         }
@@ -408,7 +411,7 @@ void ElfFileReader::readSymbols(SymbolDb &symbols, std::string &error)
         {
             error.assign("Invalid ELF file signature.");
         }
-        else if ((signatureHeader.e_ident[EI_VERSION] == EV_CURRENT) ||
+        else if ((signatureHeader.e_ident[EI_VERSION] != EV_CURRENT) ||
                  (signatureHeader.e_version != EV_CURRENT))
         {
             error.assign("Invalid ELF file version.");
