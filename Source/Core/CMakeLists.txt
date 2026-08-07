@@ -244,12 +244,26 @@ ag_add_test_app(Core_Tests TEST_LIB AgCore
                                     Test_ScalarParser.cpp
                                     Test_CommandLine.cpp
                                     Test_App.cpp
+                                    Test_AppMetadata.cpp
                                     Test_FileSystem.cpp
                                     Test_Uri.cpp
                                     Test_Timer.cpp
                                     Test_Version.cpp)
 
+# Set variables which can be embedded in the test app as its version, for testing purposes.
+set(APP_VERSION "1.2.3.4")
+set(APP_COMPANY "NA:SE")
+set(APP_NAME "Core_Tests")
+set(APP_DISPLAY_NAME "Ag Core Unit Tests")
+set(APP_AUTHOR "Giant Robot Lemur")
+set(APP_PRODUCT_NAME "Silver (Ag) Runtime Libaray")
+set(APP_DESCRIPTION "Tinker tools for enthusiasts")
+set(APP_COPYRIGHT_YEAR 2021)
+
+ag_configure_version(Core_Tests)
+
 target_precompile_headers(Core_Tests PRIVATE <gtest/gtest.h>
                                              [["PreCompiledHeader.hpp"]])
 target_include_directories(Core_Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+                                              "${CMAKE_CURRENT_BINARY_DIR}"
                                               "${BZIP2_INCLUDE_DIRECTORY}")

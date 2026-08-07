@@ -6,33 +6,37 @@
 //! @copyright @APP_COPYRIGHT@
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __APP_VERSION_HEADER__
-#define __APP_VERSION_HEADER__
+#ifndef HEADER_@headerGuard@_APP_VERSION_HPP_
+#define HEADER_@headerGuard@_APP_VERSION_HPP_
 
 ///////////////////////////////////////////////////////////////////////////////
 // Macro Definitions
 ///////////////////////////////////////////////////////////////////////////////
-#define APP_MAJOR_VERSION @PROJECT_VERSION_MAJOR@
-#define APP_MINOR_VERSION @PROJECT_VERSION_MINOR@
-#define APP_REVISION @PROJECT_VERSION_PATCH@
-#define APP_BUILD @PROJECT_VERSION_TWEAK@
-#define APP_VERSION_TEXT "@PROJECT_VERSION@"
+#define APP_MAJOR_VERSION @APP_VER_MAJOR@
+#define APP_MINOR_VERSION @APP_VER_MINOR@
+#define APP_REVISION @APP_VER_PATCH@
+#define APP_BUILD @APP_VER_TWEAK@
+#define APP_VERSION_TEXT "@APP_VERSION@"
 
-#define APP_NAME "@APP_NAME@"
-#define APP_AUTHOR "@APP_AUTHOR@"
-#define APP_COPYRIGHT "@APP_COPYRIGHT@"
+#define APP_COMPANY "@APP_COMPANY@"
 #define APP_PRODUCT_NAME "@PROJECT_NAME@"
+#define APP_NAME "@APP_NAME@"
+#define APP_DISPLAY_NAME "@APP_DISPLAY_NAME@"
+#define APP_AUTHOR "@APP_AUTHOR@"
 #define APP_DESCRIPTION "@APP_DESCRIPTION@"
+#define APP_COPYRIGHT "@APP_COPYRIGHT@"
 
 // These macros can be used to create Ag::AppMetadata instances from the values
 // encoded in this header.
 #define MAKE_APP_METADATA() Ag::AppMetadata( \
     Ag::Version(APP_MAJOR_VERSION, APP_MINOR_VERSION, APP_REVISION, APP_BUILD), \
-    APP_NAME, APP_PRODUCT_NAME, APP_DESCRIPTION, APP_AUTHOR, APP_COPYRIGHT)
+    APP_NAME, APP_DISPLAY_NAME, APP_DESCRIPTION, APP_COMPANY, APP_PRODUCT_NAME, \
+    APP_AUTHOR, APP_COPYRIGHT)
 
 #define MAKE_APP_METADATA_EX(x) Ag::AppMetadata( \
-    Ag::Version(APP_MAJOR_VERSION, APP_MINOR_VERSION, APP_REVISION, APP_BUILD, x), \
-    APP_NAME, APP_PRODUCT_NAME, APP_DESCRIPTION, APP_AUTHOR, APP_COPYRIGHT)
+    Ag::Version(APP_MAJOR_VERSION, APP_MINOR_VERSION, APP_REVISION, x), \
+    APP_NAME, APP_DISPLAY_NAME, APP_DESCRIPTION, APP_COMPANY, APP_PRODUCT_NAME, \
+    APP_AUTHOR, APP_COPYRIGHT)
 
 #endif
 ///////////////////////////////////////////////////////////////////////////////

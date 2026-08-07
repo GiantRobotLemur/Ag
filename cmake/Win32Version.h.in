@@ -5,9 +5,9 @@
 // Define values to be used in the version resource.
 #define VER_FILEVERSION             @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,@PROJECT_VERSION_TWEAK@
 #define VER_FILEVERSION_STR         "@APP_VERSION@\0"
-#define VER_COMPANY_NAME            "@APP_AUTHOR@"
+#define VER_COMPANY_NAME            "@APP_COMPANY@"
 #define VER_COPYRIGHT               "@APP_COPYRIGHT@"
-#define VER_PRODUCT_NAME            "@PROJECT_NAME@"
+#define VER_PRODUCT_NAME            "@APP_PRODUCT_NAME@"
 #define VER_DESCRIPTION             "@APP_DESCRIPTION@"
 #define VER_EXE_NAME                "@APP_NAME@.exe"
 

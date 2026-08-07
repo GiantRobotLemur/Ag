@@ -89,25 +89,20 @@ typedef std::unique_ptr<Cli::ProgramArguments> CommandLineUPtr;
 //! @brief A structure which can be used to capture hard-coded application metadata.
 struct AppMetadata
 {
-    Version AppVersion;
-    std::string_view AppName;
-    std::string_view ProductName;
-    std::string_view Description;
-    std::string_view Author;
-    std::string_view Copyright;
+    Version AppVersion;             //!< The version of the application.
+    std::string_view CompanyName;   //!< The optional name of the company that produced the application.
+    std::string_view ProductName;   //!< The optioanl name of the product the appliaction is a part of.
+    std::string_view AppName;       //!< The symbolic name of the application, identify to the system.
+    std::string_view DisplayName;   //!< The name of the application to display to the user.
+    std::string_view Description;   //!< A display description of the application.
+    std::string_view Author;        //!< The optional author of the application.
+    std::string_view Copyright;     //!< The copyright statement pertaining to the application.
 
     AppMetadata() = default;
     AppMetadata(const Version &version, const std::string_view &appName,
-                const std::string_view &prodName, const std::string_view &desc,
-                const std::string_view &author, const std::string_view &copyright) :
-        AppVersion(version),
-        AppName(appName),
-        ProductName(prodName),
-        Description(desc),
-        Author(author),
-        Copyright(copyright)
-    {
-    }
+                const std::string_view &displayName, const std::string_view &desc,
+                const std::string_view &companyName, const std::string_view &prodName,
+                const std::string_view &author, const std::string_view &copyright);
 };
 
 //! @brief An object which represents the root of an application object hierarchy.
