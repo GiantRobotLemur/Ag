@@ -51,6 +51,13 @@
 #define IS_32_BIT
 #endif
 
+// AG_IS_BIG_ENDIAN is defined in the CMake configuration.
+#ifdef AG_IS_BIG_ENDIAN
+#define IS_BIG_ENDIAN
+#else
+#define IS_LITTLE_ENDIAN
+#endif
+
 #ifdef _MSC_VER
 #define DISABLE_WARNING_PUSH __pragma(warning(push))
 #define DISABLE_WARNING_POP __pragma(warning(pop))

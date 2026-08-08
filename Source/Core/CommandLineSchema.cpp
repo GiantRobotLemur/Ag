@@ -2,7 +2,7 @@
 //! @brief The definition of an object which defines which command line options
 //! are valid.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -18,6 +18,7 @@
 #include <unordered_map>
 
 #include "CoreInternal.hpp"
+#include "Ag/Core/AppMetadata.hpp"
 #include "Ag/Core/CodePoint.hpp"
 #include "Ag/Core/CommandLineSchema.hpp"
 #include "Ag/Core/Exception.hpp"
@@ -119,6 +120,13 @@ public:
     }
 
     // Operations
+    void setAppInfo(const AppMetadata &info)
+    {
+        _appVersion = info.AppVersion;
+        _appName = info.AppName;
+        _appDescription = info.Description;
+    }
+
     void setAppName(string_cref_t name)
     {
         _appName = name;
@@ -875,6 +883,14 @@ String Schema::getVersionText() const
 SchemaBuilder::SchemaBuilder() :
     _builder(std::make_shared<SchemaBuilderPrivate>())
 {
+}
+
+//! @brief Sets the name, description and version from an application metadata object.
+//! @param[in] appInfo The fixed metadata used to initialise application information
+//! fields to be displayed by command line help.
+void SchemaBuilder::setAppInfo(const AppMetadata &appInfo)
+{
+    _builder->setAppInfo(appInfo);
 }
 
 //! @brief Sets the name of the application which appears in command line help text.

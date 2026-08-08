@@ -189,6 +189,13 @@ String getHomeDirectory()
     return profilePath;
 }
 
+//! @brief Queries the path to a known folder location.
+String getKnownDirectory(KNOWNFOLDERID id)
+{
+    #error Write this code when back in Visual Studio.
+    return String::Empty;
+}
+
 } // namespace Ag
 ////////////////////////////////////////////////////////////////////////////////
 

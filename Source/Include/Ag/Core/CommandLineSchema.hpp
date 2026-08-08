@@ -2,14 +2,14 @@
 //! @brief The declaration of an object which defines which command line options
 //! are valid.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_COMMAND_LINE_SCHEMA_HPP__
-#define __AG_CORE_COMMAND_LINE_SCHEMA_HPP__
+#ifndef HEADER_AG_CORE_COMMAND_LINE_SCHEMA_HPP_
+#define HEADER_AG_CORE_COMMAND_LINE_SCHEMA_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -24,6 +24,8 @@
 #include "Version.hpp"
 
 namespace Ag {
+
+struct AppMetadata;
 
 //! @brief A namespace containing command line manipulation tools.
 namespace Cli {
@@ -163,6 +165,7 @@ public:
     SchemaBuilder();
 
     // Accessors
+    void setAppInfo(const AppMetadata &appInfo);
     void setAppName(const std::string_view &name);
     void setDescription(const std::string_view &description);
 

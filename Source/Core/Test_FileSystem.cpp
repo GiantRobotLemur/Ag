@@ -1,6 +1,7 @@
 //! @file Test_FileSystem.cpp
 //! @brief The definition of unit tests for file system related classes.
-//! @author GiantRo65
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -771,6 +772,80 @@ GTEST_TEST(FsPathBuilder, SetFileExtensionPosix)
     specimen.setFileExtension(".");
     EXPECT_TRUE(specimen.getFileExtension().isEmpty());
     EXPECT_TRUE(specimen.getLastExtension().isEmpty());
+}
+
+GTEST_TEST(FsPathBuilder, ConvertToAbsoluteWin32)
+{
+    // Start with no extension.
+    PathBuilder root("C:\\Program Files\\MightyOak\\.\\Bin", getWin32Schema());
+    PathBuilder specimen("..\\Data\\ROMs\\RiscOS_2_00.rom", getWin32Schema());
+    EXPECT_EQ(specimen.getElementCount(), 4u);
+
+    specimen.convertToAbsolute(root);
+
+    EXPECT_EQ(specimen.getElementCount(), 8u);
+    EXPECT_STRINGEQC(specimen.toString(PathUsage::Display),
+                     "C:\\Program Files\\MightyOak\\.\\Bin\\..\\Data\\ROMs\\RiscOS_2_00.rom");
+}
+
+
+GTEST_TEST(FsPathBuilder, ConvertToAbsoluteWin32CurrentDrive)
+{
+    // Start with no extension.
+    PathBuilder root("C:\\Program Files\\MightyOak\\.\\Bin", getWin32Schema());
+    PathBuilder specimen("\\Data\\ROMs\\RiscOS_2_00.rom", getWin32Schema());
+    EXPECT_EQ(specimen.getElementCount(), 3u);
+
+    // Converting a path with a "current drive" root should only apply the drive.
+    specimen.convertToAbsolute(root);
+
+    EXPECT_EQ(specimen.getElementCount(), 3u);
+    EXPECT_STRINGEQC(specimen.toString(PathUsage::Display),
+                     "C:\\Data\\ROMs\\RiscOS_2_00.rom");
+}
+
+GTEST_TEST(FsPathBuilder, ConvertToAbsoluteWin32AbsoluteNonOp)
+{
+    // Start with no extension.
+    PathBuilder root("C:\\Program Files\\MightyOak\\.\\Bin", getWin32Schema());
+    PathBuilder specimen("\\\\AppServer\\Data\\ROMs\\RiscOS_2_00.rom", getWin32Schema());
+    EXPECT_EQ(specimen.getElementCount(), 2u);
+
+    // Making an absolute path from an absolute path should do nothing.
+    specimen.convertToAbsolute(root);
+
+    EXPECT_EQ(specimen.getElementCount(), 2u);
+    EXPECT_STRINGEQC(specimen.toString(PathUsage::Display),
+                     "\\\\AppServer\\Data\\ROMs\\RiscOS_2_00.rom");
+}
+
+GTEST_TEST(FsPathBuilder, ConvertToAbsolutePosix)
+{
+    // Start with no extension.
+    PathBuilder root("/usr/bin/../shared/./MightyOak/Bin", getPosixSchema());
+    PathBuilder specimen("../Data/ROMs/RiscOS_2_00.rom", getPosixSchema());
+    EXPECT_EQ(specimen.getElementCount(), 4u);
+
+    specimen.convertToAbsolute(root);
+
+    EXPECT_EQ(specimen.getElementCount(), 11u);
+    EXPECT_STRINGEQC(specimen.toString(PathUsage::Display),
+                     "/usr/bin/../shared/./MightyOak/Bin/../Data/ROMs/RiscOS_2_00.rom");
+}
+
+GTEST_TEST(FsPathBuilder, ConvertToAbsolutePosixAbsoluteNonOp)
+{
+    // Start with no extension.
+    PathBuilder root("/usr/bin/../shared/./MightyOak/Bin", getPosixSchema());
+    PathBuilder specimen("/Data/ROMs/RiscOS_2_00.rom", getPosixSchema());
+    EXPECT_EQ(specimen.getElementCount(), 3u);
+
+    // Making an absolute path from an absolute path should do nothing.
+    specimen.convertToAbsolute(root);
+
+    EXPECT_EQ(specimen.getElementCount(), 3u);
+    EXPECT_STRINGEQC(specimen.toString(PathUsage::Display),
+                     "/Data/ROMs/RiscOS_2_00.rom");
 }
 
 GTEST_TEST(FsPathBuilder, MakeCanonicalWin32)

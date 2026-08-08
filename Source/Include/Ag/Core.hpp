@@ -1,14 +1,14 @@
 //! @file Ag/Core.hpp
 //! @brief Consolidates all core library headers into a single file for convenience.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_HPP__
-#define __AG_CORE_HPP__
+#ifndef HEADER_AG_CORE_HPP_
+#define HEADER_AG_CORE_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -42,6 +42,7 @@
 #include "Core/Trace.hpp"
 #include "Core/String.hpp"
 #include "Core/Version.hpp"
+#include "Core/AppMetadata.hpp"
 #include "Core/ScalarParser.hpp"
 #include "Core/CommandLineSchema.hpp"
 #include "Core/ProgramArguments.hpp"

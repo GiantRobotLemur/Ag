@@ -45,6 +45,7 @@ String getModuleDirectory(uintptr_t moduleHandle);
 String getWorkingDirectory();
 String getTempDirectory();
 String getHomeDirectory();
+String getKnownDirectory(KNOWNFOLDERID id);
 
 } // namespace Ag
 

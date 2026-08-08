@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 
 #include "Ag/Core/App.hpp"
+#include "Ag/Core/FsDirectory.hpp"
 #include "Ag/Core/Utf.hpp"
 
 // A specially generated AppVersion.hpp created for testing purposes.
@@ -29,6 +30,11 @@ const int TestMajor = APP_MAJOR_VERSION;
 const int TestMinor = APP_MINOR_VERSION;
 const int TestRevision = APP_REVISION;
 const int TestBuild = APP_BUILD;
+
+////////////////////////////////////////////////////////////////////////////////
+// Local Data Types
+////////////////////////////////////////////////////////////////////////////////
+using AppDirScalar = std::underlying_type_t<AppDir>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Unit Tests
@@ -113,6 +119,61 @@ GTEST_TEST(AppMetadata, ConstructionWithBuildNo)
     EXPECT_FALSE(Ag::Utf::isNullOrEmpty(specimen.Copyright.data()));
     EXPECT_FALSE(Ag::Utf::isNullOrEmpty(specimen.ProductName.data()));
     EXPECT_FALSE(Ag::Utf::isNullOrEmpty(specimen.Description.data()));
+}
+
+GTEST_TEST(AppPaths, DeriveDefaultPaths)
+{
+    // Create based on default app metadata.
+    AppPaths specimen;
+
+    constexpr auto maxPath = toScalar(AppDir::Max);
+
+    for (AppDirScalar i = 0; i < maxPath; ++i)
+    {
+        auto &path = specimen.getPath(fromScalar<AppDir>(i));
+
+        EXPECT_FALSE(path.isEmpty()) << "AppDir #" << static_cast<int>(i) << " was empty.";
+    }
+
+    Fs::Entry programDirEntry(specimen.getPath(AppDir::Programs));
+
+    EXPECT_TRUE(programDirEntry.exists());
+
+    String progFile = Fs::Path::getProgramFile().getFileName();
+
+    Fs::Path progPath = specimen.getPath(AppDir::Programs, progFile);
+    Fs::Entry progEntry(progPath);
+
+    EXPECT_TRUE(progEntry.exists()) << "File '" << progPath.toString().toUtf8View() << "' not found!";
+}
+
+GTEST_TEST(AppPaths, DerivePaths)
+{
+    // Create based on explicit app metadata.
+    AppPaths specimen(MAKE_APP_METADATA());
+
+    constexpr auto maxPath = toScalar(AppDir::Max);
+
+    for (AppDirScalar i = 0; i < maxPath; ++i)
+    {
+        auto &path = specimen.getPath(fromScalar<AppDir>(i));
+        String source = path.toString();
+        auto view = source.toUtf8View();
+
+        EXPECT_FALSE(view.empty());
+        EXPECT_FALSE(path.isEmpty()) << "AppDir #" << static_cast<int>(i) << " was empty.";
+    }
+
+    Fs::Entry programDirEntry(specimen.getPath(AppDir::Programs));
+
+    EXPECT_TRUE(programDirEntry.exists());
+
+    String progFile = Fs::Path::getProgramFile().getFileName();
+
+    Fs::Path progPath = specimen.getPath(AppDir::Programs, progFile);
+    Fs::Entry progEntry(progPath);
+
+    EXPECT_TRUE(progEntry.exists()) << "File '" << progPath.toString().toUtf8View() << "' not found!";
 }
 
 } // Anonymous namespace

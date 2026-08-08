@@ -2,30 +2,22 @@
 //! @brief The declaration of an object which abstracts the differences between
 //! file path formats.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_FS_PATH_SCHEMA_HPP__
-#define __AG_CORE_FS_PATH_SCHEMA_HPP__
+#ifndef HEADER_AG_CORE_FS_PATH_SCHEMA_HPP_
+#define HEADER_AG_CORE_FS_PATH_SCHEMA_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Core/FsPath.hpp"
 
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-
 namespace Ag {
 namespace Fs {
-
-////////////////////////////////////////////////////////////////////////////////
-// Data Type Declarations
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -129,15 +121,19 @@ public:
                                           size_t rootLength,
                                           string_cref_t path) const = 0;
 
+    //! Processes a string in an attempt to make a valid path element from
+    //! an input string.
+    //! @param[in] input The UTF-8 encoded input to process.
+    //! @param[out] element recieves the valid path element, if one could be made.
+    //! @param[in] stripSpaces True to remove white-space characters from
+    //! the created element, false to leave them in, where possible.
+    //! @retval true A valid path element was formed from @p input and
+    //! written to @p element.
+    //! @retval false The resultant path element was blank or invalid.
+    virtual bool tryMakeValidPathElement(const std::string_view &input,
+                                         String &element, bool stripSpaces = false) const = 0;
+
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// Function Declarations
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Templates
-////////////////////////////////////////////////////////////////////////////////
 
 }} // namespace Ag::Fs
 
