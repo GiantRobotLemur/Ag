@@ -482,9 +482,10 @@ StreamLength writeStreamSize(IStream *stream, StreamLength length)
 }
 
 //! @brief Combines a field type with the low nibble of a supplementary value.
-//! @param fieldType
-//! @param supplemental
-//! @return
+//! @param[in] fieldType The data type of the field to encode.
+//! @param[in] supplemental The supplemental value (0-15) to encode with the
+//! data type.
+//! @return A byte encoding both field type and supplemental value.
 uint8_t makeFieldHeader(FieldType fieldType, uint8_t supplemental)
 {
     return (toScalar(fieldType) << 4) | (supplemental & 0x0F);

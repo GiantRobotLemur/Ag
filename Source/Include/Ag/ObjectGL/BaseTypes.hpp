@@ -162,8 +162,8 @@ protected:
     //! @brief Performs a null check on the function pointer before allowing
     //! the entry point to be called.
     //!  @tparam The data type of the entry point function.
-//! @param[in] commandName The name of the command about to be executed.
-//! @param[in] entryPoint A pointer to the command function about to be called.
+    //! @param[in] commandName The name of the command about to be executed.
+    //! @param[in] entryPoint A pointer to the command function about to be called.
     template<typename TFn>
     void beforeCommand(const char *commandName, const TFn *fnPtr) const
     {

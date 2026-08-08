@@ -79,7 +79,7 @@ void appendPropertyFileSize(std::string &buffer, const std::string_view &name,
     buffer.push_back('\n');
 }
 
-// TODO: This function i defined , but not used, but we may want  support for
+// TODO: This function I defined, but did not use, but we may want support for
 // bool properties in future, so I'm keeping the code.
 //
 //void appendPropertyBool(std::string &buffer, const std::string_view &name,

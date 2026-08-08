@@ -44,15 +44,6 @@
 // System Headers
 #ifdef _WIN32
 #include <Windows.h>
-#else
-// BEWARE:
-// X11/X.h and X11/XLib.h defined global macros for a number of nice values
-// used throughout the sanitized OpenGL API: None, True, False, Always, Bool,
-// So if the following are included, those macros might need to be immegiately
-// undefined for the ObjectGL API to compile.
-
-//#include <X11/X.h>
-//#include <X11/Xlib.h>
 #endif
 
 #include <KHR/khrplatform.h>
