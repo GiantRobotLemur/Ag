@@ -98,7 +98,6 @@ GTEST_TEST(StringValue, Sharing)
     long refCount = 0;
 
     // Create a local scope.
-    if (unique != nullptr)
     {
         String specimen = unique;
         refCount = specimen.getReferenceCount();
@@ -138,7 +137,7 @@ GTEST_TEST(StringValue, AssignNullTerminatedUTF8)
     char update[] = "Bring more \xF0\x9F\x8D\xBA!";
     uintptr_t refCount = 0;
 
-    if (update != nullptr)
+    // Create a local scope.
     {
         String specimen(initial);
 
@@ -226,7 +225,7 @@ GTEST_TEST(StringValue, AssignNullTerminatedUTF16)
     char16_t update16[] = u"Bring more \xd83c\xdf7a!";
     uintptr_t refCount = 0;
 
-    if (update != nullptr)
+    // Create a local scope.
     {
         String specimen(initial16);
 
@@ -311,7 +310,7 @@ GTEST_TEST(StringValue, AssignNullTerminatedUTF32)
     char32_t update32[] = U"Bring more \x0001f37a!";
     uintptr_t refCount = 0;
 
-    if (update != nullptr)
+    // Create a local scope.
     {
         String specimen(initial32);
 

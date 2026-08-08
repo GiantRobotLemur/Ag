@@ -667,7 +667,7 @@ OutOfMemoryException::OutOfMemoryException(size_t allocationSize)
     appendFileSize(FormatInfo::getDisplay(), detail, allocationSize);
     detail.append(" block of memory.");
 
-    initialise(Domain, notSupportedMessage, detail);
+    initialise(Domain, outOfMemoryMessage, detail);
 }
 
 #ifdef _WIN32

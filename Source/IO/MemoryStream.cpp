@@ -11,6 +11,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include <Ag/Core.hpp>
+
 #include "Ag/IO/MemoryStream.hpp"
 
 namespace Ag {
@@ -103,73 +105,78 @@ const MallocStreamAllocator smallAllocator(512);
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief Converts blocks allocated with one allocator to a new set of blocks
-//! allocated with another.
-//! @param[in] destinationAllocator The allocator implementation to convert the
-//! existing data to.
-//! @param[in] rhs The set of blocks to convert.
-//! @param[in] rhsBlockSize The size of each block in @p rhs.
-//! @return A new set of blocks allocated by @p destinationAllocator with
-//! the data fro @p rhs copied into them.
-BlockQueue convertAllocators(const IMemoryStreamAllocator *destinationAllocator,
-                             const BlockQueue &rhs, size_t rhsBlockSize)
-{
-    // Allocate enough memory to copy the existing data to.
-    size_t totalSize = rhs.size() * rhsBlockSize;
 
-    const size_t nativeBlockSize = destinationAllocator->getBlockSize();
-    size_t nativeBlockCount = (totalSize + nativeBlockSize - 1) / nativeBlockSize;
+// TODO: The following code was producing a warning under gcc because it wasn't
+// ever being called. Reinstate it when we have implemented an allocator based
+// on memory page allocation.
+//
+// //! @brief Converts blocks allocated with one allocator to a new set of blocks
+// //! allocated with another.
+// //! @param[in] destinationAllocator The allocator implementation to convert the
+// //! existing data to.
+// //! @param[in] rhs The set of blocks to convert.
+// //! @param[in] rhsBlockSize The size of each block in @p rhs.
+// //! @return A new set of blocks allocated by @p destinationAllocator with
+// //! the data fro @p rhs copied into them.
+// BlockQueue convertAllocators(const IMemoryStreamAllocator *destinationAllocator,
+//                              const BlockQueue &rhs, size_t rhsBlockSize)
+// {
+//     // Allocate enough memory to copy the existing data to.
+//     size_t totalSize = rhs.size() * rhsBlockSize;
 
-    BlockQueue newQueue;
-    destinationAllocator->appendAllocatedBlocks(nativeBlockCount, newQueue);
+//     const size_t nativeBlockSize = destinationAllocator->getBlockSize();
+//     size_t nativeBlockCount = (totalSize + nativeBlockSize - 1) / nativeBlockSize;
 
-    // Copy the existing data to the new blocks.
-    auto lhsPos = newQueue.begin();
-    size_t lhsBlockOffset = 0;
+//     BlockQueue newQueue;
+//     destinationAllocator->appendAllocatedBlocks(nativeBlockCount, newQueue);
 
-    for (uint8_ptr_t rhsBlockPtr : rhs)
-    {
-        size_t rhsCopied = 0;
+//     // Copy the existing data to the new blocks.
+//     auto lhsPos = newQueue.begin();
+//     size_t lhsBlockOffset = 0;
 
-        while (rhsCopied < rhsBlockSize)
-        {
-            size_t rhsLeft = rhsBlockSize - rhsCopied;
-            size_t lhsLeft = nativeBlockSize - lhsBlockOffset;
+//     for (uint8_ptr_t rhsBlockPtr : rhs)
+//     {
+//         size_t rhsCopied = 0;
 
-            if (lhsLeft == 0)
-            {
-                // Move on to the next target block if there is no
-                // space left in the current one.
-                ++lhsPos;
-                lhsBlockOffset = 0;
-            }
+//         while (rhsCopied < rhsBlockSize)
+//         {
+//             size_t rhsLeft = rhsBlockSize - rhsCopied;
+//             size_t lhsLeft = nativeBlockSize - lhsBlockOffset;
 
-            size_t bytesToCopy = std::min(lhsLeft, rhsLeft);
-            uint8_ptr_t lhsBlock = *lhsPos;
+//             if (lhsLeft == 0)
+//             {
+//                 // Move on to the next target block if there is no
+//                 // space left in the current one.
+//                 ++lhsPos;
+//                 lhsBlockOffset = 0;
+//             }
 
-            // Copy the data.
-            std::memcpy(lhsBlock + lhsBlockOffset,
-                        rhsBlockPtr + rhsCopied,
-                        bytesToCopy);
+//             size_t bytesToCopy = std::min(lhsLeft, rhsLeft);
+//             uint8_ptr_t lhsBlock = *lhsPos;
 
-            rhsCopied += bytesToCopy;
-            lhsBlockOffset += bytesToCopy;
-        }
-    }
+//             // Copy the data.
+//             std::memcpy(lhsBlock + lhsBlockOffset,
+//                         rhsBlockPtr + rhsCopied,
+//                         bytesToCopy);
 
-    // Blank the bytes in the remaining blocks.
-    while (lhsPos != newQueue.end())
-    {
-        uint8_ptr_t lhsBlock = *lhsPos;
-        std::memset(lhsBlock + lhsBlockOffset, 0,
-                    nativeBlockSize - lhsBlockOffset);
+//             rhsCopied += bytesToCopy;
+//             lhsBlockOffset += bytesToCopy;
+//         }
+//     }
 
-        lhsBlockOffset = 0;
-        ++lhsPos;
-    }
+//     // Blank the bytes in the remaining blocks.
+//     while (lhsPos != newQueue.end())
+//     {
+//         uint8_ptr_t lhsBlock = *lhsPos;
+//         std::memset(lhsBlock + lhsBlockOffset, 0,
+//                     nativeBlockSize - lhsBlockOffset);
 
-    return newQueue;
-}
+//         lhsBlockOffset = 0;
+//         ++lhsPos;
+//     }
+
+//     return newQueue;
+// }
 
 } // Anonymous namespace
 
@@ -380,7 +387,7 @@ StreamPosition MemoryStream::setPosition(StreamRelative relativeTo,
                                     "offset");
     }
 
-    if (absPos > SIZE_MAX)
+    if (isStreamSizeTooLargeForMemory(absPos))
     {
         std::string buffer;
         buffer.assign("The required memory stream size of ");
@@ -394,7 +401,7 @@ StreamPosition MemoryStream::setPosition(StreamRelative relativeTo,
     setMinimumSize(absPos);
 
     // Apply the new position.
-    _position = static_cast<size_t>(absPos);
+    _position = streamToMemorySize(absPos);
 
     return absPos;
 }

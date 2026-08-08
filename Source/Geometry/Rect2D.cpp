@@ -425,8 +425,6 @@ bool Rect2D::clip(const LineSeg2D &segment, LineSeg2D &result) const
     Point2D start = segment.getStart();
     Point2D end = segment.getEnd();
 
-    NumericDomain domain = combine(Rect2D(start, end)).createDomain();
-
     uint8_t startOutCode = classifyPoint(start, _origin, extreme);
     uint8_t endOutCode = classifyPoint(end, _origin, extreme);
     bool isInside = false;

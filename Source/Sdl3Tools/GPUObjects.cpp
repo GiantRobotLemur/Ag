@@ -1,7 +1,7 @@
 //! @file Sdl3Tools/GPUObjects.cpp
 //! @brief The definition of wrappers for GPU-related SDL 3 Data types.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,6 +10,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include <Ag/Core.hpp>
+
 #include "Ag/Sdl3Tools/ApiException.hpp"
 #include "Ag/Sdl3Tools/GPUObjects.hpp"
 #include "Ag/Sdl3Tools/Window.hpp"
@@ -1066,9 +1068,9 @@ CopyPass::CopyPass() :
 }
 
 //! @brief Constructs a wrapper for a GPU copy pass resource.
-//! @param[in] CopyPass The SDL copy pass object to wrap, can be nullptr.
-CopyPass::CopyPass(SDL_GPUCopyPass *CopyPass) :
-    _copyPass(CopyPass)
+//! @param[in] copyPass The SDL copy pass object to wrap, can be nullptr.
+CopyPass::CopyPass(SDL_GPUCopyPass *copyPass) :
+    _copyPass(copyPass)
 {
 }
 
@@ -1137,11 +1139,13 @@ void CopyPass::uploadToBuffer(const ResourceBuffer &destBuffer, uint32_t destOff
 
     auto copyPass = verifyAccess(op);
 
-    SDL_GPUTransferBufferLocation source = { 0 };
+    SDL_GPUTransferBufferLocation source;
+    zeroFill(source);
     source.transfer_buffer = sourceBuffer.verifyAccess(op);
     source.offset = sourceOffset;
 
-    SDL_GPUBufferRegion dest = { 0 };
+    SDL_GPUBufferRegion dest;
+    zeroFill(dest);
     dest.buffer = destBuffer.verifyAccess(op);
     dest.offset = destOffset;
     dest.size = size;
@@ -1600,7 +1604,8 @@ RenderPass CommandBuffer::beginRenderPass(const Texture &target, const FColour &
     if (target.isBound() == false)
         throw ObjectNotBoundException("GPU Render Target Texture", "Begin render pass");
 
-    SDL_GPUColorTargetInfo colorTargetInfo = { 0 };
+    SDL_GPUColorTargetInfo colorTargetInfo;
+    zeroFill(colorTargetInfo);
     colorTargetInfo.texture = target.get();
     colorTargetInfo.clear_color = clearColour;
     colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;

@@ -403,14 +403,14 @@ void addGlyph(NodeTable &nodes, EdgeTable &edges,
 
 void dumpNodes(const NodeTable &nodes)
 {
-    puts("Node Summary:");
+    //puts("Node Summary:");
 
     for (auto iter = nodes.beginByID(), end = nodes.endByID();
          iter != end; ++iter)
     {
-        printf("%u, %g, %g\n", iter->first,
-               iter->second->getRealPosition().getX(),
-               iter->second->getRealPosition().getY());
+        //printf("%u, %g, %g\n", iter->first,
+        //       iter->second->getRealPosition().getX(),
+        //       iter->second->getRealPosition().getY());
     }
 }
 
@@ -419,7 +419,7 @@ void dumpEdges(const EdgeTable &edges)
     ID idSeed = 0;
     uint32_t edgesVisited = 0;
 
-    puts("Edge Summary:");
+    //puts("Edge Summary:");
 
     for (; edgesVisited < edges.getCount(); ++edgesVisited)
     {
@@ -430,30 +430,30 @@ void dumpEdges(const EdgeTable &edges)
             ++idSeed;
         }
 
-        printf("Edge %.2u: #%.2u -> #%.2u\n", edge->getID(),
-               edge->getFirstNodeID(), edge->getSecondNodeID());
+        //printf("Edge %.2u: #%.2u -> #%.2u\n", edge->getID(),
+        //       edge->getFirstNodeID(), edge->getSecondNodeID());
 
         ++idSeed;
     }
 
-    putchar('\n');
+    //putchar('\n');
 }
 
 void dumpRingNodes(const Ring &ring)
 {
     HalfEdgeCPtr currentEdge = ring.getFirstEdge();
 
-    printf("Ring #%u nodes:\n", ring.getID());
+    //printf("Ring #%u nodes:\n", ring.getID());
 
     do
     {
         if (currentEdge == ring.getFirstEdge())
         {
-            printf("[%u]", currentEdge->getStartNodeID());
+            //printf("[%u]", currentEdge->getStartNodeID());
         }
         else
         {
-            printf("->[%u]", currentEdge->getStartNodeID());
+            //printf("->[%u]", currentEdge->getStartNodeID());
         }
 
         // Move on to next edge.
@@ -461,28 +461,28 @@ void dumpRingNodes(const Ring &ring)
     }
     while (currentEdge != ring.getFirstEdge());
 
-    puts("\n\n");
+    //puts("\n\n");
 }
 
 void dumpRingGeometry(const Ring &ring)
 {
     HalfEdgeCPtr currentEdge = ring.getFirstEdge();
 
-    printf("Ring #%u nodes:\n", ring.getID());
+    //printf("Ring #%u nodes:\n", ring.getID());
 
     do
     {
-        auto node = currentEdge->getStartNode();
+        //auto node = currentEdge->getStartNode();
 
-        printf("%u\t%g\t%g\n", node->getID(),
-               node->getRealPosition().getX(),
-               node->getRealPosition().getY());
+        //printf("%u\t%g\t%g\n", node->getID(),
+        //       node->getRealPosition().getX(),
+        //       node->getRealPosition().getY());
 
         // Move on to next edge.
         currentEdge = currentEdge->getNextEdge();
     } while (currentEdge != ring.getFirstEdge());
 
-    puts("\n\n");
+    //puts("\n\n");
 }
 
 void dumpFigures(const NodeTable &nodes, const PrimVertex *vertices,
@@ -490,7 +490,7 @@ void dumpFigures(const NodeTable &nodes, const PrimVertex *vertices,
 {
     for (size_t f = 0; f < figureCount; ++f)
     {
-        printf("Figure #%zu\n", f);
+        //printf("Figure #%zu\n", f);
         auto figure = figures[f];
 
         for (size_t i = 0; i < figure.second; ++i)
@@ -500,17 +500,17 @@ void dumpFigures(const NodeTable &nodes, const PrimVertex *vertices,
 
             if (nodes.tryFindNodeByPosition(Point2D(vertex.first, vertex.second), node))
             {
-                printf("%u\t%g\t%g\n", node->getID(),
-                       node->getRealPosition().getX(),
-                       node->getRealPosition().getY());
+                //printf("%u\t%g\t%g\n", node->getID(),
+                //       node->getRealPosition().getX(),
+                //       node->getRealPosition().getY());
             }
             else
             {
-                printf("** Unknown vertex at (%g, %g)\n", vertex.first, vertex.second);
+                //printf("** Unknown vertex at (%g, %g)\n", vertex.first, vertex.second);
             }
         }
 
-        putchar('\n');
+        //putchar('\n');
     }
 }
 

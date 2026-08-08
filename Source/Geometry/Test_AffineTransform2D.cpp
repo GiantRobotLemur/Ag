@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 
 #include "Ag/GTest_Core.hpp"
+#include "Ag/Geometry/Point2D.hpp"
 #include "Ag/Geometry/AffineTransform2D.hpp"
 
 namespace Ag {
@@ -141,7 +142,7 @@ GTEST_TEST(AffineTransform2D, RotateAboutPoint)
     specimen.appendTranslation(centre);
 
     // Verify the matrices are the same.
-    for (int i = 0; i < 9; ++i)
+    for (size_t i = 0; i < AffineTransform2D::ElementCount; ++i)
     {
         // The values differ between Debug and Release, EXPECT_DOUBLE_EQ() fails
         // in Release on x64 VS2022 due to differing accuracy of representations

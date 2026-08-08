@@ -126,6 +126,13 @@ public:
 
 DECLARE_UNIQUE_PTR(ISeekableStream);
 
+////////////////////////////////////////////////////////////////////////////////
+// Global Functions
+////////////////////////////////////////////////////////////////////////////////
+bool isStreamSizeTooLargeForMemory(StreamLength streamSize);
+size_t streamToMemorySize(StreamLength streamSize, bool throwOnFailure = true);
+StreamLength memoryToStreamSize(size_t memorySize);
+
 }} // namespace Ag::IO
 
 #endif // Header guard

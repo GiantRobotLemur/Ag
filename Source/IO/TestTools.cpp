@@ -177,7 +177,6 @@ ByteBlock fillRandomData(RandomByteGenerator &generator, size_t byteCount)
     data.resize(byteCount);
 
     size_t bytesWritten = 0;
-    auto inserter = std::back_inserter(data);
 
     while (bytesWritten < byteCount)
     {

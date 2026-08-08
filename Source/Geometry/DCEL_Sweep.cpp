@@ -163,8 +163,8 @@ bool checkForIntersection(NodeTable &nodes,
         const NumericDomain &domain = nodes.getGrid().getDomain();
 
         auto colinearEnd = std::unique(colinearNodes, colinearNodes + colinearNodeCount,
-                                       [&domain](const ParametricNode &lhs, const ParametricNode &rhs) {
-                                           return domain.isNearEqual(lhs.first, rhs.first);
+                                       [&domain](const ParametricNode &lhsNode, const ParametricNode &rhsNode) {
+                                           return domain.isNearEqual(lhsNode.first, rhsNode.first);
                                        });
         size_t uniqueCount = (colinearEnd - colinearNodes) - 1;
 

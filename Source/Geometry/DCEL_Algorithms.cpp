@@ -2,7 +2,7 @@
 //! @brief The definition of various algorithms which operate on a Doubly
 //! Connected Edge List.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -24,14 +24,6 @@
 #include "Ag/Geometry/DCEL_Algorithms.hpp"
 #include "Ag/Geometry/DCEL_Sweep.hpp"
 #include "DCEL_RingTracer.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-// To get trace output of the Y-monotone sweep algorithm swap the commenting
-// of the two lines below.
-// #define TRACE_SWEEP TRACE
-#define TRACE_SWEEP
 
 namespace Ag {
 namespace Geom {
@@ -360,7 +352,6 @@ bool addMonotoneSweepEvents(SweepEventCollection &sweepEvents,
     bool hasTurnVertices = false;
     CompareNodeYMonotoneSweepOrder comp;
 
-    const SnapPoint gridStart = currentEdge->getStartNode()->getGridPosition();
     HalfEdgePtr prevEdge = currentEdge->getPreviousEdge();
 
     do
@@ -431,42 +422,22 @@ EdgePtr handleMergeSweepVertex(const SweepEvent &currentEvent,
     // Remove the edge from the sweep.
     auto pos = status.findEdgeAtNode(currentEvent.getEventNode());
 
-    TRACE_SWEEP("\nMerge Vertex #{0}",
-          sweepNodeID);
-
-    if (pos == status.end())
-    {
-        TRACE_SWEEP("Failed to find edge associated with node #{0} to remove!",
-                    sweepNodeID);
-    }
-    else
+    if (pos != status.end())
     {
         HalfEdgePtr prevEdge = pos->getEdge();
         EdgePtr prevParent = prevEdge->getParent();
 
-        TRACE_SWEEP("Found edge #{0} on sweep", prevParent->getID());
-
         NodePtr associatedNode = prevParent->getAssociatedNode();
-        if (associatedNode != nullptr)
-        {
-            TRACE_SWEEP("  with buddy vertex #{0}", associatedNode->getID());
-        }
 
         if (isMergeVertex(associatedNode))
         {
             // The node associated with the event edge is a merge vertex,
             // add a diagonal to connect it to the event location.
-            TRACE_SWEEP("Connect vertices #{0} and #{1}",
-                        sweepNodeID,
-                        associatedNode->getID());
-
             connections.emplace_back(sweepNodeID,
                                      associatedNode->getID());
         }
 
         // Remove the last edge before the vertex.
-        TRACE_SWEEP("Remove edge #{0}", prevParent->getID());
-
         pos = status.removeEdge(pos);
 
         if (pos != status.begin())
@@ -476,23 +447,14 @@ EdgePtr handleMergeSweepVertex(const SweepEvent &currentEvent,
 
             buddyEdge = pos->getEdge()->getParent();
             associatedNode = buddyEdge->getAssociatedNode();
-            TRACE_SWEEP("  with previous edge #{0}", buddyEdge->getID());
 
             if (isMergeVertex(associatedNode))
             {
                 // The node associated with the event edge is a merge vertex,
                 // add a diagonal to connect it to the event location.
-                TRACE_SWEEP("Connect vertices #{0} and #{1}",
-                            sweepNodeID,
-                            associatedNode->getID());
-
                 connections.emplace_back(sweepNodeID,
                                          associatedNode->getID());
             }
-
-            TRACE_SWEEP("Set edge #{0} buddy vertex to #{1}",
-                        buddyEdge->getID(),
-                        sweepNodeID);
 
             buddyEdge->setAssociatedNode(currentEvent.getEventNode());
         }
@@ -514,36 +476,21 @@ EdgePtr handleSplitSweepVertex(const SweepEvent &currentEvent,
     EdgePtr buddyEdge = nullptr;
     ID sweepNodeID = currentEvent.getEventNode()->getID();
 
-    TRACE_SWEEP("\nSplit Vertex #{0}", sweepNodeID);
-
     SweepEdgeIter pos = status.findEdgeBefore(currentEvent.getEventNode());
 
     if (pos != status.end())
     {
         buddyEdge = pos->getEdge()->getParent();
-        TRACE_SWEEP("Found previous edge #{0}", buddyEdge->getID());
 
         NodePtr associatedNode = buddyEdge->getAssociatedNode();
-        if (associatedNode != nullptr)
-        {
-            TRACE_SWEEP("  with buddy vertex #{0}", associatedNode->getID());
-        }
 
         if (associatedNode != nullptr)
         {
             // The node associated with the event edge is a merge vertex,
             // add a diagonal to connect it to the event location.
-            TRACE_SWEEP("Connect vertices #{0} and #{1}",
-                        sweepNodeID,
-                        associatedNode->getID());
-
             connections.emplace_back(sweepNodeID,
                                      associatedNode->getID());
         }
-
-        TRACE_SWEEP("Set edge #{0} buddy vertex to #{1}",
-                    buddyEdge->getID(),
-                    sweepNodeID);
 
         buddyEdge->setAssociatedNode(currentEvent.getEventNode());
     }
@@ -552,10 +499,6 @@ EdgePtr handleSplitSweepVertex(const SweepEvent &currentEvent,
     currentEvent.getEdge()->setAssociatedNode(currentEvent.getEventNode());
 
     // Insert the new edge into the sweep.
-    TRACE_SWEEP("Insert edge #{0} with buddy node  #{1}",
-                currentEvent.getEdge()->getID(),
-                sweepNodeID);
-
     status.insertEdge(currentEvent.getEdge(), currentEvent.getEventNode());
 
     return buddyEdge;
@@ -580,87 +523,46 @@ EdgePtr handleRegularSweepVertex(const SweepEvent &currentEvent,
 
     if (pos == status.end())
     {
-        TRACE_SWEEP("Failed to find edge associated with bounding node #{0}!",
-                    sweepNodeID);
     }
     else if (isEdgeLeftOfNode)
     {
         // The interior of the polygon is left of this node and we are
         // not tracing this side in the sweep status.
-        TRACE_SWEEP("\nRegular Non-Bounding Vertex #{0}",
-                    sweepNodeID);
-
         buddyEdge = pos->getEdge()->getParent();
-        TRACE_SWEEP("Previous edge #{0}", buddyEdge->getID());
 
         NodePtr associatedNode = buddyEdge->getAssociatedNode();
-        if (associatedNode != nullptr)
-        {
-            TRACE_SWEEP("  with buddy vertex #{0}", associatedNode->getID());
-        }
 
         if (isMergeVertex(associatedNode))
         {
             // The node associated with the event edge is a merge vertex,
             // add a diagonal to connect it to the event location.
-            TRACE_SWEEP("Connect vertices #{0} and #{1}",
-                        sweepNodeID,
-                        associatedNode->getID());
-
             connections.emplace_back(sweepNodeID,
                                      associatedNode->getID());
         }
 
         // Replace the node associated with the edge to the left/below.
-        TRACE_SWEEP("Set edge #{0} buddy vertex to #{1}",
-                    buddyEdge->getID(),
-                    sweepNodeID);
-
         buddyEdge->setAssociatedNode(currentEvent.getEventNode());
     }
     else // current node is on the edge at pos
     {
         // The interior of the polygon is to the right of this node
         // and we are tracking this edge.
-        TRACE_SWEEP("\nRegular Bounding Vertex #{0}",
-                    sweepNodeID);
-
         HalfEdgePtr prevEdge = pos->getEdge();
-
-        TRACE_SWEEP("Found sweep edge #{0}",
-                    prevEdge->getParent()->getID());
 
         NodePtr associatedNode = prevEdge->getParent()->getAssociatedNode();
 
-        if (associatedNode != nullptr)
-        {
-            TRACE_SWEEP("  with buddy vertex #{0}",
-                        associatedNode->getID());
-        }
 
         if (isMergeVertex(associatedNode))
         {
             // The node associated with the event edge is a merge vertex,
             // add a diagonal to connect it to the event location.
-            TRACE_SWEEP("Connect vertices #{0} and #{1}",
-                        sweepNodeID,
-                        associatedNode->getID());
-
             connections.emplace_back(sweepNodeID,
                                      associatedNode->getID());
         }
 
         // Replace the edge coming to an end with its successor.
-        TRACE_SWEEP("Replace edge #{0} with #{1}",
-                    pos->getEdge()->getParent()->getID(),
-                    currentEvent.getEdge()->getID());
-
         status.replaceEdge(pos, currentEvent.getEdge(),
                            currentEvent.getEventNode());
-
-        TRACE_SWEEP("Set buddy of edge #{0} to vertex #{1}",
-                    pos->getEdge()->getParent()->getID(),
-                    sweepNodeID);
 
         // Use the position in the sweep to assign a buddy edge.
         if (pos != status.begin())
@@ -683,13 +585,6 @@ EdgePtr handleStartSweepVertex(const SweepEvent &currentEvent,
                                MonotoneSweepState &status)
 {
     EdgePtr buddyEdge = nullptr;
-    ID sweepNodeID = currentEvent.getEventNode()->getID();
-
-    TRACE_SWEEP("\nStart Vertex #{0}", sweepNodeID);
-
-    TRACE_SWEEP("Insert edge #{0} with buddy node  #{1}",
-                currentEvent.getEdge()->getID(),
-                sweepNodeID);
 
     auto insertionPos = status.insertEdge(currentEvent.getEdge(),
                                           currentEvent.getEventNode());
@@ -717,43 +612,24 @@ void handleEndSweepVertex(const SweepEvent &currentEvent,
 {
     ID sweepNodeID = currentEvent.getEventNode()->getID();
 
-    TRACE_SWEEP("\nEnd Vertex #{0}", sweepNodeID);
-
     // Find the bounding edge which ends here.
     auto pos = status.findEdgeAtNode(currentEvent.getEventNode());
 
-    if (pos == status.end())
-    {
-        TRACE_SWEEP("\nEnd Vertex #{0} is not on an edge in the sweep!",
-                    sweepNodeID);
-    }
-    else
+    if (pos != status.end())
     {
         HalfEdgePtr prevEdge = pos->getEdge();
 
         NodePtr associatedNode = prevEdge->getParent()->getAssociatedNode();
-        if (associatedNode != nullptr)
-        {
-            TRACE_SWEEP("  with buddy vertex #{0}",
-                        associatedNode->getID());
-        }
 
         if (isMergeVertex(associatedNode))
         {
             // The node associated with the event edge is a merge vertex,
             // add a diagonal to connect it to the event location.
-            TRACE_SWEEP("Connect vertices #{0} and #{1}",
-                        sweepNodeID,
-                        associatedNode->getID());
-
             connections.emplace_back(sweepNodeID,
                                      associatedNode->getID());
         }
 
         // Remove the edge from the sweep.
-        TRACE_SWEEP("Remove edge #{0}",
-                    pos->getEdge()->getParent()->getID());
-
         pos = status.removeEdge(pos);
     }
 }
@@ -773,29 +649,6 @@ void processMonotoneSweepEvents(SweepContext &context,
     // Sort the events so that they can be processed in sweep order.
     sortSweepEvents(context, sweepEvents);
 
-    TRACE_SWEEP("Sweep Events");
-
-    static const std::string_view nodeTypes[] = {
-        "Split",
-        "Start",
-        "Regular",
-        "Merge",
-        "End",
-    };
-
-    for (const auto &evt : sweepEvents)
-    {
-        if (evt.getEdge() == nullptr)
-            TRACE_SWEEP("{0}: Type: {1}",
-                        evt.getEventNode()->getID(),
-                        nodeTypes[evt.getEventType()]);
-        else
-            TRACE_SWEEP("{0}: Type: {1} (Edge {2})",
-                        evt.getEventNode()->getID(),
-                        nodeTypes[evt.getEventType()],
-                        evt.getEdge()->getID());
-    }
-
     // Process the events in order to add diagonal lines.
     for (const SweepEvent &currentEvent : sweepEvents)
     {
@@ -804,8 +657,6 @@ void processMonotoneSweepEvents(SweepContext &context,
         EdgePtr buddyEdge = nullptr;
 
         // Process the event.
-        auto sweepNodeID = currentEvent.getEventNode()->getID();
-
         switch (currentEvent.getEventType())
         {
         case RegularVertex:
@@ -836,11 +687,6 @@ void processMonotoneSweepEvents(SweepContext &context,
         // Associate the node with the edge immediately to the left if
         // we are doing a vertical sweep so that we can calculate the
         // hierarchy of rings and holes later.
-        if (buddyEdge != nullptr)
-            TRACE_SWEEP("[For later] Set node #{0} buddy edge to #{1}",
-                        sweepNodeID,
-                        buddyEdge->getID());
-
         currentEvent.getEventNode()->setBuddyEdge(buddyEdge);
     }
 }
@@ -1054,7 +900,7 @@ uint32_t classifyYMonotonePoint(uint32_t ringFlags,
     // Triangulate test fail doing a bottom-up sweep because of the
     // order of horizontal edges in the examples - they change whether
     // the polygons are strict Y-monotone and the tests fail.
-    // 
+    //
     // We need to fix the contradiction that the Y-monotone plane sweep
     // can introduce horizontal edges, which make the results not strictly
     // Y-monotone.
@@ -1097,7 +943,7 @@ void assignEdgesLeftOfNodes(NodeTable &nodes, EdgeTable &edges)
         if (sweepEdgeRange.first == sweepEdgeRange.second)
         {
             // There are no edges at the current node.
-            // 
+            //
             // Find the edge to the left of the current node (if any).
             auto edgePos = status.findEdgeBefore(currentNode);
 
@@ -1224,16 +1070,10 @@ bool makeYMonotone(NodeTable &nodes, EdgeTable &edges,
     if (connections.empty() == false)
     {
         // Create edges for all the connections.
-        puts("Monotone Connected Edges:\n");
-
         for (const auto &connection : connections)
         {
-            printf("Connect %u -> %u\n", connection.first, connection.second);
-
             edges.addEdge(nodes, connection.first, connection.second);
         }
-
-         putchar('\n');
 
         // Reform the ring split by diagonals into several rings.
         rings.buildFromPartitioned(nodes, edges);

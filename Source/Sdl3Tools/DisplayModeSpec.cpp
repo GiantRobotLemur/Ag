@@ -1,7 +1,7 @@
 //! @file Sdl3Tools/DisplayModeSpec.cpp
 //! @brief The definition of an object used to specify a display mode.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -231,6 +231,10 @@ bool DisplayModeSpec::tryParse(const std::string_view &text)
             {
                 state = State::Complete;
             }
+            break;
+
+        case State::Complete:
+            // We need to break out of the loop, but we can't do that here.
             break;
         }
 

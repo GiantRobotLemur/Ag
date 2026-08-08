@@ -27,6 +27,8 @@ if ("${TARGET_ARCH}" STREQUAL "${CMAKE_HOST_SYSTEM_PROCESSOR}")
                    GnuMapFileReader.hpp
                    GnuNmFileReader.cpp
                    GnuNmFileReader.hpp
+                   ElfFileReader.cpp
+                   ElfFileReader.hpp
                    PdbFileReader.cpp
                    PdbFileReader.hpp
                    SymbolFileReader.cpp

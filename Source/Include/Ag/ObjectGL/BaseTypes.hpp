@@ -2,7 +2,7 @@
 //! @brief The declaration of basic data types required by core profile OpenGL
 //! entry points.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __15EC58E9_CDD7_44B0_BEA2_11EC221B8179_INCLUDED__
-#define __15EC58E9_CDD7_44B0_BEA2_11EC221B8179_INCLUDED__
+#ifndef HEADER_15EC58E9_CDD7_44B0_BEA2_11EC221B8179_INCLUDED_
+#define HEADER_15EC58E9_CDD7_44B0_BEA2_11EC221B8179_INCLUDED_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -156,8 +156,20 @@ public:
 
 protected:
     // Internal Functions
-    void beforeCommand(const char *commandName, const void *entryPoint) const;
+    void beforeCommand(const char *commandName, bool hasEntryPoint) const;
     void afterCommand(const char *commandName) const;
+
+    //! @brief Performs a null check on the function pointer before allowing
+    //! the entry point to be called.
+    //!  @tparam The data type of the entry point function.
+    //! @param[in] commandName The name of the command about to be executed.
+    //! @param[in] entryPoint A pointer to the command function about to be called.
+    template<typename TFn>
+    void beforeCommand(const char *commandName, const TFn *fnPtr) const
+    {
+        beforeCommand(commandName, fnPtr != nullptr);
+    }
+
 private:
     // Internal Fields
     unsigned int (APIENTRY *_getError)();

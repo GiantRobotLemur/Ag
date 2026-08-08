@@ -859,8 +859,8 @@ void PathBuilder::convertToAbsolute()
     }
 }
 
-//! @brief Converts the object to an absolute path relative to the current
-//! working directory or drive.
+//! @brief Converts the object to an absolute path relative to a specified
+//! base path.
 //! @param[in] basePath An absolute path used to resolve the current one.
 void PathBuilder::convertToAbsolute(const PathBuilder &basePath)
 {
@@ -872,12 +872,12 @@ void PathBuilder::convertToAbsolute(const PathBuilder &basePath)
             throw OperationException("Cannot resolve a file path using a relative base path.");
         }
 
-        // Take the root of the base path at the very least.
-        _root = basePath._root;
-        _rootType = basePath._rootType;
-
         if (_rootType == PathRootType::None)
         {
+            // Take the root of the base path at the very least.
+            _root = basePath._root;
+            _rootType = basePath._rootType;
+
             // Concatenate the two sets of elements into the same collection.
             std::vector<String> elements;
             elements.reserve(basePath._pathElements.size() + _pathElements.size());
@@ -889,6 +889,12 @@ void PathBuilder::convertToAbsolute(const PathBuilder &basePath)
 
             // Overwrite the path elements with the combined collection.
             _pathElements = std::move(elements);
+        }
+        else if (_rootType == PathRootType::CurrentDrive)
+        {
+            // Only copy the root.
+            _root = basePath._root;
+            _rootType = basePath._rootType;
         }
     }
 }

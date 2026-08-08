@@ -172,12 +172,13 @@ GTEST_TEST(DCEL_Sweep, ColinearIntersection)
 GTEST_TEST(DCEL_Sweep, PartitionStar)
 {
     // Calculate the tips of a 5-pointed star.
-    constexpr size_t PointCount = 5;
+    constexpr int PointCount = 5;
+    constexpr size_t PointSize = static_cast<size_t>(PointCount);
     constexpr double Radius = 10.0;
     const Point2D centre(0, 0);
     const Point2D tip(0.0, Radius);
     Point2DCollection points;
-    points.reserve(PointCount);
+    points.reserve(PointSize);
 
     for (int i = 0; i < PointCount; ++i)
     {
@@ -191,7 +192,7 @@ GTEST_TEST(DCEL_Sweep, PartitionStar)
 
     NodeTable nodes(metadata.Range);
     NodePtrCollection nodePtrs;
-    nodePtrs.reserve(PointCount);
+    nodePtrs.reserve(PointSize);
 
     for (size_t i = 0; i < PointCount; ++i)
     {
@@ -223,8 +224,8 @@ GTEST_TEST(DCEL_Sweep, HorzOverlappingRects)
     EdgeTable edges;
 
     // Add two horizontally overlapping rectangles.
-    RectIndices firstRect = addRect(edges, nodes, 2, 2, 8, 4);
-    RectIndices secondRect = addRect(edges, nodes, 6, 2, 8, 4);
+    addRect(edges, nodes, 2, 2, 8, 4);
+    addRect(edges, nodes, 6, 2, 8, 4);
 
     ASSERT_EQ(nodes.getCount(), 8u);
     ASSERT_EQ(edges.getCount(), 8u);
@@ -243,8 +244,8 @@ GTEST_TEST(DCEL_Sweep, VertOverlappingRects)
     EdgeTable edges;
 
     // Add two vertically overlapping rectangles.
-    RectIndices firstRect = addRect(edges, nodes, 2, 2, 4, 8);
-    RectIndices secondRect = addRect(edges, nodes, 2, 6, 4, 8);
+    addRect(edges, nodes, 2, 2, 4, 8);
+    addRect(edges, nodes, 2, 6, 4, 8);
 
     ASSERT_EQ(nodes.getCount(), 8u);
     ASSERT_EQ(edges.getCount(), 8u);
@@ -263,8 +264,8 @@ GTEST_TEST(DCEL_Sweep, CascadingRects)
     EdgeTable edges;
 
     // Add two rectangles overlapping in one corner.
-    RectIndices firstRect = addRect(edges, nodes, 2, 2, 8, 4);
-    RectIndices secondRect = addRect(edges, nodes, 6, 4, 8, 4);
+    addRect(edges, nodes, 2, 2, 8, 4);
+    addRect(edges, nodes, 6, 4, 8, 4);
 
     ASSERT_EQ(nodes.getCount(), 8u);
     ASSERT_EQ(edges.getCount(), 8u);

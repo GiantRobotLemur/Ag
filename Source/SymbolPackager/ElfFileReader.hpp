@@ -1,46 +1,41 @@
-//! @file Ag/ObjectGL/Extensions/3DLabs.hpp
-//! @brief The declaration of 3D Labs-specific extensions to the OpenGL API.
+//! @file ElfFileReader.hpp
+//! @brief The declaration of an object which can read symbols embedded within
+//! a 32 or 64-bit ELF file.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
-//!
-//! @note This contents of this file was generated from the Khronos XML API
-//! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_3D_LABS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_3D_LABS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_SYMBOL_PACKAGER_ELF_FILE_READER_HPP_
+#define HEADER_AG_SYMBOL_PACKAGER_ELF_FILE_READER_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
-#include "../WGL_Types.hpp"
-
-#ifdef _WIN32
-
-namespace wgl {
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// WGL_3DL_stereo_control extension API specification.
-struct _3DLStereoControl {
-    // Public Members
-    BOOL(APIENTRY *wglSetStereoEmitterState3DL)(HDC hDC, UINT uState);
+class CommandLine;
+class SymbolDb;
 
-    // Construction
-    _3DLStereoControl();
+//! @brief An object which can read symbols embedded within a 32 or 64-bit
+//! ELF file.
+class ElfFileReader
+{
+public:
+    // Construction/Destruction
+    ElfFileReader(const CommandLine &args);
 
     // Operations
-    bool isPresent(const APIResolver *resolver) const;
-    void resolveEntryPoints(const APIResolver *resolver);
-}; // struct _3DLStereoControl
-
-} // namespace wgl
-
-#endif // ifdef _WIN32
+    void readSymbols(SymbolDb &symbols, std::string &error);
+private:
+    // Internal Fields
+    std::string _inputFile;
+};
 
 #endif // Header guard
 ////////////////////////////////////////////////////////////////////////////////

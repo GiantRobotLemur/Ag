@@ -2,14 +2,14 @@
 //! @brief The declaration of a class which represents an angle in radians in a
 //! normalised range.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_GEOMETRY_ANGLES_HPP__
-#define __AG_GEOMETRY_ANGLES_HPP__
+#ifndef HEADER_AG_GEOMETRY_ANGLES_HPP_
+#define HEADER_AG_GEOMETRY_ANGLES_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files
@@ -98,7 +98,7 @@ public:
     //! @brief Converts an angle from degrees to radians without normalisation.
     //! @param[in] angleInDegrees The angle in degrees to convert.
     //! @return The equivalent angle in degrees.
-    static constexpr double Angle::degreesToRadians(double angleInDegrees) noexcept
+    static constexpr double degreesToRadians(double angleInDegrees) noexcept
     {
         return (angleInDegrees * Pi) / 180.0;
     }
@@ -106,7 +106,7 @@ public:
     //! @brief Converts an angle from radians to degrees without normalisation.
     //! @param[in] angleInRadians The angle in radians to convert.
     //! @return The equivalent angle in radians.
-    static constexpr double Angle::radiansToDegrees(double angleInRadians) noexcept
+    static constexpr double radiansToDegrees(double angleInRadians) noexcept
     {
         return (angleInRadians * 180.0) / Pi;
     }

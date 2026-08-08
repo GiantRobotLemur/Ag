@@ -1,4 +1,4 @@
-//! @file Win32API.cpp
+//! @file Core/Win32API.cpp
 //! @brief The definition of some helper functions which assist the user of
 //! the Win32 API.
 //! @author GiantRobotLemur@na-se.co.uk
@@ -14,6 +14,7 @@
 
 #include "Win32API.hpp"
 #include "Ag/Core/Exception.hpp"
+#include "Ag/Core/Utils.hpp"
 #include "Ag/Core/Utf.hpp"
 
 #include <cwchar>
@@ -28,6 +29,34 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Local Functions
 ////////////////////////////////////////////////////////////////////////////////
+//! @brief Attempts to convert an HRESULT into a Win32 error code.
+//! @param[in] hr The HRESULT value to attempt to convert.
+//! @param[out] errorCode Receives the converted error code, if successful.
+//! @retval true The conversion was successful, @p errorCode was updated.
+//! @retval false The HRESULT did not have an equivalent Win32 error code.
+bool tryConvertHResultToWin32Error(HRESULT hr, DWORD &errorCode)
+{
+    // Inspired by: https://stackoverflow.com/questions/22233527/how-to-convert-hresult-into-an-error-description
+    bool isConverted = true;
+
+    if ((hr & 0xFFFF0000) == MAKE_HRESULT(SEVERITY_ERROR, FACILITY_WIN32, 0))
+    {
+        errorCode = HRESULT_CODE(hr);
+    }
+    else if (hr == S_OK)
+    {
+        errorCode = ERROR_SUCCESS;
+    }
+    else
+    {
+        // Not a Win32 HRESULT so return failure.
+        errorCode = 0;
+        isConverted = false;
+    }
+
+    return isConverted;
+}
+
 //! @brief Attempts to get the full path to a module file name.
 //! @param[in] handle The handle of the module to obtain a file name for.
 //! @param[out] buffer Receives the path in wide characters.
@@ -187,6 +216,37 @@ String getHomeDirectory()
     }
 
     return profilePath;
+}
+
+//! @brief Queries the path to a known folder location.
+//! @param[in] id The identifier of the known folder, such as FOLDERID_Documents.
+//! @param[in] forceCreate True to attempt to create the folder if it does
+//! not exist.
+//! @returns The path to the specified folder, if it has one.
+//! @throws Win32Exception Thrown if the folder path cannot be obtained, or
+//! if @p forceCreate is true, but the folder cannot be created.
+String getKnownDirectory(const KNOWNFOLDERID &id, bool forceCreate /*= false*/)
+{
+    PWSTR buffer = nullptr;
+    DWORD flags = forceCreate ? KF_FLAG_CREATE : KF_FLAG_DEFAULT;
+    DWORD errorCode;
+
+    HRESULT hr = ::SHGetKnownFolderPath(id, flags, nullptr, &buffer);
+
+    if (SUCCEEDED(hr))
+    {
+        // Ensure the buffer is freed no matter what else happens.
+        AtScopeExit1 freeBuffer(CoTaskMemFree, buffer);
+
+        return String(buffer);
+    }
+    else if (tryConvertHResultToWin32Error(hr, errorCode) == false)
+    {
+        // Assign a misc error code.
+        errorCode = ERROR_BAD_COMMAND;
+    }
+
+    throw Win32Exception("SHGetKnownFolderPath()", errorCode);
 }
 
 } // namespace Ag

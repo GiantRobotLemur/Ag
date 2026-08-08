@@ -2,19 +2,20 @@
 //! @brief The declaration of stand-alone helper functions for use by the
 //! symbol packager tool.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SYMBOL_PACKAGER_HPP__
-#define __AG_SYMBOL_PACKAGER_HPP__
+#ifndef HEADER_AG_SYMBOL_PACKAGER_HPP_
+#define HEADER_AG_SYMBOL_PACKAGER_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include <cstdarg>
+#include <cstring>
 #include <string>
 #include <memory>
 
@@ -69,7 +70,7 @@ public:
     virtual ~IStream() = default;
 
     // Operations
- 
+
     //! @brief Reads bytes from the stream.
     //! @param[in] targetBuffer The buffer to receive the bytes read.
     //! @param[in] requiredByteCount The maximum number of bytes to read.
@@ -117,6 +118,7 @@ private:
 bool tryOpenFile(const char *fileName, const char *mode, StdFilePtr &file);
 bool tryRead(FILE *fp, void *buffer, size_t byteCount);
 bool tryRead(StdFilePtr &fp, void *buffer, size_t byteCount);
+bool trySeek(FILE *fp, int64_t offset);
 bool tryParseHex(const char *str, uint64_t &value);
 void appendFormat(std::string &target, const char *format, ...);
 bool isEqualIgnoreCase(const std::string &lhs, const char *rhs);
@@ -131,6 +133,28 @@ std::string makeFullPath(const std::string &basePath, const std::string &path);
 template<typename T> void zeroFill(T &object)
 {
     std::memset(static_cast<void *>(&object), 0, sizeof(T));
+}
+
+//! @brief Calculates a pointer to an object offset from a base.
+//! @tparam T The data type of the object to calculate a pointer to.
+//! @param[in] base The base address to offset from.
+//! @param[in] offset The count of bytes to offset from the base in order
+//! to calculate the final pointer.
+//! @return A type-safe pointer to the appropriate object.
+template<typename T> T *offsetPtr(void *base, size_t offset)
+{
+    return reinterpret_cast<T *>(static_cast<uint8_t *>(base) + offset);
+}
+
+//! @brief Calculates a const pointer to an object offset from a base.
+//! @tparam T The data type of the object to calculate a pointer to.
+//! @param[in] base The base address to offset from.
+//! @param[in] offset The count of bytes to offset from the base in order
+//! to calculate the final pointer.
+//! @return A type-safe pointer to the appropriate object.
+template<typename T> const T *offsetPtr(const void *base, size_t offset)
+{
+    return reinterpret_cast<const T *>(static_cast<const uint8_t *>(base) + offset);
 }
 
 #endif // Header guard

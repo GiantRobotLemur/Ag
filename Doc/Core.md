@@ -23,7 +23,7 @@ Some notable features of the Core library are:
 * An Immutable exception class hierarchy with stack traces.
 * Symbol use in stack traces.
 * Try/Catch mechanism for hardware exceptions.
-* A robust application framework including command line handling.
+* A robust application framework including command line handling and file path derivation.
 * Optimised sorted linear maps and sets.
 * String formatting using type-safe variable arguments.
 * URI management.

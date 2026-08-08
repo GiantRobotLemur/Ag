@@ -245,6 +245,9 @@ void enableStdout(bool forceCreateConsole)
         freopen("CONOUT$", "w", stderr);
 #endif
     }
+#else
+    // Suppress unused parameter warning.
+    AG_UNUSED_PARAM(forceCreateConsole);
 #endif
 }
 

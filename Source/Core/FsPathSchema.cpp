@@ -2,7 +2,7 @@
 //! @brief The definition of an object which abstracts the differences between
 //! file path formats.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2024
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -21,10 +21,6 @@
 
 #include "FsPathSchema.hpp"
 
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-
 namespace Ag {
 namespace Fs {
 
@@ -32,7 +28,88 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // Local Data Types
 ////////////////////////////////////////////////////////////////////////////////
-class Win32PathSchema : public PathSchema
+//! @brief A class derived from PathSchema which allows common functionality
+//! to be shared.
+class BasePathSchema : public PathSchema
+{
+protected:
+    //! @brief Processes an input file name to remove leading and trailing spaces,
+    // trailing periods and characters illegal in a path element.
+    //! @param[in] input The initial text to try to process into a valid file
+    //! path element.
+    //! @param[out] element Recieves the processed element.
+    //! @param[in] true To remove all white space characters during processing,
+    //! false to only removing leading and trailing white space.
+    bool tryMakeValidPathElementInternal(const std::string_view &input,
+                                         std::string &element,
+                                         bool stripSpaces) const
+    {
+        element.clear();
+        element.reserve(input.length());
+
+        Utf::FromUtf8Converter inputConverter;
+        size_t lastOffset = 0;
+        size_t firstNonWhiteSpace = input.length();
+        size_t lastNonWhiteSpace = 0;
+        size_t firstDot = input.length();
+        char32_t next = U'\0';
+        bool hasError = false;
+
+        // Stream the string to create Unicode code points we can analyse.
+        for (size_t i = 0; i < input.length(); ++i)
+        {
+            if (inputConverter.tryConvert(static_cast<uint8_t>(input.at(i)),
+                                          next, hasError))
+            {
+                // If the character is valid, append it.
+                if (isValidElementCharacter(next))
+                {
+                    if ((next == U'.') && (element.empty() == false))
+                        firstDot = std::min(firstDot, i);
+
+                    bool flushChar = false;
+
+                    if (Utf::isWhiteSpace(next))
+                    {
+                        // Skip leading white space.
+                        flushChar = (firstNonWhiteSpace < i) && (stripSpaces == false);
+                    }
+                    else
+                    {
+                        // Keep track of leading and trailing white space.
+                        firstNonWhiteSpace = std::min(firstNonWhiteSpace, i);
+                        lastNonWhiteSpace = std::max(lastNonWhiteSpace, element.size());
+
+                        flushChar = isValidElementCharacter(next);
+                    }
+
+                    // Append the UTF-8 bytes used to encode that Unicode code point.
+                    if (flushChar)
+                        element.append(input.data() + lastOffset, i + 1 - lastOffset);
+                }
+
+                lastOffset = i + 1;
+            }
+        }
+
+        // Trim trailing white space.
+        size_t firstTrailingWhiteSpace = lastNonWhiteSpace + 1;
+
+        // Theoretically we shouldn't need this if, but in ARM64 Linux GNU stdc++,
+        // the element.erase() line adds a null character.
+        if (firstTrailingWhiteSpace < element.length())
+            element.erase(element.begin() + firstTrailingWhiteSpace, element.end());
+
+        // Remove any trailing periods.
+        while ((element.empty() == false) && (element.back() == '.'))
+            element.pop_back();
+
+        return element.empty() == false;
+    }
+};
+
+//! @brief Provides schema-specific functionality or a Win32 file path.
+class Win32PathSchema : public BasePathSchema
 {
 private:
     std::vector<char32_t> _invalidChars;
@@ -717,9 +794,36 @@ public:
 
         return wideBuffer;
     }
+
+    virtual bool tryMakeValidPathElement(const std::string_view &input,
+                                         String &element,
+                                         bool stripSpaces /* = false */) const override
+    {
+
+        std::string builder;
+
+        if (tryMakeValidPathElementInternal(input, builder, stripSpaces))
+        {
+            // TODO: Test against the forbidden Windows file names, e.g. COM1, PRN,
+            // AUX, however we need a conversion to upper case, and some of these
+            // names can be used in the device namespace (COMn), so it can wait.
+            //
+            // See https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+            //
+            // Use firstDot to trim the extension from the file name for checking
+            // against the list of forbidden names.
+
+            element = builder;
+            return true;
+        }
+
+        element = String::Empty;
+        return false;
+    }
 };
 
-class PosixPathSchema : public PathSchema
+//! @brief Provides schema-specific functionality or a POSIX file path.
+class PosixPathSchema : public BasePathSchema
 {
 public:
     PosixPathSchema() = default;
@@ -739,7 +843,7 @@ public:
 
     virtual bool isValidElementCharacter(char32_t ch) const override
     {
-        return ch != U'/';
+        return (ch != U'/') && (ch != U'\0');
     }
 
     virtual bool tryParsePathRoot(String::iterator &pos,
@@ -928,7 +1032,6 @@ public:
         }
     }
 
-
     virtual std::wstring pathToWideString(PathUsage usage,
                                           PathRootType rootType,
                                           size_t rootLength,
@@ -960,11 +1063,26 @@ public:
 
         return buffer;
     }
-};
 
-////////////////////////////////////////////////////////////////////////////////
-// Local Data
-////////////////////////////////////////////////////////////////////////////////
+    virtual bool tryMakeValidPathElement(const std::string_view &input,
+                                         String &element,
+                                         bool stripSpaces /* = false */) const override
+    {
+        std::string builder;
+
+        if (tryMakeValidPathElementInternal(input, builder, stripSpaces))
+        {
+            // There are no forbidden file names in POSIX, but we still
+            // might want to filter out some.
+
+            element = builder;
+            return true;
+        }
+
+        element = String::Empty;
+        return false;
+    }
+};
 
 } // Anonymous namespace
 

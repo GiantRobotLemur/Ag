@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_GEOMETRY_DCEL_HPP__
-#define __AG_GEOMETRY_DCEL_HPP__
+#ifndef HEADER_AG_GEOMETRY_DCEL_HPP_
+#define HEADER_AG_GEOMETRY_DCEL_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -59,7 +59,7 @@ using EdgeKey = uint64_t;
 //! A value of 0 indicates the forward direction is from node 0 to node 1 in
 //! the context of an edge definition. A value of 1 indicates that the forward
 //! direction is from node 1 to node 0.
-//! 
+//!
 //! Using this definition, a direction can easily be reversed by simply XORing
 //! the value with 1 - this is encapsulated by the reverseDirection() function.
 using DirectionIndex = uint8_t;
@@ -93,7 +93,20 @@ using IDToIDMappingRange = IteratorRange<IDToIDMappingCollection::iterator>;
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
 ////////////////////////////////////////////////////////////////////////////////
-constexpr EdgeKey makeEdgeKey(ID firstNode, ID secondNode) noexcept;
+//! @brief Creates an index key used to look up an edge.
+constexpr EdgeKey makeEdgeKey(ID firstNode, ID secondNode) noexcept
+{
+    if (firstNode < secondNode)
+    {
+        return static_cast<EdgeKey>(firstNode) |
+               (static_cast<EdgeKey>(secondNode) << 32);
+    }
+    else
+    {
+        return static_cast<EdgeKey>(secondNode) |
+               (static_cast<EdgeKey>(firstNode) << 32);
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
@@ -145,7 +158,7 @@ public:
     //! the node previously existed.
     static constexpr FlagsType IsIntersection = 0x01;
 
-    //! @brief Indicates the node defines part of the left operand in 
+    //! @brief Indicates the node defines part of the left operand in
     //! boolean operation.
     static constexpr FlagsType IsLhs = 0x02;
 
@@ -606,7 +619,7 @@ public:
     template<class TUnaryFunc>
     void applyToAllEdges(TUnaryFunc fn)
     {
-        std::for_each(std::execution::parallel_unsequenced_policy(),
+        std::for_each(std::execution::par_unseq,
                       _allEdges.begin(), _allEdges.end(),
                       [&fn](EdgeUPtr &edgeUPtr) { fn(edgeUPtr.get()); });
     }

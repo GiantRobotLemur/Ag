@@ -48,7 +48,7 @@ public:
         Fs::Entry tempFile(_tempFilePath);
 
         if (tempFile.exists())
-            tempFile.remove();
+            tempFile.remove(/* reportError = */ false);
     }
 
     ISeekableStreamUPtr createNew()
@@ -114,7 +114,7 @@ template<typename T>
 class SeekableStream : public testing::Test
 {
 public:
-    using Harness = T;
+    T _harness;
 };
 
 using SeekableStreamTestHarnesses = ::testing::Types<SeekableFileHarness, SeekableBufferHarness>;
@@ -122,16 +122,14 @@ TYPED_TEST_SUITE(SeekableStream, SeekableStreamTestHarnesses);
 
 TYPED_TEST(SeekableStream, CreateEmpty)
 {
-    Harness harness;
-    ISeekableStreamUPtr stream = harness.createNew();
+    ISeekableStreamUPtr stream = this->_harness.createNew();
 
     EXPECT_EQ(stream->getPosition(), 0);
 }
 
 TYPED_TEST(SeekableStream, WriteToEmpty)
 {
-    Harness harness;
-    ISeekableStreamUPtr stream = harness.createNew();
+    ISeekableStreamUPtr stream = this->_harness.createNew();
 
     constexpr uint32_t sampleData = 0xDEADBEEF;
 
@@ -142,8 +140,7 @@ TYPED_TEST(SeekableStream, WriteToEmpty)
 
 TYPED_TEST(SeekableStream, SeekAndReReadToEmpty)
 {
-    Harness harness;
-    ISeekableStreamUPtr stream = harness.createNew();
+    ISeekableStreamUPtr stream = this->_harness.createNew();
 
     constexpr uint32_t sampleData = 0xCAFEBABE;
 
@@ -162,8 +159,7 @@ TYPED_TEST(SeekableStream, SeekAndReReadToEmpty)
 TYPED_TEST(SeekableStream, ReReadExisting)
 {
     // Create a stream with existing data.
-    Harness harness;
-    ISeekableStreamUPtr stream = harness.createExisting(768, false);
+    ISeekableStreamUPtr stream = this->_harness.createExisting(768, false);
 
     // Move into the stream.
     EXPECT_EQ(stream->setPosition(StreamRelative::Beginning, 512), 512);
@@ -190,8 +186,7 @@ TYPED_TEST(SeekableStream, ReReadExisting)
 TYPED_TEST(SeekableStream, SeekEndRelative)
 {
     // Create a stream with existing data.
-    Harness harness;
-    ISeekableStreamUPtr stream = harness.createExisting(768, false);
+    ISeekableStreamUPtr stream = this->_harness.createExisting(768, false);
 
     // Move into the stream.
     EXPECT_EQ(stream->setPosition(StreamRelative::End, -512), 256);

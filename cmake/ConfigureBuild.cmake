@@ -22,7 +22,13 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         if (DEFINED MSVC)
             add_compile_options("/W4")
         else()
-            add_compile_options(-Wall -Wextra -pedantic -Wshadow)
+            add_compile_options(-Wall -Wextra -pedantic -Wshadow -Wno-psabi -Wno-unknown-pragmas)
+            # NOTE: --Wno-psapi is to suppress warnings about code which is
+            # fine, but the effect has altered due to bugs in GCCs ABI being
+            # fixed. See: https://stackoverflow.com/questions/72052105/how-can-i-suppress-certain-abi-change-notes-embedded-c
+
+            # NOTE: -Wno-unknown-pragmas - g++ doesn't understand #pragma region,
+            # which makes code more readable in Visual Studio and the like.
 
             # Ensure _DEBUG is defined for debug builds, this is done automatically
             # for MSVC.
@@ -69,7 +75,7 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
 
         FetchContent_Declare(googletest
                              GIT_REPOSITORY https://github.com/google/googletest.git
-                             GIT_TAG release-1.12.1)
+                             GIT_TAG v1.17.0)
 
         FetchContent_Declare(glm
                              GIT_REPOSITORY https://github.com/g-truc/glm.git
@@ -149,20 +155,49 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         # target_link_libraries(${myTarget} PRIVATE glm::glm)
         set(GLM_ENABLE_CXX_17 ON CACHE "BOOL" "Use C++ 17 in GLM" FORCE)
 
-        if (AG_ENABLE_X64_V4 OR AG_ENABLE_X64_V3)
-            set(GLM_ENABLE_SIMD_AVX2 ON CACHE "BOOL" "Use AVX2 in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_AVX ON CACHE "BOOL" "Use AVX in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_SSE4_2 ON CACHE "BOOL" "Use SSE4.2 in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_SSE4_1 ON CACHE "BOOL" "Use SSE4.1 in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_SSE3 ON CACHE "BOOL" "Use SSE3 in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_SSE2 ON CACHE "BOOL" "Use SSE2 in GLM" FORCE)
-        elseif(AG_ENABLE_X64_V2)
-            set(GLM_ENABLE_SIMD_SSE4_2 ON CACHE "BOOL" "Use SSE4.2 in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_SSE4_1 ON CACHE "BOOL" "Use SSE4.1 in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_SSE3 ON CACHE "BOOL" "Use SSE3 in GLM" FORCE)
-            set(GLM_ENABLE_SIMD_SSE2 ON CACHE "BOOL" "Use SSE2 in GLM" FORCE)
-        elseif(AG_ENABLE_X64_V1)
-            set(GLM_ENABLE_SIMD_SSE2 ON CACHE "BOOL" "Use SSE2 in GLM" FORCE)
+        if (CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+            set(GLM_ENABLE_SIMD_NEON OFF CACHE "BOOL" "Use NEON in GLM" FORCE)
+
+            if (AG_ENABLE_X64_V4 OR AG_ENABLE_X64_V3)
+                set(GLM_ENABLE_SIMD_AVX2 ON CACHE "BOOL" "Use AVX2 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_AVX ON CACHE "BOOL" "Use AVX in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE4_2 ON CACHE "BOOL" "Use SSE4.2 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE4_1 ON CACHE "BOOL" "Use SSE4.1 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE3 ON CACHE "BOOL" "Use SSE3 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE2 ON CACHE "BOOL" "Use SSE2 in GLM" FORCE)
+            elseif(AG_ENABLE_X64_V2)
+                set(GLM_ENABLE_SIMD_AVX2 OFF CACHE "BOOL" "Use AVX2 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_AVX OFF CACHE "BOOL" "Use AVX in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE4_2 ON CACHE "BOOL" "Use SSE4.2 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE4_1 ON CACHE "BOOL" "Use SSE4.1 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE3 ON CACHE "BOOL" "Use SSE3 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE2 ON CACHE "BOOL" "Use SSE2 in GLM" FORCE)
+            elseif(AG_ENABLE_X64_V1)
+                set(GLM_ENABLE_SIMD_AVX2 OFF CACHE "BOOL" "Use AVX2 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_AVX OFF CACHE "BOOL" "Use AVX in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE4_2 OFF CACHE "BOOL" "Use SSE4.2 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE4_1 OFF CACHE "BOOL" "Use SSE4.1 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE3 ON CACHE "BOOL" "Use SSE3 in GLM" FORCE)
+                set(GLM_ENABLE_SIMD_SSE2 ON CACHE "BOOL" "Use SSE2 in GLM" FORCE)
+            endif()
+        elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+            set(GLM_ENABLE_SIMD_NEON ON CACHE "BOOL" "Use NEON in GLM" FORCE)
+
+            set(GLM_ENABLE_SIMD_AVX2 OFF CACHE "BOOL" "Use AVX2 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_AVX OFF CACHE "BOOL" "Use AVX in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE4_2 OFF CACHE "BOOL" "Use SSE4.2 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE4_1 OFF CACHE "BOOL" "Use SSE4.1 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE3 OFF CACHE "BOOL" "Use SSE3 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE2 OFF CACHE "BOOL" "Use SSE2 in GLM" FORCE)
+        else()
+            set(GLM_ENABLE_SIMD_NEON ON CACHE "BOOL" "Use NEON in GLM" FORCE)
+
+            set(GLM_ENABLE_SIMD_AVX2 OFF CACHE "BOOL" "Use AVX2 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_AVX OFF CACHE "BOOL" "Use AVX in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE4_2 OFF CACHE "BOOL" "Use SSE4.2 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE4_1 OFF CACHE "BOOL" "Use SSE4.1 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE3 OFF CACHE "BOOL" "Use SSE3 in GLM" FORCE)
+            set(GLM_ENABLE_SIMD_SSE2 OFF CACHE "BOOL" "Use SSE2 in GLM" FORCE)
         endif()
 
         # Adds the .natvis file to MSVC projects, but only to the final binary.

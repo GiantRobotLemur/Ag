@@ -1,7 +1,7 @@
 //! @file Core/Test_ErrorGuard.cpp
 //! @brief The definition of the unit tests for the ErrorGuard class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2024
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -149,11 +149,9 @@ NO_OPTIMIZE_FN_END
 // Disable optimization so that this function actually performs a deliberate
 // division by zero.
 NO_OPTIMIZE_FN_BEGIN
-void integerDivide(int denominator)
+void integerDivide(int denominator, int *result)
 {
-    size_t result = 424242 / denominator;
-
-    result = 0;
+    *result = 424242 / denominator;
 }
 NO_OPTIMIZE_FN_END
 
@@ -399,13 +397,19 @@ GTEST_TEST(ErrorGuard, CatchMemoryException)
     EXPECT_STREQ(guard.getError().getDomain().data(), ErrorGuard::AddressDomain);
 }
 
-
 GTEST_TEST(ErrorGuard, CatchIntDivisionByZeroException)
 {
+#ifdef __aarch64__
+    // I'm testing on an ARM Cortex A76 - which doesn't support detection of
+    // integer Division by Zero - so I have to scrub this test on AArch64.
+    GTEST_SKIP() << "Some 64-bit ARM CPU's don't support trapping division by zero.";
+#endif
+
     ErrorGuard guard;
 
     // Test error path.
-    EXPECT_FALSE(guard.tryExecProcedure(integerDivide, 0));
+    int result = -1;
+    EXPECT_FALSE(guard.tryExecProcedure(integerDivide, 0, &result));
     EXPECT_TRUE(guard.hasError());
     EXPECT_STREQ(guard.getError().getDomain().data(),
                  DivisionByZeroException::Domain);

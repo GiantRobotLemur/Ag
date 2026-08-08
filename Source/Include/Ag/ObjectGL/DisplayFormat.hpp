@@ -2,14 +2,14 @@
 //! @brief The declaration of an object specifying the output format of an
 //! OpenGL renderer.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_DISPLAY_FORMAT_HPP__
-#define __AG_OBJECT_GL_DISPLAY_FORMAT_HPP__
+#ifndef HEADER_AG_OBJECT_GL_DISPLAY_FORMAT_HPP_
+#define HEADER_AG_OBJECT_GL_DISPLAY_FORMAT_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files
@@ -89,25 +89,6 @@ public:
         return hasValue;
     }
 
-    //! @brief Attempts to get a boolean property.
-    //! @param[in] id The identifier of the property to get.
-    //! @param[out] value Receives the boolean value of the property.
-    //! @retval true The property was defined and its value returned.
-    //! @retval false The property was not defined.
-    template<> bool tryGetTypedProperty(DisplayPropertyID id, bool &value) const
-    {
-        bool hasValue = false;
-        uint32_t rawValue = 0;
-
-        if (tryGetProperty(id, rawValue))
-        {
-            hasValue = true;
-            value = (rawValue != 0);
-        }
-
-        return hasValue;
-    }
-
     //! @brief Gets a value for a strongly typed property.
     //! @tparam T The data type of the property to get.
     //! @param[in] id The identifier of the property to get.
@@ -130,6 +111,8 @@ private:
     // Internal Fields
     PropertyMap _properties;
 };
+
+template<> bool DisplayFormat::tryGetTypedProperty(DisplayPropertyID id, bool &value) const;
 
 } // namespace gl
 
