@@ -92,7 +92,7 @@ GTEST_TEST(DCEL_Trace, Rectangle)
 
     for (const Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_TRUE(ring.isConvex());
@@ -124,7 +124,7 @@ GTEST_TEST(DCEL_Trace, ButtingRectangles)
 
     for (const Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isConvex());
         EXPECT_TRUE(ring.isCCW());
@@ -157,7 +157,7 @@ GTEST_TEST(DCEL_Trace, OneSharedCorner)
 
     for (const Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isConvex());
         EXPECT_TRUE(ring.isCCW());
@@ -193,7 +193,7 @@ GTEST_TEST(DCEL_Trace, CascadingRectangles)
 
     for (const Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_TRUE(ring.isConvex());
@@ -230,7 +230,7 @@ GTEST_TEST(DCEL_Trace, TwoSharedCorners)
 
     for (const Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_TRUE(ring.isConvex());
@@ -264,7 +264,7 @@ GTEST_TEST(DCEL_Trace, NestedRectangles)
 
     for (const Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_EQ(ring.getParentRingID() == NullID, ring.isCCW());
         EXPECT_TRUE(ring.isConvex());
@@ -400,7 +400,7 @@ GTEST_TEST(DCEL_MonotoneCheck, TriangleIsMonotone)
 
     for (Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_TRUE(ring.isConvex());
@@ -430,7 +430,7 @@ GTEST_TEST(DCEL_MonotoneCheck, ConvexIsMonotone)
 
     for (Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_TRUE(ring.isConvex());
@@ -461,7 +461,7 @@ GTEST_TEST(DCEL_MonotoneCheck, WideAndShallowIsXMonotone)
 
     for (Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_FALSE(ring.isConvex());
         EXPECT_TRUE(ring.isXMonotone());
@@ -491,7 +491,7 @@ GTEST_TEST(DCEL_MonotoneCheck, NarrowAndDeepIsYMonotone)
 
     for (Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_FALSE(ring.isConvex());
@@ -524,7 +524,7 @@ GTEST_TEST(DCEL_MonotoneCheck, HorizontalBoxIsXMonotone)
 
     for (Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_FALSE(ring.isConvex());
@@ -557,7 +557,7 @@ GTEST_TEST(DCEL_MonotoneCheck, VerticalBoxIsYMonotone)
 
     for (Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_FALSE(ring.isConvex());
@@ -601,7 +601,7 @@ GTEST_TEST(DCEL_MonotoneCheck, FivePointStarNotMonotone)
 
     for (Ring &ring : rings)
     {
-        verifyRing(edges, ring);
+        EXPECT_TRUE(verifyRing(edges, ring));
 
         EXPECT_TRUE(ring.isCCW());
         EXPECT_FALSE(ring.isConvex());

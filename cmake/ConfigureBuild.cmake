@@ -75,7 +75,7 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
 
         FetchContent_Declare(googletest
                              GIT_REPOSITORY https://github.com/google/googletest.git
-                             GIT_TAG release-1.12.1)
+                             GIT_TAG v1.17.0)
 
         FetchContent_Declare(glm
                              GIT_REPOSITORY https://github.com/g-truc/glm.git

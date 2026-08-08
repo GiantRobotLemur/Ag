@@ -31,6 +31,10 @@
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include <Windows.h>
+#include <ShlObj_core.h>
+
+// Link to the Shell32.dll import library.
+#pragma comment (lib, "OneCore.lib")
 
 #include "Ag/Core/String.hpp"
 
@@ -45,7 +49,7 @@ String getModuleDirectory(uintptr_t moduleHandle);
 String getWorkingDirectory();
 String getTempDirectory();
 String getHomeDirectory();
-String getKnownDirectory(KNOWNFOLDERID id);
+String getKnownDirectory(const KNOWNFOLDERID &id, bool forceCreate = false);
 
 } // namespace Ag
 

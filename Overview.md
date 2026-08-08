@@ -11,7 +11,7 @@ as a reusable foundation for other C++ projects by the same author.
 - **Author:** GiantRobotLemur (GiantRobotLemur@na-se.co.uk)
 - **Repository:** https://github.com/GiantRobotLemur/Ag
 - **Designed as:** a git submodule consumed by parent projects
-- **Build system:** CMake >= 3.21, C++17, multi-config (Debug / RelWithDebInfo)
+- **Build system:** CMake >= 3.25, C++17, multi-config (Debug / RelWithDebInfo)
 - **Primary platform:** Windows (MSVC), with POSIX / Linux support
 
 ---
@@ -179,7 +179,7 @@ Geometry library in order to support 2D graphic GPU rendering at a later date.
 | Dependency | Version | Purpose |
 |-----------|---------|---------|
 | bzip2 | master | Compression for symbol data (compiled in) |
-| Google Test | 1.12.1 | Unit testing |
+| Google Test | 1.17.0 | Unit testing |
 | GLM | 1.0.1 | Math library (when GFX or OpenGL enabled) |
 | SDL3 | 3.2.10 | Windowing, events, GPU framework |
 | SDL2 | 2.32.10 | Legacy (still declared) |
