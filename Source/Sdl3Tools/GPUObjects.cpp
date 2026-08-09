@@ -378,6 +378,12 @@ uint32_t TransferBuffer::getSize() const
 //! @brief Maps the transfer buffer so it can be accessed by the program.
 //! @param[in] cycle If true, cycles the transfer buffer if it is already bound.
 //! @return An object representing the mapped buffer.
+//! @throws ObjectNotBoundException If the object does not wrap a valid
+//! transfer buffer.
+//! @throws ApiException If SDL_MapGPUTransferBuffer() fails.
+//! @details Cycling hands back fresh memory rather than stalling until the
+//! GPU has finished with the current contents, at the cost of extra
+//! allocation. The returned TransferMapping unmaps on destruction.
 TransferMapping TransferBuffer::map(bool cycle) const
 {
     auto buffer = verifyAccess("map buffer");
@@ -1014,6 +1020,12 @@ uint32_t GraphicsPipelineBuilder::addVertexBufferDescription(const VertexDescrip
 //! @brief Constructs a graphics pipeline from the currently
 //! accumulated definition.
 //! @return An object wrapping the new graphics pipeline.
+//! @throws ObjectNotBoundException If no GPU device has been associated
+//! with the builder.
+//! @throws ApiException If SDL_CreateGPUGraphicsPipeline() fails, which
+//! covers an incomplete or inconsistent pipeline definition.
+//! @details The builder may be reused to create further pipelines; this
+//! does not consume the accumulated definition.
 GraphicsPipeline GraphicsPipelineBuilder::createPipeline() const
 {
     if (_device == nullptr)
@@ -1131,6 +1143,11 @@ CopyPass &CopyPass::operator=(CopyPass &&rhs) noexcept
 //! @param[in] size The count of bytes to copy.
 //! @param[in] cycle If true, cycles the buffer if it is already bound, otherwise
 //! overwrites the data.
+//! @throws ObjectNotBoundException If the copy pass, @p destBuffer or
+//! @p sourceBuffer is unbound.
+//! @details The upload is recorded into the pass rather than performed
+//! immediately, so it completes only once the owning command buffer has
+//! been submitted.
 void CopyPass::uploadToBuffer(const ResourceBuffer &destBuffer, uint32_t destOffset,
                               const TransferBuffer &sourceBuffer, uint32_t sourceOffset,
                               uint32_t size, bool cycle) const
@@ -1348,6 +1365,10 @@ void RenderPass::bindPipeline(const GraphicsPipeline &pipeline) const
 
 //! @brief Binds a set of vertex buffers to the pass.
 //! @param[in] bindings The accumulated set of buffer bindings to apply.
+//! @throws ObjectNotBoundException If the object does not wrap a valid
+//! render pass.
+//! @details The bindings take effect for subsequent draw calls within the
+//! same pass.
 void RenderPass::bindVertexBuffers(const VertexBufferBindingBuilder &bindings) const
 {
     auto renderPass = verifyAccess("Bind vertex buffers");
@@ -1363,6 +1384,11 @@ void RenderPass::bindVertexBuffers(const VertexBufferBindingBuilder &bindings) c
 //! @param[in] instanceCount The number of instances that will be drawn.
 //! @param[in] firstVertex The index of the first vertex to draw.
 //! @param[in] firstInstance The ID of the first instance to draw.
+//! @throws ObjectNotBoundException If the object does not wrap a valid
+//! render pass.
+//! @details A graphics pipeline and any vertex buffers the shaders expect
+//! must have been bound to the pass beforehand. The draw is recorded rather
+//! than executed immediately.
 void RenderPass::drawPrimitives(uint32_t vertexCount,
                                 uint32_t instanceCount /*= 1*/,
                                 uint32_t firstVertex /*= 0*/,
@@ -1470,6 +1496,11 @@ bool CommandBuffer::isBound() const
 
 //! @brief Cancels the use of the command buffer, setting the object to an
 //! unbound state.
+//! @throws ApiException If SDL_CancelGPUCommandBuffer() fails.
+//! @details Discards every command recorded so far without executing any of
+//! them. Safe to call on an already unbound object, in which case it does
+//! nothing. Any swap chain texture acquired through the buffer is released
+//! rather than presented.
 void CommandBuffer::cancel()
 {
     auto commandBuffer = std::exchange(_commandBuffer, nullptr);
@@ -1486,6 +1517,10 @@ void CommandBuffer::cancel()
 
 //! @brief Submits the command buffer for processing, setting the object to
 //! an unbound state.
+//! @throws ApiException If SDL_SubmitGPUCommandBuffer() fails.
+//! @details The GPU executes the recorded commands asynchronously, so this
+//! returns without waiting for them. Use submitAndAcquireFence() when
+//! completion has to be awaited. The object cannot be reused afterwards.
 void CommandBuffer::submit()
 {
     auto commandBuffer = std::exchange(_commandBuffer, nullptr);
@@ -1513,6 +1548,11 @@ void CommandBuffer::submitAndWait()
 //! synchronisation primitive which can be used to await completion.
 //! @return A fence primitive which can be waited on for completion
 //! of the submitted commands.
+//! @throws ApiException If SDL_SubmitGPUCommandBufferAndAcquireFence()
+//! fails.
+//! @details Like submit(), this leaves the object unbound and does not
+//! block. The returned Fence owns a GPU resource, so it should be waited on
+//! and then released rather than being allowed to accumulate.
 Fence CommandBuffer::submitAndAcquireFence()
 {
     auto parentDevice = std::exchange(_parentDevice, nullptr);
@@ -1902,7 +1942,7 @@ void SamplerBuilder::disableComparison()
 
 //! @brief Creates a sampler on the GPU device the object is bound to.
 //! @return A wrapper for the created Sampler.
-//! @throws ObjectNotBound If the object was not bound to a valid GPU device.
+//! @throws ObjectNotBoundException If the object was not bound to a valid GPU device.
 //! @throws ApiException If SDL cannot create the sampler.
 Sampler SamplerBuilder::create() const
 {
@@ -2080,9 +2120,11 @@ bool Device::supportsTextureSampleCount(SDL_GPUTextureFormat format,
 //! @param[in] debug True for debug mode, false otherwise.
 //! @param[in] preferredBackEnd The optional name of the preferred back end, nullptr for
 //! the default back end on the current system.
-//! @retval true A GPU device was successfully created and bound.
-//! @retval false A GPU device resource was not created, the object is unbound.
-//! @throws ApiException If a GPU object cannot be created.
+//! @throws ApiException If a GPU object cannot be created, which includes
+//! the case of no back end supporting @p shaderFormatFlags.
+//! @details Any device previously bound to the object is released first.
+//! Use isSupported() beforehand to test a configuration without provoking
+//! an exception.
 void Device::create(SDL_GPUShaderFormat shaderFormatFlags, bool debug, utf8_cptr_t preferredBackEnd)
 {
     if (tryCreate(shaderFormatFlags, debug, preferredBackEnd) == false)
@@ -2112,7 +2154,7 @@ bool Device::tryCreate(SDL_GPUShaderFormat shaderFormatFlags, bool debug,
 //! SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD or SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD.
 //! @param[in] size The count of bytes in the buffer.
 //! @return An object representing the newly created buffer object.
-//! @throws ObjectNotBound If the object does not wrap a valid GPU device.
+//! @throws ObjectNotBoundException If the object does not wrap a valid GPU device.
 //! @throws ApiException If SDL cannot create the texture.
 TransferBuffer Device::createTransferBuffer(SDL_GPUTransferBufferUsage usage,
                                             uint32_t size) const
@@ -2134,7 +2176,7 @@ TransferBuffer Device::createTransferBuffer(SDL_GPUTransferBufferUsage usage,
 //! as SDL_GPU_BUFFERUSAGE_VERTEX and SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ.
 //! @param[in] size The count of bytes in the buffer.
 //! @return An object representing the buffer.
-//! @throws ObjectNotBound If the object does not wrap a valid GPU device.
+//! @throws ObjectNotBoundException If the object does not wrap a valid GPU device.
 //! @throws ApiException If SDL cannot create the texture.
 ResourceBuffer Device::createResourceBuffer(SDL_GPUBufferUsageFlags usage,
                                             uint32_t size) const
@@ -2154,7 +2196,7 @@ ResourceBuffer Device::createResourceBuffer(SDL_GPUBufferUsageFlags usage,
 //! @brief Creates a texture on the device.
 //! @param[in] info The requirements of the texture to create.
 //! @return An object wrapping the newly created texture.
-//! @throws ObjectNotBound If the object does not wrap a valid GPU device.
+//! @throws ObjectNotBoundException If the object does not wrap a valid GPU device.
 //! @throws ApiException If SDL cannot create the texture.
 Texture Device::createTexture(const SDL_GPUTextureCreateInfo &info) const
 {
@@ -2170,7 +2212,7 @@ Texture Device::createTexture(const SDL_GPUTextureCreateInfo &info) const
 //! @brief Creates a shader program on the device.
 //! @param[in] info Details of the shader to create.
 //! @return An object wrapping the newly created shader resource.
-//! @throws ObjectNotBound If the object does not wrap a valid GPU device.
+//! @throws ObjectNotBoundException If the object does not wrap a valid GPU device.
 //! @throws ApiException If SDL cannot create the shader.
 Shader Device::createShader(const SDL_GPUShaderCreateInfo &info) const
 {
@@ -2187,7 +2229,7 @@ Shader Device::createShader(const SDL_GPUShaderCreateInfo &info) const
 //! texture data.
 //! @param[in] info Details of the sampler to create.
 //! @return An object wrapping the newly created sampler.
-//! @throws ObjectNotBound If the object does not wrap a valid GPU device.
+//! @throws ObjectNotBoundException If the object does not wrap a valid GPU device.
 //! @throws ApiException If SDL cannot create the sampler.
 Sampler Device::createSampler(const SDL_GPUSamplerCreateInfo &info) const
 {
@@ -2203,7 +2245,7 @@ Sampler Device::createSampler(const SDL_GPUSamplerCreateInfo &info) const
 //! @brief Creates a graphic pipeline on the current GPU device.
 //! @param[in] info The parameters required to create the pipeline.
 //! @return A newly created graphic pipeline object.
-//! @throws ObjectNotBound If the object does not wrap a valid GPU device.
+//! @throws ObjectNotBoundException If the object does not wrap a valid GPU device.
 //! @throws ApiException If SDL cannot create the texture.
 GraphicsPipeline Device::createGraphicsPipeline(const SDL_GPUGraphicsPipelineCreateInfo &info) const
 {
@@ -2256,6 +2298,12 @@ Device &Device::operator=(Device &&rhs) noexcept
 //! @brief Creates a swap chain to render to a specified window.
 //! @param[in] window The window to render to.
 //! @return An object representing the swap chain.
+//! @throws ArgumentException If @p window is nullptr.
+//! @throws ObjectNotBoundException If the object does not wrap a valid GPU
+//! device.
+//! @throws ApiException If SDL_ClaimWindowForGPUDevice() fails.
+//! @details The device claims @p window, so the window must outlive the
+//! returned Swapchain.
 Swapchain Device::createSwapchain(SDL_Window *window) const
 {
     if (window == nullptr)

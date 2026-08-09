@@ -431,6 +431,10 @@ bool ProgramArguments::tryFindDisplay(SDL_DisplayID &displayID) const
 //! the selection.
 //! @retval false Either no mode was specified or was but wasn't matched. @p mode
 //! was updated with details of the desktop display mode.
+//! @throws ApiException If SDL cannot report a display mode for
+//! @p displayID, which includes the case of an invalid display identifier.
+//! @details Note that @p mode is written in both outcomes, so a false
+//! result still leaves a usable desktop mode behind.
 bool ProgramArguments::tryFindDisplayMode(SDL_DisplayID displayID,
                                               SDL_DisplayMode &mode) const
 {
