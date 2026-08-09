@@ -88,8 +88,8 @@ public:
     PropertySet getProperties() const;
     Renderer getRenderer() const;
 
-    void getColorMod(uint8_t &r, uint8_t &g, uint8_t &b) const;
-    void setColorMod(uint8_t r, uint8_t g, uint8_t b);
+    void getColourMod(uint8_t &r, uint8_t &g, uint8_t &b) const;
+    void setColourMod(uint8_t r, uint8_t g, uint8_t b);
     void getColorModFloat(float &r, float &g, float &b) const;
     void setColorModFloat(float r, float g, float b);
     uint8_t getAlphaMod() const;

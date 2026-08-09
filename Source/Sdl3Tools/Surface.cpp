@@ -200,7 +200,8 @@ SDL_Surface *LockedSurface::verifyAccess(utf8_cptr_t operation) const
 //! @brief Constructs an empty wrapper for an SDL surface.
 Surface::Surface() :
     _surface(nullptr),
-    _associatedWindow(nullptr)
+    _associatedWindow(nullptr),
+    _isOwned(false)
 {
 }
 
@@ -208,15 +209,19 @@ Surface::Surface() :
 //! @param[in] rhs The wrapper to acquire the resource from.
 Surface::Surface(Surface &&rhs) noexcept :
     _surface(std::exchange(rhs._surface, nullptr)),
-    _associatedWindow(std::exchange(rhs._associatedWindow, nullptr))
+    _associatedWindow(std::exchange(rhs._associatedWindow, nullptr)),
+    _isOwned(std::exchange(rhs._isOwned, false))
 {
 }
 
 //! @brief Constructs a wrapper for a surface resource.
 //! @param[in] surface The surface resource to wrap, possibly nullptr.
-Surface::Surface(SDL_Surface *surface) :
+//! @param[in] isOwned True if the @p surface is now tied to the
+//! lifetime of this object, false to access it passively.
+Surface::Surface(SDL_Surface *surface, bool isOwned /*= true*/) :
     _surface(surface),
-    _associatedWindow(nullptr)
+    _associatedWindow(nullptr),
+    _isOwned(isOwned)
 {
 }
 
@@ -226,7 +231,8 @@ Surface::Surface(SDL_Surface *surface) :
 //! non-null window.
 Surface::Surface(SDL_Window *window) :
     _surface(nullptr),
-    _associatedWindow(window)
+    _associatedWindow(window),
+    _isOwned(false)
 {
     if (window != nullptr)
     {
@@ -234,6 +240,8 @@ Surface::Surface(SDL_Window *window) :
 
         if (_surface == nullptr)
             throw ApiException("SDL_GetWindowSurface()");
+
+        _isOwned = true;
     }
 }
 
@@ -264,6 +272,13 @@ bool Surface::needsLock() const
 SDL_Surface *Surface::get() const
 {
     return _surface;
+}
+
+//! @brief Gets the size of the surface, in pixels, or -1 x -1 if the
+//! object is unbound.
+SDL_Point Surface::getSize() const
+{
+    return (_surface == nullptr) ? Point(-1, -1) : Point(_surface->w, _surface->h);
 }
 
 //! @brief Gets the width of the surface, in pixels, or -1 if the object is
@@ -317,19 +332,19 @@ PropertySet Surface::getProperties() const
     return PropertySet(id);
 }
 
-//! @brief Gets the current colourspace of the surface.
+//! @brief Gets the current colour space of the surface.
 //! @throws ObjectNotBoundException If the object is unbound.
-SDL_Colorspace Surface::getColorspace() const
+SDL_Colorspace Surface::getColourspace() const
 {
-    return SDL_GetSurfaceColorspace(verifyAccess("Get colourspace"));
+    return SDL_GetSurfaceColorspace(verifyAccess("Get colour space"));
 }
 
-//! @brief Sets the colourspace of the surface.
+//! @brief Sets the colour space of the surface.
 //! @throws ObjectNotBoundException If the object is unbound.
-//! @throws ApiException If SDL fails to set the colourspace.
-void Surface::setColorspace(SDL_Colorspace colorspace)
+//! @throws ApiException If SDL fails to set the colour space.
+void Surface::setColourspace(SDL_Colorspace colorspace)
 {
-    auto surface = verifyAccess("Set colourspace");
+    auto surface = verifyAccess("Set colour space");
 
     if (SDL_SetSurfaceColorspace(surface, colorspace) == false)
         throw ApiException("SDL_SetSurfaceColorspace()");
@@ -345,21 +360,26 @@ bool Surface::hasAlternateImages() const
 //! @brief Gets all images associated with the surface, including the primary.
 //! @return The images belonging to the surface, or an empty vector when the
 //! surface is unbound.
-std::vector<SDL_Surface *> Surface::getImages() const
+Surface::Collection Surface::getImages() const
 {
-    std::vector<SDL_Surface *> result;
+    Collection result;
 
-    if (_surface == nullptr)
-        return result;
+    if (_surface != nullptr)
+    {
+        int count = 0;
+        SDL_Surface **images = SDL_GetSurfaceImages(_surface, &count);
 
-    int count = 0;
-    SDL_Surface **images = SDL_GetSurfaceImages(_surface, &count);
+        if (images == nullptr)
+            throw ApiException("SDL_GetSurfaceImages()");
 
-    if (images == nullptr)
-        throw ApiException("SDL_GetSurfaceImages()");
+        // Ensure we dispose of the returned array, no matter what happens.
+        AtScopeExit1 freeImages(SDL_free, images);
 
-    result.assign(images, images + count);
-    SDL_free(images);
+        result.reserve(toSize(count));
+
+        for (int i = 0; i < count; ++i)
+            result.emplace_back(images[i], false);
+    }
 
     return result;
 }
@@ -376,6 +396,10 @@ void Surface::addAlternateImage(const Surface &image)
 
     if (SDL_AddSurfaceAlternateImage(surface, other) == false)
         throw ApiException("SDL_AddSurfaceAlternateImage()");
+
+    // NOTE: Both the new and old reference to image remain valid,
+    // so there is no need to remove the underlying SDL_Surface
+    // from inside image on success.
 }
 
 //! @brief Removes any alternate images from the surface.
@@ -446,7 +470,7 @@ void Surface::setRLE(bool enable)
 }
 
 //! @brief Determines whether the surface has a colour key enabled.
-bool Surface::hasColorKey() const
+bool Surface::hasColourKey() const
 {
     return (_surface != nullptr) && SDL_SurfaceHasColorKey(_surface);
 }
@@ -455,7 +479,7 @@ bool Surface::hasColorKey() const
 //! @param[out] key Receives the colour key pixel value on success.
 //! @retval true A colour key is set and has been returned.
 //! @retval false The object is unbound or no colour key is set.
-bool Surface::tryGetColorKey(uint32_t &key) const
+bool Surface::tryGetColourKey(uint32_t &key) const
 {
     return (_surface != nullptr) &&
         SDL_GetSurfaceColorKey(_surface, &key);
@@ -467,7 +491,7 @@ bool Surface::tryGetColorKey(uint32_t &key) const
 //! disabling).
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetSurfaceColorKey() fails.
-void Surface::setColorKey(bool enable, uint32_t key)
+void Surface::setColourKey(bool enable, uint32_t key)
 {
     auto surface = verifyAccess("Set colour key");
 
@@ -478,7 +502,7 @@ void Surface::setColorKey(bool enable, uint32_t key)
 //! @brief Gets the additional colour modulation values applied when blitting.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_GetSurfaceColorMod() fails.
-void Surface::getColorMod(uint8_t &r, uint8_t &g, uint8_t &b) const
+void Surface::getColourMod(uint8_t &r, uint8_t &g, uint8_t &b) const
 {
     auto surface = verifyAccess("Get colour mod");
 
@@ -489,7 +513,7 @@ void Surface::getColorMod(uint8_t &r, uint8_t &g, uint8_t &b) const
 //! @brief Sets the additional colour modulation values applied when blitting.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetSurfaceColorMod() fails.
-void Surface::setColorMod(uint8_t r, uint8_t g, uint8_t b)
+void Surface::setColourMod(uint8_t r, uint8_t g, uint8_t b)
 {
     auto surface = verifyAccess("Set colour mod");
 
@@ -557,14 +581,24 @@ bool Surface::tryGetClipRect(SDL_Rect &clip) const
         SDL_GetSurfaceClipRect(_surface, &clip);
 }
 
-//! @brief Sets or clears the clip rectangle used when blitting into the
+//! @brief Sets the clip rectangle used when blitting into the
 //! surface.
 //! @param[in] clip The new clip rectangle, or nullptr to disable clipping.
 //! @throws ObjectNotBoundException If the object is unbound.
-void Surface::setClipRect(const SDL_Rect *clip)
+bool Surface::setClipRect(const SDL_Rect &clip)
 {
     auto surface = verifyAccess("Set clip rect");
-    SDL_SetSurfaceClipRect(surface, clip);
+
+    return SDL_SetSurfaceClipRect(surface, &clip);
+}
+
+//! @brief Disables clipping for subsequent blits into the surface.
+//! @throws ObjectNotBoundException If the object is unbound.
+void Surface::resetClipRect()
+{
+    auto surface = verifyAccess("Reset clip rect");
+
+    SDL_SetSurfaceClipRect(surface, nullptr);
 }
 
 //! @brief Creates a new blank surface of the given dimensions.
@@ -677,17 +711,17 @@ Surface Surface::converted(SDL_PixelFormat format) const
 }
 
 //! @brief Creates a copy of the surface converted to a different pixel format
-//! and colourspace.
+//! and colour space.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_ConvertSurfaceAndColorspace() fails.
-Surface Surface::convertedWithColorspace(SDL_PixelFormat format,
+Surface Surface::convertedWithColourspace(SDL_PixelFormat format,
                                          SDL_Palette *palette,
-                                         SDL_Colorspace colorspace,
+                                         SDL_Colorspace colourspace,
                                          SDL_PropertiesID props) const
 {
-    auto surface = verifyAccess("Convert with colourspace");
+    auto surface = verifyAccess("Convert with colour space");
     SDL_Surface *result = SDL_ConvertSurfaceAndColorspace(surface, format, palette,
-                                                          colorspace, props);
+                                                          colourspace, props);
 
     if (result == nullptr)
         throw ApiException("SDL_ConvertSurfaceAndColorspace()");
@@ -842,14 +876,14 @@ void Surface::stretch(const SDL_Rect *srcRect, const Surface &dst,
         throw ApiException("SDL_StretchSurface()");
 }
 
-//! @brief Premultiplies the alpha component into the RGB channels of the
+//! @brief Pre-multiplies the alpha component into the RGB channels of the
 //! surface.
-//! @param[in] linear True to premultiply in linear space, false for sRGB.
+//! @param[in] linear True to pre-multiply in linear space, false for sRGB.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_PremultiplySurfaceAlpha() fails.
 void Surface::premultiplyAlpha(bool linear)
 {
-    auto surface = verifyAccess("Premultiply alpha");
+    auto surface = verifyAccess("Pre-multiply alpha");
 
     if (SDL_PremultiplySurfaceAlpha(surface, linear) == false)
         throw ApiException("SDL_PremultiplySurfaceAlpha()");
@@ -858,8 +892,20 @@ void Surface::premultiplyAlpha(bool linear)
 //! @brief Reads a single pixel as 8-bit RGBA values.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_ReadSurfacePixel() fails.
-void Surface::readPixel(int x, int y, uint8_t &r, uint8_t &g, uint8_t &b,
-                        uint8_t &a) const
+void Surface::readPixel(const SDL_Point &at, SDL_Color &colour) const
+{
+    auto surface = verifyAccess("Read pixel");
+
+    if (SDL_ReadSurfacePixel(surface, at.x, at.y, &colour.r,
+                            &colour.g, &colour.b, &colour.a) == false)
+        throw ApiException("SDL_ReadSurfacePixel()");
+}
+
+//! @brief Reads a single pixel as 8-bit RGBA values.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_ReadSurfacePixel() fails.
+void Surface::readPixel(int x, int y, uint8_t &r, uint8_t &g,
+                        uint8_t &b, uint8_t &a) const
 {
     auto surface = verifyAccess("Read pixel");
 
@@ -870,8 +916,20 @@ void Surface::readPixel(int x, int y, uint8_t &r, uint8_t &g, uint8_t &b,
 //! @brief Reads a single pixel as normalised float RGBA values.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_ReadSurfacePixelFloat() fails.
-void Surface::readPixelFloat(int x, int y, float &r, float &g, float &b,
-                             float &a) const
+void Surface::readPixelFloat(const SDL_Point &at, SDL_FColor &colour) const
+{
+    auto surface = verifyAccess("Read pixel");
+
+    if (SDL_ReadSurfacePixelFloat(surface, at.x, at.y, &colour.r,
+                                  &colour.g, &colour.b, &colour.a) == false)
+        throw ApiException("SDL_ReadSurfacePixelFloat()");
+}
+
+//! @brief Reads a single pixel as normalised float RGBA values.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_ReadSurfacePixelFloat() fails.
+void Surface::readPixelFloat(int x, int y, float &r, float &g,
+                             float &b, float &a) const
 {
     auto surface = verifyAccess("Read pixel (float)");
 
@@ -882,13 +940,39 @@ void Surface::readPixelFloat(int x, int y, float &r, float &g, float &b,
 //! @brief Writes a single pixel using 8-bit RGBA values.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_WriteSurfacePixel() fails.
-void Surface::writePixel(int x, int y, uint8_t r, uint8_t g, uint8_t b,
-                         uint8_t a)
+void Surface::writePixel(const SDL_Point &at, const SDL_Color &colour)
+{
+    auto surface = verifyAccess("Write pixel");
+
+    if (SDL_WriteSurfacePixel(surface, at.x, at.y,
+                              colour.r, colour.g,
+                              colour.b, colour.a) == false)
+        throw ApiException("SDL_WriteSurfacePixel()");
+}
+
+//! @brief Writes a single pixel using 8-bit RGBA values.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_WriteSurfacePixel() fails.
+void Surface::writePixel(int x, int y, uint8_t r, uint8_t g,
+                         uint8_t b, uint8_t a)
 {
     auto surface = verifyAccess("Write pixel");
 
     if (SDL_WriteSurfacePixel(surface, x, y, r, g, b, a) == false)
         throw ApiException("SDL_WriteSurfacePixel()");
+}
+
+//! @brief Writes a single pixel using normalised float RGBA values.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_WriteSurfacePixelFloat() fails.
+void Surface::writePixelFloat(const SDL_Point &at, const SDL_FColor &colour)
+{
+    auto surface = verifyAccess("Write pixel (float)");
+
+    if (SDL_WriteSurfacePixelFloat(surface, at.x, at.y,
+                                   colour.r, colour.g,
+                                   colour.b, colour.a) == false)
+        throw ApiException("SDL_WriteSurfacePixelFloat()");
 }
 
 //! @brief Writes a single pixel using normalised float RGBA values.
@@ -910,7 +994,7 @@ void Surface::release() noexcept
     auto surface = std::exchange(_surface, nullptr);
     auto window = std::exchange(_associatedWindow, nullptr);
 
-    if (surface != nullptr)
+    if (_isOwned && (surface != nullptr))
     {
         if (window == nullptr)
         {
@@ -921,6 +1005,8 @@ void Surface::release() noexcept
             SDL_DestroyWindowSurface(window);
         }
     }
+
+    _isOwned = false;
 }
 
 //! @brief Locks the surface so that pixels can be randomly accessed.
@@ -955,6 +1041,7 @@ Surface &Surface::operator=(Surface &&rhs) noexcept
 
     _surface = std::exchange(rhs._surface, nullptr);
     _associatedWindow = std::exchange(rhs._associatedWindow, nullptr);
+    _isOwned = std::exchange(rhs._isOwned, false);
 
     return *this;
 }

@@ -62,10 +62,10 @@ TEST_F(RendererTest, DrawColorRoundTrip)
     Renderer renderer;
     renderer.createSoftware(surface);
 
-    ASSERT_NO_THROW(renderer.setDrawColor(32, 64, 128, 200));
+    ASSERT_NO_THROW(renderer.setDrawColour(32, 64, 128, 200));
 
     uint8_t r = 0, g = 0, b = 0, a = 0;
-    renderer.getDrawColor(r, g, b, a);
+    renderer.getDrawColour(r, g, b, a);
     EXPECT_EQ(r, 32u);
     EXPECT_EQ(g, 64u);
     EXPECT_EQ(b, 128u);
@@ -80,7 +80,7 @@ TEST_F(RendererTest, ClearPresentReadBack)
     Renderer renderer;
     renderer.createSoftware(surface);
 
-    renderer.setDrawColor(255, 0, 0, 255);
+    renderer.setDrawColour(255, 0, 0, 255);
     ASSERT_NO_THROW(renderer.clear());
     ASSERT_NO_THROW(renderer.present());
 
@@ -99,12 +99,12 @@ TEST_F(RendererTest, FillRectDrawsIntoTargetSurface)
     Renderer renderer;
     renderer.createSoftware(surface);
 
-    renderer.setDrawColor(0, 0, 0, 255);
+    renderer.setDrawColour(0, 0, 0, 255);
     renderer.clear();
 
     SDL_FRect rect{4.0f, 4.0f, 4.0f, 4.0f};
-    renderer.setDrawColor(0, 255, 0, 255);
-    ASSERT_NO_THROW(renderer.fillRect(&rect));
+    renderer.setDrawColour(0, 255, 0, 255);
+    ASSERT_NO_THROW(renderer.fillRect(rect));
     renderer.present();
 
     uint8_t r = 0, g = 0, b = 0, a = 0;
@@ -124,7 +124,7 @@ TEST_F(RendererTest, ViewportRoundTrip)
     renderer.createSoftware(surface);
 
     SDL_Rect viewport{2, 2, 20, 20};
-    ASSERT_NO_THROW(renderer.setViewport(&viewport));
+    ASSERT_NO_THROW(renderer.setViewport(viewport));
 
     SDL_Rect readBack{};
     renderer.getViewport(readBack);

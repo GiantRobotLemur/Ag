@@ -43,36 +43,53 @@ public:
     Window getWindow() const;
     PropertySet getProperties() const;
     void getOutputSize(int &w, int &h) const;
+    void getOutputSize(SDL_Point &size) const;
     void getCurrentOutputSize(int &w, int &h) const;
+    void getCurrentOutputSize(SDL_Point &size) const;
     void getSafeArea(SDL_Rect &area) const;
     void getViewport(SDL_Rect &viewport) const;
-    void setViewport(const SDL_Rect *viewport);
-    bool viewportSet() const;
+    void setViewport(const SDL_Rect &viewport);
+    void resetViewport();
+    bool isViewportSet() const;
     bool tryGetClipRect(SDL_Rect &clip) const;
-    void setClipRect(const SDL_Rect *clip);
+    void setClipRect(const SDL_Rect &clip);
+    void resetClipRect();
     bool clipEnabled() const;
     void getScale(float &scaleX, float &scaleY) const;
+    void getScale(SDL_FPoint &scale) const;
     void setScale(float scaleX, float scaleY);
-    void getDrawColor(uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) const;
-    void setDrawColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+    void setScale(const SDL_FPoint &scale);
+    void getDrawColour(SDL_Color &colour) const;
+    void getDrawColour(uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) const;
+    void setDrawColour(const SDL_Color &colour);
+    void setDrawColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+    void getDrawColorFloat(SDL_FColor &colour) const;
     void getDrawColorFloat(float &r, float &g, float &b, float &a) const;
-    void setDrawColorFloat(float r, float g, float b, float a = 1.0f);
+    void setDrawColourFloat(const SDL_FColor &colour);
+    void setDrawColourFloat(float r, float g, float b, float a = 1.0f);
     SDL_BlendMode getDrawBlendMode() const;
     void setDrawBlendMode(SDL_BlendMode mode);
-    float getColorScale() const;
-    void setColorScale(float scale);
+    float getColourScale() const;
+    void setColourScale(float scale);
     int getVSync() const;
     void setVSync(int vsync);
 
     void setLogicalPresentation(int w, int h, SDL_RendererLogicalPresentation mode);
+    void setLogicalPresentation(const SDL_Point &size, SDL_RendererLogicalPresentation mode);
     void getLogicalPresentation(int &w, int &h,
+                                SDL_RendererLogicalPresentation &mode) const;
+    void getLogicalPresentation(SDL_Point &size,
                                 SDL_RendererLogicalPresentation &mode) const;
     void getLogicalPresentationRect(SDL_FRect &rect) const;
 
     void renderCoordinatesFromWindow(float wx, float wy,
                                      float &rx, float &ry) const;
+    void renderCoordinatesFromWindow(const SDL_FPoint &windowPos,
+                                     SDL_FPoint &renderPos) const;
     void renderCoordinatesToWindow(float rx, float ry,
                                    float &wx, float &wy) const;
+    void renderCoordinatesToWindow(const SDL_FPoint &renderPos,
+                                   SDL_FPoint &windowPos) const;
     void convertEventToRenderCoordinates(SDL_Event &event) const;
 
     // Operations
@@ -83,12 +100,16 @@ public:
 
     void clear();
     void drawPoint(float x, float y);
+    void drawPoint(const SDL_FPoint &at);
     void drawPoints(const SDL_FPoint *points, int count);
+    void drawLine(const SDL_FPoint &pt1, const SDL_FPoint &pt2);
     void drawLine(float x1, float y1, float x2, float y2);
     void drawLines(const SDL_FPoint *points, int count);
-    void drawRect(const SDL_FRect *rect);
+    void drawRect();
+    void drawRect(const SDL_FRect &rect);
     void drawRects(const SDL_FRect *rects, int count);
-    void fillRect(const SDL_FRect *rect);
+    void fill();
+    void fillRect(const SDL_FRect &rect);
     void fillRects(const SDL_FRect *rects, int count);
     void drawTexture(const Texture &texture, const SDL_FRect *src,
                      const SDL_FRect *dst);
@@ -114,6 +135,7 @@ public:
                          int numVertices,
                          const void *indices, int numIndices,
                          int sizeIndices);
+    void drawDebugText(const SDL_FPoint &at, utf8_cptr_t text);
     void drawDebugText(float x, float y, utf8_cptr_t text);
 
     void setTarget(const Texture &target);
@@ -121,7 +143,8 @@ public:
     Texture getTarget() const;
     void present();
     void flush();
-    Surface readPixels(const SDL_Rect *area = nullptr) const;
+    Surface readViewportPixels() const;
+    Surface readPixels(const SDL_Rect &area) const;
 
     Texture createTexture(SDL_PixelFormat format, SDL_TextureAccess access,
                           int width, int height) const;

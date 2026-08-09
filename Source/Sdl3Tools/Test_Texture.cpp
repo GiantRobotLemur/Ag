@@ -131,7 +131,7 @@ TEST_F(TextureTest, UpdateStaticAndDrawRendersPixels)
                    4, 4);
     ASSERT_NO_THROW(texture.update(nullptr, pixels, 4 * 4));
 
-    renderer.setDrawColor(0, 0, 0, 255);
+    renderer.setDrawColour(0, 0, 0, 255);
     renderer.clear();
     SDL_FRect dst{2.0f, 2.0f, 4.0f, 4.0f};
     renderer.drawTexture(texture, nullptr, &dst);

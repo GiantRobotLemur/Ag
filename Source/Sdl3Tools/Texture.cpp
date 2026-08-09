@@ -293,7 +293,7 @@ Renderer Texture::getRenderer() const
 
 //! @brief Gets the additional colour modulation applied when drawing the
 //! texture.
-void Texture::getColorMod(uint8_t &r, uint8_t &g, uint8_t &b) const
+void Texture::getColourMod(uint8_t &r, uint8_t &g, uint8_t &b) const
 {
     auto texture = verifyAccess("Get colour mod");
 
@@ -303,7 +303,7 @@ void Texture::getColorMod(uint8_t &r, uint8_t &g, uint8_t &b) const
 
 //! @brief Sets the additional colour modulation applied when drawing the
 //! texture.
-void Texture::setColorMod(uint8_t r, uint8_t g, uint8_t b)
+void Texture::setColourMod(uint8_t r, uint8_t g, uint8_t b)
 {
     auto texture = verifyAccess("Set colour mod");
 

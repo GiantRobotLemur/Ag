@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SDL3_TOOLS_SURFACE_HPP__
-#define __AG_SDL3_TOOLS_SURFACE_HPP__
+#ifndef HEADER_AG_SDL3_TOOLS_SURFACE_HPP_
+#define HEADER_AG_SDL3_TOOLS_SURFACE_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -67,11 +67,14 @@ private:
 class Surface
 {
 public:
+    // Public Types
+    using Collection = std::vector<Surface>;
+
     // Construction/Destruction
     Surface();
     Surface(const Surface &) = delete;
     Surface(Surface &&rhs) noexcept;
-    Surface(SDL_Surface *surface);
+    Surface(SDL_Surface *surface, bool isOwned = true);
     Surface(SDL_Window *window);
     ~Surface();
 
@@ -79,16 +82,17 @@ public:
     bool isBound() const;
     bool needsLock() const;
     SDL_Surface *get() const;
+    SDL_Point getSize() const;
     int getWidth() const;
     int getHeight() const;
     int getPitch() const;
     SDL_PixelFormat getFormat() const;
     SDL_SurfaceFlags getFlags() const;
     PropertySet getProperties() const;
-    SDL_Colorspace getColorspace() const;
-    void setColorspace(SDL_Colorspace colorspace);
+    SDL_Colorspace getColourspace() const;
+    void setColourspace(SDL_Colorspace colorspace);
     bool hasAlternateImages() const;
-    std::vector<SDL_Surface *> getImages() const;
+    Collection getImages() const;
     void addAlternateImage(const Surface &image);
     void removeAlternateImages();
     bool hasPalette() const;
@@ -97,17 +101,18 @@ public:
     SDL_Palette *createAndSetPalette();
     bool hasRLE() const;
     void setRLE(bool enable);
-    bool hasColorKey() const;
-    bool tryGetColorKey(uint32_t &key) const;
-    void setColorKey(bool enable, uint32_t key);
-    void getColorMod(uint8_t &r, uint8_t &g, uint8_t &b) const;
-    void setColorMod(uint8_t r, uint8_t g, uint8_t b);
+    bool hasColourKey() const;
+    bool tryGetColourKey(uint32_t &key) const;
+    void setColourKey(bool enable, uint32_t key);
+    void getColourMod(uint8_t &r, uint8_t &g, uint8_t &b) const;
+    void setColourMod(uint8_t r, uint8_t g, uint8_t b);
     uint8_t getAlphaMod() const;
     void setAlphaMod(uint8_t alpha);
     SDL_BlendMode getBlendMode() const;
     void setBlendMode(SDL_BlendMode mode);
     bool tryGetClipRect(SDL_Rect &clip) const;
-    void setClipRect(const SDL_Rect *clip);
+    bool setClipRect(const SDL_Rect &clip);
+    void resetClipRect();
 
     // Operations
     void create(int width, int height, SDL_PixelFormat format);
@@ -118,9 +123,9 @@ public:
     Surface duplicate() const;
     Surface scaled(int width, int height, SDL_ScaleMode mode) const;
     Surface converted(SDL_PixelFormat format) const;
-    Surface convertedWithColorspace(SDL_PixelFormat format, SDL_Palette *palette,
-                                    SDL_Colorspace colorspace,
-                                    SDL_PropertiesID props) const;
+    Surface convertedWithColourspace(SDL_PixelFormat format, SDL_Palette *palette,
+                                     SDL_Colorspace colourspace,
+                                     SDL_PropertiesID props) const;
     void flip(SDL_FlipMode flip);
     void clear(const SDL_FColor &value) const;
     void fillRect(const SDL_Rect *rect, uint32_t pixelValue);
@@ -143,11 +148,13 @@ public:
     void stretch(const SDL_Rect *srcRect, const Surface &dst,
                  const SDL_Rect *dstRect, SDL_ScaleMode mode) const;
     void premultiplyAlpha(bool linear);
-    void readPixel(int x, int y, uint8_t &r, uint8_t &g, uint8_t &b,
-                   uint8_t &a) const;
-    void readPixelFloat(int x, int y, float &r, float &g, float &b,
-                        float &a) const;
+    void readPixel(const SDL_Point &at, SDL_Color &colour) const;
+    void readPixel(int x, int y, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) const;
+    void readPixelFloat(const SDL_Point &at, SDL_FColor &colour) const;
+    void readPixelFloat(int x, int y, float &r, float &g, float &b, float &a) const;
+    void writePixel(const SDL_Point &at, const SDL_Color &colour);
     void writePixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    void writePixelFloat(const SDL_Point &at, const SDL_FColor &colour);
     void writePixelFloat(int x, int y, float r, float g, float b, float a);
     void release() noexcept;
     LockedSurface lock() const;
@@ -158,6 +165,7 @@ private:
     // Internal Fields
     SDL_Surface *_surface;
     SDL_Window *_associatedWindow;
+    bool _isOwned;
 };
 
 }} // namespace Ag::SDL3

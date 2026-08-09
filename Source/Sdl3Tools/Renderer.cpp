@@ -118,6 +118,15 @@ void Renderer::getOutputSize(int &w, int &h) const
         throw ApiException("SDL_GetRenderOutputSize()");
 }
 
+//! @brief Gets the fixed output size of the renderer, in pixels.
+void Renderer::getOutputSize(SDL_Point &size) const
+{
+    auto renderer = verifyAccess("Get output size");
+
+    if (SDL_GetRenderOutputSize(renderer, &size.x, &size.y) == false)
+        throw ApiException("SDL_GetRenderOutputSize()");
+}
+
 //! @brief Gets the current output size of the renderer, in pixels, accounting
 //! for logical presentation.
 void Renderer::getCurrentOutputSize(int &w, int &h) const
@@ -125,6 +134,16 @@ void Renderer::getCurrentOutputSize(int &w, int &h) const
     auto renderer = verifyAccess("Get current output size");
 
     if (SDL_GetCurrentRenderOutputSize(renderer, &w, &h) == false)
+        throw ApiException("SDL_GetCurrentRenderOutputSize()");
+}
+
+//! @brief Gets the current output size of the renderer, in pixels, accounting
+//! for logical presentation.
+void Renderer::getCurrentOutputSize(SDL_Point &size) const
+{
+    auto renderer = verifyAccess("Get current output size");
+
+    if (SDL_GetCurrentRenderOutputSize(renderer, &size.x, &size.y) == false)
         throw ApiException("SDL_GetCurrentRenderOutputSize()");
 }
 
@@ -147,16 +166,25 @@ void Renderer::getViewport(SDL_Rect &viewport) const
 }
 
 //! @brief Sets the current viewport rectangle, or nullptr to reset.
-void Renderer::setViewport(const SDL_Rect *viewport)
+void Renderer::setViewport(const SDL_Rect &viewport)
 {
     auto renderer = verifyAccess("Set viewport");
 
-    if (SDL_SetRenderViewport(renderer, viewport) == false)
+    if (SDL_SetRenderViewport(renderer, &viewport) == false)
         throw ApiException("SDL_SetRenderViewport()");
 }
 
+//! @brief Resets the current viewport rectangle, to the entire render target.
+void Renderer::resetViewport()
+{
+    auto renderer = verifyAccess("Reset viewport");
+
+    if (SDL_SetRenderViewport(renderer, nullptr) == false)
+        throw ApiException("SDL_SetRenderViewport(nullptr)");
+}
+
 //! @brief Determines whether an explicit viewport has been set.
-bool Renderer::viewportSet() const
+bool Renderer::isViewportSet() const
 {
     return (_renderer != nullptr) && SDL_RenderViewportSet(_renderer);
 }
@@ -172,12 +200,21 @@ bool Renderer::tryGetClipRect(SDL_Rect &clip) const
     return SDL_GetRenderClipRect(_renderer, &clip);
 }
 
-//! @brief Sets or clears the clip rectangle.
-void Renderer::setClipRect(const SDL_Rect *clip)
+//! @brief Sets the clip rectangle.
+void Renderer::setClipRect(const SDL_Rect &clip)
 {
     auto renderer = verifyAccess("Set clip rect");
 
-    if (SDL_SetRenderClipRect(renderer, clip) == false)
+    if (SDL_SetRenderClipRect(renderer, &clip) == false)
+        throw ApiException("SDL_SetRenderClipRect()");
+}
+
+//! @brief Clears the clip rectangle.
+void Renderer::resetClipRect()
+{
+    auto renderer = verifyAccess("Set clip rect");
+
+    if (SDL_SetRenderClipRect(renderer, nullptr) == false)
         throw ApiException("SDL_SetRenderClipRect()");
 }
 
@@ -196,6 +233,15 @@ void Renderer::getScale(float &scaleX, float &scaleY) const
         throw ApiException("SDL_GetRenderScale()");
 }
 
+//! @brief Gets the current draw scale of the renderer.
+void Renderer::getScale(SDL_FPoint &scale) const
+{
+    auto renderer = verifyAccess("Get scale");
+
+    if (SDL_GetRenderScale(renderer, &scale.x, &scale.y) == false)
+        throw ApiException("SDL_GetRenderScale()");
+}
+
 //! @brief Sets the draw scale of the renderer.
 void Renderer::setScale(float scaleX, float scaleY)
 {
@@ -205,8 +251,27 @@ void Renderer::setScale(float scaleX, float scaleY)
         throw ApiException("SDL_SetRenderScale()");
 }
 
+//! @brief Sets the draw scale of the renderer.
+void Renderer::setScale(const SDL_FPoint &scale)
+{
+    auto renderer = verifyAccess("Set scale");
+
+    if (SDL_SetRenderScale(renderer, scale.x, scale.y) == false)
+        throw ApiException("SDL_SetRenderScale()");
+}
+
 //! @brief Gets the current draw colour as 8-bit RGBA values.
-void Renderer::getDrawColor(uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) const
+void Renderer::getDrawColour(SDL_Color &colour) const
+{
+    auto renderer = verifyAccess("Get draw colour");
+
+    if (SDL_GetRenderDrawColor(renderer, &colour.r, &colour.g,
+                               &colour.b, &colour.a) == false)
+        throw ApiException("SDL_GetRenderDrawColor()");
+}
+
+//! @brief Gets the current draw colour as 8-bit RGBA values.
+void Renderer::getDrawColour(uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) const
 {
     auto renderer = verifyAccess("Get draw colour");
 
@@ -215,12 +280,32 @@ void Renderer::getDrawColor(uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) cons
 }
 
 //! @brief Sets the current draw colour using 8-bit RGBA values.
-void Renderer::setDrawColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+void Renderer::setDrawColour(const SDL_Color &colour)
+{
+    auto renderer = verifyAccess("Set draw colour");
+
+    if (SDL_SetRenderDrawColor(renderer, colour.r, colour.g,
+                               colour.b, colour.a) == false)
+        throw ApiException("SDL_SetRenderDrawColor()");
+}
+
+//! @brief Sets the current draw colour using 8-bit RGBA values.
+void Renderer::setDrawColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     auto renderer = verifyAccess("Set draw colour");
 
     if (SDL_SetRenderDrawColor(renderer, r, g, b, a) == false)
         throw ApiException("SDL_SetRenderDrawColor()");
+}
+
+//! @brief Gets the current draw colour as normalised float RGBA values.
+void Renderer::getDrawColorFloat(SDL_FColor &colour) const
+{
+    auto renderer = verifyAccess("Get draw colour (float)");
+
+    if (SDL_GetRenderDrawColorFloat(renderer, &colour.r, &colour.g,
+                                    &colour.b, &colour.a) == false)
+        throw ApiException("SDL_GetRenderDrawColorFloat()");
 }
 
 //! @brief Gets the current draw colour as normalised float RGBA values.
@@ -233,7 +318,17 @@ void Renderer::getDrawColorFloat(float &r, float &g, float &b, float &a) const
 }
 
 //! @brief Sets the current draw colour using normalised float RGBA values.
-void Renderer::setDrawColorFloat(float r, float g, float b, float a)
+void Renderer::setDrawColourFloat(const SDL_FColor &colour)
+{
+    auto renderer = verifyAccess("Set draw colour (float)");
+
+    if (SDL_SetRenderDrawColorFloat(renderer, colour.r, colour.g,
+                                    colour.b, colour.a) == false)
+        throw ApiException("SDL_SetRenderDrawColorFloat()");
+}
+
+//! @brief Sets the current draw colour using normalised float RGBA values.
+void Renderer::setDrawColourFloat(float r, float g, float b, float a)
 {
     auto renderer = verifyAccess("Set draw colour (float)");
 
@@ -263,7 +358,7 @@ void Renderer::setDrawBlendMode(SDL_BlendMode mode)
 }
 
 //! @brief Gets the current colour scale multiplier applied when drawing.
-float Renderer::getColorScale() const
+float Renderer::getColourScale() const
 {
     auto renderer = verifyAccess("Get colour scale");
     float scale = 1.0f;
@@ -275,7 +370,7 @@ float Renderer::getColorScale() const
 }
 
 //! @brief Sets the colour scale multiplier applied when drawing.
-void Renderer::setColorScale(float scale)
+void Renderer::setColourScale(float scale)
 {
     auto renderer = verifyAccess("Set colour scale");
 
@@ -304,7 +399,10 @@ void Renderer::setVSync(int vsync)
         throw ApiException("SDL_SetRenderVSync()");
 }
 
-//! @brief Sets the logical presentation size and mode of the renderer.
+//! @brief Set a device-independent resolution and presentation mode for rendering.
+//! @param[in] w The horizontal size of the logical resolution.
+//! @param[in] h The vertical size of the logical resolution.
+//! @param[in] mode The presentation mode used.
 void Renderer::setLogicalPresentation(int w, int h,
                                       SDL_RendererLogicalPresentation mode)
 {
@@ -312,6 +410,28 @@ void Renderer::setLogicalPresentation(int w, int h,
 
     if (SDL_SetRenderLogicalPresentation(renderer, w, h, mode) == false)
         throw ApiException("SDL_SetRenderLogicalPresentation()");
+}
+
+//! @brief Set a device-independent resolution and presentation mode for rendering.
+//! @param[in] size The size of the logical resolution.
+//! @param[in] mode The presentation mode used.
+void Renderer::setLogicalPresentation(const SDL_Point &size,
+                                      SDL_RendererLogicalPresentation mode)
+{
+    auto renderer = verifyAccess("Set logical presentation");
+
+    if (SDL_SetRenderLogicalPresentation(renderer, size.x, size.y, mode) == false)
+        throw ApiException("SDL_SetRenderLogicalPresentation()");
+}
+
+//! @brief Gets the current logical presentation size and mode of the renderer.
+void Renderer::getLogicalPresentation(SDL_Point &size,
+                                      SDL_RendererLogicalPresentation &mode) const
+{
+    auto renderer = verifyAccess("Get logical presentation");
+
+    if (SDL_GetRenderLogicalPresentation(renderer, &size.x, &size.y, &mode) == false)
+        throw ApiException("SDL_GetRenderLogicalPresentation()");
 }
 
 //! @brief Gets the current logical presentation size and mode of the renderer.
@@ -343,6 +463,17 @@ void Renderer::renderCoordinatesFromWindow(float wx, float wy,
         throw ApiException("SDL_RenderCoordinatesFromWindow()");
 }
 
+//! @brief Converts window coordinates to render coordinates.
+void Renderer::renderCoordinatesFromWindow(const SDL_FPoint &windowPos,
+                                 SDL_FPoint &renderPos) const
+{
+    auto renderer = verifyAccess("Convert coordinates from window");
+
+    if (SDL_RenderCoordinatesFromWindow(renderer, windowPos.x, windowPos.y,
+                                        &renderPos.x, &renderPos.y) == false)
+        throw ApiException("SDL_RenderCoordinatesFromWindow()");
+}
+
 //! @brief Converts render coordinates to window coordinates.
 void Renderer::renderCoordinatesToWindow(float rx, float ry,
                                          float &wx, float &wy) const
@@ -350,6 +481,17 @@ void Renderer::renderCoordinatesToWindow(float rx, float ry,
     auto renderer = verifyAccess("Convert coordinates to window");
 
     if (SDL_RenderCoordinatesToWindow(renderer, rx, ry, &wx, &wy) == false)
+        throw ApiException("SDL_RenderCoordinatesToWindow()");
+}
+
+//! @brief Converts render coordinates to window coordinates.
+void Renderer::renderCoordinatesToWindow(const SDL_FPoint &renderPos,
+                                         SDL_FPoint &windowPos) const
+{
+    auto renderer = verifyAccess("Convert coordinates to window");
+
+    if (SDL_RenderCoordinatesToWindow(renderer, renderPos.x, renderPos.y,
+                                      &windowPos.x, &windowPos.y) == false)
         throw ApiException("SDL_RenderCoordinatesToWindow()");
 }
 
@@ -434,6 +576,15 @@ void Renderer::drawPoint(float x, float y)
         throw ApiException("SDL_RenderPoint()");
 }
 
+//! @brief Draws a single point.
+void Renderer::drawPoint(const SDL_FPoint &at)
+{
+    auto renderer = verifyAccess("Draw point");
+
+    if (SDL_RenderPoint(renderer, at.x, at.y) == false)
+        throw ApiException("SDL_RenderPoint()");
+}
+
 //! @brief Draws an array of points.
 void Renderer::drawPoints(const SDL_FPoint *points, int count)
 {
@@ -441,6 +592,15 @@ void Renderer::drawPoints(const SDL_FPoint *points, int count)
 
     if (SDL_RenderPoints(renderer, points, count) == false)
         throw ApiException("SDL_RenderPoints()");
+}
+
+//! @brief Draws a single line.
+void Renderer::drawLine(const SDL_FPoint &pt1, const SDL_FPoint &pt2)
+{
+    auto renderer = verifyAccess("Draw line");
+
+    if (SDL_RenderLine(renderer, pt1.x, pt1.y, pt2.x, pt2.y) == false)
+        throw ApiException("SDL_RenderLine()");
 }
 
 //! @brief Draws a single line.
@@ -461,12 +621,21 @@ void Renderer::drawLines(const SDL_FPoint *points, int count)
         throw ApiException("SDL_RenderLines()");
 }
 
-//! @brief Draws the outline of a rectangle.
-void Renderer::drawRect(const SDL_FRect *rect)
+//! @brief Draws the outline around the entire render target.
+void Renderer::drawRect()
 {
     auto renderer = verifyAccess("Draw rect");
 
-    if (SDL_RenderRect(renderer, rect) == false)
+    if (SDL_RenderRect(renderer, nullptr) == false)
+        throw ApiException("SDL_RenderRect()");
+}
+
+//! @brief Draws the outline of a rectangle.
+void Renderer::drawRect(const SDL_FRect &rect)
+{
+    auto renderer = verifyAccess("Draw rect");
+
+    if (SDL_RenderRect(renderer, &rect) == false)
         throw ApiException("SDL_RenderRect()");
 }
 
@@ -479,12 +648,21 @@ void Renderer::drawRects(const SDL_FRect *rects, int count)
         throw ApiException("SDL_RenderRects()");
 }
 
+//! @brief Fills a the entire surface with the current draw colour.
+void Renderer::fill()
+{
+    auto renderer = verifyAccess("Fill all");
+
+    if (SDL_RenderFillRect(renderer, nullptr) == false)
+        throw ApiException("SDL_RenderFillRect(nullptr)");
+}
+
 //! @brief Fills a rectangle with the current draw colour.
-void Renderer::fillRect(const SDL_FRect *rect)
+void Renderer::fillRect(const SDL_FRect &rect)
 {
     auto renderer = verifyAccess("Fill rect");
 
-    if (SDL_RenderFillRect(renderer, rect) == false)
+    if (SDL_RenderFillRect(renderer, &rect) == false)
         throw ApiException("SDL_RenderFillRect()");
 }
 
@@ -509,6 +687,18 @@ void Renderer::drawTexture(const Texture &texture, const SDL_FRect *src,
 }
 
 //! @brief Draws a texture with rotation and optional flipping.
+//! @param[in] texture The source texture.
+//! @param[in] src A pointer to the source rectangle, or nullptr for the
+//! entire texture.
+//! @param[in] dst A pointer to the destination rectangle, or nullptr for the
+//! entire rendering target.
+//! @param[in] angle An angle in degrees that indicates the rotation that will
+//! be applied to @p dst, rotating it in a clockwise direction.
+//! @param[in] centre A pointer to a point indicating the point around which
+//! @p dst will be rotated (if NULL, rotation will be done around @ dst.w * 0.5,
+//! @p dst.h * 0.5).
+//! @param[in] flip An SDL_FlipMode value stating which flipping actions should
+//! be performed on the texture.
 void Renderer::drawTextureRotated(const Texture &texture, const SDL_FRect *src,
                                   const SDL_FRect *dst, double angle,
                                   const SDL_FPoint *centre, SDL_FlipMode flip)
@@ -591,6 +781,15 @@ void Renderer::drawGeometryRaw(const Texture *texture,
 }
 
 //! @brief Draws a short piece of debug text using the built-in SDL font.
+void Renderer::drawDebugText(const SDL_FPoint &at, utf8_cptr_t text)
+{
+    auto renderer = verifyAccess("Draw debug text");
+
+    if (SDL_RenderDebugText(renderer, at.x, at.y, text) == false)
+        throw ApiException("SDL_RenderDebugText()");
+}
+
+//! @brief Draws a short piece of debug text using the built-in SDL font.
 void Renderer::drawDebugText(float x, float y, utf8_cptr_t text)
 {
     auto renderer = verifyAccess("Draw debug text");
@@ -647,12 +846,25 @@ void Renderer::flush()
         throw ApiException("SDL_FlushRenderer()");
 }
 
-//! @brief Reads a region of pixels from the current render target into a new
-//! Surface.
-Surface Renderer::readPixels(const SDL_Rect *area) const
+//! @brief Reads the pixels of the entire view port from the current render
+//! target into a new Surface.
+Surface Renderer::readViewportPixels() const
 {
     auto renderer = verifyAccess("Read pixels");
-    SDL_Surface *surface = SDL_RenderReadPixels(renderer, area);
+    SDL_Surface *surface = SDL_RenderReadPixels(renderer, nullptr);
+
+    if (surface == nullptr)
+        throw ApiException("SDL_RenderReadPixels()");
+
+    return Surface(surface);
+}
+
+//! @brief Reads a region of pixels from the current render target into
+//! a new Surface.
+Surface Renderer::readPixels(const SDL_Rect &area) const
+{
+    auto renderer = verifyAccess("Read pixels");
+    SDL_Surface *surface = SDL_RenderReadPixels(renderer, &area);
 
     if (surface == nullptr)
         throw ApiException("SDL_RenderReadPixels()");

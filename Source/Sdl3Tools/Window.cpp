@@ -865,8 +865,7 @@ Window &Window::operator=(Window &&rhs) noexcept
     release();
 
     _window = std::exchange(rhs._window, nullptr);
-    _owned = rhs._owned;
-    rhs._owned = true;
+    _owned = std::exchange(rhs._owned, true);
 
     return *this;
 }

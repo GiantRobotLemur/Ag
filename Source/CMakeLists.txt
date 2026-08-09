@@ -26,7 +26,7 @@ if (AG_CONFIG_SDL3)
     add_subdirectory(Sdl3Tools)
 endif()
 
-if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Extra")
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Extra/CMakeLists.txt")
     # Allow temporary projects to be configured which aren't in source control.
     message(STATUS "Configuring 'Extra' projects...")
     add_subdirectory(Extra)
