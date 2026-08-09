@@ -1,14 +1,14 @@
 //! @file Ag/Sdl3Tools/WrapperTypes.hpp
 //! @brief The declaration of C++ wrapper types for C-based SDL structures.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2025
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SDL3_TOOLS_WRAPPER_TYPES_HPP__
-#define __AG_SDL3_TOOLS_WRAPPER_TYPES_HPP__
+#ifndef HEADER_AG_SDL3_TOOLS_WRAPPER_TYPES_HPP_
+#define HEADER_AG_SDL3_TOOLS_WRAPPER_TYPES_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -34,7 +34,6 @@ namespace SDL3 {
 ////////////////////////////////////////////////////////////////////////////////
 // Data Type Declarations
 ////////////////////////////////////////////////////////////////////////////////
-DECLARE_WRAPPER(Renderer, SDL_Renderer);
 DECLARE_WRAPPER(GLContext, std::remove_pointer_t<SDL_GLContext>);
 
 }} // namespace Ag::SDL3

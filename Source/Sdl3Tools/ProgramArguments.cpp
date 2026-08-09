@@ -12,6 +12,8 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Sdl3Tools/ProgramArguments.hpp"
+#include "Ag/Sdl3Tools/Renderer.hpp"
+#include "Ag/Sdl3Tools/Window.hpp"
 
 namespace Ag {
 namespace SDL3 {
@@ -501,13 +503,13 @@ bool ProgramArguments::tryFindDisplayMode(SDL_DisplayID displayID,
 //! @brief Attempts to create a renderer for a window based on command line
 //! options specified.
 //! @param[in] window The window to be rendered to.
-//! @param[out] renderer Receives a pointer to the newly created renderer.
+//! @param[out] renderer Receives the newly created renderer on success.
 //! @retval true A render driver was specified and successfully created.
 //! @retval false No renderer was specified or creation failed.
-bool ProgramArguments::tryCreatePreferredRenderer(SDL_Window *window,
-                                                      SDL_Renderer *&renderer) const
+bool ProgramArguments::tryCreatePreferredRenderer(const Window &window,
+                                                  Renderer &renderer) const
 {
-    renderer = nullptr;
+    renderer.release();
 
     if (_displayDriverName.isEmpty())
         return false;
@@ -520,10 +522,13 @@ bool ProgramArguments::tryCreatePreferredRenderer(SDL_Window *window,
 
         if (_displayDriverName == driverName)
         {
-            // We found a driver which matches the name.
-            renderer = SDL_CreateRenderer(window, driverName);
+            SDL_Renderer *created = SDL_CreateRenderer(window.get(), driverName);
 
-            return renderer != nullptr;
+            if (created == nullptr)
+                return false;
+
+            renderer = Renderer(created, true);
+            return true;
         }
     }
 
