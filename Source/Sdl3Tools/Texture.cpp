@@ -108,6 +108,27 @@ void *LockedTexture::getPixel(int column, int row) const
     return bits + (_pitch * row) + (column * details->bytes_per_pixel);
 }
 
+//! @brief Gets a pointer to a specific pixel within the locked region.
+//! @param[in] at The column and row of the pixel, relative to the top left
+//! corner of the locked region.
+//! @throws ObjectNotBoundException If the texture is not locked.
+//! @throws ArgumentException If @p at is out of range.
+void *LockedTexture::getPixel(const SDL_Point &at) const
+{
+    verifyAccess("Access pixel");
+
+    if ((at.y < 0) || (at.y >= _height))
+        throw ArgumentException("row");
+
+    if ((at.x < 0) || (at.x >= _width))
+        throw ArgumentException("column");
+
+    auto details = SDL_GetPixelFormatDetails(_format);
+    uint8_t *bits = reinterpret_cast<uint8_t *>(_pixels);
+
+    return bits + (_pitch * at.y) + (at.x * details->bytes_per_pixel);
+}
+
 //! @brief Gets the count of bytes per row within the locked region.
 int LockedTexture::getPitch() const
 {
@@ -266,6 +287,20 @@ void Texture::getSize(float &w, float &h) const
         throw ApiException("SDL_GetTextureSize()");
 }
 
+//! @brief Gets the width and height of the texture as float values, matching
+//! the coordinate space used by SDL_RenderTexture.
+//! @return The horizontal and vertical extent of the texture.
+SDL_FPoint Texture::getSize() const
+{
+    auto texture = verifyAccess("Get size");
+    FPoint size;
+
+    if (SDL_GetTextureSize(texture, &size.x, &size.y) == false)
+        throw ApiException("SDL_GetTextureSize()");
+
+    return size;
+}
+
 //! @brief Gets the SDL property set associated with the texture.
 PropertySet Texture::getProperties() const
 {
@@ -301,6 +336,27 @@ void Texture::getColourMod(uint8_t &r, uint8_t &g, uint8_t &b) const
         throw ApiException("SDL_GetTextureColorMod()");
 }
 
+//! @brief Gets the additional colour modulation applied when drawing the
+//! texture.
+//! @return The colour modulation, with the alpha modulation in the alpha
+//! component.
+//! @details Unlike the scalar overload, the returned alpha component is
+//! meaningful, being obtained via SDL_GetTextureAlphaMod().
+SDL_Color Texture::getColourMod() const
+{
+    auto texture = verifyAccess("Get colour mod");
+    Colour colour;
+
+    if (SDL_GetTextureColorMod(texture, &colour.r, &colour.g,
+                               &colour.b) == false)
+        throw ApiException("SDL_GetTextureColorMod()");
+
+    if (SDL_GetTextureAlphaMod(texture, &colour.a) == false)
+        throw ApiException("SDL_GetTextureAlphaMod()");
+
+    return colour;
+}
+
 //! @brief Sets the additional colour modulation applied when drawing the
 //! texture.
 void Texture::setColourMod(uint8_t r, uint8_t g, uint8_t b)
@@ -311,8 +367,25 @@ void Texture::setColourMod(uint8_t r, uint8_t g, uint8_t b)
         throw ApiException("SDL_SetTextureColorMod()");
 }
 
+//! @brief Sets the additional colour modulation applied when drawing the
+//! texture.
+//! @param[in] colour The colour modulation to apply, the alpha component
+//! defining the alpha modulation.
+//! @details Unlike the scalar overload, the alpha component of @p colour is
+//! also applied, via SDL_SetTextureAlphaMod().
+void Texture::setColourMod(const SDL_Color &colour)
+{
+    auto texture = verifyAccess("Set colour mod");
+
+    if (SDL_SetTextureColorMod(texture, colour.r, colour.g, colour.b) == false)
+        throw ApiException("SDL_SetTextureColorMod()");
+
+    if (SDL_SetTextureAlphaMod(texture, colour.a) == false)
+        throw ApiException("SDL_SetTextureAlphaMod()");
+}
+
 //! @brief Gets the additional colour modulation as normalised float values.
-void Texture::getColorModFloat(float &r, float &g, float &b) const
+void Texture::getColourModFloat(float &r, float &g, float &b) const
 {
     auto texture = verifyAccess("Get colour mod (float)");
 
@@ -320,13 +393,50 @@ void Texture::getColorModFloat(float &r, float &g, float &b) const
         throw ApiException("SDL_GetTextureColorModFloat()");
 }
 
+//! @brief Gets the additional colour modulation as normalised float values.
+//! @return The colour modulation, with the alpha modulation in the alpha
+//! component.
+//! @details Unlike the scalar overload, the returned alpha component is
+//! meaningful, being obtained via SDL_GetTextureAlphaModFloat().
+SDL_FColor Texture::getColourModFloat() const
+{
+    auto texture = verifyAccess("Get colour mod (float)");
+    FColour colour;
+
+    if (SDL_GetTextureColorModFloat(texture, &colour.r, &colour.g,
+                                    &colour.b) == false)
+        throw ApiException("SDL_GetTextureColorModFloat()");
+
+    if (SDL_GetTextureAlphaModFloat(texture, &colour.a) == false)
+        throw ApiException("SDL_GetTextureAlphaModFloat()");
+
+    return colour;
+}
+
 //! @brief Sets the additional colour modulation using normalised float values.
-void Texture::setColorModFloat(float r, float g, float b)
+void Texture::setColourModFloat(float r, float g, float b)
 {
     auto texture = verifyAccess("Set colour mod (float)");
 
     if (SDL_SetTextureColorModFloat(texture, r, g, b) == false)
         throw ApiException("SDL_SetTextureColorModFloat()");
+}
+
+//! @brief Sets the additional colour modulation using normalised float values.
+//! @param[in] colour The colour modulation to apply, the alpha component
+//! defining the alpha modulation.
+//! @details Unlike the scalar overload, the alpha component of @p colour is
+//! also applied, via SDL_SetTextureAlphaModFloat().
+void Texture::setColourModFloat(const SDL_FColor &colour)
+{
+    auto texture = verifyAccess("Set colour mod (float)");
+
+    if (SDL_SetTextureColorModFloat(texture, colour.r, colour.g,
+                                    colour.b) == false)
+        throw ApiException("SDL_SetTextureColorModFloat()");
+
+    if (SDL_SetTextureAlphaModFloat(texture, colour.a) == false)
+        throw ApiException("SDL_SetTextureAlphaModFloat()");
 }
 
 //! @brief Gets the alpha modulation applied when drawing.
@@ -432,6 +542,29 @@ void Texture::create(const Renderer &renderer, SDL_PixelFormat format,
     }
 }
 
+//! @brief Creates a texture on the given renderer.
+//! @param[in] renderer The renderer which will own the texture.
+//! @param[in] format The pixel format of the new texture.
+//! @param[in] access The access pattern the texture will be used with.
+//! @param[in] size The width and height of the new texture, in pixels.
+void Texture::create(const Renderer &renderer, SDL_PixelFormat format,
+                     SDL_TextureAccess access, const SDL_Point &size)
+{
+    auto sdlRenderer = renderer.verifyAccess("Provide renderer for texture");
+
+    release();
+
+    _texture = SDL_CreateTexture(sdlRenderer, format, access, size.x, size.y);
+    _parentRenderer = sdlRenderer;
+    _owned = true;
+
+    if (_texture == nullptr)
+    {
+        _parentRenderer = nullptr;
+        throw ApiException("SDL_CreateTexture()");
+    }
+}
+
 //! @brief Creates a texture initialised from an existing surface.
 void Texture::createFromSurface(const Renderer &renderer, const Surface &surface)
 {
@@ -470,47 +603,87 @@ void Texture::createWithProperties(const Renderer &renderer,
     }
 }
 
-//! @brief Uploads pixel data into the texture.
-void Texture::update(const SDL_Rect *area, const void *pixels, int pitch)
+//! @brief Uploads pixel data into a rectangular region of the texture.
+//! @param[in] area The region of the texture to overwrite.
+//! @param[in] pixels The pixel data to upload.
+//! @param[in] pitch The count of bytes per row within @p pixels.
+void Texture::update(const SDL_Rect &area, const void *pixels, int pitch)
 {
     auto texture = verifyAccess("Update");
 
-    if (SDL_UpdateTexture(texture, area, pixels, pitch) == false)
+    if (SDL_UpdateTexture(texture, &area, pixels, pitch) == false)
         throw ApiException("SDL_UpdateTexture()");
 }
 
-//! @brief Uploads planar YUV pixel data into the texture.
-void Texture::updateYUV(const SDL_Rect *area,
+//! @brief Uploads pixel data into the entire texture.
+//! @param[in] pixels The pixel data to upload.
+//! @param[in] pitch The count of bytes per row within @p pixels.
+void Texture::update(const void *pixels, int pitch)
+{
+    auto texture = verifyAccess("Update");
+
+    if (SDL_UpdateTexture(texture, nullptr, pixels, pitch) == false)
+        throw ApiException("SDL_UpdateTexture(nullptr)");
+}
+
+//! @brief Uploads planar YUV pixel data into a rectangular region of the
+//! texture.
+void Texture::updateYUV(const SDL_Rect &area,
                         const uint8_t *yPlane, int yPitch,
                         const uint8_t *uPlane, int uPitch,
                         const uint8_t *vPlane, int vPitch)
 {
     auto texture = verifyAccess("Update YUV");
 
-    if (SDL_UpdateYUVTexture(texture, area, yPlane, yPitch, uPlane, uPitch,
+    if (SDL_UpdateYUVTexture(texture, &area, yPlane, yPitch, uPlane, uPitch,
                              vPlane, vPitch) == false)
         throw ApiException("SDL_UpdateYUVTexture()");
 }
 
-//! @brief Uploads planar NV12 / NV21 pixel data into the texture.
-void Texture::updateNV(const SDL_Rect *area,
+//! @brief Uploads planar YUV pixel data into the entire texture.
+void Texture::updateYUV(const uint8_t *yPlane, int yPitch,
+                        const uint8_t *uPlane, int uPitch,
+                        const uint8_t *vPlane, int vPitch)
+{
+    auto texture = verifyAccess("Update YUV");
+
+    if (SDL_UpdateYUVTexture(texture, nullptr, yPlane, yPitch, uPlane, uPitch,
+                             vPlane, vPitch) == false)
+        throw ApiException("SDL_UpdateYUVTexture(nullptr)");
+}
+
+//! @brief Uploads planar NV12 / NV21 pixel data into a rectangular region of
+//! the texture.
+void Texture::updateNV(const SDL_Rect &area,
                        const uint8_t *yPlane, int yPitch,
                        const uint8_t *uvPlane, int uvPitch)
 {
     auto texture = verifyAccess("Update NV");
 
-    if (SDL_UpdateNVTexture(texture, area, yPlane, yPitch, uvPlane,
+    if (SDL_UpdateNVTexture(texture, &area, yPlane, yPitch, uvPlane,
                             uvPitch) == false)
         throw ApiException("SDL_UpdateNVTexture()");
 }
 
-//! @brief Locks a streaming texture for direct pixel access.
-//! @param[in] area The area to lock, or nullptr for the whole texture.
+//! @brief Uploads planar NV12 / NV21 pixel data into the entire texture.
+void Texture::updateNV(const uint8_t *yPlane, int yPitch,
+                       const uint8_t *uvPlane, int uvPitch)
+{
+    auto texture = verifyAccess("Update NV");
+
+    if (SDL_UpdateNVTexture(texture, nullptr, yPlane, yPitch, uvPlane,
+                            uvPitch) == false)
+        throw ApiException("SDL_UpdateNVTexture(nullptr)");
+}
+
+//! @brief Locks a rectangular region of a streaming texture for direct pixel
+//! access.
+//! @param[in] area The area to lock.
 //! @return A LockedTexture describing the locked region.
 //! @throws ObjectNotBoundException If the texture is not bound.
 //! @throws OperationException If the texture is not a streaming texture.
 //! @throws ApiException If SDL_LockTexture() fails.
-LockedTexture Texture::lock(const SDL_Rect *area) const
+LockedTexture Texture::lock(const SDL_Rect &area) const
 {
     auto texture = verifyAccess("Lock");
 
@@ -520,13 +693,32 @@ LockedTexture Texture::lock(const SDL_Rect *area) const
     void *pixels = nullptr;
     int pitch = 0;
 
-    if (SDL_LockTexture(texture, area, &pixels, &pitch) == false)
+    if (SDL_LockTexture(texture, &area, &pixels, &pitch) == false)
         throw ApiException("SDL_LockTexture()");
 
-    int width = (area == nullptr) ? texture->w : area->w;
-    int height = (area == nullptr) ? texture->h : area->h;
+    return LockedTexture(texture, pixels, pitch, area.w, area.h,
+                         static_cast<SDL_PixelFormat>(texture->format));
+}
 
-    return LockedTexture(texture, pixels, pitch, width, height,
+//! @brief Locks the whole of a streaming texture for direct pixel access.
+//! @return A LockedTexture describing the locked texture.
+//! @throws ObjectNotBoundException If the texture is not bound.
+//! @throws OperationException If the texture is not a streaming texture.
+//! @throws ApiException If SDL_LockTexture() fails.
+LockedTexture Texture::lock() const
+{
+    auto texture = verifyAccess("Lock");
+
+    if (getAccess() != SDL_TEXTUREACCESS_STREAMING)
+        throw OperationException("Only streaming textures can be locked.");
+
+    void *pixels = nullptr;
+    int pitch = 0;
+
+    if (SDL_LockTexture(texture, nullptr, &pixels, &pitch) == false)
+        throw ApiException("SDL_LockTexture(nullptr)");
+
+    return LockedTexture(texture, pixels, pitch, texture->w, texture->h,
                          static_cast<SDL_PixelFormat>(texture->format));
 }
 

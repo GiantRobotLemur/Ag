@@ -241,6 +241,21 @@ void Window::getPosition(int &x, int &y) const
         throw ApiException("SDL_GetWindowPosition()");
 }
 
+//! @brief Gets the current position of the window.
+//! @return The position of the top left corner of the window.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_GetWindowPosition() fails.
+SDL_Point Window::getPosition() const
+{
+    auto window = verifyAccess("Get position");
+    Point position;
+
+    if (SDL_GetWindowPosition(window, &position.x, &position.y) == false)
+        throw ApiException("SDL_GetWindowPosition()");
+
+    return position;
+}
+
 //! @brief Sets the position of the window.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetWindowPosition() fails.
@@ -249,6 +264,18 @@ void Window::setPosition(int x, int y)
     auto window = verifyAccess("Set position");
 
     if (SDL_SetWindowPosition(window, x, y) == false)
+        throw ApiException("SDL_SetWindowPosition()");
+}
+
+//! @brief Sets the position of the window.
+//! @param[in] pos The position of the top left corner of the window.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_SetWindowPosition() fails.
+void Window::setPosition(const SDL_Point &pos)
+{
+    auto window = verifyAccess("Set position");
+
+    if (SDL_SetWindowPosition(window, pos.x, pos.y) == false)
         throw ApiException("SDL_SetWindowPosition()");
 }
 
@@ -263,6 +290,21 @@ void Window::getSize(int &w, int &h) const
         throw ApiException("SDL_GetWindowSize()");
 }
 
+//! @brief Gets the size of the window in logical units.
+//! @return The horizontal and vertical extent of the window.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_GetWindowSize() fails.
+SDL_Point Window::getSize() const
+{
+    auto window = verifyAccess("Get size");
+    Point size;
+
+    if (SDL_GetWindowSize(window, &size.x, &size.y) == false)
+        throw ApiException("SDL_GetWindowSize()");
+
+    return size;
+}
+
 //! @brief Sets the size of the window in logical units.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetWindowSize() fails.
@@ -271,6 +313,18 @@ void Window::setSize(int w, int h)
     auto window = verifyAccess("Set size");
 
     if (SDL_SetWindowSize(window, w, h) == false)
+        throw ApiException("SDL_SetWindowSize()");
+}
+
+//! @brief Sets the size of the window in logical units.
+//! @param[in] size The horizontal and vertical extent of the window.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_SetWindowSize() fails.
+void Window::setSize(const SDL_Point &size)
+{
+    auto window = verifyAccess("Set size");
+
+    if (SDL_SetWindowSize(window, size.x, size.y) == false)
         throw ApiException("SDL_SetWindowSize()");
 }
 
@@ -285,6 +339,21 @@ void Window::getSizeInPixels(int &w, int &h) const
         throw ApiException("SDL_GetWindowSizeInPixels()");
 }
 
+//! @brief Gets the size of the window in raw pixels.
+//! @return The horizontal and vertical extent of the window, in pixels.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_GetWindowSizeInPixels() fails.
+SDL_Point Window::getSizeInPixels() const
+{
+    auto window = verifyAccess("Get size in pixels");
+    Point size;
+
+    if (SDL_GetWindowSizeInPixels(window, &size.x, &size.y) == false)
+        throw ApiException("SDL_GetWindowSizeInPixels()");
+
+    return size;
+}
+
 //! @brief Gets the minimum size of the window.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_GetWindowMinimumSize() fails.
@@ -296,6 +365,21 @@ void Window::getMinimumSize(int &w, int &h) const
         throw ApiException("SDL_GetWindowMinimumSize()");
 }
 
+//! @brief Gets the minimum size of the window.
+//! @return The smallest horizontal and vertical extent the window may take.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_GetWindowMinimumSize() fails.
+SDL_Point Window::getMinimumSize() const
+{
+    auto window = verifyAccess("Get minimum size");
+    Point size;
+
+    if (SDL_GetWindowMinimumSize(window, &size.x, &size.y) == false)
+        throw ApiException("SDL_GetWindowMinimumSize()");
+
+    return size;
+}
+
 //! @brief Sets the minimum size of the window.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetWindowMinimumSize() fails.
@@ -304,6 +388,19 @@ void Window::setMinimumSize(int w, int h)
     auto window = verifyAccess("Set minimum size");
 
     if (SDL_SetWindowMinimumSize(window, w, h) == false)
+        throw ApiException("SDL_SetWindowMinimumSize()");
+}
+
+//! @brief Sets the minimum size of the window.
+//! @param[in] size The smallest horizontal and vertical extent the window
+//! may take.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_SetWindowMinimumSize() fails.
+void Window::setMinimumSize(const SDL_Point &size)
+{
+    auto window = verifyAccess("Set minimum size");
+
+    if (SDL_SetWindowMinimumSize(window, size.x, size.y) == false)
         throw ApiException("SDL_SetWindowMinimumSize()");
 }
 
@@ -318,6 +415,21 @@ void Window::getMaximumSize(int &w, int &h) const
         throw ApiException("SDL_GetWindowMaximumSize()");
 }
 
+//! @brief Gets the maximum size of the window.
+//! @return The largest horizontal and vertical extent the window may take.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_GetWindowMaximumSize() fails.
+SDL_Point Window::getMaximumSize() const
+{
+    auto window = verifyAccess("Get maximum size");
+    Point size;
+
+    if (SDL_GetWindowMaximumSize(window, &size.x, &size.y) == false)
+        throw ApiException("SDL_GetWindowMaximumSize()");
+
+    return size;
+}
+
 //! @brief Sets the maximum size of the window.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetWindowMaximumSize() fails.
@@ -326,6 +438,19 @@ void Window::setMaximumSize(int w, int h)
     auto window = verifyAccess("Set maximum size");
 
     if (SDL_SetWindowMaximumSize(window, w, h) == false)
+        throw ApiException("SDL_SetWindowMaximumSize()");
+}
+
+//! @brief Sets the maximum size of the window.
+//! @param[in] size The largest horizontal and vertical extent the window
+//! may take.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_SetWindowMaximumSize() fails.
+void Window::setMaximumSize(const SDL_Point &size)
+{
+    auto window = verifyAccess("Set maximum size");
+
+    if (SDL_SetWindowMaximumSize(window, size.x, size.y) == false)
         throw ApiException("SDL_SetWindowMaximumSize()");
 }
 
@@ -373,10 +498,45 @@ void Window::getSafeArea(SDL_Rect &area) const
         throw ApiException("SDL_GetWindowSafeArea()");
 }
 
+//! @brief Gets the safe-area rectangle within the window.
+//! @return The region of the window in which content will not be obscured.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_GetWindowSafeArea() fails.
+SDL_Rect Window::getSafeArea() const
+{
+    auto window = verifyAccess("Get safe area");
+    Rect area;
+
+    if (SDL_GetWindowSafeArea(window, &area) == false)
+        throw ApiException("SDL_GetWindowSafeArea()");
+
+    return area;
+}
+
 //! @brief Gets the current fullscreen display mode, or nullptr if none.
 const SDL_DisplayMode *Window::getFullscreenMode() const
 {
     return (_window == nullptr) ? nullptr : SDL_GetWindowFullscreenMode(_window);
+}
+
+//! @brief Attempts to get the display mode the window will use in fullscreen.
+//! @param[out] mode Receives a copy of the display mode on success.
+//! @retval true An explicit fullscreen display mode is set.
+//! @retval false The object is unbound, or the window will use borderless
+//! fullscreen desktop mode rather than an explicit display mode.
+bool Window::tryGetFullscreenMode(SDL_DisplayMode &mode) const
+{
+    if (_window == nullptr)
+        return false;
+
+    const SDL_DisplayMode *result = SDL_GetWindowFullscreenMode(_window);
+
+    if (result == nullptr)
+        return false;
+
+    mode = *result;
+
+    return true;
 }
 
 //! @brief Attempts to get the currently confined mouse rectangle.
@@ -407,6 +567,22 @@ void Window::create(utf8_cptr_t title, int width, int height, SDL_WindowFlags fl
     release();
 
     _window = SDL_CreateWindow(title, width, height, flags);
+    _owned = true;
+
+    if (_window == nullptr)
+        throw ApiException("SDL_CreateWindow()");
+}
+
+//! @brief Creates a new window and binds it to the object.
+//! @param[in] title The text to appear in the title bar.
+//! @param[in] size The width and height of the window.
+//! @param[in] flags Options defining style and usage of the new window.
+void Window::create(utf8_cptr_t title, const SDL_Point &size,
+                    SDL_WindowFlags flags)
+{
+    release();
+
+    _window = SDL_CreateWindow(title, size.x, size.y, flags);
     _owned = true;
 
     if (_window == nullptr)
@@ -471,6 +647,25 @@ void Window::createPopup(const Window &parent, int x, int y, int w, int h,
     release();
 
     _window = SDL_CreatePopupWindow(parentWindow, x, y, w, h, flags);
+    _owned = true;
+
+    if (_window == nullptr)
+        throw ApiException("SDL_CreatePopupWindow()");
+}
+
+//! @brief Creates a popup window relative to another window.
+//! @param[in] parent The window the popup is positioned relative to.
+//! @param[in] area The offset from @p parent and the size of the popup.
+//! @param[in] flags Options defining style and usage of the new window.
+void Window::createPopup(const Window &parent, const SDL_Rect &area,
+                         SDL_WindowFlags flags)
+{
+    auto parentWindow = parent.verifyAccess("Provide popup parent");
+
+    release();
+
+    _window = SDL_CreatePopupWindow(parentWindow, area.x, area.y,
+                                    area.w, area.h, flags);
     _owned = true;
 
     if (_window == nullptr)
@@ -622,14 +817,30 @@ void Window::setFullscreen(bool fullscreen)
 }
 
 //! @brief Sets the display mode used in fullscreen.
+//! @param[in] mode The display mode the window should switch to when it
+//! enters fullscreen.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetWindowFullscreenMode() fails.
-void Window::setFullscreenMode(const SDL_DisplayMode *mode)
+void Window::setFullscreenMode(const SDL_DisplayMode &mode)
 {
     auto window = verifyAccess("Set fullscreen mode");
 
-    if (SDL_SetWindowFullscreenMode(window, mode) == false)
+    if (SDL_SetWindowFullscreenMode(window, &mode) == false)
         throw ApiException("SDL_SetWindowFullscreenMode()");
+}
+
+//! @brief Selects borderless fullscreen desktop mode for the window.
+//! @details Rather than switching the display to a specific video mode when
+//! the window enters fullscreen, the window will fill the desktop at whatever
+//! mode the display is already using.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_SetWindowFullscreenMode() fails.
+void Window::resetFullscreenMode()
+{
+    auto window = verifyAccess("Reset fullscreen mode");
+
+    if (SDL_SetWindowFullscreenMode(window, nullptr) == false)
+        throw ApiException("SDL_SetWindowFullscreenMode(nullptr)");
 }
 
 //! @brief Sets the opacity of the window.
@@ -665,16 +876,27 @@ void Window::setMouseGrab(bool grabbed)
         throw ApiException("SDL_SetWindowMouseGrab()");
 }
 
-//! @brief Confines the mouse to a rectangle within the window, or clears the
-//! confinement when @p rect is nullptr.
+//! @brief Confines the mouse to a rectangle within the window.
+//! @param[in] rect The region, in window coordinates, the mouse is confined to.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetWindowMouseRect() fails.
-void Window::setMouseRect(const SDL_Rect *rect)
+void Window::setMouseRect(const SDL_Rect &rect)
 {
     auto window = verifyAccess("Set mouse rect");
 
-    if (SDL_SetWindowMouseRect(window, rect) == false)
+    if (SDL_SetWindowMouseRect(window, &rect) == false)
         throw ApiException("SDL_SetWindowMouseRect()");
+}
+
+//! @brief Removes any confinement of the mouse within the window.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_SetWindowMouseRect() fails.
+void Window::clearMouseRect()
+{
+    auto window = verifyAccess("Clear mouse rect");
+
+    if (SDL_SetWindowMouseRect(window, nullptr) == false)
+        throw ApiException("SDL_SetWindowMouseRect(nullptr)");
 }
 
 //! @brief Sets whether the window can receive focus.
@@ -743,6 +965,15 @@ void Window::warpMouseInWindow(float x, float y)
     SDL_WarpMouseInWindow(window, x, y);
 }
 
+//! @brief Warps the mouse cursor to a location within the window.
+//! @param[in] at The position, in window coordinates, to move the cursor to.
+//! @throws ObjectNotBoundException If the object is unbound.
+void Window::warpMouseInWindow(const SDL_FPoint &at)
+{
+    auto window = verifyAccess("Warp mouse");
+    SDL_WarpMouseInWindow(window, at.x, at.y);
+}
+
 //! @brief Registers a hit test callback for the window.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL_SetWindowHitTest() fails.
@@ -752,6 +983,17 @@ void Window::setHitTest(SDL_HitTest callback, void *callbackData)
 
     if (SDL_SetWindowHitTest(window, callback, callbackData) == false)
         throw ApiException("SDL_SetWindowHitTest()");
+}
+
+//! @brief Removes any hit test callback previously registered for the window.
+//! @throws ObjectNotBoundException If the object is unbound.
+//! @throws ApiException If SDL_SetWindowHitTest() fails.
+void Window::clearHitTest()
+{
+    auto window = verifyAccess("Clear hit test");
+
+    if (SDL_SetWindowHitTest(window, nullptr, nullptr) == false)
+        throw ApiException("SDL_SetWindowHitTest(nullptr)");
 }
 
 //! @brief Obtains the surface associated with the window, creating it if

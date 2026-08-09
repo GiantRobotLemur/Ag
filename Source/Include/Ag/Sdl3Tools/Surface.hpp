@@ -90,7 +90,7 @@ public:
     SDL_SurfaceFlags getFlags() const;
     PropertySet getProperties() const;
     SDL_Colorspace getColourspace() const;
-    void setColourspace(SDL_Colorspace colorspace);
+    void setColourspace(SDL_Colorspace colourspace);
     bool hasAlternateImages() const;
     Collection getImages() const;
     void addAlternateImage(const Surface &image);

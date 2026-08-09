@@ -63,8 +63,8 @@ public:
     void getDrawColour(uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) const;
     void setDrawColour(const SDL_Color &colour);
     void setDrawColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-    void getDrawColorFloat(SDL_FColor &colour) const;
-    void getDrawColorFloat(float &r, float &g, float &b, float &a) const;
+    void getDrawColourFloat(SDL_FColor &colour) const;
+    void getDrawColourFloat(float &r, float &g, float &b, float &a) const;
     void setDrawColourFloat(const SDL_FColor &colour);
     void setDrawColourFloat(float r, float g, float b, float a = 1.0f);
     SDL_BlendMode getDrawBlendMode() const;
@@ -130,7 +130,7 @@ public:
                       int indexCount = 0);
     void drawGeometryRaw(const Texture *texture,
                          const float *xy, int xyStride,
-                         const SDL_FColor *color, int colorStride,
+                         const SDL_FColor *colour, int colourStride,
                          const float *uv, int uvStride,
                          int numVertices,
                          const void *indices, int numIndices,

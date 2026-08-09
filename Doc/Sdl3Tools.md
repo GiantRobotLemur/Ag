@@ -92,7 +92,7 @@ Surface bmp = Surface::loadBMP("hero.bmp");
 Texture hero;
 hero.createFromSurface(renderer, bmp);
 
-renderer.setDrawColor(0, 0, 0);
+renderer.setDrawColour(0, 0, 0);
 renderer.clear();
 renderer.drawTexture(hero, nullptr, nullptr);
 renderer.present();

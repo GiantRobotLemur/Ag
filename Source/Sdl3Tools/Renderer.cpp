@@ -299,7 +299,7 @@ void Renderer::setDrawColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 }
 
 //! @brief Gets the current draw colour as normalised float RGBA values.
-void Renderer::getDrawColorFloat(SDL_FColor &colour) const
+void Renderer::getDrawColourFloat(SDL_FColor &colour) const
 {
     auto renderer = verifyAccess("Get draw colour (float)");
 
@@ -309,7 +309,7 @@ void Renderer::getDrawColorFloat(SDL_FColor &colour) const
 }
 
 //! @brief Gets the current draw colour as normalised float RGBA values.
-void Renderer::getDrawColorFloat(float &r, float &g, float &b, float &a) const
+void Renderer::getDrawColourFloat(float &r, float &g, float &b, float &a) const
 {
     auto renderer = verifyAccess("Get draw colour (float)");
 
@@ -765,7 +765,7 @@ void Renderer::drawGeometry(const Texture *texture, const SDL_Vertex *vertices,
 //! @brief Draws indexed geometry from raw component arrays.
 void Renderer::drawGeometryRaw(const Texture *texture,
                                const float *xy, int xyStride,
-                               const SDL_FColor *color, int colorStride,
+                               const SDL_FColor *colour, int colourStride,
                                const float *uv, int uvStride,
                                int numVertices,
                                const void *indices, int numIndices,
@@ -774,8 +774,8 @@ void Renderer::drawGeometryRaw(const Texture *texture,
     auto renderer = verifyAccess("Draw geometry raw");
     SDL_Texture *sdlTexture = (texture == nullptr) ? nullptr : texture->get();
 
-    if (SDL_RenderGeometryRaw(renderer, sdlTexture, xy, xyStride, color,
-                              colorStride, uv, uvStride, numVertices, indices,
+    if (SDL_RenderGeometryRaw(renderer, sdlTexture, xy, xyStride, colour,
+                              colourStride, uv, uvStride, numVertices, indices,
                               numIndices, sizeIndices) == false)
         throw ApiException("SDL_RenderGeometryRaw()");
 }

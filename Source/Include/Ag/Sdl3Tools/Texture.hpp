@@ -41,6 +41,7 @@ public:
     void *getBits() const;
     void *getRow(int row) const;
     void *getPixel(int column, int row) const;
+    void *getPixel(const SDL_Point &at) const;
     int getPitch() const;
     int getWidth() const;
     int getHeight() const;
@@ -85,13 +86,18 @@ public:
     int getWidth() const;
     int getHeight() const;
     void getSize(float &w, float &h) const;
+    SDL_FPoint getSize() const;
     PropertySet getProperties() const;
     Renderer getRenderer() const;
 
     void getColourMod(uint8_t &r, uint8_t &g, uint8_t &b) const;
+    SDL_Color getColourMod() const;
     void setColourMod(uint8_t r, uint8_t g, uint8_t b);
-    void getColorModFloat(float &r, float &g, float &b) const;
-    void setColorModFloat(float r, float g, float b);
+    void setColourMod(const SDL_Color &colour);
+    void getColourModFloat(float &r, float &g, float &b) const;
+    SDL_FColor getColourModFloat() const;
+    void setColourModFloat(float r, float g, float b);
+    void setColourModFloat(const SDL_FColor &colour);
     uint8_t getAlphaMod() const;
     void setAlphaMod(uint8_t alpha);
     float getAlphaModFloat() const;
@@ -104,19 +110,28 @@ public:
     // Operations
     void create(const Renderer &renderer, SDL_PixelFormat format,
                 SDL_TextureAccess access, int width, int height);
+    void create(const Renderer &renderer, SDL_PixelFormat format,
+                SDL_TextureAccess access, const SDL_Point &size);
     void createFromSurface(const Renderer &renderer, const Surface &surface);
     void createWithProperties(const Renderer &renderer, const PropertySet &props);
 
-    void update(const SDL_Rect *area, const void *pixels, int pitch);
-    void updateYUV(const SDL_Rect *area,
+    void update(const SDL_Rect &area, const void *pixels, int pitch);
+    void update(const void *pixels, int pitch);
+    void updateYUV(const SDL_Rect &area,
                    const uint8_t *yPlane, int yPitch,
                    const uint8_t *uPlane, int uPitch,
                    const uint8_t *vPlane, int vPitch);
-    void updateNV(const SDL_Rect *area,
+    void updateYUV(const uint8_t *yPlane, int yPitch,
+                   const uint8_t *uPlane, int uPitch,
+                   const uint8_t *vPlane, int vPitch);
+    void updateNV(const SDL_Rect &area,
                   const uint8_t *yPlane, int yPitch,
                   const uint8_t *uvPlane, int uvPitch);
+    void updateNV(const uint8_t *yPlane, int yPitch,
+                  const uint8_t *uvPlane, int uvPitch);
 
-    LockedTexture lock(const SDL_Rect *area = nullptr) const;
+    LockedTexture lock(const SDL_Rect &area) const;
+    LockedTexture lock() const;
 
     void release() noexcept;
     Texture &operator=(const Texture &) = delete;

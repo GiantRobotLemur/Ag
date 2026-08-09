@@ -76,6 +76,111 @@ TEST_F(WindowVideoTest, SizeGetter)
     EXPECT_GT(h, 0);
 }
 
+TEST_F(WindowVideoTest, SizeAsPointMatchesScalarForm)
+{
+    Window window = makeHiddenWindow(96, 72);
+    int w = 0, h = 0;
+
+    ASSERT_NO_THROW(window.getSize(w, h));
+
+    SDL_Point size = window.getSize();
+
+    EXPECT_EQ(size.x, w);
+    EXPECT_EQ(size.y, h);
+}
+
+TEST_F(WindowVideoTest, CreateWithPointSizeMatchesScalarForm)
+{
+    Window window;
+
+    ASSERT_NO_THROW(window.create("Hidden", Point(96, 72), SDL_WINDOW_HIDDEN));
+    EXPECT_TRUE(window.isBound());
+
+    SDL_Point size = window.getSize();
+    EXPECT_EQ(size.x, 96);
+    EXPECT_EQ(size.y, 72);
+}
+
+TEST_F(WindowVideoTest, SizeRoundTripsThroughPointOverload)
+{
+    Window window = makeHiddenWindow(64, 48);
+
+    ASSERT_NO_THROW(window.setSize(Point(128, 96)));
+
+    SDL_Point size = window.getSize();
+    EXPECT_EQ(size.x, 128);
+    EXPECT_EQ(size.y, 96);
+}
+
+TEST_F(WindowVideoTest, PositionRoundTripsThroughPointOverload)
+{
+    Window window = makeHiddenWindow();
+
+    ASSERT_NO_THROW(window.setPosition(Point(120, 90)));
+
+    int x = 0, y = 0;
+    ASSERT_NO_THROW(window.getPosition(x, y));
+
+    SDL_Point position = window.getPosition();
+    EXPECT_EQ(position.x, x);
+    EXPECT_EQ(position.y, y);
+}
+
+TEST_F(WindowVideoTest, MinimumSizeRoundTripsThroughPointOverload)
+{
+    Window window = makeHiddenWindow();
+
+    ASSERT_NO_THROW(window.setMinimumSize(Point(32, 24)));
+
+    SDL_Point size = window.getMinimumSize();
+    EXPECT_EQ(size.x, 32);
+    EXPECT_EQ(size.y, 24);
+}
+
+TEST_F(WindowVideoTest, MouseRectSetAndClear)
+{
+    Window window = makeHiddenWindow();
+    SDL_Rect rect;
+
+    ASSERT_NO_THROW(window.setMouseRect(Rect(4, 4, 16, 16)));
+    ASSERT_TRUE(window.tryGetMouseRect(rect));
+    EXPECT_EQ(rect.x, 4);
+    EXPECT_EQ(rect.w, 16);
+
+    ASSERT_NO_THROW(window.clearMouseRect());
+    EXPECT_FALSE(window.tryGetMouseRect(rect));
+}
+
+TEST_F(WindowVideoTest, FullscreenModeResetsToDesktop)
+{
+    Window window = makeHiddenWindow();
+    SDL_DisplayMode mode;
+
+    // A hidden windowed window has no explicit fullscreen mode to begin with.
+    EXPECT_FALSE(window.tryGetFullscreenMode(mode));
+
+    ASSERT_NO_THROW(window.resetFullscreenMode());
+    EXPECT_FALSE(window.tryGetFullscreenMode(mode));
+    EXPECT_EQ(window.getFullscreenMode(), nullptr);
+}
+
+// Note: there is no bound-window test for clearHitTest(). The dummy video
+// driver used for headless runs does not implement hit testing at all, so
+// SDL_SetWindowHitTest() fails whatever it is passed.
+
+GTEST_TEST(Window, NullSemanticsOperationsThrowWhenUnbound)
+{
+    Window window;
+
+    EXPECT_THROW(window.clearMouseRect(), ObjectNotBoundException);
+    EXPECT_THROW(window.resetFullscreenMode(), ObjectNotBoundException);
+    EXPECT_THROW(window.clearHitTest(), ObjectNotBoundException);
+    EXPECT_THROW(window.getSize(), ObjectNotBoundException);
+
+    SDL_DisplayMode mode;
+    EXPECT_FALSE(window.tryGetFullscreenMode(mode));
+}
+
 TEST_F(WindowVideoTest, MoveConstructTransfersOwnership)
 {
     Window a = makeHiddenWindow();

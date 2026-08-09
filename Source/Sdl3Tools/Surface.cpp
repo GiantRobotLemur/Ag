@@ -342,11 +342,11 @@ SDL_Colorspace Surface::getColourspace() const
 //! @brief Sets the colour space of the surface.
 //! @throws ObjectNotBoundException If the object is unbound.
 //! @throws ApiException If SDL fails to set the colour space.
-void Surface::setColourspace(SDL_Colorspace colorspace)
+void Surface::setColourspace(SDL_Colorspace colourspace)
 {
     auto surface = verifyAccess("Set colour space");
 
-    if (SDL_SetSurfaceColorspace(surface, colorspace) == false)
+    if (SDL_SetSurfaceColorspace(surface, colourspace) == false)
         throw ApiException("SDL_SetSurfaceColorspace()");
 }
 
