@@ -2,7 +2,7 @@
 //! @brief The definition of an object representing a 2x2 matrix with double
 //! precision values.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -125,7 +125,7 @@ void Matrix2x2::makeScale(double scaleFactor)
 }
 
 //! @brief Reinitialises the object with a uniform scaling transformation.
-//! @param[in] scale A 2D vector defining the scale factors.
+//! @param[in] scaleFactor A 2D vector defining the scale factors.
 void Matrix2x2::makeScale(const Point2D &scaleFactor)
 {
     Operations_Mat2x2D::makeScale(scaleFactor.toArray(), M);

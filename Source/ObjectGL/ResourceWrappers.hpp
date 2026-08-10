@@ -1,15 +1,15 @@
-//! @file Ag/ObjectGL/ResourceWrappers.hpp
+//! @file ObjectGL/ResourceWrappers.hpp
 //! @brief The declaration of a number of internal classes which wrap OpenGL
 //! resources.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_RESOURCE_WRAPPERS_HPP__
-#define __AG_OBJECT_GL_RESOURCE_WRAPPERS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_RESOURCE_WRAPPERS_HPP_
+#define HEADER_AG_OBJECT_GL_RESOURCE_WRAPPERS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files

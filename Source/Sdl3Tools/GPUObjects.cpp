@@ -1463,6 +1463,7 @@ CommandBuffer::CommandBuffer(CommandBuffer &&rhs) noexcept :
 }
 
 //! @brief Constructs a wrapper for a GPU command buffer.
+//! @param[in] device The GPU device to create the command buffer on.
 //! @param[in] commandBuffer The buffer to wrap, can be nullptr.
 CommandBuffer::CommandBuffer(SDL_GPUDevice *device, SDL_GPUCommandBuffer *commandBuffer) :
     _parentDevice(device),

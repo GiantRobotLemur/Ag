@@ -162,9 +162,9 @@ void Matrix3x3::makeIdentity()
 
 //! @brief Overwrites the matrix with a uniform scale transformation.
 //! @param[in] uniformScale The scale factor to apply to X, Y and Z.
-void Matrix3x3::makeScale(double scaleFactor)
+void Matrix3x3::makeScale(double uniformScale)
 {
-    Operations_Mat3x3D::makeUniformScale(scaleFactor, M);
+    Operations_Mat3x3D::makeUniformScale(uniformScale, M);
 }
 
 //! @brief Overwrites the matrix with a scale transformation in the

@@ -1,4 +1,4 @@
-﻿//! @file Ag/ObjectGL/BsaeTypes.hpp
+﻿//! @file Ag/ObjectGL/BaseTypes.hpp
 //! @brief The declaration of basic data types required by core profile OpenGL
 //! entry points.
 //! @author GiantRobotLemur@na-se.co.uk

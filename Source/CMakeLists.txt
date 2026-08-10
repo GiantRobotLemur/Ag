@@ -31,3 +31,11 @@ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Extra/CMakeLists.txt")
     message(STATUS "Configuring 'Extra' projects...")
     add_subdirectory(Extra)
 endif()
+
+if (DEFINED AG_IS_ROOT)
+    # Allow the library to be documented in its stand-alone form.
+    ag_document_code(Documentation CHM "${CMAKE_BINARY_DIR}/AgLibraries.chm"
+                                   FOLDER "Tools"
+                                   DEFINES "_WIN32" "AG_OBJECT_GL_SDL3_DRIVER"
+                                   SOURCES ${DOC_SRCS})
+endif()

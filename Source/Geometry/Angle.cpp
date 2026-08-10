@@ -2,7 +2,7 @@
 //! @brief The definition of a class which represents an angle in radians in a
 //! normalised range
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -282,7 +282,6 @@ AngleOrientation::AngleOrientation() noexcept :
 
 //! @brief Creates an angular orientation by initialising the individual
 //! properties.
-//! @param[in] system The 'handedness' of the coordinate system.
 //! @param[in] direction The direction in which positive angles turn.
 //! @param[in] anchor The line representing an angle of 0.
 AngleOrientation::AngleOrientation(Orientation direction,

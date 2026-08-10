@@ -1,4 +1,4 @@
-//! @file Ag/IO/BinaryReaderWriters.hpp
+//! @file IO/BinaryReaderWriters.hpp
 //! @brief The declaration of implementations of hierarchy reader/writer
 //! interfaces which operate on a binary encoding.
 //! @author GiantRobotLemur@na-se.co.uk

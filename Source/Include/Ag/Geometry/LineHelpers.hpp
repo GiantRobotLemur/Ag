@@ -173,12 +173,12 @@ struct SimplifyContext
     //! curve to appear on the polyline.
     //! @param[in] endParam The parameter of the last point on the curve to
     //! appear on the polyline.
-    void reset(const TLine &line, double tolerace,
+    void reset(const TLine &line, double tolerance,
                double startParam, double endParam)
     {
         Line = line;
         Points.clear();
-        Tolerance = std::abs(tolerace);
+        Tolerance = std::abs(tolerance);
         IsReversed = (endParam < startParam);
 
         Points.emplace_back(line, startParam);
@@ -263,10 +263,9 @@ double findNearestPointParam(const TLine &line, const Point2D &point,
 //! @brief An internal function which recursively de-composes a curve
 //! down into a polyline.
 //! @param[in] context The context of the simplification process.
-//! @param[in] line The line being converted to a polyline.
-//! @param startPtIndex The index of the point in the Points collection
+//! @param[in] startPtIndex The index of the point in the Points collection
 //! which is at the start of the approximating line segment.
-//! @param endPtIndex The index of the point in the Points collection
+//! @param[in] endPtIndex The index of the point in the Points collection
 //! which is at the end of the approximating line segment.
 template<typename TLine>
 void simplifyLineRecursive(SimplifyContext<TLine> &context,

@@ -1,4 +1,4 @@
-//! @file Ag/IO/OutOfOrderStream.hpp
+//! @file IO/OutOfOrderStream.hpp
 //! @brief The declaration of an object which allows data to be temporarily
 //! written out of order and then transferred to another stream in the
 //! correct order.

@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/Apple.hpp
 //! @brief The declaration of Apple-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_APPLE_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_APPLE_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_APPLE_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_APPLE_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,7 +23,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_APPLE_element_array extension API specification.
+//! @brief The GL_APPLE_element_array extension API specification.
 struct APPLEElementArray {
     // Public Members
     void (APIENTRY *glDrawElementArray)(GLenum mode, GLint first, GLsizei count);
@@ -47,7 +47,7 @@ struct APPLEElementArray {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct APPLEElementArray
 
-// GL_APPLE_fence extension API specification.
+//! @brief The GL_APPLE_fence extension API specification.
 struct APPLEFence {
     // Public Members
     void (APIENTRY *glDeleteFences)(GLsizei n, const GLuint *fences);
@@ -67,7 +67,7 @@ struct APPLEFence {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct APPLEFence
 
-// GL_APPLE_flush_buffer_range extension API specification.
+//! @brief The GL_APPLE_flush_buffer_range extension API specification.
 struct APPLEFlushBufferRange {
     // Public Members
     void (APIENTRY *glBufferParameteri)(GLenum target, GLenum pname, GLint param);
@@ -82,7 +82,7 @@ struct APPLEFlushBufferRange {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct APPLEFlushBufferRange
 
-// GL_APPLE_object_purgeable extension API specification.
+//! @brief The GL_APPLE_object_purgeable extension API specification.
 struct APPLEObjectPurgeable {
     // Public Members
     void (APIENTRY *glGetObjectParameteriv)(GLenum objectType, GLuint name,
@@ -100,7 +100,7 @@ struct APPLEObjectPurgeable {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct APPLEObjectPurgeable
 
-// GL_APPLE_texture_range extension API specification.
+//! @brief The GL_APPLE_texture_range extension API specification.
 struct APPLETextureRange {
     // Public Members
     void (APIENTRY *glGetTexParameterPointerv)(GLenum target, GLenum pname,
@@ -116,7 +116,7 @@ struct APPLETextureRange {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct APPLETextureRange
 
-// GL_APPLE_vertex_array_object extension API specification.
+//! @brief The GL_APPLE_vertex_array_object extension API specification.
 struct APPLEVertexArrayObject {
     // Public Members
     void (APIENTRY *glBindVertexArray)(GLuint array);
@@ -132,7 +132,7 @@ struct APPLEVertexArrayObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct APPLEVertexArrayObject
 
-// GL_APPLE_vertex_array_range extension API specification.
+//! @brief The GL_APPLE_vertex_array_range extension API specification.
 struct APPLEVertexArrayRange {
     // Public Members
     void (APIENTRY *glFlushVertexArrayRange)(GLsizei length, void *pointer);
@@ -147,7 +147,7 @@ struct APPLEVertexArrayRange {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct APPLEVertexArrayRange
 
-// GL_APPLE_vertex_program_evaluators extension API specification.
+//! @brief The GL_APPLE_vertex_program_evaluators extension API specification.
 struct APPLEVertexProgramEvaluators {
     // Public Members
     void (APIENTRY *glDisableVertexAttrib)(GLuint index, GLenum pname);

@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "Ag/Core/String.hpp"
+#include "Ag/Sdl3Tools/Primitives.hpp"
 #include "Ag/Sdl3Tools/PropertySet.hpp"
 #include "Ag/Sdl3Tools/WrapperTypes.hpp"
 

@@ -11,6 +11,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include "Ag/Sdl3Tools/Primitives.hpp"
+#include "Ag/Sdl3Tools/ApiException.hpp"
+#include "Ag/Sdl3Tools/Initialiser.hpp"
 #include "Ag/Sdl3Tools/ProgramArguments.hpp"
 #include "Ag/Sdl3Tools/Renderer.hpp"
 #include "Ag/Sdl3Tools/Window.hpp"

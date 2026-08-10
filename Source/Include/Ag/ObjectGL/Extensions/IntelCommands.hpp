@@ -2,7 +2,7 @@
 //! @brief The declaration of Intel-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_INTEL_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_INTEL_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_INTEL_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_INTEL_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_INTEL_framebuffer_CMAA extension API.
+//! @brief Manages the entry points for the GL_INTEL_framebuffer_CMAA extension API.
 class INTELFramebufferCmaaAPI : public BaseExtension
 {
 public:
@@ -47,7 +47,7 @@ private:
     INTELFramebufferCmaa _api;
 };
 
-// Manages the entry points for the GL_INTEL_map_texture extension API.
+//! @brief Manages the entry points for the GL_INTEL_map_texture extension API.
 class INTELMapTextureAPI : public BaseExtension
 {
 public:
@@ -70,7 +70,7 @@ private:
     INTELMapTexture _api;
 };
 
-// Manages the entry points for the GL_INTEL_parallel_arrays extension API.
+//! @brief Manages the entry points for the GL_INTEL_parallel_arrays extension API.
 class INTELParallelArraysAPI : public BaseExtension
 {
 public:
@@ -94,7 +94,7 @@ private:
     INTELParallelArrays _api;
 };
 
-// Manages the entry points for the GL_INTEL_performance_query extension API.
+//! @brief Manages the entry points for the GL_INTEL_performance_query extension API.
 class INTELPerformanceQueryAPI : public BaseExtension
 {
 public:

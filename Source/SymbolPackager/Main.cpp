@@ -1,4 +1,4 @@
-//! @file SymbolPackager/SymbolPackager.cpp
+//! @file SymbolPackager/Main.cpp
 //! @brief The definition of the entry point for a command line tool which
 //! extracts and packages up the symbols for a binary module in order to support
 //! symbolic stack traces.

@@ -1,7 +1,7 @@
-//! @file Core/Test_Bz2Straem.cpp
+//! @file Core/Test_Bz2Stream.cpp
 //! @brief The definition of unit tests for the Bz2Straem class.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.

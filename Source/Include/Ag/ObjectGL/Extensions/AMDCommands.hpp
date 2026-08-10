@@ -2,7 +2,7 @@
 //! @brief The declaration of AMD-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_AMD_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_AMD_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_AMD_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_AMD_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_AMD_debug_output extension API.
+//! @brief Manages the entry points for the GL_AMD_debug_output extension API.
 class AMDDebugOutputAPI : public BaseExtension
 {
 public:
@@ -54,7 +54,7 @@ private:
     AMDDebugOutput _api;
 };
 
-// Manages the entry points for the GL_AMD_draw_buffers_blend extension API.
+//! @brief Manages the entry points for the GL_AMD_draw_buffers_blend extension API.
 class AMDDrawBuffersBlendAPI : public BaseExtension
 {
 public:
@@ -80,7 +80,7 @@ private:
     AMDDrawBuffersBlend _api;
 };
 
-// Manages the entry points for the GL_AMD_framebuffer_multisample_advanced extension API.
+//! @brief Manages the entry points for the GL_AMD_framebuffer_multisample_advanced extension API.
 class AMDFramebufferMultisampleAdvancedAPI : public BaseExtension
 {
 public:
@@ -110,7 +110,7 @@ private:
     AMDFramebufferMultisampleAdvanced _api;
 };
 
-// Manages the entry points for the GL_AMD_framebuffer_sample_positions extension API.
+//! @brief Manages the entry points for the GL_AMD_framebuffer_sample_positions extension API.
 class AMDFramebufferSamplePositionsAPI : public BaseExtension
 {
 public:
@@ -143,7 +143,7 @@ private:
     AMDFramebufferSamplePositions _api;
 };
 
-// Manages the entry points for the GL_AMD_gpu_shader_int64 extension API.
+//! @brief Manages the entry points for the GL_AMD_gpu_shader_int64 extension API.
 class AMDGPUShaderInt64API : public BaseExtension
 {
 public:
@@ -213,7 +213,7 @@ private:
     AMDGPUShaderInt64 _api;
 };
 
-// Manages the entry points for the GL_AMD_interleaved_elements extension API.
+//! @brief Manages the entry points for the GL_AMD_interleaved_elements extension API.
 class AMDInterleavedElementsAPI : public BaseExtension
 {
 public:
@@ -233,7 +233,7 @@ private:
     AMDInterleavedElements _api;
 };
 
-// Manages the entry points for the GL_AMD_multi_draw_indirect extension API.
+//! @brief Manages the entry points for the GL_AMD_multi_draw_indirect extension API.
 class AMDMultiDrawIndirectAPI : public BaseExtension
 {
 public:
@@ -257,7 +257,7 @@ private:
     AMDMultiDrawIndirect _api;
 };
 
-// Manages the entry points for the GL_AMD_name_gen_delete extension API.
+//! @brief Manages the entry points for the GL_AMD_name_gen_delete extension API.
 class AMDNameGenDeleteAPI : public BaseExtension
 {
 public:
@@ -279,7 +279,7 @@ private:
     AMDNameGenDelete _api;
 };
 
-// Manages the entry points for the GL_AMD_occlusion_query_event extension API.
+//! @brief Manages the entry points for the GL_AMD_occlusion_query_event extension API.
 class AMDOcclusionQueryEventAPI : public BaseExtension
 {
 public:
@@ -300,7 +300,7 @@ private:
     AMDOcclusionQueryEvent _api;
 };
 
-// Manages the entry points for the GL_AMD_performance_monitor extension API.
+//! @brief Manages the entry points for the GL_AMD_performance_monitor extension API.
 class AMDPerformanceMonitorAPI : public BaseExtension
 {
 public:
@@ -340,7 +340,7 @@ private:
     AMDPerformanceMonitor _api;
 };
 
-// Manages the entry points for the GL_AMD_sample_positions extension API.
+//! @brief Manages the entry points for the GL_AMD_sample_positions extension API.
 class AMDSamplePositionsAPI : public BaseExtension
 {
 public:
@@ -360,7 +360,7 @@ private:
     AMDSamplePositions _api;
 };
 
-// Manages the entry points for the GL_AMD_sparse_texture extension API.
+//! @brief Manages the entry points for the GL_AMD_sparse_texture extension API.
 class AMDSparseTextureAPI : public BaseExtension
 {
 public:
@@ -387,7 +387,7 @@ private:
     AMDSparseTexture _api;
 };
 
-// Manages the entry points for the GL_AMD_stencil_operation_extended extension API.
+//! @brief Manages the entry points for the GL_AMD_stencil_operation_extended extension API.
 class AMDStencilOperationExtendedAPI : public BaseExtension
 {
 public:
@@ -407,7 +407,7 @@ private:
     AMDStencilOperationExtended _api;
 };
 
-// Manages the entry points for the GL_AMD_vertex_shader_tessellator extension API.
+//! @brief Manages the entry points for the GL_AMD_vertex_shader_tessellator extension API.
 class AMDVertexShaderTessellatorAPI : public BaseExtension
 {
 public:
@@ -434,7 +434,7 @@ private:
 #ifdef _WIN32
 namespace wgl {
 
-// Manages the entry points for the WGL_AMD_gpu_association extension API.
+//! @brief Manages the entry points for the WGL_AMD_gpu_association extension API.
 class AMDGPUAssociationAPI : public gl::BaseExtension
 {
 public:
@@ -472,7 +472,7 @@ private:
 #ifdef _USES_GLX
 namespace glx {
 
-// Manages the entry points for the GLX_AMD_gpu_association extension API.
+//! @brief Manages the entry points for the GLX_AMD_gpu_association extension API.
 class AMDGPUAssociationAPI : public gl::BaseExtension
 {
 public:

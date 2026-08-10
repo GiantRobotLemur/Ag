@@ -1,15 +1,15 @@
-//! @file WriteGlyphGeometry/PreCompiledHeader.hpp
+//! @file Source/WriteGlyphGeometry/PreCompiledHeader.hpp
 //! @brief Includes all system or library header files required internally by
 //! the library so that they can be pre-compiled once.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __WRITE_GLYPH_GEOMETRY_PCH_HPP__
-#define __WRITE_GLYPH_GEOMETRY_PCH_HPP__
+#ifndef HEADER_WRITE_GLYPH_GEOMETRY_PCH_HPP_
+#define HEADER_WRITE_GLYPH_GEOMETRY_PCH_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files

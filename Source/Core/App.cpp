@@ -1,4 +1,4 @@
-//! @file Core/App.cpp
+//! @file Source/Core/App.cpp
 //! @brief The definition of an object which represents the root of an
 //! application object hierarchy.
 //! @author GiantRobotLemur@na-se.co.uk
@@ -287,6 +287,8 @@ Fs::Path AppPaths::getPath(AppDir dirID, const Fs::PathBuilder &relativePath) co
 //! @brief Overrides the path to an application-centric directory used to
 //! resolve paths to application resources.
 //! @param[in] dirID The identifier of the directory path to be overridden.
+//! @param[in] path The new base path used to resolve files for the
+//! specified directory identity.
 //! @throws ArgumentException Thrown if @p dirID is out of range or @p path
 //! is relative.
 void AppPaths::setOverride(AppDir dirID, const Fs::Path &path)

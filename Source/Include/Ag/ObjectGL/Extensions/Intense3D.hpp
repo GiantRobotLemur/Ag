@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/Intense3D.hpp
 //! @brief The declaration of Intense 3D-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_INTENSE_3D_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_INTENSE_3D_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_INTENSE_3D_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_INTENSE_3D_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -25,7 +25,7 @@ namespace wgl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// WGL_I3D_digital_video_control extension API specification.
+//! @brief WGL_I3D_digital_video_control extension API specification.
 struct I3DDigitalVideoControl {
     // Public Members
     BOOL(APIENTRY *wglGetDigitalVideoParameters)(HDC hDC, int iAttribute,

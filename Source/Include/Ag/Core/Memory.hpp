@@ -33,7 +33,7 @@ namespace std {
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Declares a unique pointer type with its own deleter.
 //! @param[in] name The name of the type which needs a unique pointer, which
-//! will be defined as <name>UPtr.
+//! will be defined as &lt;name&gt;UPtr.
 #define DECLARE_UNIQUE_PTR(name) struct name ## Deleter { void operator()(name *ptr) const; }; \
     using name ## UPtr = std::unique_ptr<name, name ## Deleter>
 

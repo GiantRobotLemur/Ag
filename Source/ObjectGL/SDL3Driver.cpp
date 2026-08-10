@@ -25,6 +25,8 @@
 #include "DisplayContextPrivate.hpp"
 #include "RenderContextPrivate.hpp"
 
+#ifdef AG_OBJECT_GL_SDL3_DRIVER
+
 namespace gl {
 
 namespace {
@@ -537,4 +539,7 @@ DisplayContext SDL3Driver::createDisplayDevice(const DisplayFormat &format) cons
 }
 
 } // namespace gl
+
+#endif // ifdef AG_OBJECT_GL_SDL3_DRIVER
+
 ////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
 //! @brief The declaration of nVidia-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_NVIDIA_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_NVIDIA_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_NVIDIA_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_NVIDIA_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_NVX_conditional_render extension API.
+//! @brief Manages the entry points for the GL_NVX_conditional_render extension API.
 class NVXConditionalRenderAPI : public BaseExtension
 {
 public:
@@ -48,7 +48,7 @@ private:
     NVXConditionalRender _api;
 };
 
-// Manages the entry points for the GL_NVX_gpu_multicast2 extension API.
+//! @brief Manages the entry points for the GL_NVX_gpu_multicast2 extension API.
 class NVXGPUMULTICAST2API : public BaseExtension
 {
 public:
@@ -95,7 +95,7 @@ private:
     NVXGPUMULTICAST2 _api;
 };
 
-// Manages the entry points for the GL_NVX_linked_gpu_multicast extension API.
+//! @brief Manages the entry points for the GL_NVX_linked_gpu_multicast extension API.
 class NVXLinkedGPUMulticastAPI : public BaseExtension
 {
 public:
@@ -124,7 +124,7 @@ private:
     NVXLinkedGPUMulticast _api;
 };
 
-// Manages the entry points for the GL_NVX_progress_fence extension API.
+//! @brief Manages the entry points for the GL_NVX_progress_fence extension API.
 class NVXProgressFenceAPI : public BaseExtension
 {
 public:
@@ -153,7 +153,7 @@ private:
     NVXProgressFence _api;
 };
 
-// Manages the entry points for the GL_NV_alpha_to_coverage_dither_control extension API.
+//! @brief Manages the entry points for the GL_NV_alpha_to_coverage_dither_control extension API.
 class NVAlphaToCoverageDitherControlAPI : public BaseExtension
 {
 public:
@@ -173,7 +173,7 @@ private:
     NVAlphaToCoverageDitherControl _api;
 };
 
-// Manages the entry points for the GL_NV_bindless_multi_draw_indirect extension API.
+//! @brief Manages the entry points for the GL_NV_bindless_multi_draw_indirect extension API.
 class NVBindlessMultiDrawIndirectAPI : public BaseExtension
 {
 public:
@@ -200,7 +200,7 @@ private:
     NVBindlessMultiDrawIndirect _api;
 };
 
-// Manages the entry points for the GL_NV_bindless_multi_draw_indirect_count extension API.
+//! @brief Manages the entry points for the GL_NV_bindless_multi_draw_indirect_count extension API.
 class NVBindlessMultiDrawIndirectCountAPI : public BaseExtension
 {
 public:
@@ -232,7 +232,7 @@ private:
     NVBindlessMultiDrawIndirectCount _api;
 };
 
-// Manages the entry points for the GL_NV_bindless_texture extension API.
+//! @brief Manages the entry points for the GL_NV_bindless_texture extension API.
 class NVBindlessTextureAPI : public BaseExtension
 {
 public:
@@ -267,7 +267,7 @@ private:
     NVBindlessTexture _api;
 };
 
-// Manages the entry points for the GL_NV_blend_equation_advanced extension API.
+//! @brief Manages the entry points for the GL_NV_blend_equation_advanced extension API.
 class NVBlendEquationAdvancedAPI : public BaseExtension
 {
 public:
@@ -288,7 +288,7 @@ private:
     NVBlendEquationAdvanced _api;
 };
 
-// Manages the entry points for the GL_NV_clip_space_w_scaling extension API.
+//! @brief Manages the entry points for the GL_NV_clip_space_w_scaling extension API.
 class NVClipSpaceWScalingAPI : public BaseExtension
 {
 public:
@@ -308,7 +308,7 @@ private:
     NVClipSpaceWScaling _api;
 };
 
-// Manages the entry points for the GL_NV_command_list extension API.
+//! @brief Manages the entry points for the GL_NV_command_list extension API.
 class NVCommandListAPI : public BaseExtension
 {
 public:
@@ -354,7 +354,7 @@ private:
     NVCommandList _api;
 };
 
-// Manages the entry points for the GL_NV_conditional_render extension API.
+//! @brief Manages the entry points for the GL_NV_conditional_render extension API.
 class NVConditionalRenderAPI : public BaseExtension
 {
 public:
@@ -375,7 +375,7 @@ private:
     NVConditionalRender _api;
 };
 
-// Manages the entry points for the GL_NV_conservative_raster extension API.
+//! @brief Manages the entry points for the GL_NV_conservative_raster extension API.
 class NVConservativeRasterAPI : public BaseExtension
 {
 public:
@@ -395,7 +395,7 @@ private:
     NVConservativeRaster _api;
 };
 
-// Manages the entry points for the GL_NV_conservative_raster_dilate extension API.
+//! @brief Manages the entry points for the GL_NV_conservative_raster_dilate extension API.
 class NVConservativeRasterDilateAPI : public BaseExtension
 {
 public:
@@ -415,7 +415,7 @@ private:
     NVConservativeRasterDilate _api;
 };
 
-// Manages the entry points for the GL_NV_conservative_raster_pre_snap_triangles extension API.
+//! @brief Manages the entry points for the GL_NV_conservative_raster_pre_snap_triangles extension API.
 class NVConservativeRasterPreSnapTrianglesAPI : public BaseExtension
 {
 public:
@@ -435,7 +435,7 @@ private:
     NVConservativeRasterPreSnapTriangles _api;
 };
 
-// Manages the entry points for the GL_NV_copy_image extension API.
+//! @brief Manages the entry points for the GL_NV_copy_image extension API.
 class NVCopyImageAPI : public BaseExtension
 {
 public:
@@ -459,7 +459,7 @@ private:
     NVCopyImage _api;
 };
 
-// Manages the entry points for the GL_NV_depth_buffer_float extension API.
+//! @brief Manages the entry points for the GL_NV_depth_buffer_float extension API.
 class NVDepthBufferFloatAPI : public BaseExtension
 {
 public:
@@ -481,7 +481,7 @@ private:
     NVDepthBufferFloat _api;
 };
 
-// Manages the entry points for the GL_NV_draw_texture extension API.
+//! @brief Manages the entry points for the GL_NV_draw_texture extension API.
 class NVDrawTextureAPI : public BaseExtension
 {
 public:
@@ -503,7 +503,7 @@ private:
     NVDrawTexture _api;
 };
 
-// Manages the entry points for the GL_NV_draw_vulkan_image extension API.
+//! @brief Manages the entry points for the GL_NV_draw_vulkan_image extension API.
 class NVDrawVulkanImageAPI : public BaseExtension
 {
 public:
@@ -529,7 +529,7 @@ private:
     NVDrawVulkanImage _api;
 };
 
-// Manages the entry points for the GL_NV_evaluators extension API.
+//! @brief Manages the entry points for the GL_NV_evaluators extension API.
 class NVEvaluatorsAPI : public BaseExtension
 {
 public:
@@ -567,7 +567,7 @@ private:
     NVEvaluators _api;
 };
 
-// Manages the entry points for the GL_NV_explicit_multisample extension API.
+//! @brief Manages the entry points for the GL_NV_explicit_multisample extension API.
 class NVExplicitMultisampleAPI : public BaseExtension
 {
 public:
@@ -590,7 +590,7 @@ private:
     NVExplicitMultisample _api;
 };
 
-// Manages the entry points for the GL_NV_fence extension API.
+//! @brief Manages the entry points for the GL_NV_fence extension API.
 class NVFenceAPI : public BaseExtension
 {
 public:
@@ -616,7 +616,7 @@ private:
     NVFence _api;
 };
 
-// Manages the entry points for the GL_NV_fragment_coverage_to_color extension API.
+//! @brief Manages the entry points for the GL_NV_fragment_coverage_to_color extension API.
 class NVFragmentCoverageToColorAPI : public BaseExtension
 {
 public:
@@ -636,7 +636,7 @@ private:
     NVFragmentCoverageToColor _api;
 };
 
-// Manages the entry points for the GL_NV_fragment_program extension API.
+//! @brief Manages the entry points for the GL_NV_fragment_program extension API.
 class NVFragmentProgramAPI : public BaseExtension
 {
 public:
@@ -669,7 +669,7 @@ private:
     NVFragmentProgram _api;
 };
 
-// Manages the entry points for the GL_NV_framebuffer_mixed_samples extension API.
+//! @brief Manages the entry points for the GL_NV_framebuffer_mixed_samples extension API.
 class NVFramebufferMixedSamplesAPI : public BaseExtension
 {
 public:
@@ -691,7 +691,7 @@ private:
     NVFramebufferMixedSamples _api;
 };
 
-// Manages the entry points for the GL_NV_framebuffer_multisample_coverage extension API.
+//! @brief Manages the entry points for the GL_NV_framebuffer_multisample_coverage extension API.
 class NVFramebufferMultisampleCoverageAPI : public BaseExtension
 {
 public:
@@ -715,7 +715,7 @@ private:
     NVFramebufferMultisampleCoverage _api;
 };
 
-// Manages the entry points for the GL_NV_geometry_program4 extension API.
+//! @brief Manages the entry points for the GL_NV_geometry_program4 extension API.
 class NVGeometryPROGRAM4API : public BaseExtension
 {
 public:
@@ -742,7 +742,7 @@ private:
     NVGeometryPROGRAM4 _api;
 };
 
-// Manages the entry points for the GL_NV_gpu_multicast extension API.
+//! @brief Manages the entry points for the GL_NV_gpu_multicast extension API.
 class NVGPUMulticastAPI : public BaseExtension
 {
 public:
@@ -796,7 +796,7 @@ private:
     NVGPUMulticast _api;
 };
 
-// Manages the entry points for the GL_NV_gpu_program4 extension API.
+//! @brief Manages the entry points for the GL_NV_gpu_program4 extension API.
 class NVGPUPROGRAM4API : public BaseExtension
 {
 public:
@@ -847,7 +847,7 @@ private:
     NVGPUPROGRAM4 _api;
 };
 
-// Manages the entry points for the GL_NV_gpu_program5 extension API.
+//! @brief Manages the entry points for the GL_NV_gpu_program5 extension API.
 class NVGPUPROGRAM5API : public BaseExtension
 {
 public:
@@ -870,7 +870,7 @@ private:
     NVGPUPROGRAM5 _api;
 };
 
-// Manages the entry points for the GL_NV_half_float extension API.
+//! @brief Manages the entry points for the GL_NV_half_float extension API.
 class NVHalfFloatAPI : public BaseExtension
 {
 public:
@@ -937,7 +937,7 @@ private:
     NVHalfFloat _api;
 };
 
-// Manages the entry points for the GL_NV_internalformat_sample_query extension API.
+//! @brief Manages the entry points for the GL_NV_internalformat_sample_query extension API.
 class NVInternalformatSampleQueryAPI : public BaseExtension
 {
 public:
@@ -960,7 +960,7 @@ private:
     NVInternalformatSampleQuery _api;
 };
 
-// Manages the entry points for the GL_NV_memory_attachment extension API.
+//! @brief Manages the entry points for the GL_NV_memory_attachment extension API.
 class NVMemoryAttachmentAPI : public BaseExtension
 {
 public:
@@ -989,7 +989,7 @@ private:
     NVMemoryAttachment _api;
 };
 
-// Manages the entry points for the GL_NV_memory_object_sparse extension API.
+//! @brief Manages the entry points for the GL_NV_memory_object_sparse extension API.
 class NVMemoryObjectSparseAPI : public BaseExtension
 {
 public:
@@ -1022,7 +1022,7 @@ private:
     NVMemoryObjectSparse _api;
 };
 
-// Manages the entry points for the GL_NV_mesh_shader extension API.
+//! @brief Manages the entry points for the GL_NV_mesh_shader extension API.
 class NVMeshShaderAPI : public BaseExtension
 {
 public:
@@ -1047,7 +1047,7 @@ private:
     NVMeshShader _api;
 };
 
-// Manages the entry points for the GL_NV_occlusion_query extension API.
+//! @brief Manages the entry points for the GL_NV_occlusion_query extension API.
 class NVOcclusionQueryAPI : public BaseExtension
 {
 public:
@@ -1075,7 +1075,7 @@ private:
     NVOcclusionQuery _api;
 };
 
-// Manages the entry points for the GL_NV_parameter_buffer_object extension API.
+//! @brief Manages the entry points for the GL_NV_parameter_buffer_object extension API.
 class NVParameterBufferObjectAPI : public BaseExtension
 {
 public:
@@ -1103,7 +1103,7 @@ private:
     NVParameterBufferObject _api;
 };
 
-// Manages the entry points for the GL_NV_path_rendering extension API.
+//! @brief Manages the entry points for the GL_NV_path_rendering extension API.
 class NVPathRenderingAPI : public BaseExtension
 {
 public:
@@ -1259,7 +1259,7 @@ private:
     NVPathRendering _api;
 };
 
-// Manages the entry points for the GL_NV_pixel_data_range extension API.
+//! @brief Manages the entry points for the GL_NV_pixel_data_range extension API.
 class NVPixelDataRangeAPI : public BaseExtension
 {
 public:
@@ -1281,7 +1281,7 @@ private:
     NVPixelDataRange _api;
 };
 
-// Manages the entry points for the GL_NV_point_sprite extension API.
+//! @brief Manages the entry points for the GL_NV_point_sprite extension API.
 class NVPointSpriteAPI : public BaseExtension
 {
 public:
@@ -1302,7 +1302,7 @@ private:
     NVPointSprite _api;
 };
 
-// Manages the entry points for the GL_NV_present_video extension API.
+//! @brief Manages the entry points for the GL_NV_present_video extension API.
 class NVPresentVideoAPI : public BaseExtension
 {
 public:
@@ -1336,7 +1336,7 @@ private:
     NVPresentVideo _api;
 };
 
-// Manages the entry points for the GL_NV_primitive_restart extension API.
+//! @brief Manages the entry points for the GL_NV_primitive_restart extension API.
 class NVPrimitiveRestartAPI : public BaseExtension
 {
 public:
@@ -1357,7 +1357,7 @@ private:
     NVPrimitiveRestart _api;
 };
 
-// Manages the entry points for the GL_NV_query_resource extension API.
+//! @brief Manages the entry points for the GL_NV_query_resource extension API.
 class NVQueryResourceAPI : public BaseExtension
 {
 public:
@@ -1378,7 +1378,7 @@ private:
     NVQueryResource _api;
 };
 
-// Manages the entry points for the GL_NV_query_resource_tag extension API.
+//! @brief Manages the entry points for the GL_NV_query_resource_tag extension API.
 class NVQueryResourceTagAPI : public BaseExtension
 {
 public:
@@ -1400,7 +1400,7 @@ private:
     NVQueryResourceTag _api;
 };
 
-// Manages the entry points for the GL_NV_register_combiners extension API.
+//! @brief Manages the entry points for the GL_NV_register_combiners extension API.
 class NVRegisterCombinersAPI : public BaseExtension
 {
 public:
@@ -1455,7 +1455,7 @@ private:
     NVRegisterCombiners _api;
 };
 
-// Manages the entry points for the GL_NV_register_combiners2 extension API.
+//! @brief Manages the entry points for the GL_NV_register_combiners2 extension API.
 class NVRegisterCOMBINERS2API : public BaseExtension
 {
 public:
@@ -1479,7 +1479,7 @@ private:
     NVRegisterCOMBINERS2 _api;
 };
 
-// Manages the entry points for the GL_NV_sample_locations extension API.
+//! @brief Manages the entry points for the GL_NV_sample_locations extension API.
 class NVSampleLocationsAPI : public BaseExtension
 {
 public:
@@ -1504,7 +1504,7 @@ private:
     NVSampleLocations _api;
 };
 
-// Manages the entry points for the GL_NV_scissor_exclusive extension API.
+//! @brief Manages the entry points for the GL_NV_scissor_exclusive extension API.
 class NVScissorExclusiveAPI : public BaseExtension
 {
 public:
@@ -1525,7 +1525,7 @@ private:
     NVScissorExclusive _api;
 };
 
-// Manages the entry points for the GL_NV_shader_buffer_load extension API.
+//! @brief Manages the entry points for the GL_NV_shader_buffer_load extension API.
 class NVShaderBufferLoadAPI : public BaseExtension
 {
 public:
@@ -1561,7 +1561,7 @@ private:
     NVShaderBufferLoad _api;
 };
 
-// Manages the entry points for the GL_NV_shading_rate_image extension API.
+//! @brief Manages the entry points for the GL_NV_shading_rate_image extension API.
 class NVShadingRateImageAPI : public BaseExtension
 {
 public:
@@ -1590,7 +1590,7 @@ private:
     NVShadingRateImage _api;
 };
 
-// Manages the entry points for the GL_NV_texture_barrier extension API.
+//! @brief Manages the entry points for the GL_NV_texture_barrier extension API.
 class NVTextureBarrierAPI : public BaseExtension
 {
 public:
@@ -1610,7 +1610,7 @@ private:
     NVTextureBarrier _api;
 };
 
-// Manages the entry points for the GL_NV_texture_multisample extension API.
+//! @brief Manages the entry points for the GL_NV_texture_multisample extension API.
 class NVTextureMultisampleAPI : public BaseExtension
 {
 public:
@@ -1666,7 +1666,7 @@ private:
     NVTextureMultisample _api;
 };
 
-// Manages the entry points for the GL_NV_timeline_semaphore extension API.
+//! @brief Manages the entry points for the GL_NV_timeline_semaphore extension API.
 class NVTimelineSemaphoreAPI : public BaseExtension
 {
 public:
@@ -1690,7 +1690,7 @@ private:
     NVTimelineSemaphore _api;
 };
 
-// Manages the entry points for the GL_NV_transform_feedback extension API.
+//! @brief Manages the entry points for the GL_NV_transform_feedback extension API.
 class NVTransformFeedbackAPI : public BaseExtension
 {
 public:
@@ -1731,7 +1731,7 @@ private:
     NVTransformFeedback _api;
 };
 
-// Manages the entry points for the GL_NV_transform_feedback2 extension API.
+//! @brief Manages the entry points for the GL_NV_transform_feedback2 extension API.
 class NVTransformFeedback2API : public BaseExtension
 {
 public:
@@ -1757,7 +1757,7 @@ private:
     NVTransformFeedback2 _api;
 };
 
-// Manages the entry points for the GL_NV_vdpau_interop extension API.
+//! @brief Manages the entry points for the GL_NV_vdpau_interop extension API.
 class NVVdpauInteropAPI : public BaseExtension
 {
 public:
@@ -1793,7 +1793,7 @@ private:
     NVVdpauInterop _api;
 };
 
-// Manages the entry points for the GL_NV_vdpau_interop2 extension API.
+//! @brief Manages the entry points for the GL_NV_vdpau_interop2 extension API.
 class NVVdpauINTEROP2API : public BaseExtension
 {
 public:
@@ -1817,7 +1817,7 @@ private:
     NVVdpauINTEROP2 _api;
 };
 
-// Manages the entry points for the GL_NV_vertex_array_range extension API.
+//! @brief Manages the entry points for the GL_NV_vertex_array_range extension API.
 class NVVertexArrayRangeAPI : public BaseExtension
 {
 public:
@@ -1838,7 +1838,7 @@ private:
     NVVertexArrayRange _api;
 };
 
-// Manages the entry points for the GL_NV_vertex_attrib_integer_64bit extension API.
+//! @brief Manages the entry points for the GL_NV_vertex_attrib_integer_64bit extension API.
 class NVVertexAttribInteger64BITAPI : public BaseExtension
 {
 public:
@@ -1883,7 +1883,7 @@ private:
     NVVertexAttribInteger64BIT _api;
 };
 
-// Manages the entry points for the GL_NV_vertex_buffer_unified_memory extension API.
+//! @brief Manages the entry points for the GL_NV_vertex_buffer_unified_memory extension API.
 class NVVertexBufferUnifiedMemoryAPI : public BaseExtension
 {
 public:
@@ -1917,7 +1917,7 @@ private:
     NVVertexBufferUnifiedMemory _api;
 };
 
-// Manages the entry points for the GL_NV_vertex_program extension API.
+//! @brief Manages the entry points for the GL_NV_vertex_program extension API.
 class NVVertexProgramAPI : public BaseExtension
 {
 public:
@@ -2020,7 +2020,7 @@ private:
     NVVertexProgram _api;
 };
 
-// Manages the entry points for the GL_NV_video_capture extension API.
+//! @brief Manages the entry points for the GL_NV_video_capture extension API.
 class NVVideoCaptureAPI : public BaseExtension
 {
 public:
@@ -2062,7 +2062,7 @@ private:
     NVVideoCapture _api;
 };
 
-// Manages the entry points for the GL_NV_viewport_swizzle extension API.
+//! @brief Manages the entry points for the GL_NV_viewport_swizzle extension API.
 class NVViewportSwizzleAPI : public BaseExtension
 {
 public:
@@ -2088,7 +2088,7 @@ private:
 #ifdef _WIN32
 namespace wgl {
 
-// Manages the entry points for the WGL_NV_DX_interop extension API.
+//! @brief Manages the entry points for the WGL_NV_DX_interop extension API.
 class NVDxInteropAPI : public gl::BaseExtension
 {
 public:
@@ -2116,7 +2116,7 @@ private:
     NVDxInterop _api;
 };
 
-// Manages the entry points for the WGL_NV_copy_image extension API.
+//! @brief Manages the entry points for the WGL_NV_copy_image extension API.
 class NVCopyImageAPI : public gl::BaseExtension
 {
 public:
@@ -2140,7 +2140,7 @@ private:
     NVCopyImage _api;
 };
 
-// Manages the entry points for the WGL_NV_delay_before_swap extension API.
+//! @brief Manages the entry points for the WGL_NV_delay_before_swap extension API.
 class NVDelayBeforeSwapAPI : public gl::BaseExtension
 {
 public:
@@ -2160,7 +2160,7 @@ private:
     NVDelayBeforeSwap _api;
 };
 
-// Manages the entry points for the WGL_NV_gpu_affinity extension API.
+//! @brief Manages the entry points for the WGL_NV_gpu_affinity extension API.
 class NVGPUAffinityAPI : public gl::BaseExtension
 {
 public:
@@ -2184,7 +2184,7 @@ private:
     NVGPUAffinity _api;
 };
 
-// Manages the entry points for the WGL_NV_present_video extension API.
+//! @brief Manages the entry points for the WGL_NV_present_video extension API.
 class NVPresentVideoAPI : public gl::BaseExtension
 {
 public:
@@ -2208,7 +2208,7 @@ private:
     NVPresentVideo _api;
 };
 
-// Manages the entry points for the WGL_NV_swap_group extension API.
+//! @brief Manages the entry points for the WGL_NV_swap_group extension API.
 class NVSwapGroupAPI : public gl::BaseExtension
 {
 public:
@@ -2233,7 +2233,7 @@ private:
     NVSwapGroup _api;
 };
 
-// Manages the entry points for the WGL_NV_vertex_array_range extension API.
+//! @brief Manages the entry points for the WGL_NV_vertex_array_range extension API.
 class NVVertexArrayRangeAPI : public gl::BaseExtension
 {
 public:
@@ -2255,7 +2255,7 @@ private:
     NVVertexArrayRange _api;
 };
 
-// Manages the entry points for the WGL_NV_video_capture extension API.
+//! @brief Manages the entry points for the WGL_NV_video_capture extension API.
 class NVVideoCaptureAPI : public gl::BaseExtension
 {
 public:
@@ -2280,7 +2280,7 @@ private:
     NVVideoCapture _api;
 };
 
-// Manages the entry points for the WGL_NV_video_output extension API.
+//! @brief Manages the entry points for the WGL_NV_video_output extension API.
 class NVVideoOutputAPI : public gl::BaseExtension
 {
 public:
@@ -2316,7 +2316,7 @@ private:
 #ifdef _USES_GLX
 namespace glx {
 
-// Manages the entry points for the GLX_NV_copy_buffer extension API.
+//! @brief Manages the entry points for the GLX_NV_copy_buffer extension API.
 class NVCopyBufferAPI : public gl::BaseExtension
 {
 public:
@@ -2343,7 +2343,7 @@ private:
     NVCopyBuffer _api;
 };
 
-// Manages the entry points for the GLX_NV_copy_image extension API.
+//! @brief Manages the entry points for the GLX_NV_copy_image extension API.
 class NVCopyImageAPI : public gl::BaseExtension
 {
 public:
@@ -2368,7 +2368,7 @@ private:
     NVCopyImage _api;
 };
 
-// Manages the entry points for the GLX_NV_delay_before_swap extension API.
+//! @brief Manages the entry points for the GLX_NV_delay_before_swap extension API.
 class NVDelayBeforeSwapAPI : public gl::BaseExtension
 {
 public:
@@ -2388,7 +2388,7 @@ private:
     NVDelayBeforeSwap _api;
 };
 
-// Manages the entry points for the GLX_NV_present_video extension API.
+//! @brief Manages the entry points for the GLX_NV_present_video extension API.
 class NVPresentVideoAPI : public gl::BaseExtension
 {
 public:
@@ -2411,7 +2411,7 @@ private:
     NVPresentVideo _api;
 };
 
-// Manages the entry points for the GLX_NV_swap_group extension API.
+//! @brief Manages the entry points for the GLX_NV_swap_group extension API.
 class NVSwapGroupAPI : public gl::BaseExtension
 {
 public:
@@ -2438,7 +2438,7 @@ private:
     NVSwapGroup _api;
 };
 
-// Manages the entry points for the GLX_NV_video_capture extension API.
+//! @brief Manages the entry points for the GLX_NV_video_capture extension API.
 class NVVideoCaptureAPI : public gl::BaseExtension
 {
 public:
@@ -2466,7 +2466,7 @@ private:
     NVVideoCapture _api;
 };
 
-// Manages the entry points for the GLX_NV_video_out extension API.
+//! @brief Manages the entry points for the GLX_NV_video_out extension API.
 class NVVideoOutAPI : public gl::BaseExtension
 {
 public:

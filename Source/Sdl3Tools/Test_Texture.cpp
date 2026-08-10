@@ -16,6 +16,7 @@
 
 #include "Ag/Core.hpp"
 #include "Ag/Sdl3Tools/ApiException.hpp"
+#include "Ag/Sdl3Tools/Primitives.hpp"
 #include "Ag/Sdl3Tools/Renderer.hpp"
 #include "Ag/Sdl3Tools/Surface.hpp"
 #include "Ag/Sdl3Tools/Texture.hpp"

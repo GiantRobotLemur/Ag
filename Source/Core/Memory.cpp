@@ -1,7 +1,7 @@
 //! @file Core/Memory.cpp
 //! @brief The definition of utility functions related to memory management.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2024
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -25,7 +25,7 @@ namespace Ag {
 //! @brief Allocates a block of memory with a specific address alignment.
 //! @param[in] alignment The address boundary the block should be aligned on,
 //! must be a power of 2.
-//! @paarm[in] sizeInBytes The minimum count of bytes in the allocated block.
+//! @param[in] sizeInBytes The minimum count of bytes in the allocated block.
 //! @return A pointer to the newly allocated block of memory, to be freed with
 //! a call to freeAligned().
 void *mallocAligned(size_t alignment, size_t sizeInBytes)
@@ -61,7 +61,7 @@ void *mallocAligned(size_t alignment, size_t sizeInBytes)
 //! @brief Allocates a block of memory with a specific address alignment.
 //! @param[in] alignmentPow2 The address boundary the block should be aligned on,
 //! expressed as a power of 2.
-//! @paarm[in] sizeInBytes The minimum count of bytes in the allocated block.
+//! @param[in] sizeInBytes The minimum count of bytes in the allocated block.
 //! @return A pointer to the newly allocated block of memory, to be freed with
 //! a call to freeAligned().
 void *mallocAlignedPow2(uint8_t alignmentPow2, size_t sizeInBytes)

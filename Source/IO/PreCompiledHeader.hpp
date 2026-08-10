@@ -1,4 +1,4 @@
-//! @file Ag/IO/PreCompiledHeader.hpp
+//! @file IO/PreCompiledHeader.hpp
 //! @brief Includes all system or library header files required internally by
 //! the library so that they can be pre-compiled once.
 //! @author GiantRobotLemur@na-se.co.uk

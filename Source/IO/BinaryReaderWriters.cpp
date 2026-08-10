@@ -1196,6 +1196,8 @@ bool BinaryObjectReader::tryGetFieldValue(string_cref_t tag, FieldType &fieldTyp
 //! @param[in] output The stream the hierarchy will eventually be written to.
 //! @param[in] rootWriter A pointer to the root BinaryArrayWriter or
 //! BinaryObjectWriter.
+//! @param[in] compress True to compress the string table and payload data when
+//! writing them to @p output, false to write the data uncompressed.
 BinaryWriterRoot::BinaryWriterRoot(ISeekableStream *output, const void *rootWriter,
                                    bool compress) :
     _output(output),
