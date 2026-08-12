@@ -164,7 +164,7 @@ Geometry library in order to support 2D graphic GPU rendering at a later date.
 | **Win32Base** | Mature | Full Win32 GUI framework |
 | **Sdl3Tools** | Active | SDL3 wrappers, event processing, recently added polling events |
 | **QtInterop** | Minimal | Just CommandLineWrangler and Conversion |
-| **SymbolPackager** | Mature | PDB, GNU map, nm file readers |
+| **SymbolPackager** | Mature | PDB, ELF, GNU map, nm file readers |
 
 ### Outstanding Work / TODOs Found in Code
 - **Geometry:** Implement boolean geometry operations in DCEL_Boolean.cpp/hpp.
@@ -180,7 +180,7 @@ Geometry library in order to support 2D graphic GPU rendering at a later date.
 |-----------|---------|---------|
 | bzip2 | master | Compression for symbol data (compiled in) |
 | Google Test | 1.17.0 | Unit testing |
-| GLM | 1.0.1 | Math library (when GFX or OpenGL enabled) |
+| GLM | 1.0.3 | Math library (when GFX or OpenGL enabled) |
 | SDL3 | 3.2.10 | Windowing, events, GPU framework |
 | SDL2 | 2.32.10 | Legacy (still declared) |
 | Qt6 | (external) | Optional Qt integration |
