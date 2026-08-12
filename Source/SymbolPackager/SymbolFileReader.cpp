@@ -2,7 +2,7 @@
 //! @brief The definition of an object which reads symbols pre-packaged in
 //! a file.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -135,7 +135,7 @@ SymbolFileReader::SymbolFileReader(const CommandLine &args) :
 }
 
 //! @brief Reads the symbols from a pre-packaged file into a database.
-//! @param[out] symbol An object to receive the symbol data.
+//! @param[out] symbols An object to receive the symbol data.
 //! @param[out] error Receives an error message if the operation failed.
 void SymbolFileReader::readSymbols(SymbolDb &symbols, std::string &error)
 {

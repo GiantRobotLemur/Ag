@@ -1,14 +1,14 @@
-//! @file Ag/Core/PreCompiledHeader.hpp
+//! @file Core/PreCompiledHeader.hpp
 //! @brief The root private pre-compiled header for the Core project.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_PCH_HPP__
-#define __AG_CORE_PCH_HPP__
+#ifndef HEADER_AG_CORE_PCH_HPP_
+#define HEADER_AG_CORE_PCH_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files

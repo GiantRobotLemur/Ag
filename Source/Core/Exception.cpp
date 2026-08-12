@@ -549,6 +549,7 @@ ArgumentException::ArgumentException(const char *argName)
 
 //! @brief A constructor used explicitly when logic within the program detects
 //! that the argument to a function is invalid.
+//! @param[in] detail Text describing why the argument was invalid.
 //! @param[in] argName The name of the argument with the invalid value.
 ArgumentException::ArgumentException(const char *detail, const char *argName)
 {

@@ -2,21 +2,17 @@
 //! @brief The declaration of various C++ classes wrapping SDL-specific
 //! structures in order to provide useful services.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SDL3_TOOLS_PRIMITIVES_HPP__
-#define __AG_SDL3_TOOLS_PRIMITIVES_HPP__
+#ifndef HEADER_AG_SDL3_TOOLS_PRIMITIVES_HPP_
+#define HEADER_AG_SDL3_TOOLS_PRIMITIVES_HPP_
 
 namespace Ag {
 namespace SDL3 {
-
-////////////////////////////////////////////////////////////////////////////////
-// Data Type Declarations
-////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations

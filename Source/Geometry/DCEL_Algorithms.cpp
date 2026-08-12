@@ -758,7 +758,7 @@ bool CompareNodeByHorizontalPosition::isParallel(NodeCPtr lhs, NodeCPtr rhs) con
 //! @param[in] lhs The first position to compare.
 //! @param[in] rhs The second position to compare.
 //! @retval true The grid position of @p lhs has a lower X offset to @p rhs, or
-//! their X offsets are equal and @lhs has the lowest Y position.
+//! their X offsets are equal and @p lhs has the lowest Y position.
 bool CompareNodeByHorizontalPosition::operator()(NodeCPtr lhs, NodeCPtr rhs) const
 {
     return lhs->getGridPosition().lessThanXMajor(rhs->getGridPosition());
@@ -769,7 +769,7 @@ bool CompareNodeByHorizontalPosition::operator()(NodeCPtr lhs, NodeCPtr rhs) con
 //! @param[in] lhs The edge starting with the first position to compare.
 //! @param[in] rhs The edge starting with the second position to compare.
 //! @retval true The grid position of @p lhs has a lower X offset to @p rhs, or
-//! their X offsets are equal and @lhs has the lowest Y position.
+//! their X offsets are equal and @p lhs has the lowest Y position.
 bool CompareNodeByHorizontalPosition::operator()(HalfEdgeCPtr lhs, HalfEdgeCPtr rhs) const
 {
     return lhs->getStartNode()->getGridPosition().lessThanXMajor(rhs->getStartNode()->getGridPosition());
@@ -779,7 +779,7 @@ bool CompareNodeByHorizontalPosition::operator()(HalfEdgeCPtr lhs, HalfEdgeCPtr 
 //! @param[in] lhs The first position to compare.
 //! @param[in] rhs The second position to compare.
 //! @retval true The grid position of @p lhs has a lower X offset to @p rhs, or
-//! their X offsets are equal and @lhs has the lowest Y position.
+//! their X offsets are equal and @p lhs has the lowest Y position.
 bool CompareNodeByHorizontalPosition::operator()(const SnapPoint &lhs, const SnapPoint &rhs) const
 {
     return lhs.lessThanXMajor(rhs);
@@ -800,7 +800,7 @@ bool CompareNodeByVerticalPosition::isParallel(NodeCPtr lhs, NodeCPtr rhs) const
 //! @param[in] lhs The first position to compare.
 //! @param[in] rhs The second position to compare.
 //! @retval true The grid position of @p lhs has a lower Y offset to @p rhs, or
-//! their Y offsets are equal and @lhs has the lowest X position.
+//! their Y offsets are equal and @p lhs has the lowest X position.
 bool CompareNodeByVerticalPosition::operator()(NodeCPtr lhs, NodeCPtr rhs) const
 {
     return lhs->getGridPosition().lessThanYMajor(rhs->getGridPosition());
@@ -811,7 +811,7 @@ bool CompareNodeByVerticalPosition::operator()(NodeCPtr lhs, NodeCPtr rhs) const
 //! @param[in] lhs The edge starting with the first position to compare.
 //! @param[in] rhs The edge starting with the second position to compare.
 //! @retval true The grid position of @p lhs has a lower Y offset to @p rhs, or
-//! their Y offsets are equal and @lhs has the lowest X position.
+//! their Y offsets are equal and @p lhs has the lowest X position.
 bool CompareNodeByVerticalPosition::operator()(HalfEdgeCPtr lhs, HalfEdgeCPtr rhs) const
 {
     return lhs->getStartNode()->getGridPosition().lessThanYMajor(rhs->getStartNode()->getGridPosition());
@@ -821,7 +821,7 @@ bool CompareNodeByVerticalPosition::operator()(HalfEdgeCPtr lhs, HalfEdgeCPtr rh
 //! @param[in] lhs The first position to compare.
 //! @param[in] rhs The second position to compare.
 //! @retval true The grid position of @p lhs has a lower Y offset to @p rhs, or
-//! their Y offsets are equal and @lhs has the lowest X position.
+//! their Y offsets are equal and @p lhs has the lowest X position.
 bool CompareNodeByVerticalPosition::operator()(const SnapPoint &lhs, const SnapPoint &rhs) const
 {
     return lhs.lessThanYMajor(rhs);
@@ -842,7 +842,7 @@ bool CompareNodeYMonotoneSweepOrder::isParallel(NodeCPtr lhs, NodeCPtr rhs) cons
 //! @param[in] lhs The first position to compare.
 //! @param[in] rhs The second position to compare.
 //! @retval true The grid position of @p lhs has a lower Y offset to @p rhs, or
-//! their Y offsets are equal and @lhs has the lowest X position.
+//! their Y offsets are equal and @p lhs has the lowest X position.
 bool CompareNodeYMonotoneSweepOrder::operator()(NodeCPtr lhs, NodeCPtr rhs) const
 {
     return lhs->getGridPosition().lessThanSweep(rhs->getGridPosition());
@@ -853,7 +853,7 @@ bool CompareNodeYMonotoneSweepOrder::operator()(NodeCPtr lhs, NodeCPtr rhs) cons
 //! @param[in] lhs The edge starting with the first position to compare.
 //! @param[in] rhs The edge starting with the second position to compare.
 //! @retval true The grid position of @p lhs has a lower Y offset to @p rhs, or
-//! their Y offsets are equal and @lhs has the lowest X position.
+//! their Y offsets are equal and @p lhs has the lowest X position.
 bool CompareNodeYMonotoneSweepOrder::operator()(HalfEdgeCPtr lhs, HalfEdgeCPtr rhs) const
 {
     return lhs->getStartNode()->getGridPosition().lessThanSweep(rhs->getStartNode()->getGridPosition());
@@ -863,7 +863,7 @@ bool CompareNodeYMonotoneSweepOrder::operator()(HalfEdgeCPtr lhs, HalfEdgeCPtr r
 //! @param[in] lhs The first position to compare.
 //! @param[in] rhs The second position to compare.
 //! @retval true The grid position of @p lhs has a higher Y offset to @p rhs, or
-//! their Y offsets are equal and @lhs has the lowest X position.
+//! their Y offsets are equal and @p lhs has the lowest X position.
 bool CompareNodeYMonotoneSweepOrder::operator()(const SnapPoint &lhs, const SnapPoint &rhs) const
 {
     return lhs.lessThanSweep(rhs);

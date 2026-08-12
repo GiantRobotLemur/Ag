@@ -409,7 +409,14 @@ ExplicitRingCollection clip(NodeTable &nodes, EdgeTable &edges,
 //! @param[in] edges The table of edges which define the rings to process.
 //! @param[in] rings All Lhs and Rhs ring definitions.
 //! @returns The boundary rings of Lhs ∪ Rhs.
-//! @copydetails clip()
+//! @remarks
+//! The nodes and edges are expected to have flag values which are sympathetic
+//! with the initial ring definitions; this can be performed explicitly by
+//! calling markBooleanOperands().
+//!
+//! The function adds nodes at intersections, splits edges accordingly, and
+//! mutates @p edges to retain only the result-boundary subdivision. The ring
+//! definitions are augmented with the new intersection nodes.
 ExplicitRingCollection unite(NodeTable &nodes, EdgeTable &edges,
                              ExplicitRingCollection &rings)
 {
@@ -422,7 +429,14 @@ ExplicitRingCollection unite(NodeTable &nodes, EdgeTable &edges,
 //! @param[in] edges The table of edges which define the rings to process.
 //! @param[in] rings All Lhs and Rhs ring definitions.
 //! @returns The boundary rings of (Lhs ∪ Rhs) − (Lhs ∩ Rhs).
-//! @copydetails clip()
+//! @remarks
+//! The nodes and edges are expected to have flag values which are sympathetic
+//! with the initial ring definitions; this can be performed explicitly by
+//! calling markBooleanOperands().
+//!
+//! The function adds nodes at intersections, splits edges accordingly, and
+//! mutates @p edges to retain only the result-boundary subdivision. The ring
+//! definitions are augmented with the new intersection nodes.
 ExplicitRingCollection symmetricDifference(NodeTable &nodes, EdgeTable &edges,
                                            ExplicitRingCollection &rings)
 {

@@ -1,8 +1,8 @@
-//! @file Ag/Core/Private/Bz2Stream.hpp
+//! @file Ag/Private/Bz2Stream.hpp
 //! @brief The declaration of an object which manages compression and
 //! decompression using the bz2 library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 // NOTE: This header is shared between AgCore and SymbolPackager, but is
 // otherwise private.
 
-#ifndef __AG_BZ2_STREAM_HPP__
-#define __AG_BZ2_STREAM_HPP__
+#ifndef HEADER_AG_BZ2_STREAM_HPP_
+#define HEADER_AG_BZ2_STREAM_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -274,7 +274,7 @@ public:
     //! @brief Initialises decompression operations.
     //! @param[in] verbosity Specifies the amount of output from the bz2 library,
     //! 0 for silent, 4 for maximum output.
-    //! @param[i] small True to reduce memory consumption in the compression algorithm,
+    //! @param[in] small True to reduce memory consumption in the compression algorithm,
     //! but possible halving its speed.
     //! @param[in] bufferSize The size of the buffer allocated to receive
     //! decompressed data.
@@ -298,10 +298,6 @@ public:
     //! @param[in] compressedBytes An array of compressed bytes to unpack, possibly
     //! nullptr if we just want to read batched output.
     //! @param[in] compressedCount The count of bytes in @p compressedBytes.
-    //! @param[out] decompressedBytes A buffer to receive the decompressed data.
-    //! @param[in,out] decompressedByteCount Initially the count of bytes in
-    //! @p decompressedBytes, on exit is updated with the actual count of bytes
-    //! written to the @p decompressedBytes buffer.
     //! @return The count of bytes decompressed, should be @p byteCount.
     size_t decompress(const void *compressedBytes, size_t compressedCount)
     {

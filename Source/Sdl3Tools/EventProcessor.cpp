@@ -11,6 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include "Ag/Sdl3Tools/ApiException.hpp"
 #include "Ag/Sdl3Tools/EventProcessor.hpp"
 
 namespace Ag {
@@ -314,7 +315,7 @@ void EventProcessor::requestExit()
 }
 
 //! @brief Runs the message processing loop until exit is requested.
-//! @detail If the run() method is already active, the call will return
+//! @details If the run() method is already active, the call will return
 //! immediately.
 void EventProcessor::run()
 {
@@ -357,7 +358,11 @@ void EventProcessor::runInternal()
 //! processes them.
 //! @retval true Event processing should continue.
 //! @retval false The event processing loop should exit.
+//! @throws ApiException If SDL_PeepEvents() fails.
 //! @remarks You may need to call SDL_PumpEvents() before calling this function.
+//! @details Events are drained in batches until the queue is empty, so a
+//! single call can dispatch any number of handlers. Should only be called on
+//! the main thread.
 bool EventProcessor::processOutstandingEvents()
 {
     constexpr int MaxEvents = 16;

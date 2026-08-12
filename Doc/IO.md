@@ -34,8 +34,8 @@ even be seamlessly compressed.
 Individual values are efficiently encoded to require the minimum possible storage
 before any compression is applied. The semantics of the value are encoded rather
 than the actual value. For example, a double value of 1.0 could be thoughtlessly
-stored as 8 bytes, but using hierarchy serialization is stored as a single byte
-indicating that the storage is a small positive integer encoding a value of 1.
+stored as 8 bytes, but using hierarchy serialization, is stored as a single byte
+encoding a small positive integer of 1.
 
 When reading back that value, it can be interpreted as an integer of any size, a
 boolean, a Unicode character or a floating point scalar. However, if the
@@ -47,7 +47,7 @@ dictionary so that each string is only stored once, no matter how often it is
 used.
 
 Individual values are either stored anonymously in a linear collection, or as
-named properties of an object - which is essentially a set of key/value pairs.
+the named properties of an object - essentially a set of key/value pairs.
 Collection elements or object properties can themselves be nested collections
 or objects, just as if they have been expressed using JSON or XML.
 
@@ -57,13 +57,13 @@ To serialize a hierarchy with property set at its root, create an instance of
 `Ag::IO::ObjectWriter`. To serialize with a collection root, create an instance
 of `Ag::IO::ArrayWriter`. Values and nested data can be recorded to these objects
 and those they spawn for their entire lifetime. When the writer object goes out
-of scope, all the data recorded is written to the output stream passed to the
-constructor.
+of scope, all the data recorded is written to the output stream originally passed
+to the constructor.
 
 ``` C++
 if (doWrite)
 {
-    ObjectWriter writer(myOutputStream, /* compress */ = true)
+    ObjectWriter writer(myOutputStream, /* compress */ = true);
     writer.write("First", 1);
     writer.write("Second", 3.0);
 
@@ -85,8 +85,8 @@ result is a binary structure that is easy to read in as a single non-seekable
 stream, such as from a network socket. Each object is proceeded by a header
 that defines how big it is and this can be skipped if necessary.
 
-All data is written with 64-bit sizes, even on a 32-bit platform, so that the
-hierarchy can be used to package other files.
+All data is written with sizes that have a 64-bit range, even on a 32-bit
+platform, so that the hierarchy can be used to package other files.
 
 ## Deserializing a Hierarchy
 
@@ -97,7 +97,7 @@ whether the root item is an object or an array and provide access to that
 root item via an `Ag::IO::ObjectReader` or `Ag::IO::ArrayReader`.
 
 When the `HierarchyRoot` object is initially created, the data from the stream
-is read, possibly decompressed and copied to a memory buffer or a temporary
+is read, possibly being decompressed, and copied to a memory buffer or a temporary
 file, depending on the size. If a file is used, the contents of the file are
 mapped into memory. Objects and Arrays can then be read randomly.
 
@@ -126,4 +126,4 @@ if (root.hasRootObject())
 }
 ```
 The lifetime of the unpacked hierarchy matches that of the `HierarchyRoot` instance.
-the temporary buffer or file is disposed of when the object is destroyed.
+The temporary buffer or file is disposed of when the object is destroyed.

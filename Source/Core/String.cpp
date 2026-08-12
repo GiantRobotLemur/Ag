@@ -939,7 +939,7 @@ long String::getReferenceCount() const
 
 //! @brief Determines if the current string contains another as some or all of
 //! its value.
-//! @param[in] rhs The null-terminated array of UTF-8 encoded bytes specifying
+//! @param[in] rhsUtf8 The null-terminated array of UTF-8 encoded bytes specifying
 //! the sub-string to determine the presence of.
 //! @retval true The string rhs forms part of all of the current string.
 //! @retval false The string rhs does not appear in the current string.
@@ -959,7 +959,7 @@ bool String::contains(utf8_cptr_t rhsUtf8) const
 
 //! @brief Determines if the current string contains another as some or all of
 //! its value.
-//! @param[in] rhs The sub-string to determine the presence of.
+//! @param[in] rhsUtf8 The sub-string to determine the presence of.
 //! @retval true The string rhs forms part of all of the current string.
 //! @retval false The string rhs does not appear in the current string.
 bool String::contains(const std::string_view &rhsUtf8) const

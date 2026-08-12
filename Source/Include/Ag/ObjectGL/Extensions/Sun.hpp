@@ -2,7 +2,7 @@
 //! @brief The declaration of Sun Microsystems-specific extensions to the
 //! OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_SUN_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_SUN_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_SUN_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_SUN_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -28,7 +28,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_SUNX_constant_data extension API specification.
+//! @brief The GL_SUNX_constant_data extension API specification.
 struct SUNXConstantData {
     // Public Members
     void (APIENTRY *glFinishTexture)();
@@ -41,7 +41,7 @@ struct SUNXConstantData {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SUNXConstantData
 
-// GL_SUN_global_alpha extension API specification.
+//! @brief The GL_SUN_global_alpha extension API specification.
 struct SUNGlobalAlpha {
     // Public Members
     void (APIENTRY *glGlobalAlphaFactorb)(GLbyte factor);
@@ -61,7 +61,7 @@ struct SUNGlobalAlpha {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SUNGlobalAlpha
 
-// GL_SUN_mesh_array extension API specification.
+//! @brief The GL_SUN_mesh_array extension API specification.
 struct SUNMeshArray {
     // Public Members
     void (APIENTRY *glDrawMeshArrays)(GLenum mode, GLint first, GLsizei count,
@@ -75,7 +75,7 @@ struct SUNMeshArray {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SUNMeshArray
 
-// GL_SUN_triangle_list extension API specification.
+//! @brief The GL_SUN_triangle_list extension API specification.
 struct SUNTriangleList {
     // Public Members
     void (APIENTRY *glReplacementCodePointer)(GLenum type, GLsizei stride,
@@ -95,7 +95,7 @@ struct SUNTriangleList {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SUNTriangleList
 
-// GL_SUN_vertex extension API specification.
+//! @brief The GL_SUN_vertex extension API specification.
 struct SUNVertex {
     // Public Members
     void (APIENTRY *glColor3fVertex3f)(GLfloat r, GLfloat g, GLfloat b,

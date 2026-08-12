@@ -1,4 +1,4 @@
-//! @file Ag/Core/FsPathSchema.hpp
+//! @file Core/FsPathSchema.hpp
 //! @brief The declaration of an object which abstracts the differences between
 //! file path formats.
 //! @author GiantRobotLemur@na-se.co.uk

@@ -7,8 +7,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SDL3_TOOLS_XXX_HPP__
-#define __AG_SDL3_TOOLS_XXX_HPP__
+#ifndef HEADER_AG_SDL3_TOOLS_XXX_HPP_
+#define HEADER_AG_SDL3_TOOLS_XXX_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files

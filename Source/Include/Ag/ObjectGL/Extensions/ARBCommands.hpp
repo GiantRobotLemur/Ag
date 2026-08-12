@@ -2,7 +2,7 @@
 //! @brief The declaration of Architecture Review Board (ARB) -specific
 //! extensions to the OpenGL Command set wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_ARB_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_ARB_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_ARB_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_ARB_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_ARB_ES3_2_compatibility extension API.
+//! @brief Manages the entry points for the GL_ARB_ES3_2_compatibility extension API.
 class ARBES32CompatibilityAPI : public BaseExtension
 {
 public:
@@ -49,7 +49,7 @@ private:
     ARBES32Compatibility _api;
 };
 
-// Manages the entry points for the GL_ARB_bindless_texture extension API.
+//! @brief Manages the entry points for the GL_ARB_bindless_texture extension API.
 class ARBBindlessTextureAPI : public BaseExtension
 {
 public:
@@ -88,7 +88,7 @@ private:
     ARBBindlessTexture _api;
 };
 
-// Manages the entry points for the GL_ARB_cl_event extension API.
+//! @brief Manages the entry points for the GL_ARB_cl_event extension API.
 class ARBClEventAPI : public BaseExtension
 {
 public:
@@ -109,7 +109,7 @@ private:
     ARBClEvent _api;
 };
 
-// Manages the entry points for the GL_ARB_color_buffer_float extension API.
+//! @brief Manages the entry points for the GL_ARB_color_buffer_float extension API.
 class ARBColorBufferFloatAPI : public BaseExtension
 {
 public:
@@ -129,7 +129,7 @@ private:
     ARBColorBufferFloat _api;
 };
 
-// Manages the entry points for the GL_ARB_compute_variable_group_size extension API.
+//! @brief Manages the entry points for the GL_ARB_compute_variable_group_size extension API.
 class ARBComputeVariableGroupSizeAPI : public BaseExtension
 {
 public:
@@ -151,7 +151,7 @@ private:
     ARBComputeVariableGroupSize _api;
 };
 
-// Manages the entry points for the GL_ARB_debug_output extension API.
+//! @brief Manages the entry points for the GL_ARB_debug_output extension API.
 class ARBDebugOutputAPI : public BaseExtension
 {
 public:
@@ -181,7 +181,7 @@ private:
     ARBDebugOutput _api;
 };
 
-// Manages the entry points for the GL_ARB_draw_buffers extension API.
+//! @brief Manages the entry points for the GL_ARB_draw_buffers extension API.
 class ARBDrawBuffersAPI : public BaseExtension
 {
 public:
@@ -201,7 +201,7 @@ private:
     ARBDrawBuffers _api;
 };
 
-// Manages the entry points for the GL_ARB_draw_buffers_blend extension API.
+//! @brief Manages the entry points for the GL_ARB_draw_buffers_blend extension API.
 class ARBDrawBuffersBlendAPI : public BaseExtension
 {
 public:
@@ -227,7 +227,7 @@ private:
     ARBDrawBuffersBlend _api;
 };
 
-// Manages the entry points for the GL_ARB_draw_instanced extension API.
+//! @brief Manages the entry points for the GL_ARB_draw_instanced extension API.
 class ARBDrawInstancedAPI : public BaseExtension
 {
 public:
@@ -251,7 +251,7 @@ private:
     ARBDrawInstanced _api;
 };
 
-// Manages the entry points for the GL_ARB_fragment_program extension API.
+//! @brief Manages the entry points for the GL_ARB_fragment_program extension API.
 class ARBFragmentProgramAPI : public BaseExtension
 {
 public:
@@ -304,7 +304,7 @@ private:
     ARBFragmentProgram _api;
 };
 
-// Manages the entry points for the GL_ARB_geometry_shader4 extension API.
+//! @brief Manages the entry points for the GL_ARB_geometry_shader4 extension API.
 class ARBGeometrySHADER4API : public BaseExtension
 {
 public:
@@ -335,7 +335,7 @@ private:
     ARBGeometrySHADER4 _api;
 };
 
-// Manages the entry points for the GL_ARB_gl_spirv extension API.
+//! @brief Manages the entry points for the GL_ARB_gl_spirv extension API.
 class ARBGlSpirvAPI : public BaseExtension
 {
 public:
@@ -358,7 +358,7 @@ private:
     ARBGlSpirv _api;
 };
 
-// Manages the entry points for the GL_ARB_gpu_shader_int64 extension API.
+//! @brief Manages the entry points for the GL_ARB_gpu_shader_int64 extension API.
 class ARBGPUShaderInt64API : public BaseExtension
 {
 public:
@@ -430,7 +430,7 @@ private:
     ARBGPUShaderInt64 _api;
 };
 
-// Manages the entry points for the GL_ARB_indirect_parameters extension API.
+//! @brief Manages the entry points for the GL_ARB_indirect_parameters extension API.
 class ARBIndirectParametersAPI : public BaseExtension
 {
 public:
@@ -456,7 +456,7 @@ private:
     ARBIndirectParameters _api;
 };
 
-// Manages the entry points for the GL_ARB_instanced_arrays extension API.
+//! @brief Manages the entry points for the GL_ARB_instanced_arrays extension API.
 class ARBInstancedArraysAPI : public BaseExtension
 {
 public:
@@ -476,7 +476,7 @@ private:
     ARBInstancedArrays _api;
 };
 
-// Manages the entry points for the GL_ARB_matrix_palette extension API.
+//! @brief Manages the entry points for the GL_ARB_matrix_palette extension API.
 class ARBMatrixPaletteAPI : public BaseExtension
 {
 public:
@@ -501,7 +501,7 @@ private:
     ARBMatrixPalette _api;
 };
 
-// Manages the entry points for the GL_ARB_multisample extension API.
+//! @brief Manages the entry points for the GL_ARB_multisample extension API.
 class ARBMultisampleAPI : public BaseExtension
 {
 public:
@@ -521,7 +521,7 @@ private:
     ARBMultisample _api;
 };
 
-// Manages the entry points for the GL_ARB_multitexture extension API.
+//! @brief Manages the entry points for the GL_ARB_multitexture extension API.
 class ARBMultitextureAPI : public BaseExtension
 {
 public:
@@ -577,7 +577,7 @@ private:
     ARBMultitexture _api;
 };
 
-// Manages the entry points for the GL_ARB_occlusion_query extension API.
+//! @brief Manages the entry points for the GL_ARB_occlusion_query extension API.
 class ARBOcclusionQueryAPI : public BaseExtension
 {
 public:
@@ -606,7 +606,7 @@ private:
     ARBOcclusionQuery _api;
 };
 
-// Manages the entry points for the GL_ARB_parallel_shader_compile extension API.
+//! @brief Manages the entry points for the GL_ARB_parallel_shader_compile extension API.
 class ARBParallelShaderCompileAPI : public BaseExtension
 {
 public:
@@ -626,7 +626,7 @@ private:
     ARBParallelShaderCompile _api;
 };
 
-// Manages the entry points for the GL_ARB_point_parameters extension API.
+//! @brief Manages the entry points for the GL_ARB_point_parameters extension API.
 class ARBPointParametersAPI : public BaseExtension
 {
 public:
@@ -647,7 +647,7 @@ private:
     ARBPointParameters _api;
 };
 
-// Manages the entry points for the GL_ARB_robustness extension API.
+//! @brief Manages the entry points for the GL_ARB_robustness extension API.
 class ARBRobustnessAPI : public BaseExtension
 {
 public:
@@ -682,7 +682,7 @@ private:
     ARBRobustness _api;
 };
 
-// Manages the entry points for the GL_ARB_sample_locations extension API.
+//! @brief Manages the entry points for the GL_ARB_sample_locations extension API.
 class ARBSampleLocationsAPI : public BaseExtension
 {
 public:
@@ -707,7 +707,7 @@ private:
     ARBSampleLocations _api;
 };
 
-// Manages the entry points for the GL_ARB_sample_shading extension API.
+//! @brief Manages the entry points for the GL_ARB_sample_shading extension API.
 class ARBSampleShadingAPI : public BaseExtension
 {
 public:
@@ -727,7 +727,7 @@ private:
     ARBSampleShading _api;
 };
 
-// Manages the entry points for the GL_ARB_shader_objects extension API.
+//! @brief Manages the entry points for the GL_ARB_shader_objects extension API.
 class ARBShaderObjectsAPI : public BaseExtension
 {
 public:
@@ -795,7 +795,7 @@ private:
     ARBShaderObjects _api;
 };
 
-// Manages the entry points for the GL_ARB_shading_language_include extension API.
+//! @brief Manages the entry points for the GL_ARB_shading_language_include extension API.
 class ARBShadingLanguageIncludeAPI : public BaseExtension
 {
 public:
@@ -824,7 +824,7 @@ private:
     ARBShadingLanguageInclude _api;
 };
 
-// Manages the entry points for the GL_ARB_sparse_buffer extension API.
+//! @brief Manages the entry points for the GL_ARB_sparse_buffer extension API.
 class ARBSparseBufferAPI : public BaseExtension
 {
 public:
@@ -849,7 +849,7 @@ private:
     ARBSparseBuffer _api;
 };
 
-// Manages the entry points for the GL_ARB_sparse_texture extension API.
+//! @brief Manages the entry points for the GL_ARB_sparse_texture extension API.
 class ARBSparseTextureAPI : public BaseExtension
 {
 public:
@@ -871,7 +871,7 @@ private:
     ARBSparseTexture _api;
 };
 
-// Manages the entry points for the GL_ARB_texture_buffer_object extension API.
+//! @brief Manages the entry points for the GL_ARB_texture_buffer_object extension API.
 class ARBTextureBufferObjectAPI : public BaseExtension
 {
 public:
@@ -892,7 +892,7 @@ private:
     ARBTextureBufferObject _api;
 };
 
-// Manages the entry points for the GL_ARB_texture_compression extension API.
+//! @brief Manages the entry points for the GL_ARB_texture_compression extension API.
 class ARBTextureCompressionAPI : public BaseExtension
 {
 public:
@@ -936,7 +936,7 @@ private:
     ARBTextureCompression _api;
 };
 
-// Manages the entry points for the GL_ARB_transpose_matrix extension API.
+//! @brief Manages the entry points for the GL_ARB_transpose_matrix extension API.
 class ARBTransposeMatrixAPI : public BaseExtension
 {
 public:
@@ -959,7 +959,7 @@ private:
     ARBTransposeMatrix _api;
 };
 
-// Manages the entry points for the GL_ARB_vertex_blend extension API.
+//! @brief Manages the entry points for the GL_ARB_vertex_blend extension API.
 class ARBVertexBlendAPI : public BaseExtension
 {
 public:
@@ -989,7 +989,7 @@ private:
     ARBVertexBlend _api;
 };
 
-// Manages the entry points for the GL_ARB_vertex_buffer_object extension API.
+//! @brief Manages the entry points for the GL_ARB_vertex_buffer_object extension API.
 class ARBVertexBufferObjectAPI : public BaseExtension
 {
 public:
@@ -1024,7 +1024,7 @@ private:
     ARBVertexBufferObject _api;
 };
 
-// Manages the entry points for the GL_ARB_vertex_program extension API.
+//! @brief Manages the entry points for the GL_ARB_vertex_program extension API.
 class ARBVertexProgramAPI : public BaseExtension
 {
 public:
@@ -1095,7 +1095,7 @@ private:
     ARBVertexProgram _api;
 };
 
-// Manages the entry points for the GL_ARB_vertex_shader extension API.
+//! @brief Manages the entry points for the GL_ARB_vertex_shader extension API.
 class ARBVertexShaderAPI : public BaseExtension
 {
 public:
@@ -1120,7 +1120,7 @@ private:
     ARBVertexShader _api;
 };
 
-// Manages the entry points for the GL_ARB_viewport_array extension API.
+//! @brief Manages the entry points for the GL_ARB_viewport_array extension API.
 class ARBViewportArrayAPI : public BaseExtension
 {
 public:
@@ -1141,7 +1141,7 @@ private:
     ARBViewportArray _api;
 };
 
-// Manages the entry points for the GL_ARB_window_pos extension API.
+//! @brief Manages the entry points for the GL_ARB_window_pos extension API.
 class ARBWindowPosAPI : public BaseExtension
 {
 public:
@@ -1183,7 +1183,7 @@ private:
 #ifdef _WIN32
 namespace wgl {
 
-// Manages the entry points for the WGL_ARB_buffer_region extension API.
+//! @brief Manages the entry points for the WGL_ARB_buffer_region extension API.
 class ARBBufferRegionAPI : public gl::BaseExtension
 {
 public:
@@ -1207,7 +1207,7 @@ private:
     ARBBufferRegion _api;
 };
 
-// Manages the entry points for the WGL_ARB_create_context extension API.
+//! @brief Manages the entry points for the WGL_ARB_create_context extension API.
 class ARBCreateContextAPI : public gl::BaseExtension
 {
 public:
@@ -1228,7 +1228,7 @@ private:
     ARBCreateContext _api;
 };
 
-// Manages the entry points for the WGL_ARB_extensions_string extension API.
+//! @brief Manages the entry points for the WGL_ARB_extensions_string extension API.
 class ARBExtensionsStringAPI : public gl::BaseExtension
 {
 public:
@@ -1248,7 +1248,7 @@ private:
     ARBExtensionsString _api;
 };
 
-// Manages the entry points for the WGL_ARB_make_current_read extension API.
+//! @brief Manages the entry points for the WGL_ARB_make_current_read extension API.
 class ARBMakeCurrentReadAPI : public gl::BaseExtension
 {
 public:
@@ -1269,7 +1269,7 @@ private:
     ARBMakeCurrentRead _api;
 };
 
-// Manages the entry points for the WGL_ARB_pbuffer extension API.
+//! @brief Manages the entry points for the WGL_ARB_pbuffer extension API.
 class ARBPbufferAPI : public gl::BaseExtension
 {
 public:
@@ -1294,7 +1294,7 @@ private:
     ARBPbuffer _api;
 };
 
-// Manages the entry points for the WGL_ARB_pixel_format extension API.
+//! @brief Manages the entry points for the WGL_ARB_pixel_format extension API.
 class ARBPixelFormatAPI : public gl::BaseExtension
 {
 public:
@@ -1322,7 +1322,7 @@ private:
     ARBPixelFormat _api;
 };
 
-// Manages the entry points for the WGL_ARB_render_texture extension API.
+//! @brief Manages the entry points for the WGL_ARB_render_texture extension API.
 class ARBRenderTextureAPI : public gl::BaseExtension
 {
 public:
@@ -1350,7 +1350,7 @@ private:
 #ifdef _USES_GLX
 namespace glx {
 
-// Manages the entry points for the GLX_ARB_create_context extension API.
+//! @brief Manages the entry points for the GLX_ARB_create_context extension API.
 class ARBCreateContextAPI : public gl::BaseExtension
 {
 public:
@@ -1372,7 +1372,7 @@ private:
     ARBCreateContext _api;
 };
 
-// Manages the entry points for the GLX_ARB_get_proc_address extension API.
+//! @brief Manages the entry points for the GLX_ARB_get_proc_address extension API.
 class ARBGetProcAddressAPI : public gl::BaseExtension
 {
 public:

@@ -79,7 +79,7 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
 
         FetchContent_Declare(glm
                              GIT_REPOSITORY https://github.com/g-truc/glm.git
-                             GIT_TAG 1.0.1)
+                             GIT_TAG 1.0.3)
 
         FetchContent_Declare(SDL2
                              GIT_REPOSITORY https://github.com/libsdl-org/SDL.git

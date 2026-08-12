@@ -1,4 +1,4 @@
-//! @file IO/Test_HierarchySerialzation.cpp
+//! @file IO/Test_HierarchySerialization.cpp
 //! @brief The definition of unit tests for the Object/Array/Reader/Writer classes.
 //! @author GiantRobotLemur@na-se.co.uk
 //! @date 2026

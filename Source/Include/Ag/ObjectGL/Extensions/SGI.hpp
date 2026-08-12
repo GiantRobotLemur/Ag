@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/SGI.hpp
 //! @brief The declaration of Silicon Graphics-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_SGI_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_SGI_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_SGI_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_SGI_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_SGIS_detail_texture extension API specification.
+//! @brief The GL_SGIS_detail_texture extension API specification.
 struct SGISDetailTexture {
     // Public Members
     void (APIENTRY *glDetailTexFunc)(GLenum target, GLsizei n,
@@ -42,7 +42,7 @@ struct SGISDetailTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISDetailTexture
 
-// GL_SGIS_fog_function extension API specification.
+//! @brief The GL_SGIS_fog_function extension API specification.
 struct SGISFogFunction {
     // Public Members
     void (APIENTRY *glFogFunc)(GLsizei n, const GLfloat *points);
@@ -56,7 +56,7 @@ struct SGISFogFunction {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISFogFunction
 
-// GL_SGIS_multisample extension API specification.
+//! @brief The GL_SGIS_multisample extension API specification.
 struct SGISMultisample {
     // Public Members
     void (APIENTRY *glSampleMask)(GLclampf value, GLboolean invert);
@@ -70,7 +70,7 @@ struct SGISMultisample {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISMultisample
 
-// GL_SGIS_pixel_texture extension API specification.
+//! @brief The GL_SGIS_pixel_texture extension API specification.
 struct SGISPixelTexture {
     // Public Members
     void (APIENTRY *glGetPixelTexGenParameterfv)(GLenum pname, GLfloat *params);
@@ -89,7 +89,7 @@ struct SGISPixelTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISPixelTexture
 
-// GL_SGIS_point_parameters extension API specification.
+//! @brief The GL_SGIS_point_parameters extension API specification.
 struct SGISPointParameters {
     // Public Members
     void (APIENTRY *glPointParameterf)(GLenum pname, GLfloat param);
@@ -103,7 +103,7 @@ struct SGISPointParameters {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISPointParameters
 
-// GL_SGIS_sharpen_texture extension API specification.
+//! @brief The GL_SGIS_sharpen_texture extension API specification.
 struct SGISSharpenTexture {
     // Public Members
     void (APIENTRY *glGetSharpenTexFunc)(GLenum target, GLfloat *points);
@@ -118,7 +118,7 @@ struct SGISSharpenTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISSharpenTexture
 
-// GL_SGIS_texture4D extension API specification.
+//! @brief The GL_SGIS_texture4D extension API specification.
 struct SGISTEXTURE4D {
     // Public Members
     void (APIENTRY *glTexImage4D)(GLenum target, GLint level,
@@ -141,7 +141,7 @@ struct SGISTEXTURE4D {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISTEXTURE4D
 
-// GL_SGIS_texture_color_mask extension API specification.
+//! @brief The GL_SGIS_texture_color_mask extension API specification.
 struct SGISTextureColorMask {
     // Public Members
     void (APIENTRY *glTextureColorMask)(GLboolean red, GLboolean green,
@@ -155,7 +155,7 @@ struct SGISTextureColorMask {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISTextureColorMask
 
-// GL_SGIS_texture_filter4 extension API specification.
+//! @brief The GL_SGIS_texture_filter4 extension API specification.
 struct SGISTextureFILTER4 {
     // Public Members
     void (APIENTRY *glGetTexFilterFunc)(GLenum target, GLenum filter,
@@ -171,7 +171,7 @@ struct SGISTextureFILTER4 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGISTextureFILTER4
 
-// GL_SGIX_async extension API specification.
+//! @brief The GL_SGIX_async extension API specification.
 struct SGIXAsync {
     // Public Members
     void (APIENTRY *glAsyncMarker)(GLuint marker);
@@ -189,7 +189,7 @@ struct SGIXAsync {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXAsync
 
-// GL_SGIX_flush_raster extension API specification.
+//! @brief The GL_SGIX_flush_raster extension API specification.
 struct SGIXFlushRaster {
     // Public Members
     void (APIENTRY *glFlushRaster)();
@@ -202,7 +202,7 @@ struct SGIXFlushRaster {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXFlushRaster
 
-// GL_SGIX_fragment_lighting extension API specification.
+//! @brief The GL_SGIX_fragment_lighting extension API specification.
 // Incomplete extension
 struct SGIXFragmentLighting {
     // Public Members
@@ -242,7 +242,7 @@ struct SGIXFragmentLighting {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXFragmentLighting
 
-// GL_SGIX_framezoom extension API specification.
+//! @brief The GL_SGIX_framezoom extension API specification.
 struct SGIXFramezoom {
     // Public Members
     void (APIENTRY *glFrameZoom)(GLint factor);
@@ -255,7 +255,7 @@ struct SGIXFramezoom {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXFramezoom
 
-// GL_SGIX_igloo_interface extension API specification.
+//! @brief The GL_SGIX_igloo_interface extension API specification.
 struct SGIXIglooInterface {
     // Public Members
     void (APIENTRY *glIglooInterface)(GLenum pname, const void *params);
@@ -268,7 +268,7 @@ struct SGIXIglooInterface {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXIglooInterface
 
-// GL_SGIX_instruments extension API specification.
+//! @brief The GL_SGIX_instruments extension API specification.
 struct SGIXInstrumentS {
     // Public Members
     GLint(APIENTRY *glGetInstruments)();
@@ -286,7 +286,7 @@ struct SGIXInstrumentS {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXInstrumentS
 
-// GL_SGIX_list_priority extension API specification.
+//! @brief The GL_SGIX_list_priority extension API specification.
 struct SGIXListPriority {
     // Public Members
     void (APIENTRY *glGetListParameterfv)(GLuint list, GLenum pname,
@@ -308,7 +308,7 @@ struct SGIXListPriority {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXListPriority
 
-// GL_SGIX_pixel_texture extension API specification.
+//! @brief The GL_SGIX_pixel_texture extension API specification.
 struct SGIXPixelTexture {
     // Public Members
     void (APIENTRY *glPixelTexGen)(GLenum mode);
@@ -321,7 +321,7 @@ struct SGIXPixelTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXPixelTexture
 
-// GL_SGIX_polynomial_ffd extension API specification.
+//! @brief The GL_SGIX_polynomial_ffd extension API specification.
 struct SGIXPolynomialFfd {
     // Public Members
     void (APIENTRY *glDeform)(GLbitfield mask);
@@ -345,7 +345,7 @@ struct SGIXPolynomialFfd {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXPolynomialFfd
 
-// GL_SGIX_reference_plane extension API specification.
+//! @brief The GL_SGIX_reference_plane extension API specification.
 struct SGIXReferencePlane {
     // Public Members
     void (APIENTRY *glReferencePlane)(const GLdouble *equation);
@@ -358,7 +358,7 @@ struct SGIXReferencePlane {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXReferencePlane
 
-// GL_SGIX_sprite extension API specification.
+//! @brief The GL_SGIX_sprite extension API specification.
 struct SGIXSprite {
     // Public Members
     void (APIENTRY *glSpriteParameterf)(GLenum pname, GLfloat param);
@@ -374,7 +374,7 @@ struct SGIXSprite {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXSprite
 
-// GL_SGIX_tag_sample_buffer extension API specification.
+//! @brief The GL_SGIX_tag_sample_buffer extension API specification.
 struct SGIXTagSampleBuffer {
     // Public Members
     void (APIENTRY *glTagSampleBuffer)();
@@ -387,7 +387,7 @@ struct SGIXTagSampleBuffer {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct SGIXTagSampleBuffer
 
-// GL_SGI_color_table extension API specification.
+//! @brief The GL_SGI_color_table extension API specification.
 struct SGIColorTable {
     // Public Members
     void (APIENTRY *glColorTableParameterfv)(GLenum target, GLenum pname,

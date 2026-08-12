@@ -406,11 +406,11 @@ double Arc2D::getParameter(const Point2D &position) const
 //! @param[out] param Receives the parameter of the point on the arc to measure to.
 //! @return The distance from @p pt to the closest point on the arc defined
 //! by the parameter returned in @p param.
-double Arc2D::getDistanceToPoint(const Point2D &pt, double &param) const
+double Arc2D::getDistanceToPoint(const Point2D &position, double &param) const
 {
     Parameters arcParameters(*this);
 
-    return arcParameters.getDistanceToPoint(pt, param);
+    return arcParameters.getDistanceToPoint(position, param);
 }
 
 //! @brief Approximates the arc into a run of connected line segments.

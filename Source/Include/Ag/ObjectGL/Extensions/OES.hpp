@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/OES.hpp
 //! @brief The declaration of OES-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_OES_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_OES_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_OES_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_OES_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,7 +23,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_OES_byte_coordinates extension API specification.
+//! @brief The GL_OES_byte_coordinates extension API specification.
 struct OESByteCoordinates {
     // Public Members
     void (APIENTRY *glMultiTexCoord1b)(GLenum texture, GLbyte s);
@@ -59,7 +59,7 @@ struct OESByteCoordinates {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct OESByteCoordinates
 
-// GL_OES_fixed_point extension API specification.
+//! @brief The GL_OES_fixed_point extension API specification.
 struct OESFixedPoint {
     // Public Members
     void (APIENTRY *glAccumx)(GLenum op, GLfixed value);
@@ -200,7 +200,7 @@ struct OESFixedPoint {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct OESFixedPoint
 
-// GL_OES_query_matrix extension API specification.
+//! @brief The GL_OES_query_matrix extension API specification.
 struct OESQueryMatrix {
     // Public Members
     GLbitfield(APIENTRY *glQueryMatrixx)(GLfixed *mantissa, GLint *exponent);
@@ -213,7 +213,7 @@ struct OESQueryMatrix {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct OESQueryMatrix
 
-// GL_OES_single_precision extension API specification.
+//! @brief The GL_OES_single_precision extension API specification.
 struct OESSinglePrecision {
     // Public Members
     void (APIENTRY *glClearDepthf)(GLclampf depth);

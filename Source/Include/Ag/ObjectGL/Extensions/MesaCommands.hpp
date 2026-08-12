@@ -2,7 +2,7 @@
 //! @brief The declaration of Mesa-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_MESA_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_MESA_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_MESA_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_MESA_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_MESA_framebuffer_flip_y extension API.
+//! @brief Manages the entry points for the GL_MESA_framebuffer_flip_y extension API.
 class MESAFramebufferFlipYAPI : public BaseExtension
 {
 public:
@@ -51,7 +51,7 @@ private:
     MESAFramebufferFlipY _api;
 };
 
-// Manages the entry points for the GL_MESA_resize_buffers extension API.
+//! @brief Manages the entry points for the GL_MESA_resize_buffers extension API.
 class MESAResizeBuffersAPI : public BaseExtension
 {
 public:
@@ -71,7 +71,7 @@ private:
     MESAResizeBuffers _api;
 };
 
-// Manages the entry points for the GL_MESA_window_pos extension API.
+//! @brief Manages the entry points for the GL_MESA_window_pos extension API.
 class MESAWindowPosAPI : public BaseExtension
 {
 public:
@@ -119,7 +119,7 @@ private:
 #ifdef _USES_GLX
 namespace glx {
 
-// Manages the entry points for the GLX_MESA_agp_offset extension API.
+//! @brief Manages the entry points for the GLX_MESA_agp_offset extension API.
 class MESAAgpOffsetAPI : public gl::BaseExtension
 {
 public:
@@ -139,7 +139,7 @@ private:
     MESAAgpOffset _api;
 };
 
-// Manages the entry points for the GLX_MESA_copy_sub_buffer extension API.
+//! @brief Manages the entry points for the GLX_MESA_copy_sub_buffer extension API.
 class MESACopySubBufferAPI : public gl::BaseExtension
 {
 public:
@@ -160,7 +160,7 @@ private:
     MESACopySubBuffer _api;
 };
 
-// Manages the entry points for the GLX_MESA_pixmap_colormap extension API.
+//! @brief Manages the entry points for the GLX_MESA_pixmap_colormap extension API.
 class MESAPixmapColormapAPI : public gl::BaseExtension
 {
 public:
@@ -181,7 +181,7 @@ private:
     MESAPixmapColormap _api;
 };
 
-// Manages the entry points for the GLX_MESA_query_renderer extension API.
+//! @brief Manages the entry points for the GLX_MESA_query_renderer extension API.
 class MESAQueryRendererAPI : public gl::BaseExtension
 {
 public:
@@ -206,7 +206,7 @@ private:
     MESAQueryRenderer _api;
 };
 
-// Manages the entry points for the GLX_MESA_release_buffers extension API.
+//! @brief Manages the entry points for the GLX_MESA_release_buffers extension API.
 class MESAReleaseBuffersAPI : public gl::BaseExtension
 {
 public:
@@ -226,7 +226,7 @@ private:
     MESAReleaseBuffers _api;
 };
 
-// Manages the entry points for the GLX_MESA_set_3dfx_mode extension API.
+//! @brief Manages the entry points for the GLX_MESA_set_3dfx_mode extension API.
 class MESASet3DFXModeAPI : public gl::BaseExtension
 {
 public:
@@ -246,7 +246,7 @@ private:
     MESASet3DFXMode _api;
 };
 
-// Manages the entry points for the GLX_MESA_swap_control extension API.
+//! @brief Manages the entry points for the GLX_MESA_swap_control extension API.
 class MESASwapControlAPI : public gl::BaseExtension
 {
 public:

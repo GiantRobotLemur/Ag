@@ -291,10 +291,10 @@ template<typename TIterator> struct IteratorRange
 };
 
 //! @brief A convenience function to look up a value from a sorted map.
-//! @tparam[in] TKey The data type of the map keys.
-//! @tparam[in] TValue The data type of the associated values.
-//! @tparam[in] TLess The functor used to compare keys.
-//! @tparam[in] TAlloc The functor used to allocate elements.
+//! @tparam TKey The data type of the map keys.
+//! @tparam TValue The data type of the associated values.
+//! @tparam TLess The functor used to compare keys.
+//! @tparam TAlloc The functor used to allocate elements.
 //! @param[in] mapping The map to search.
 //! @param[in] key The key to look up.
 //! @param[out] result Receives the result on success.
@@ -315,10 +315,10 @@ bool tryFindMappedValue(const std::map<TKey, TValue, TLess, TAlloc> &mapping,
 }
 
 //! @brief A convenience function to look up a value from a hashed map.
-//! @tparam[in] TKey The data type of the map keys.
-//! @tparam[in] TValue The data type of the associated values.
-//! @tparam[in] THash The functor used to provide hash values.
-//! @tparam[in] TAlloc The functor used to allocate elements.
+//! @tparam TKey The data type of the map keys.
+//! @tparam TValue The data type of the associated values.
+//! @tparam THash The functor used to provide hash values.
+//! @tparam TAlloc The functor used to allocate elements.
 //! @param[in] mapping The map to search.
 //! @param[in] key The key to look up.
 //! @param[out] result Receives the result on success.

@@ -568,13 +568,8 @@ ISeekableStreamUPtr ObjectReader::readBytesStream(string_cref_t tag) const
 
 //! @brief Reads a property as a nested object.
 //! @param[in] tag The identifier of the property to read.
-//! @param[out] value Receives a new reader object on success, which the
-//! caller is responsible for disposing of.
-//! @retval true There was an element left to read and it could be
-//! interpreted as an object. A new reader for the object was created,
-//! a pointer to which was written to @p value.
-//! @retval false Either there were no more values in the array to read,
-//! or the next value could not be interpreted as an object.
+//! @returns An object that can be used to read the nested object identified
+//! by @p tag.
 ObjectReader ObjectReader::readObject(string_cref_t tag) const
 {
     IObjectReader *nestedReader = read<IObjectReader *>(tag, "nested object");
@@ -584,13 +579,8 @@ ObjectReader ObjectReader::readObject(string_cref_t tag) const
 
 //! @brief Reads a property as a nested array.
 //! @param[in] tag The identifier of the property to read.
-//! @param[out] value Receives a new reader object on success, which the
-//! caller is responsible for disposing of.
-//! @retval true There was an element left to read and it could be
-//! interpreted as an array. A new reader for the array was created,
-//! a pointer to which was written to @p value.
-//! @retval false Either there were no more values in the array to read,
-//! or the next value could not be interpreted as an array.
+//! @returns A object which can read the array associated with the
+//! specified identifier.
 ArrayReader ObjectReader::readArray(string_cref_t tag) const
 {
     IArrayReader *nestedReader = read<IArrayReader *>(tag, "nested object");
@@ -1520,7 +1510,8 @@ void ArrayWriter::write(string_cref_t value)
 }
 
 //! @brief Writes a block of bytes as the next element in the collection.
-//! @param[in] value The value to write.
+//! @param[in] value The pointer to the value data to write.
+//! @param[in] byteCount The count of bytes pointed to by @p value to copy.
 void ArrayWriter::write(const void *value, size_t byteCount)
 {
     verifyAccess("write bytes")->write(value, byteCount);

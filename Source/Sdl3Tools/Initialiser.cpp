@@ -71,7 +71,10 @@ void Initialiser::addSubSystems(uint32_t subSystemFlags)
 }
 
 //! @brief Initialises the pre-selected set of sub-systems.
-//! @throw ApiException If initialisation fails.
+//! @throws ApiException If SDL_Init() fails.
+//! @details Does nothing if initialisation has already taken place. The
+//! sub-systems are chosen beforehand with addSubSystems(). The matching
+//! shutdown happens in the destructor.
 void Initialiser::initialise()
 {
     if (_isInitialised == false)

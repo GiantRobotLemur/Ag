@@ -2,7 +2,7 @@
 //! @brief The declaration of Sun Microsystems-specific extensions to the
 //! OpenGL Command set wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_SUN_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_SUN_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_SUN_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_SUN_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -26,7 +26,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_SUNX_constant_data extension API.
+//! @brief Manages the entry points for the GL_SUNX_constant_data extension API.
 class SUNXConstantDataAPI : public BaseExtension
 {
 public:
@@ -46,7 +46,7 @@ private:
     SUNXConstantData _api;
 };
 
-// Manages the entry points for the GL_SUN_global_alpha extension API.
+//! @brief Manages the entry points for the GL_SUN_global_alpha extension API.
 class SUNGlobalAlphaAPI : public BaseExtension
 {
 public:
@@ -73,7 +73,7 @@ private:
     SUNGlobalAlpha _api;
 };
 
-// Manages the entry points for the GL_SUN_mesh_array extension API.
+//! @brief Manages the entry points for the GL_SUN_mesh_array extension API.
 class SUNMeshArrayAPI : public BaseExtension
 {
 public:
@@ -94,7 +94,7 @@ private:
     SUNMeshArray _api;
 };
 
-// Manages the entry points for the GL_SUN_triangle_list extension API.
+//! @brief Manages the entry points for the GL_SUN_triangle_list extension API.
 class SUNTriangleListAPI : public BaseExtension
 {
 public:
@@ -121,7 +121,7 @@ private:
     SUNTriangleList _api;
 };
 
-// Manages the entry points for the GL_SUN_vertex extension API.
+//! @brief Manages the entry points for the GL_SUN_vertex extension API.
 class SUNVertexAPI : public BaseExtension
 {
 public:
@@ -250,7 +250,7 @@ private:
 #ifdef _USES_GLX
 namespace glx {
 
-// Manages the entry points for the GLX_SUN_get_transparent_index extension API.
+//! @brief Manages the entry points for the GLX_SUN_get_transparent_index extension API.
 class SUNGetTransparentIndexAPI : public gl::BaseExtension
 {
 public:

@@ -84,6 +84,7 @@ struct ArgumentToken
 
     //! @brief Constructs an option token with an associated value.
     //! @param[in] argType The type of option expressed.
+    //! @param[in] original The original argument for output in messages.
     //! @param[in] option The option identifier.
     //! @param[in] value The value explicitly associated with the option
     ArgumentToken(Type argType, const String &original,

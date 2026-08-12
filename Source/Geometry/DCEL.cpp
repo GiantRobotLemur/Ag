@@ -1381,8 +1381,8 @@ void EdgeTable::clear()
 
 //! @brief Adds an edge connecting existing nodes or finds an existing connection.
 //! @param[in] nodes The table of node definitions.
-//! @param[in] firstNode The ID of the first node to connect.
-//! @param[in] secondNode The ID of the second node to connect.
+//! @param[in] firstNodeID The ID of the first node to connect.
+//! @param[in] secondNodeID The ID of the second node to connect.
 //! @param[in] flags The flags to set on the new edge or to merge with the
 //! flags of an existing edge if the two nodes are already connected.
 //! @return A reference to the edge connecting the nodes, possibly new. The

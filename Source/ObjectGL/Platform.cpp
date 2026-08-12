@@ -17,26 +17,7 @@
 #include "Ag/ObjectGL/OpenGLException.hpp"
 #include "Ag/ObjectGL/Platform.hpp"
 
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
-
 namespace gl {
-
-namespace {
-////////////////////////////////////////////////////////////////////////////////
-// Local Data Types
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Local Data
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// Local Functions
-////////////////////////////////////////////////////////////////////////////////
-
-} // Anonymous namespace
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,6 +47,8 @@ void reportMissingFunction(const char *fnName, const char *apiName /* = nullptr 
     throw Ag::NotSupportedException(feature.c_str());
 }
 
+typedef unsigned int (APIENTRY *ErrorReporterFn)();
+
 //! @brief Gathers all error codes currently set and reports them by throwing
 //! an OpenGLException.
 //! @param[in] fnName The name of the function which produced the errors.
@@ -76,7 +59,7 @@ void reportMissingFunction(const char *fnName, const char *apiName /* = nullptr 
 //! such as "OpenGL", "WGL" or "GLX".
 void reportOpenGLError(const char *fnName,
                        unsigned int firstErrorCode,
-                       unsigned int (APIENTRY *errorReporterFn)() /* = nullptr */,
+                       ErrorReporterFn errorReporterFn /* = nullptr */,
                        const char *apiName /* = nullptr */)
 {
     const size_t MaxErrors = 64;

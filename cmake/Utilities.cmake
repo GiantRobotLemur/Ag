@@ -531,3 +531,88 @@ function(ag_copy_shared_lib destTarget)
         endif()
     endforeach()
 endfunction()
+
+# ag_document_code(target [CHM <chm file path>])
+#
+# Creates a target which runs Doxygen on sources to produce an HTML reference
+# manual, which maybe compiled into a CHM file if HTML Help compiler is installed.
+function(ag_document_code targetName)
+    set(prefix "DOC")
+    set(noValues "")
+    set(singleValues "CHM" "FOLDER")
+    set(multiValues "SOURCES" "DEFINES")
+
+    cmake_parse_arguments("${prefix}"
+                          "${noValues}"
+                          "${singleValues}"
+                          "${multiValues}"
+                          ${ARGN})
+
+    find_package(Doxygen 1.8 OPTIONAL_COMPONENTS dot)
+
+    if (DOXYGEN_FOUND)
+        message(STATUS "Configuring production of HTML documentation using Doxygen...")
+        set(DOXYGEN_GENERATE_HTML YES)
+
+        # HTML Help CHM file generation options.
+        list(APPEND DOXYGEN_PREDEFINED DO_NOT_DOCUMENT "STRUCT_ALIGN_8="
+                                    "STRUCT_ALIGN_16=" "STRUCT_ALIGN_32=")
+        list(APPEND DOXYGEN_EXCLUDE_PATTERNS "*/Template.cpp"
+                                            "*/Template.hpp"
+                                            "*/Test_Template.cpp"
+                                            "${CMAKE_BINARY_DIR}/*")
+
+        set(DOXYGEN_WARN_IF_DOC_ERROR YES)
+        set(DOXYGEN_INHERIT_DOCS YES)
+        set(DOXYGEN_HIDE_UNDOC_CLASSES YES)
+        set(DOXYGEN_HIDE_UNDOC_MEMBERS YES)
+        set(DOXYGEN_SORT_BRIEF_DOCS YES)
+        set(DOXYGEN_SORT_MEMBER_DOCS YES)
+        set(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
+        set(DOXYGEN_GENERATE_TODOLIST YES)
+        set(DOXYGEN_ENABLE_PREPROCESSING YES)
+        set(DOXYGEN_EXPAND_ONLY_PREDEF NO)
+        set(DOXYGEN_MACRO_EXPANSION YES)
+
+        if (DEFINED DOC_DEFINES)
+            set(DOXYGEN_PREDDEFINED ${DOC_DEFINES})
+        endif()
+
+        # Find HTML Help Compiler to produce .CHM files under Windows.
+        include(FindHTMLHelp)
+
+        if(DEFINED HTML_HELP_COMPILER AND DEFINED DOC_CHM)
+            # Calculate the name of the CHM file, resolving relative to the
+            # output folder if necessary.
+            cmake_path(ABSOLUTE_PATH DOC_CHM
+                       BASE_DIRECTORY "${CMAKE_BINARY_DIR}"
+                       NORMALIZE OUTPUT_VARIABLE chmPath)
+
+            # HTML Help Compiler is a Windows tool and only accepts paths
+            # with forward slashes (\) as directory element separators, so
+            # we need to convert the CHM path to Win32 native form.
+            cmake_path(NATIVE_PATH chmPath win32ChmPath)
+
+            message(STATUS "Configuring generation of CHM help file: ${win32ChmPath}")
+
+            set(DOXYGEN_GENERATE_HTMLHELP YES)
+            set(DOXYGEN_SEARCHENGINE NO)
+            set(DOXYGEN_CHM_FILE "${win32ChmPath}")
+            set(DOXYGEN_HHC_LOCATION "${HTML_HELP_COMPILER}")
+        else()
+            # If HTML Help not available, consider:
+            set(DOXYGEN_GENERATE_TREEVIEW YES)
+            set(DOXYGEN_SEARCHENGINE YES)
+        endif()
+
+        # Create the target to run Doxygen.
+        # message(STATUS "Scanning files for documentation: ${DOC_SOURCES}")
+        doxygen_add_docs("${targetName}" ${DOC_SOURCES}
+                         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                         COMMENT "Generating HTML documentation...")
+
+        if (DEFINED DOC_FOLDER)
+            set_target_properties("${targetName}" PROPERTIES FOLDER "${DOC_FOLDER}")
+        endif()
+    endif()
+endfunction()

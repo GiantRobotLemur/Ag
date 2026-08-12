@@ -2,7 +2,7 @@
 //! @brief The declaration of 3D Labs-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_3D_LABS_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_3D_LABS_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_3D_LABS_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_3D_LABS_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -26,7 +26,7 @@ namespace wgl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the WGL_3DL_stereo_control extension API.
+//! @brief Manages the entry points for the WGL_3DL_stereo_control extension API.
 class _3DLStereoControlAPI : public gl::BaseExtension
 {
 public:

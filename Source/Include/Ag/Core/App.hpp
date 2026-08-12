@@ -33,7 +33,7 @@
 #endif
 
 #include <Windows.h>
-#endif
+#endif // ifdef _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -59,7 +59,7 @@
 _In_opt_ HINSTANCE, _In_ LPWSTR cmdLine, _In_ int) \
 { AppType theApp; return theApp.exec(cmdLine); }
 
-#else ifndef _MSC_VER
+#else // ifndef _MSC_VER
 
 #define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(HINSTANCE, HINSTANCE, \
 LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
@@ -67,13 +67,15 @@ LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
 #endif // ifdef _MSC_VER
 
 #else // !defined _GUI
+
 #define IMPLEMENT_MAIN(AppType) int wmain(int argc, wchar_t *argv[], wchar_t *[]) \
 { AppType theApp; return theApp.exec(argc, argv); }
-#endif
+#endif // ifdef _GUI
+
 #else // !defined _WIN32
 #define IMPLEMENT_MAIN(AppType) int main(int argc, char *argv[]) \
 { AppType theApp; return theApp.exec(argc, argv); }
-#endif
+#endif // ifdef _WIN32
 
 namespace Ag {
 
@@ -85,7 +87,7 @@ enum class AppDir : uint8_t
 {
     //! @brief Identifies the directory containing the application binary.
     //! @remarks
-    //! Under Windows this might be C:\\Program Files\\<app name>. Under Linux
+    //! Under Windows this might be C:\\Program Files\\&lt;app name&gt;. Under Linux
     //! this could be /usr/bin.
     Programs,
 
@@ -93,34 +95,34 @@ enum class AppDir : uint8_t
     //! to the application.
     //! @remarks
     //! Under Windows this might be the same as the Programs folder, i.e.
-    //! C:\\Program Files\\<app name>. Under Linux, it could be /usr/lib.
+    //! C:\\Program Files\\&lt;app name&gt;. Under Linux, it could be /usr/lib.
     Libraries,
 
     //! @brief Identifies the directory containing application-specific read-only data.
     //! @remarks
     //! Under Windows this might be the same as the Programs folder, i.e.
-    //! C:\\Program Files\\<app name>. Under Linux, it could be /usr/share/<app name>.
+    //! C:\\Program Files\\&lt;app name&gt;. Under Linux, it could be /usr/share/&lt;app name&gt;.
     ReadOnlyData,
 
     //! @brief Identifies the directory containing architecture-independent global
     //! data shared across all users, which aren't settable without elevated priviledges.
     //! @remarks
     //! Under Windows this might be the same as the Programs folder, i.e.
-    //! C:\\Program Files\\<app name>. Under Linux, it could be /etc/<app name>.
+    //! C:\\Program Files\\&lt;app name&gt;. Under Linux, it could be /etc/&lt;app name&gt;.
     GlobalReadOnlyConfig,
 
     //! @brief Identifies the directory containing architecture-independent global
     //! data shared across all users that can be updated by any user.
     //! @remarks
-    //! Under Windows this might be C:\\ProgramData\\<app name>. Under Linux,
-    //! it could be /etc/<app name>.
+    //! Under Windows this might be C:\\ProgramData\\&lt;app name&gt;. Under Linux,
+    //! it could be /etc/&lt;app name&gt;.
     GlobalWriteableConfig,
 
     //! @brief Identifies the directory containing writeable architecture independent
     //! user-specific data.
     //! @remarks
-    //! Under Windows this might be %USERPROFILE%\\AppData\\Roaming\<app name>.
-    //! Under Linux, this is likely to be $HOME/.<app name>
+    //! Under Windows this might be %USERPROFILE%\\AppData\\Roaming\\&lt;app name&gt;.
+    //! Under Linux, this is likely to be $HOME/.&lt;app name&gt;
     UserConfig,
 
     //! @brief A value only used for bounds checking.
@@ -130,21 +132,21 @@ enum class AppDir : uint8_t
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-namespace Cli
-{
+namespace Cli {
 class ProgramArguments;
-}
+} // namespace Cli
+
 struct CommandLineInfo;
 class Exception;
 typedef std::unique_ptr<Cli::ProgramArguments> CommandLineUPtr;
 
-//! @brierf An object which manages application-specific file paths.
+//! @brief An object which manages application-specific file paths.
 //! @remarks
 //! While the object derives the directory paths based on the program file
 //! location and application metadata, the object does not create them. It is
-//! up to the application or the installer (where priviledge eleveration is
+//! up to the application or the installer (where privilege elevation is
 //! required) to create the directories in question.
-//!
+//! @par
 //! The ability have been created to override the root directories so that
 //! different locations can be used by debug builds during development.
 class AppPaths

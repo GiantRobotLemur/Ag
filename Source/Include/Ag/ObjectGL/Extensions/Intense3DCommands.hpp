@@ -2,7 +2,7 @@
 //! @brief The declaration of Intense 3D-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_INTENSE_3D_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_INTENSE_3D_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_INTENSE_3D_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_INTENSE_3D_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -26,7 +26,7 @@ namespace wgl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the WGL_I3D_digital_video_control extension API.
+//! @brief Manages the entry points for the WGL_I3D_digital_video_control extension API.
 class I3DDigitalVideoControlAPI : public gl::BaseExtension
 {
 public:
@@ -47,7 +47,7 @@ private:
     I3DDigitalVideoControl _api;
 };
 
-// Manages the entry points for the WGL_I3D_gamma extension API.
+//! @brief Manages the entry points for the WGL_I3D_gamma extension API.
 class I3DGammaAPI : public gl::BaseExtension
 {
 public:
@@ -72,7 +72,7 @@ private:
     I3DGamma _api;
 };
 
-// Manages the entry points for the WGL_I3D_genlock extension API.
+//! @brief Manages the entry points for the WGL_I3D_genlock extension API.
 class I3DGenlockAPI : public gl::BaseExtension
 {
 public:
@@ -104,7 +104,7 @@ private:
     I3DGenlock _api;
 };
 
-// Manages the entry points for the WGL_I3D_image_buffer extension API.
+//! @brief Manages the entry points for the WGL_I3D_image_buffer extension API.
 class I3DImageBufferAPI : public gl::BaseExtension
 {
 public:
@@ -129,7 +129,7 @@ private:
     I3DImageBuffer _api;
 };
 
-// Manages the entry points for the WGL_I3D_swap_frame_lock extension API.
+//! @brief Manages the entry points for the WGL_I3D_swap_frame_lock extension API.
 class I3DSwapFrameLockAPI : public gl::BaseExtension
 {
 public:
@@ -152,7 +152,7 @@ private:
     I3DSwapFrameLock _api;
 };
 
-// Manages the entry points for the WGL_I3D_swap_frame_usage extension API.
+//! @brief Manages the entry points for the WGL_I3D_swap_frame_usage extension API.
 class I3DSwapFrameUsageAPI : public gl::BaseExtension
 {
 public:
