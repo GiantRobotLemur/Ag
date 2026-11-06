@@ -12,6 +12,8 @@ ag_add_library(Text FOLDER      Core
                                 CharacterAnalyser.cpp
                                 ${TEXT_INCLUDE_DIR}/CharacterAnalyser.hpp
                                 ${TEXT_INCLUDE_DIR}/Tokeniser.hpp
+                                ParseMessage.cpp
+                                ${TEXT_INCLUDE_DIR}/ParseMessage.hpp
                                 ${TEXT_INCLUDE_DIR}/Parser.hpp
                                 Json.cpp
                                 ${TEXT_INCLUDE_DIR}/Json.hpp

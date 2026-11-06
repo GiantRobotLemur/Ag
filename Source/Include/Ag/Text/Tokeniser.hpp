@@ -227,9 +227,17 @@ private:
             if (_tokeniserStack.empty())
                 return false;
 
-            return _tokeniserStack.back()->tryRecogniseToken(_analyser,
-                                                             scratchBuffer,
-                                                             next);
+            if (_tokeniserStack.back()->tryRecogniseToken(_analyser,
+                                                          scratchBuffer,
+                                                          next))
+            {
+                // If we have a whole token, we won't need to re-wind.
+                _analyser.commit();
+
+                return true;
+            }
+
+            return false;
         }
 
         //! @brief Pushes a new tokeniser implementation to recognise subsequent
