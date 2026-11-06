@@ -12,6 +12,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <cstdlib>
 
+#ifndef _WIN32
+#include <sys/mman.h>
+#endif
+
 #include "Ag/Core/Exception.hpp"
 #include "Ag/Core/Memory.hpp"
 #include "Ag/Core/Variant.hpp"
@@ -85,6 +89,82 @@ void freeAligned(void *alignedBlock)
         free(alignedBlock);
 #endif
     }
+}
+
+//! @brief Gets the size of a paged block, which is the granularity of bytes
+//! which can be allocated using allocatePagedBlock().
+//! @return A count of bytes, very probably an exact power of 2.
+size_t getPagedBlockSize()
+{
+    static size_t BlockSize = 0;
+
+    if (BlockSize == 0)
+    {
+#ifdef _WIN32
+        SYSTEM_INFO si;
+        ::GetSystemInfo(&si);
+
+        BlockSize = si.dwPageSize;
+#else
+        BlockSize = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+#endif
+    }
+
+    return BlockSize;
+}
+
+//! @brief Allocates a count page blocks.
+//! @param[in] blockCount The count of page blocks to allocate.
+//! @return A pointer to the newly allocated block.
+//! @throws OutOfMemoryException if the 
+void *allocatePagedBlock(size_t blockCount)
+{
+    if (blockCount < 1)
+        throw ArgumentException("A positive count of page blocks must be requested.",
+                                "blockCount");
+
+    size_t actualSize = blockCount * getPagedBlockSize();
+
+#ifdef _WIN32
+    void *block = ::VirtualAlloc(nullptr, actualSize,
+                                 MEM_RESERVE | MEM_COMMIT,
+                                 PAGE_READWRITE);
+
+    if (block == nullptr)
+#else
+    void *block = mmap64(nullptr, actualSize, PROT_READ | PROT_WRITE,
+;                        MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+
+    if (block == MAP_FAILED)
+#endif
+
+        throw OutOfMemoryException(actualSize);
+
+    return block;
+}
+
+//! @brief Frees memory allocated with allocatePagedBlock().
+//! @param[in] block A pointer to the beginning of the block to free.
+//! @param[in] blockCount The count of paged blocks in the region being freed.
+//! @param[in] dontThrow True to suppress exceptions on failure, false to report
+//! failures by throwing an exception.
+bool freePagedBlock(void *block, size_t blockCount, bool dontThrow)
+{
+#ifdef _WIN32
+    AG_UNUSED_PARAM(blockCount);
+
+    bool isOK = (::VirtualFree(block, 0, MEM_RELEASE) == FALSE);
+
+    if ((isOK == false) && (dontThrow == false))
+        throw Win32Exception("VirtualFree()", ::GetLastError());
+#else
+    bool isOK = (::munmap(block, blockCount * getPagedBlockSize() == 0);
+
+    if ((isOK == false) && (dontThrow == false))
+        throw RuntimeLibraryException("mmap64()", errno)
+#endif
+
+    return isOK;
 }
 
 } // namespace Ag

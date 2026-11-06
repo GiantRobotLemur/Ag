@@ -61,6 +61,10 @@
 // System Headers (required by the public Core API).
 #include "Ag/Core/Platform.hpp"
 
+#ifndef _WIN32
+#include <sys/mman.h>
+#endif
+
 // Include libbz2 for internal compression services.
 #include <bzlib.h>
 

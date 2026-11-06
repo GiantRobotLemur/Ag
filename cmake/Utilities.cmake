@@ -90,12 +90,13 @@ endfunction()
 #            HEADERS <files>          - Public interface header files.
 #            WIN_HEADERS <files>      - Win32-specific public interface header files.
 #            POSIX_HEADERS <files>    - Linux-specific public interface header files.
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            PUBLIC_LIBS <libraries>  - Libraries which the library and its clients should link to.
 #            PRIVATE_LIBS <libraries> - Libraries which the library link to.
 function(ag_add_library target)
     set(prefix LIB)
     set(noValues QT)
-    set(singleValues "FOLDER" "NAME")
+    set(singleValues "FOLDER" "NAME" "PCH")
     set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES HEADERS WIN_HEADERS POSIX_HEADERS PUBLIC_LIBS PRIVATE_LIBS)
 
     cmake_parse_arguments("${prefix}"
@@ -142,16 +143,22 @@ function(ag_add_library target)
     if(DEFINED LIB_PRIVATE_LIBS)
         target_link_libraries("${target}" PRIVATE ${LIB_PRIVATE_LIBS})
     endif()
+
+    if (DEFINED LIB_PCH)
+        target_precompile_headers("${target}" PRIVATE ${LIB_PCH})
+        target_sources("${target}" PRIVATE ${LIB_PCH})
+    endif()
 endfunction()
 
 # Create a Google Test unit test harness application or an Ag library.
 # Arguments: target - The mandatory target name
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            TEST_LIB <libName> - The Ag library to test.
 #            SOURCES <files>    - The unit test source code files.
 function(ag_add_test_app target)
     set(prefix TAPP)
     set(noValues "")
-    set(singleValues "TEST_LIB")
+    set(singleValues "TEST_LIB" "PCH")
     set(multiValues SOURCES)
 
     cmake_parse_arguments("${prefix}"
@@ -179,6 +186,11 @@ function(ag_add_test_app target)
     if (DEFINED WIN32)
         # Define a macro indicating the app uses the wmain() entry point.
         target_compile_definitions(${target} PRIVATE "_CUI")
+    endif()
+
+    if (DEFINED TAPP_PCH)
+        target_precompile_headers("${target}" PRIVATE ${TAPP_PCH})
+        target_sources("${target}" PRIVATE ${TAPP_PCH})
     endif()
 
     target_sources(${target} PRIVATE ${TAPP_SOURCES})
@@ -301,13 +313,14 @@ endmacro()
 #            FOLDER <folder name>    - The name of the project folder to add the item to.
 #            NAME <app name>         - The base name of the application program file.
 #            AUTHOR <app author>     - The name of the author of the application.
-#            COMPANY <comapny name>    The name of the company which produced the app.
+#            COMPANY <company name>    The name of the company which produced the app.
 #            PRODUCT <prod name>       The name of the product the application belongs to.
 #            DISPLAY_NAME <name>       The name of the application to display in a UI.
 #            DESCRIPTION <desc>      - A description of the application's purpose.
 #            COPYRIGHT <message>     - The application copyright message.
 #            COPYRIGHT_YEAR <year>     The first year of copyright, used to generate the copyright message if none specified.
 #            VERSION <version>       - The version to embed in the application.
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            SOURCES <files>         - Internal source and header files.
 #            WIN_SOURCES <files>     - Win32-specific source and header files.
 #            POSIX_SOURCES <files>   - Linux-specific source and header files.
@@ -315,7 +328,7 @@ endmacro()
 function(ag_add_gui_app target)
     set(prefix APP)
     set(noValues QT)
-    set(singleValues FOLDER NAME AUTHOR COMPANY PRODUCT DISPLAY_NAME DESCRIPTION COPYRIGHT COPYRIGHT_YEAR VERSION)
+    set(singleValues FOLDER PCH NAME AUTHOR COMPANY PRODUCT DISPLAY_NAME DESCRIPTION COPYRIGHT COPYRIGHT_YEAR VERSION)
     set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES LIBS)
 
     cmake_parse_arguments("${prefix}"
@@ -353,6 +366,11 @@ function(ag_add_gui_app target)
 
     target_sources("${target}" PRIVATE ${APP_SOURCES})
 
+    if (DEFINED APP_PCH)
+        target_precompile_headers("${target}" PRIVATE ${APP_PCH})
+        target_sources("${target}" PRIVATE ${APP_PCH})
+    endif()
+
     ag_configure_version("${target}")
 
     include_directories("${target}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
@@ -366,13 +384,14 @@ endfunction()
 #            FOLDER <folder name>    - The name of the project folder to add the item to.
 #            NAME <app name>         - The base name of the application program file.
 #            AUTHOR <app author>     - The name of the author of the application.
-#            COMPANY <comapny name>    The name of the company which produced the app.
+#            COMPANY <company name>    The name of the company which produced the app.
 #            PRODUCT <prod name>       The name of the product the application belongs to.
 #            DISPLAY_NAME <name>       The name of the application to display in a UI.
 #            DESCRIPTION <desc>      - A description of the application's purpose.
 #            COPYRIGHT <message>     - The application copyright message.
 #            COPYRIGHT_YEAR <year>     The first year of copyright, used to generate the copyright message if none specified.
 #            VERSION <version>       - The version to embed in the application.
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            SOURCES <files>         - Internal source and header files.
 #            WIN_SOURCES <files>     - Win32-specific source and header files.
 #            POSIX_SOURCES <files>   - Linux-specific source and header files.
@@ -380,7 +399,7 @@ endfunction()
 function(ag_add_cli_app target)
     set(prefix APP)
     set(noValues "")
-    set(singleValues FOLDER NAME AUTHOR COMPANY PRODUCT DISPLAY_NAME DESCRIPTION COPYRIGHT COPYRIGHT_YEAR VERSION)
+    set(singleValues FOLDER NAME AUTHOR COMPANY PRODUCT DISPLAY_NAME DESCRIPTION COPYRIGHT COPYRIGHT_YEAR VERSION PCH)
     set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES LIBS)
 
     cmake_parse_arguments("${prefix}"
@@ -412,6 +431,11 @@ function(ag_add_cli_app target)
 
     if(DEFINED APP_NAME)
         set_target_properties("${target}" PROPERTIES OUTPUT_NAME "${APP_NAME}")
+    endif()
+
+    if (DEFINED APP_PCH)
+        target_precompile_headers("${target}" PRIVATE ${APP_PCH})
+        target_sources("${target}" PRIVATE ${APP_PCH})
     endif()
 
     ag_configure_version("${target}")
