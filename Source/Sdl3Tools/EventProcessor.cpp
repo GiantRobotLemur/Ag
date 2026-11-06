@@ -272,86 +272,39 @@ bool EventHandlers::EventHandlerNode::execute(SDL_Event *info) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// EventProcessor Member Definitions
+// EventProcessingManager Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief Construct an object which processes input event.
-EventProcessor::EventProcessor() :
-    _isRunning(false),
-    _exitRequested(false)
-{
-}
-
-//! @brief Determines if the run() member function is currently active.
-bool EventProcessor::isRunning() const
-{
-    return _isRunning;
-}
-
 //! @brief Determines whether the a pending request has been made to exit the
 //! current event processing loop.
 //! @retval true A pending request exists.
 //! @retval false The processing loop can continue.
-bool EventProcessor::isPendingExit() const
+bool EventProcessingManager::isPendingExit() const
 {
     return _exitRequested;
 }
 
 //! @brief Gets the object which maps events to handlers.
-EventHandlers &EventProcessor::getEventDispatcher()
+EventHandlers &EventProcessingManager::getEventDispatcher()
 {
     return _handlers;
 }
 
 //! @brief Gets the object which maps events to handlers.
-const EventHandlers &EventProcessor::getEventDispatcher() const
+const EventHandlers &EventProcessingManager::getEventDispatcher() const
 {
     return _handlers;
 }
 
 //! @brief Requests that the current message processing loop exit.
-void EventProcessor::requestExit()
+void EventProcessingManager::requestExit()
 {
     _exitRequested = true;
 }
 
-//! @brief Runs the message processing loop until exit is requested.
-//! @details If the run() method is already active, the call will return
-//! immediately.
-void EventProcessor::run()
+//! @brief Resets any previous request to exit.
+void EventProcessingManager::resetExitRequest()
 {
-    if (_isRunning)
-        return;
-
-    // Ensure event handlers are properly indexed.
-    _handlers.optimise();
-
     _exitRequested = false;
-
-    // Mark the loop as running until runInternal() returns.
-    ValueScope<bool> runningScope(_isRunning, true);
-
-    runInternal();
-}
-
-//! @brief The base implementation simply calls SDL_PollEvent() until an exit
-//! is requested, possibly triggered by SDL_EVENT_QUIT.
-void EventProcessor::runInternal()
-{
-    SDL_Event currentEvent;
-
-    // Simply poll events.
-    while (isPendingExit() == false)
-    {
-        if (SDL_PollEvent(&currentEvent))
-        {
-            // Process the received event.
-            if ((processEvent(currentEvent) == false) ||
-                (currentEvent.type == SDL_EVENT_QUIT))
-            {
-                requestExit();
-            }
-        }
-    }
 }
 
 //! @brief Extracts all outstanding messages from the event queue and
@@ -363,7 +316,7 @@ void EventProcessor::runInternal()
 //! @details Events are drained in batches until the queue is empty, so a
 //! single call can dispatch any number of handlers. Should only be called on
 //! the main thread.
-bool EventProcessor::processOutstandingEvents()
+bool EventProcessingManager::processOutstandingEvents()
 {
     constexpr int MaxEvents = 16;
     SDL_Event eventInfo[MaxEvents];
@@ -405,9 +358,59 @@ bool EventProcessor::processOutstandingEvents()
 //! @param[in] currentEvent The event to process.
 //! @retval true Event processing should continue.
 //! @retval false The event processing loop should exit.
-bool EventProcessor::processEvent(SDL_Event &currentEvent)
+bool EventProcessingManager::processEvent(SDL_Event &currentEvent)
 {
     return _handlers.dispatchEvent(currentEvent);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EventProcessor Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Determines if the run() member function is currently active.
+bool EventProcessor::isRunning() const
+{
+    return _isRunning;
+}
+
+//! @brief Runs the message processing loop until exit is requested.
+//! @details If the run() method is already active, the call will return
+//! immediately.
+void EventProcessor::run()
+{
+    if (_isRunning)
+        return;
+
+    // Ensure event handlers are properly indexed.
+    auto &events = getEventDispatcher();
+    events.optimise();
+
+    resetExitRequest();
+
+    // Mark the loop as running until runInternal() returns.
+    ValueScope<bool> runningScope(_isRunning, true);
+
+    runInternal();
+}
+
+//! @brief The base implementation simply calls SDL_PollEvent() until an exit
+//! is requested, possibly triggered by SDL_EVENT_QUIT.
+void EventProcessor::runInternal()
+{
+    SDL_Event currentEvent;
+
+    // Simply poll events.
+    while (isPendingExit() == false)
+    {
+        if (SDL_PollEvent(&currentEvent))
+        {
+            // Process the received event.
+            if ((processEvent(currentEvent) == false) ||
+                (currentEvent.type == SDL_EVENT_QUIT))
+            {
+                requestExit();
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -437,7 +440,39 @@ void IdleEventProcessor::runInternal()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BusyEventProcessor Member Definitions
+// SynchronisedEventProcessor Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+// Inherited from EventProcessor.
+void SynchronisedEventProcessor::runInternal()
+{
+    using PerfCounter_t = decltype(SDL_GetPerformanceCounter());
+    double perfFrequency = static_cast<double>(SDL_GetPerformanceFrequency());
+
+    // Initially query for events.
+    SDL_PumpEvents();
+    PerfCounter_t lastLoopStart = SDL_GetPerformanceCounter();
+
+    while (!isPendingExit())
+    {
+        // Process input events to the thread.
+        processOutstandingEvents();
+
+        PerfCounter_t startTime = SDL_GetPerformanceCounter();
+        double cyclePeriod = (startTime - lastLoopStart) / perfFrequency;
+        lastLoopStart = startTime;
+
+        onCycleExecuted(cyclePeriod);
+
+        // Asynchronously poll for more input events.
+        SDL_PumpEvents();
+
+        // Synchronise the loop.
+        synchroniseCycle();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PeriodicEventProcessor Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs an event processor object which is synchronised to a fixed
 //! cycle time period.

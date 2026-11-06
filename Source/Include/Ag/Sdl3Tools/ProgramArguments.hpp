@@ -74,6 +74,10 @@ enum class SdlObjectType
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
+struct Point;
+class Window;
+class Renderer;
+
 //! @brief An object which defines and parses standard command line arguments.
 class ProgramArguments : public Ag::Cli::ProgramArguments
 {
@@ -93,6 +97,10 @@ public:
 
     bool tryFindDisplay(SDL_DisplayID &displayID) const;
     bool tryFindDisplayMode(SDL_DisplayID displayID, SDL_DisplayMode &mode) const;
+    bool tryCreatePreferredWindow(utf8_cptr_t title,
+                                  SDL_WindowFlags preferredFlags,
+                                  const Point &windowedSize,
+                                  Window &window) const;
     bool tryCreatePreferredRenderer(const Window &window,
                                     Renderer &renderer) const;
     bool tryCreatePreferredGPUDevice(SDL_GPUShaderFormat possibleFormats,

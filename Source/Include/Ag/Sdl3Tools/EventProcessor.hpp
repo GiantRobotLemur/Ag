@@ -57,6 +57,11 @@ public:
 //! input message.
 using EventHandlerSPtr = std::shared_ptr<EventHandler>;
 
+//! @brief A pointer to a static function to handle an SDL event.
+//! @param[in] context User context registered with the handler.
+//! @param[in] info Details of the event being handled.
+//! @retval true Event processing can continue.
+//! @retval false Signals that the event loop should exit.
 using EventHandlerFn = bool (*)(uintptr_t context, SDL_Event *info);
 
 //! @brief An object which dispatches event handlers registered with it.
@@ -114,22 +119,50 @@ private:
     uint32_t _handlerSeed;
 };
 
-//! @brief An object which manages the SDL input event processing loop.
-class EventProcessor
+
+
+//! @brief An object which allows the program to manage the event loop,
+//! only providing supporting functions.
+class EventProcessingManager
 {
 public:
     // Construction/Destruction
-    EventProcessor();
-    virtual ~EventProcessor() = default;
+    EventProcessingManager() = default;
+    virtual ~EventProcessingManager() = default;
 
     // Accessors
-    bool isRunning() const;
     bool isPendingExit() const;
     EventHandlers &getEventDispatcher();
     const EventHandlers &getEventDispatcher() const;
 
     // Operations
     void requestExit();
+    void resetExitRequest();
+    bool processOutstandingEvents();
+protected:
+    // Internal Types
+
+    // Internal Functions
+    bool processEvent(SDL_Event &currentEvent);
+
+private:
+    // Internal Fields
+    EventHandlers _handlers;
+    bool _exitRequested = false;
+};
+
+
+//! @brief An object which manages the SDL input event processing loop.
+class EventProcessor : public EventProcessingManager
+{
+public:
+    // Construction/Destruction
+    EventProcessor() = default;
+
+    // Accessors
+    bool isRunning() const;
+
+    // Operations
     void run();
 
 protected:
@@ -137,14 +170,10 @@ protected:
     virtual void runInternal();
 
     // Internal Functions
-    bool processOutstandingEvents();
-    bool processEvent(SDL_Event &currentEvent);
 
 private:
     // Internal Fields
-    EventHandlers _handlers;
-    bool _isRunning;
-    bool _exitRequested;
+    bool _isRunning = false;
 };
 
 //! @brief An event processor which waits for input events, periodically
@@ -158,6 +187,37 @@ public:
 
     // Overrides
 protected:
+    virtual void runInternal() override;
+};
+
+//! @brief An event processor which performs processing in cycles synchronised
+//! based on user supplied logic.
+class SynchronisedEventProcessor : public EventProcessor
+{
+public:
+    // Construction/Destruction
+    SynchronisedEventProcessor() = default;
+    virtual ~SynchronisedEventProcessor() = default;
+
+protected:
+    // Overrides
+
+    //! @brief A member function called on each iteration of the cycle, after
+    //! input messages have been processed, but before synchroniseCycle().
+    //! @param[in] secsSinceLastIteration The count of seconds since the last
+    //! call to this member function.
+    //! @remarks
+    //! Derived classes might implement a game loop update function which
+    //! updates the scene based on the elapsed time.
+    virtual void onCycleExecuted(double secsSinceLastIteration) = 0;
+
+    //! @brief A member function called at the end of each cycle to synchronise
+    //! execution in some programmer defined way.
+    //! @remarks
+    //! Derived classes might implement a display buffer swap in this function
+    //! which blocks waiting for VSync, or some other timer-based method.
+    virtual void synchroniseCycle() = 0;
+
     virtual void runInternal() override;
 };
 

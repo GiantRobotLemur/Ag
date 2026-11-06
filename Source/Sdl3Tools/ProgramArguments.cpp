@@ -439,7 +439,7 @@ bool ProgramArguments::tryFindDisplay(SDL_DisplayID &displayID) const
 //! @details Note that @p mode is written in both outcomes, so a false
 //! result still leaves a usable desktop mode behind.
 bool ProgramArguments::tryFindDisplayMode(SDL_DisplayID displayID,
-                                              SDL_DisplayMode &mode) const
+                                          SDL_DisplayMode &mode) const
 {
     const SDL_DisplayMode *selectedMode = nullptr;
 
@@ -507,6 +507,94 @@ bool ProgramArguments::tryFindDisplayMode(SDL_DisplayID displayID,
     return false;
 }
 
+//! @brief Attempts to create the preferred window and set full screen mode if
+//! requested, based on command line arguments.
+//! @param[in] title The title of the new window.
+//! @param[in] preferredFlags The flags configuring the new window, such as
+//! SDL_WINDOW_OPENGL.
+//! @param[in] windowedSize The preferred window size if the window is not
+//! set to a full screen mode.
+//! @param[out] window An object to bind the new window to.
+//! @retval true The window was successfully created and assigned to @p window.
+//! @retval false Creation of the window failed.
+bool ProgramArguments::tryCreatePreferredWindow(utf8_cptr_t title,
+                                                SDL_WindowFlags preferredFlags,
+                                                const Point &windowedSize,
+                                                Window &window) const
+{
+    window.release();
+
+    SDL_WindowFlags effectiveFlags = preferredFlags & ~SDL_WINDOW_FULLSCREEN;
+    bool showOnCreate = (preferredFlags & SDL_WINDOW_HIDDEN) == 0;
+
+    if (isFullScreenPreferred() ||
+        ((preferredFlags & SDL_WINDOW_FULLSCREEN) != 0))
+    {
+        // The user/caller requested full screen mode, if possible.
+        SDL_DisplayID displayID;
+
+        // Get preferred display if specified, primary display, if not.
+        tryFindDisplay(displayID);
+
+        SDL_DisplayMode mode;
+        bool hasMode = tryFindDisplayMode(displayID, mode);
+
+        if (hasMode == false)
+        {
+            // Use the desktop display mode.
+            auto defaultMode = SDL_GetDesktopDisplayMode(displayID);
+
+            if (defaultMode != nullptr)
+            {
+                mode = *defaultMode;
+                hasMode = true;
+            }
+        }
+
+        effectiveFlags |= SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN;
+
+        SDL_Window* rawWindow = SDL_CreateWindow(title, mode.w, mode.h, effectiveFlags);
+
+        if (rawWindow != nullptr)
+        {
+            bool isOK = true;
+
+            // Ensure the window is disposed of if we fail.
+            Ag::AtScopeExit1 destroyWindowOnFailure(SDL_DestroyWindow, rawWindow);
+
+            // Specify the mode the window should use when full screen.
+            isOK = SDL_SetWindowFullscreenMode(rawWindow, &mode);
+
+            if (showOnCreate)
+                isOK = isOK && SDL_ShowWindow(rawWindow);
+
+            isOK = isOK && SDL_SyncWindow(rawWindow);
+
+            if (isOK)
+            {
+                // Cancel automatic destruction so we can return the window.
+                destroyWindowOnFailure.cancel();
+
+                window = Window(rawWindow, true);
+                return true;
+            }
+        }
+    }
+
+    // If we get this far without a window, we don't want full screen mode.
+    SDL_Window *nonFullScreen = SDL_CreateWindow(title,
+                                                 (windowedSize.x <= 0) ? 640 : windowedSize.x,
+                                                 (windowedSize.y <= 0) ? 480 : windowedSize.y,
+                                                 effectiveFlags);
+
+    if (nonFullScreen == nullptr)
+        return false;
+
+    window = Window(nonFullScreen, true);
+
+    return true;
+}
+
 //! @brief Attempts to create a renderer for a window based on command line
 //! options specified.
 //! @param[in] window The window to be rendered to.
@@ -516,6 +604,8 @@ bool ProgramArguments::tryFindDisplayMode(SDL_DisplayID displayID,
 bool ProgramArguments::tryCreatePreferredRenderer(const Window &window,
                                                   Renderer &renderer) const
 {
+    SDL_Window *rawWindow = window.verifyAccess("SDL_CreateRenderer()");
+
     renderer.release();
 
     if (_displayDriverName.isEmpty())
@@ -529,7 +619,7 @@ bool ProgramArguments::tryCreatePreferredRenderer(const Window &window,
 
         if (_displayDriverName == driverName)
         {
-            SDL_Renderer *created = SDL_CreateRenderer(window.get(), driverName);
+            SDL_Renderer *created = SDL_CreateRenderer(rawWindow, driverName);
 
             if (created == nullptr)
                 return false;
