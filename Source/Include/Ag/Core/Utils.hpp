@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_UTILS_HPP__
-#define __AG_CORE_UTILS_HPP__
+#ifndef HEADER_AG_CORE_UTILS_HPP_
+#define HEADER_AG_CORE_UTILS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cstring>
 
+#include <functional>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -501,10 +502,12 @@ template<typename T> void zeroFill(T &object)
 //! @tparam T The data type of the enumeration.
 //! @param[in] value The enumeration value to cast.
 //! @returns The scalar integer value corresponding to the enumeration value.
-template<typename TEnum, std::enable_if_t<std::is_enum<TEnum>::value, bool> = true>
-constexpr typename std::underlying_type<TEnum>::type toScalar(TEnum value) noexcept
+template<typename TEnum,
+         typename ScalarType = typename std::underlying_type<TEnum>::type,
+         std::enable_if_t<std::is_enum<TEnum>::value, bool> = true>
+constexpr ScalarType toScalar(TEnum value) noexcept
 {
-    return static_cast<typename std::underlying_type<TEnum>::type>(value);
+    return static_cast<ScalarType>(value);
 }
 
 //! @brief Converts an integer value to a scoped enumeration type.

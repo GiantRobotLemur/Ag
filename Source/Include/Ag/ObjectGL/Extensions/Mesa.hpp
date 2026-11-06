@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/Mesa.hpp
 //! @brief The declaration of Mesa-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_MESA_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_MESA_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_MESA_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_MESA_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_MESA_framebuffer_flip_y extension API specification.
+//! @brief The GL_MESA_framebuffer_flip_y extension API specification.
 struct MESAFramebufferFlipY {
     // Public Members
     void (APIENTRY *glFramebufferParameteri)(GLenum target, GLenum pname,
@@ -43,7 +43,7 @@ struct MESAFramebufferFlipY {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct MESAFramebufferFlipY
 
-// GL_MESA_resize_buffers extension API specification.
+//! @brief The GL_MESA_resize_buffers extension API specification.
 struct MESAResizeBuffers {
     // Public Members
     void (APIENTRY *glResizeBuffers)();
@@ -56,7 +56,7 @@ struct MESAResizeBuffers {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct MESAResizeBuffers
 
-// GL_MESA_window_pos extension API specification.
+//! @brief The GL_MESA_window_pos extension API specification.
 struct MESAWindowPos {
     // Public Members
     void (APIENTRY *glWindowPos2d)(GLdouble x, GLdouble y);

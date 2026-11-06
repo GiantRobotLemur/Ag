@@ -102,11 +102,14 @@ bool BoundaryEdgeNode::operator<(const BoundaryEdgeNode &rhs) const
     }
 }
 
-bool BoundaryEdgeNode::isLevelWith(const BoundaryEdgeNode &rhs) const
-{
-    return (_node->getGridPosition().toArray()[_majorIndex] ==
-            rhs._node->getGridPosition().toArray()[_majorIndex]);
-}
+// TODO: This wasn't used, but could be useful - I don't want to delete if
+// if it might be useful later on.
+//
+// bool BoundaryEdgeNode::isLevelWith(const BoundaryEdgeNode &rhs) const
+// {
+//     return (_node->getGridPosition().toArray()[_majorIndex] ==
+//             rhs._node->getGridPosition().toArray()[_majorIndex]);
+// }
 
 void BoundaryEdgeNode::initialiseBoundary(uint32_t sequence, bool isOnMaxSide)
 {
@@ -253,13 +256,11 @@ IDCollection triangulateRing(const Ring &ring)
         BoundaryEdgeCollection orderedNodes;
         double detSign = 1.0;
         ID currentID, previousID, firstID;
-        uint8_t minorComponentIndex = 0;
 
         if (ring.isXMonotone())
         {
             orderedNodes = enumerateSideNodes(ring, 0);
             detSign = -1.0;
-            minorComponentIndex = 1;
         }
         else //if (ring.isYMonotone())
         {

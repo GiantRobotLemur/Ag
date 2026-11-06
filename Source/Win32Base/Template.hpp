@@ -7,8 +7,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_WIN32_BASE_XXX_HPP__
-#define __AG_WIN32_BASE_XXX_HPP__
+#ifndef HEADER_AG_WIN32_BASE_XXX_HPP_
+#define HEADER_AG_WIN32_BASE_XXX_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files

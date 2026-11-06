@@ -1,7 +1,7 @@
 //! @file Sdl3Tools/OpenGL.cpp
 //! @brief The definition of tools for operating with OpenGL on top of SDL.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2023-2024
+//! @date 2023-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -13,6 +13,7 @@
 #include <cctype>
 
 #include "Ag/Sdl3Tools/OpenGL.hpp"
+#include "Ag/Sdl3Tools/Window.hpp"
 #include "Ag/Sdl3Tools/WrapperTypes.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,7 +89,7 @@ bool tryGetOpenGLCoreProfileInfo(OpenGLInfo &info)
 
     // Create a hidden window from which to create an OpenGL context.
     Window window;
-    
+
     window.create("OpenGL Core Profile Detection", 640, 480,
                   SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
 

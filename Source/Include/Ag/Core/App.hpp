@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_APP_HPP__
-#define __AG_CORE_APP_HPP__
+#ifndef HEADER_AG_CORE_APP_HPP_
+#define HEADER_AG_CORE_APP_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -33,7 +33,7 @@
 #endif
 
 #include <Windows.h>
-#endif
+#endif // ifdef _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -43,7 +43,9 @@
 #include <string_view>
 
 #include "Configuration.hpp"
-#include "Version.hpp"
+#include "AppMetadata.hpp"
+#include "FsPath.hpp"
+#include "Utils.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions
@@ -57,7 +59,7 @@
 _In_opt_ HINSTANCE, _In_ LPWSTR cmdLine, _In_ int) \
 { AppType theApp; return theApp.exec(cmdLine); }
 
-#else ifndef _MSC_VER
+#else // ifndef _MSC_VER
 
 #define IMPLEMENT_MAIN(AppType) int WINAPI wWinMain(HINSTANCE, HINSTANCE, \
 LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
@@ -65,49 +67,110 @@ LPWSTR cmdLine, int) { AppType theApp; return theApp.exec(cmdLine); }
 #endif // ifdef _MSC_VER
 
 #else // !defined _GUI
+
 #define IMPLEMENT_MAIN(AppType) int wmain(int argc, wchar_t *argv[], wchar_t *[]) \
 { AppType theApp; return theApp.exec(argc, argv); }
-#endif
+#endif // ifdef _GUI
+
 #else // !defined _WIN32
 #define IMPLEMENT_MAIN(AppType) int main(int argc, char *argv[]) \
 { AppType theApp; return theApp.exec(argc, argv); }
-#endif
+#endif // ifdef _WIN32
 
 namespace Ag {
 
 ////////////////////////////////////////////////////////////////////////////////
+// Data Type Declarations
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Expresses the identities of application-centric file system directories.
+enum class AppDir : uint8_t
+{
+    //! @brief Identifies the directory containing the application binary.
+    //! @remarks
+    //! Under Windows this might be C:\\Program Files\\&lt;app name&gt;. Under Linux
+    //! this could be /usr/bin.
+    Programs,
+
+    //! @brief Identifies the directory containing the shared libraries related
+    //! to the application.
+    //! @remarks
+    //! Under Windows this might be the same as the Programs folder, i.e.
+    //! C:\\Program Files\\&lt;app name&gt;. Under Linux, it could be /usr/lib.
+    Libraries,
+
+    //! @brief Identifies the directory containing application-specific read-only data.
+    //! @remarks
+    //! Under Windows this might be the same as the Programs folder, i.e.
+    //! C:\\Program Files\\&lt;app name&gt;. Under Linux, it could be /usr/share/&lt;app name&gt;.
+    ReadOnlyData,
+
+    //! @brief Identifies the directory containing architecture-independent global
+    //! data shared across all users, which aren't settable without elevated priviledges.
+    //! @remarks
+    //! Under Windows this might be the same as the Programs folder, i.e.
+    //! C:\\Program Files\\&lt;app name&gt;. Under Linux, it could be /etc/&lt;app name&gt;.
+    GlobalReadOnlyConfig,
+
+    //! @brief Identifies the directory containing architecture-independent global
+    //! data shared across all users that can be updated by any user.
+    //! @remarks
+    //! Under Windows this might be C:\\ProgramData\\&lt;app name&gt;. Under Linux,
+    //! it could be /etc/&lt;app name&gt;.
+    GlobalWriteableConfig,
+
+    //! @brief Identifies the directory containing writeable architecture independent
+    //! user-specific data.
+    //! @remarks
+    //! Under Windows this might be %USERPROFILE%\\AppData\\Roaming\\&lt;app name&gt;.
+    //! Under Linux, this is likely to be $HOME/.&lt;app name&gt;
+    UserConfig,
+
+    //! @brief A value only used for bounds checking.
+    Max,
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-namespace Cli
-{
+namespace Cli {
 class ProgramArguments;
-}
+} // namespace Cli
+
 struct CommandLineInfo;
 class Exception;
 typedef std::unique_ptr<Cli::ProgramArguments> CommandLineUPtr;
 
-//! @brief A structure which can be used to capture hard-coded application metadata.
-struct AppMetadata
+//! @brief An object which manages application-specific file paths.
+//! @remarks
+//! While the object derives the directory paths based on the program file
+//! location and application metadata, the object does not create them. It is
+//! up to the application or the installer (where privilege elevation is
+//! required) to create the directories in question.
+//! @par
+//! The ability have been created to override the root directories so that
+//! different locations can be used by debug builds during development.
+class AppPaths
 {
-    Version AppVersion;
-    std::string_view AppName;
-    std::string_view ProductName;
-    std::string_view Description;
-    std::string_view Author;
-    std::string_view Copyright;
+public:
+    // Construction/Destruction
+    AppPaths();
+    AppPaths(const AppMetadata &appInfo, bool stripSpaces = true);
+    ~AppPaths() = default;
 
-    AppMetadata() = default;
-    AppMetadata(const Version &version, const std::string_view &appName,
-                const std::string_view &prodName, const std::string_view &desc,
-                const std::string_view &author, const std::string_view &copyright) :
-        AppVersion(version),
-        AppName(appName),
-        ProductName(prodName),
-        Description(desc),
-        Author(author),
-        Copyright(copyright)
-    {
-    }
+    // Accessors
+    const Fs::PathBuilder &getPath(AppDir dirID) const;
+    Fs::Path getPath(AppDir dirID, string_cref_t relativePath) const;
+    Fs::Path getPath(AppDir dirID, const Fs::Path &relativePath) const;
+    Fs::Path getPath(AppDir dirID, const Fs::PathBuilder &relativePath) const;
+
+    // Operations
+    void setOverride(AppDir dirID, const Fs::Path &path);
+private:
+    // Internal Functions
+    void initialise(const AppMetadata &appInfo, bool stripSpaces);
+
+    // Internal Fields
+    Fs::PathBuilder _roots[toScalar(AppDir::Max)];
 };
 
 //! @brief An object which represents the root of an application object hierarchy.
@@ -121,12 +184,16 @@ public:
     // Accessors
     static App *get();
     static FILE *getConsoleOutputStream();
+    AppPaths &getPaths();
+    const AppPaths &getPaths() const;
+    const AppMetadata &getMetadata() const;
 
     // Operations
     int exec();
     int exec(int argc, const char * const *argv);
     int exec(int argc, const wchar_t * const *argv);
     int exec(wchar_cptr_t commandLine);
+    void initialisePaths(const AppMetadata &metadata);
 
     // Overrides
     virtual void onUnhandledException(const std::exception &error);
@@ -140,11 +207,18 @@ protected:
     virtual void reportError(utf8_cptr_t errorText);
 
 private:
+    // Internal Types
+    using AppPathsUPtr = std::unique_ptr<AppPaths>;
+
     // Internal Functions
     int innerExec(CommandLineInfo &info);
     static bool guardedInitialise(App *instance, const Cli::ProgramArguments *args);
     static int guardedRun(App *instance, const Cli::ProgramArguments *args);
     static void guardedShutdown(App *instance);
+
+    // Internal Fields
+    AppPathsUPtr _paths;
+    AppMetadata _metadata;
 };
 
 } // namespace Ag

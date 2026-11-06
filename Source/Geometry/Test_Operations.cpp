@@ -2,7 +2,7 @@
 //! @brief The definition of unit tests for the Operations_* structures which
 //! implement the same operations with different SIMD technology.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -465,10 +465,10 @@ TYPED_TEST(Mat2x2D, MakeRotation)
     double specimen[]{ -1, 12, 36, 42 };
     TypeParam::makeRotation(-Angle::Pi_2, specimen);
 
-    EXPECT_NEAR(specimen[0], 0, Epsilon);
-    EXPECT_NEAR(specimen[1], 1, Epsilon);
-    EXPECT_NEAR(specimen[2], -1, Epsilon);
-    EXPECT_NEAR(specimen[3], 0, Epsilon);
+    EXPECT_NEAR(specimen[0], 0, this->Epsilon);
+    EXPECT_NEAR(specimen[1], 1, this->Epsilon);
+    EXPECT_NEAR(specimen[2], -1, this->Epsilon);
+    EXPECT_NEAR(specimen[3], 0, this->Epsilon);
 }
 
 TYPED_TEST(Mat2x2D, Inverse)
@@ -476,10 +476,10 @@ TYPED_TEST(Mat2x2D, Inverse)
     double specimen[]{ -1, 12, 36, 42 };
     TypeParam::makeRotation(-Angle::Pi_2, specimen);
 
-    EXPECT_NEAR(specimen[0], 0, Epsilon);
-    EXPECT_NEAR(specimen[1], 1, Epsilon);
-    EXPECT_NEAR(specimen[2], -1, Epsilon);
-    EXPECT_NEAR(specimen[3], 0, Epsilon);
+    EXPECT_NEAR(specimen[0], 0, this->Epsilon);
+    EXPECT_NEAR(specimen[1], 1, this->Epsilon);
+    EXPECT_NEAR(specimen[2], -1, this->Epsilon);
+    EXPECT_NEAR(specimen[3], 0, this->Epsilon);
 
     double expectedInverse[4];
     TypeParam::makeRotation(Angle::Pi_2, expectedInverse);
@@ -641,10 +641,10 @@ TYPED_TEST(AffineTrans2D, MakeRotation)
     double specimen[]{ -1, 12, 36, 42, 9, -31 };
     TypeParam::makeRotation(-Angle::Pi_2, specimen);
 
-    EXPECT_NEAR(specimen[0], 0, Epsilon);
-    EXPECT_NEAR(specimen[1], 1, Epsilon);
-    EXPECT_NEAR(specimen[2], -1, Epsilon);
-    EXPECT_NEAR(specimen[3], 0, Epsilon);
+    EXPECT_NEAR(specimen[0], 0, this->Epsilon);
+    EXPECT_NEAR(specimen[1], 1, this->Epsilon);
+    EXPECT_NEAR(specimen[2], -1, this->Epsilon);
+    EXPECT_NEAR(specimen[3], 0, this->Epsilon);
     EXPECT_EQ(specimen[4], 0);
     EXPECT_EQ(specimen[5], 0);
 }
@@ -654,10 +654,10 @@ TYPED_TEST(AffineTrans2D, Inverse)
     double specimen[]{ -1, 12, 36, 42, 9, -31 };
     TypeParam::makeRotation(-Angle::Pi_2, specimen);
 
-    EXPECT_NEAR(specimen[0], 0, Epsilon);
-    EXPECT_NEAR(specimen[1], 1, Epsilon);
-    EXPECT_NEAR(specimen[2], -1, Epsilon);
-    EXPECT_NEAR(specimen[3], 0, Epsilon);
+    EXPECT_NEAR(specimen[0], 0, this->Epsilon);
+    EXPECT_NEAR(specimen[1], 1, this->Epsilon);
+    EXPECT_NEAR(specimen[2], -1, this->Epsilon);
+    EXPECT_NEAR(specimen[3], 0, this->Epsilon);
     EXPECT_EQ(specimen[4], 0);
     EXPECT_EQ(specimen[5], 0);
 

@@ -8,14 +8,18 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_COLLECTION_TOOLS_HPP__
-#define __AG_CORE_COLLECTION_TOOLS_HPP__
+#ifndef HEADER_AG_CORE_COLLECTION_TOOLS_HPP_
+#define HEADER_AG_CORE_COLLECTION_TOOLS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include <atomic>
+#include <map>
+#include <unordered_map>
 #include <vector>
+
+#include "Exception.hpp"
 
 namespace Ag {
 
@@ -287,6 +291,54 @@ template<typename TIterator> struct IteratorRange
     const ValueType &front() const { return *Begin; }
 };
 
+//! @brief A convenience function to look up a value from a sorted map.
+//! @tparam TKey The data type of the map keys.
+//! @tparam TValue The data type of the associated values.
+//! @tparam TLess The functor used to compare keys.
+//! @tparam TAlloc The functor used to allocate elements.
+//! @param[in] mapping The map to search.
+//! @param[in] key The key to look up.
+//! @param[out] result Receives the result on success.
+//! @retval true The key was found in @p map, and the associated value was
+//! copied to @p result.
+//! @retval false The key was not present in @p map. @p result is unchanged.
+template<typename TKey, typename TValue, typename TLess, typename TAlloc>
+bool tryFindMappedValue(const std::map<TKey, TValue, TLess, TAlloc> &mapping,
+                        const TKey &key, TValue &result)
+{
+    auto pos = mapping.find(key);
+
+    if (pos == mapping.end())
+        return false;
+
+    result = pos->second;
+    return true;
+}
+
+//! @brief A convenience function to look up a value from a hashed map.
+//! @tparam TKey The data type of the map keys.
+//! @tparam TValue The data type of the associated values.
+//! @tparam THash The functor used to provide hash values.
+//! @tparam TAlloc The functor used to allocate elements.
+//! @param[in] mapping The map to search.
+//! @param[in] key The key to look up.
+//! @param[out] result Receives the result on success.
+//! @retval true The key was found in @p map, and the associated value was
+//! copied to @p result.
+//! @retval false The key was not present in @p map. @p result is unchanged.
+template<typename TKey, typename TValue, typename THash, typename TEqual, typename TAlloc>
+bool tryFindMappedValue(const std::unordered_map<TKey, TValue, THash, TEqual, TAlloc> &mapping,
+                        const TKey &key, TValue &result)
+{
+    auto pos = mapping.find(key);
+
+    if (pos == mapping.end())
+        return false;
+
+    result = pos->second;
+    return true;
+}
+
 //! @brief Finds the first group in a sorted set of items.
 //! @tparam TItem The data type of the items in the set.
 //! @tparam TIterator The data type of the iterator used to defined positions
@@ -435,7 +487,7 @@ void ensureCapacity(TCollection &collection, size_t totalCapacity)
         collection.reserve(totalCapacity);
 }
 
-//! @brief Ensures a vector has capacity to append a specified number of 
+//! @brief Ensures a vector has capacity to append a specified number of
 //! additional elements.
 //! @tparam TCollection The data type of vector to extend.
 //! @param[in] collection The vector to ensure the capacity of.

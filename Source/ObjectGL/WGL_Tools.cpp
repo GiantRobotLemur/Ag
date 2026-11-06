@@ -1,7 +1,7 @@
 //! @file ObjectGL/WGL_Tools.cpp
 //! @brief The definition of functions to assist using OpenGL on Windows.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,6 +12,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Core/Utils.hpp"
 #include "Ag/ObjectGL/WGL_Tools.hpp"
+
+// This stuff is only relevant if we're integrating with Windows.
+#if defined _WIN32 && defined AG_OBJECT_GL_WGL_DRIVER
 
 namespace wgl {
 
@@ -826,5 +829,7 @@ HGLRC WGL_Tools::createSharedContext(HWND window, HGLRC shareContext,
 }
 
 } // namespace wgl
+
+#endif  // if defined _WIN32 && defined AG_OBJECT_GL_WGL_DRIVER
 ////////////////////////////////////////////////////////////////////////////////
 

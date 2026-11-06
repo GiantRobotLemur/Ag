@@ -1,7 +1,7 @@
-//! @file Ag/ObjectGL/Extensions/name_here.hpp
-//! @brief The declaration of Xxx-specific extensions to the OpenGL API.
+//! @file Ag/ObjectGL/Extensions/HP.hpp
+//! @brief The declaration of HP-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_HP_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_HP_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_HP_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_HP_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,7 +23,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_HP_image_transform extension API specification.
+//! @brief The GL_HP_image_transform extension API specification.
 struct HPImageTransform {
     // Public Members
     void (APIENTRY *glGetImageTransformParameterfv)(GLenum target, GLenum pname,

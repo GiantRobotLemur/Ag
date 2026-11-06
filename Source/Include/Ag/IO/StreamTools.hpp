@@ -1,0 +1,38 @@
+//! @file Ag/IO/StreamTools.hpp
+//! @brief The declaration of various utilities related to IStream and
+//! ISeekableStream implementations.
+//! @author GiantRobotLemur@na-se.co.uk
+//! @date 2026
+//! @copyright This file is part of the Silver (Ag) project which is released
+//! under LGPL 3 license. See LICENSE file at the repository root or go to
+//! https://github.com/GiantRobotLemur/Ag for full license details.
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef HEADER_IO_STREAM_TOOLS_HPP_
+#define HEADER_IO_STREAM_TOOLS_HPP_
+
+////////////////////////////////////////////////////////////////////////////////
+// Dependent Header Files
+////////////////////////////////////////////////////////////////////////////////
+#include "ISeekableStream.hpp"
+
+namespace Ag {
+namespace IO {
+
+////////////////////////////////////////////////////////////////////////////////
+// Data Declarations
+////////////////////////////////////////////////////////////////////////////////
+constexpr size_t MinBufferSize = 512;
+constexpr size_t MaxBufferSize = 1 * 1024 * 1024;
+
+////////////////////////////////////////////////////////////////////////////////
+// Function Declarations
+////////////////////////////////////////////////////////////////////////////////
+StreamLength copyStream(IStream *input, IStream *output, size_t bufferSize = 0);
+StreamLength copyStream(IStream *input, StreamLength maxSize, IStream *output,
+                        size_t bufferSize = 0);
+
+}} // namespace Ag::IO
+
+#endif // Header guard
+////////////////////////////////////////////////////////////////////////////////

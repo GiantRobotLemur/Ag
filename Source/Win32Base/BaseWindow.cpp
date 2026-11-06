@@ -1,7 +1,7 @@
 //! @file Win32Base/BaseWindow.cpp
 //! @brief The definition of an object wrapping a handle of a any window.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -229,7 +229,7 @@ POINT BaseWindow::screenToClient(const POINT& screenPosition) const
 
 //! @brief Translates a screen-relative rectangle in pixels to a
 //! client-relative rectangle.
-//! @param[in] screenREct The rectangle in screen pixels to translate.
+//! @param[in] screenRect The rectangle in screen pixels to translate.
 //! @return The same rectangle relative to the origin of the window's client area.
 RECT BaseWindow::screenToClient(const RECT& screenRect) const
 {

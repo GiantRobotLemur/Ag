@@ -2,7 +2,7 @@
 //! @brief The declaration of ATI-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_ATI_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_ATI_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_ATI_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_ATI_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_ATI_draw_buffers extension API.
+//! @brief Manages the entry points for the GL_ATI_draw_buffers extension API.
 class ATIDrawBuffersAPI : public BaseExtension
 {
 public:
@@ -47,7 +47,7 @@ private:
     ATIDrawBuffers _api;
 };
 
-// Manages the entry points for the GL_ATI_element_array extension API.
+//! @brief Manages the entry points for the GL_ATI_element_array extension API.
 class ATIElementArrayAPI : public BaseExtension
 {
 public:
@@ -70,7 +70,7 @@ private:
     ATIElementArray _api;
 };
 
-// Manages the entry points for the GL_ATI_envmap_bumpmap extension API.
+//! @brief Manages the entry points for the GL_ATI_envmap_bumpmap extension API.
 class ATIEnvmapBumpmapAPI : public BaseExtension
 {
 public:
@@ -93,7 +93,7 @@ private:
     ATIEnvmapBumpmap _api;
 };
 
-// Manages the entry points for the GL_ATI_fragment_shader extension API.
+//! @brief Manages the entry points for the GL_ATI_fragment_shader extension API.
 class ATIFragmentShaderAPI : public BaseExtension
 {
 public:
@@ -141,7 +141,7 @@ private:
     ATIFragmentShader _api;
 };
 
-// Manages the entry points for the GL_ATI_map_object_buffer extension API.
+//! @brief Manages the entry points for the GL_ATI_map_object_buffer extension API.
 class ATIMapObjectBufferAPI : public BaseExtension
 {
 public:
@@ -162,7 +162,7 @@ private:
     ATIMapObjectBuffer _api;
 };
 
-// Manages the entry points for the GL_ATI_pn_triangles extension API.
+//! @brief Manages the entry points for the GL_ATI_pn_triangles extension API.
 class ATIPnTrianglesAPI : public BaseExtension
 {
 public:
@@ -183,7 +183,7 @@ private:
     ATIPnTriangles _api;
 };
 
-// Manages the entry points for the GL_ATI_separate_stencil extension API.
+//! @brief Manages the entry points for the GL_ATI_separate_stencil extension API.
 class ATISeparateStencilAPI : public BaseExtension
 {
 public:
@@ -206,7 +206,7 @@ private:
     ATISeparateStencil _api;
 };
 
-// Manages the entry points for the GL_ATI_vertex_array_object extension API.
+//! @brief Manages the entry points for the GL_ATI_vertex_array_object extension API.
 class ATIVertexArrayObjectAPI : public BaseExtension
 {
 public:
@@ -247,7 +247,7 @@ private:
     ATIVertexArrayObject _api;
 };
 
-// Manages the entry points for the GL_ATI_vertex_attrib_array_object extension API.
+//! @brief Manages the entry points for the GL_ATI_vertex_attrib_array_object extension API.
 class ATIVertexAttribArrayObjectAPI : public BaseExtension
 {
 public:
@@ -274,7 +274,7 @@ private:
     ATIVertexAttribArrayObject _api;
 };
 
-// Manages the entry points for the GL_ATI_vertex_streams extension API.
+//! @brief Manages the entry points for the GL_ATI_vertex_streams extension API.
 class ATIVertexStreamsAPI : public BaseExtension
 {
 public:

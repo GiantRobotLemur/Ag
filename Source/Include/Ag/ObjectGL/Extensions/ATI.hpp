@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/ATI.hpp
 //! @brief The declaration of ATI-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_ATI_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_ATI_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_ATI_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_ATI_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,7 +23,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_ATI_draw_buffers extension API specification.
+//! @brief The GL_ATI_draw_buffers extension API specification.
 struct ATIDrawBuffers {
     // Public Members
     void (APIENTRY *glDrawBuffers)(GLsizei n, const GLenum *bufs);
@@ -36,7 +36,7 @@ struct ATIDrawBuffers {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIDrawBuffers
 
-// GL_ATI_element_array extension API specification.
+//! @brief The GL_ATI_element_array extension API specification.
 struct ATIElementArray {
     // Public Members
     void (APIENTRY *glDrawElementArray)(GLenum mode, GLsizei count);
@@ -52,7 +52,7 @@ struct ATIElementArray {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIElementArray
 
-// GL_ATI_envmap_bumpmap extension API specification.
+//! @brief The GL_ATI_envmap_bumpmap extension API specification.
 struct ATIEnvmapBumpmap {
     // Public Members
     void (APIENTRY *glGetTexBumpParameterfv)(GLenum pname, GLfloat *param);
@@ -68,7 +68,7 @@ struct ATIEnvmapBumpmap {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIEnvmapBumpmap
 
-// GL_ATI_fragment_shader extension API specification.
+//! @brief The GL_ATI_fragment_shader extension API specification.
 struct ATIFragmentShader {
     // Public Members
     void (APIENTRY *glAlphaFragmentOp1)(GLenum op, GLuint dst, GLuint dstMod,
@@ -116,7 +116,7 @@ struct ATIFragmentShader {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIFragmentShader
 
-// GL_ATI_map_object_buffer extension API specification.
+//! @brief The GL_ATI_map_object_buffer extension API specification.
 struct ATIMapObjectBuffer {
     // Public Members
     void *(APIENTRY *glMapObjectBuffer)(GLuint buffer);
@@ -130,7 +130,7 @@ struct ATIMapObjectBuffer {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIMapObjectBuffer
 
-// GL_ATI_pn_triangles extension API specification.
+//! @brief The GL_ATI_pn_triangles extension API specification.
 struct ATIPnTriangles {
     // Public Members
     void (APIENTRY *glPNTrianglesf)(GLenum pname, GLfloat param);
@@ -144,7 +144,7 @@ struct ATIPnTriangles {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIPnTriangles
 
-// GL_ATI_separate_stencil extension API specification.
+//! @brief The GL_ATI_separate_stencil extension API specification.
 struct ATISeparateStencil {
     // Public Members
     void (APIENTRY *glStencilFuncSeparate)(GLenum frontfunc, GLenum backfunc,
@@ -160,7 +160,7 @@ struct ATISeparateStencil {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATISeparateStencil
 
-// GL_ATI_vertex_array_object extension API specification.
+//! @brief The GL_ATI_vertex_array_object extension API specification.
 struct ATIVertexArrayObject {
     // Public Members
     void (APIENTRY *glArrayObject)(GLenum array, GLint size, GLenum type,
@@ -195,7 +195,7 @@ struct ATIVertexArrayObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIVertexArrayObject
 
-// GL_ATI_vertex_attrib_array_object extension API specification.
+//! @brief The GL_ATI_vertex_attrib_array_object extension API specification.
 struct ATIVertexAttribArrayObject {
     // Public Members
     void (APIENTRY *glGetVertexAttribArrayObjectfv)(GLuint index, GLenum pname,
@@ -215,7 +215,7 @@ struct ATIVertexAttribArrayObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ATIVertexAttribArrayObject
 
-// GL_ATI_vertex_streams extension API specification.
+//! @brief The GL_ATI_vertex_streams extension API specification.
 struct ATIVertexStreams {
     // Public Members
     void (APIENTRY *glClientActiveVertexStream)(GLenum stream);

@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_GEOMETRY_ARC_2D_HPP__
-#define __AG_GEOMETRY_ARC_2D_HPP__
+#ifndef HEADER_AG_GEOMETRY_ARC_2D_HPP_
+#define HEADER_AG_GEOMETRY_ARC_2D_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -100,7 +100,7 @@ public:
     Point2D getPoint(double parameter) const;
     Point2D getDirection(double parameter) const;
     double getParameter(const Point2D &position) const;
-    double getDistanceToPoint(const Point2D &pt, double &param) const;
+    double getDistanceToPoint(const Point2D &position, double &param) const;
     Point2DCollection toPolyline(double tolerance, double startParam = 0.0,
                                  double endParam = 1.0) const;
 

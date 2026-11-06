@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_ENUM_INFO_HPP__
-#define __AG_CORE_ENUM_INFO_HPP__
+#ifndef HEADER_AG_CORE_ENUM_INFO_HPP_
+#define HEADER_AG_CORE_ENUM_INFO_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -31,9 +31,9 @@
 #define STATIC_SCALAR_DEF3(t, x, y, z) Ag::EnumSymbol<t>(x, # x, y, z)
 #define STATIC_ENUM_DEF(x) Ag::EnumSymbol<decltype(x)>(x, # x)
 
-#define STATIC_SCALAR_CLASS_DEF(t, x) Ag::EnumSymbol<t>(t ## :: ## x, # x)
-#define STATIC_SCALAR_CLASS_DEF2(t, x, y) Ag::EnumSymbol<t>(t ## :: ## x, # x, y)
-#define STATIC_SCALAR_CLASS_DEF3(t, x, y, z) Ag::EnumSymbol<t>(t ## :: ## x, # x, y, z)
+#define STATIC_SCALAR_CLASS_DEF(t, x) Ag::EnumSymbol<t>(t  :: x, # x)
+#define STATIC_SCALAR_CLASS_DEF2(t, x, y) Ag::EnumSymbol<t>(t :: x, # x, y)
+#define STATIC_SCALAR_CLASS_DEF3(t, x, y, z) Ag::EnumSymbol<t>(t :: x, # x, y, z)
 
 namespace Ag {
 

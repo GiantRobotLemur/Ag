@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/NVidia.hpp
 //! @brief The declaration of nVidia-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_NVIDIA_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_NVIDIA_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_NVIDIA_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_NVIDIA_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -31,7 +31,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_NVX_conditional_render extension API specification.
+//! @brief The GL_NVX_conditional_render extension API specification.
 struct NVXConditionalRender {
     // Public Members
     void (APIENTRY *glBeginConditionalRender)(GLuint id);
@@ -45,7 +45,7 @@ struct NVXConditionalRender {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVXConditionalRender
 
-// GL_NVX_gpu_multicast2 extension API specification.
+//! @brief The GL_NVX_gpu_multicast2 extension API specification.
 struct NVXGPUMULTICAST2 {
     // Public Members
     GLuint(APIENTRY *glAsyncCopyBufferSubData)(GLsizei waitSemaphoreCount,
@@ -95,7 +95,7 @@ struct NVXGPUMULTICAST2 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVXGPUMULTICAST2
 
-// GL_NVX_linked_gpu_multicast extension API specification.
+//! @brief The GL_NVX_linked_gpu_multicast extension API specification.
 struct NVXLinkedGPUMulticast {
     // Public Members
     void (APIENTRY *glLGPUCopyImageSubData)(GLuint sourceGpu,
@@ -121,7 +121,7 @@ struct NVXLinkedGPUMulticast {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVXLinkedGPUMulticast
 
-// GL_NVX_progress_fence extension API specification.
+//! @brief The GL_NVX_progress_fence extension API specification.
 struct NVXProgressFence {
     // Public Members
     void (APIENTRY *glClientWaitSemaphoreui64)(GLsizei fenceObjectCount,
@@ -145,7 +145,7 @@ struct NVXProgressFence {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVXProgressFence
 
-// GL_NV_alpha_to_coverage_dither_control extension API specification.
+//! @brief The GL_NV_alpha_to_coverage_dither_control extension API specification.
 struct NVAlphaToCoverageDitherControl {
     // Public Members
     void (APIENTRY *glAlphaToCoverageDitherControl)(GLenum mode);
@@ -158,7 +158,7 @@ struct NVAlphaToCoverageDitherControl {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVAlphaToCoverageDitherControl
 
-// GL_NV_bindless_multi_draw_indirect extension API specification.
+//! @brief The GL_NV_bindless_multi_draw_indirect extension API specification.
 struct NVBindlessMultiDrawIndirect {
     // Public Members
     void (APIENTRY *glMultiDrawArraysIndirectBindless)(GLenum mode,
@@ -181,7 +181,7 @@ struct NVBindlessMultiDrawIndirect {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVBindlessMultiDrawIndirect
 
-// GL_NV_bindless_multi_draw_indirect_count extension API specification.
+//! @brief The GL_NV_bindless_multi_draw_indirect_count extension API specification.
 struct NVBindlessMultiDrawIndirectCount {
     // Public Members
     void (APIENTRY *glMultiDrawArraysIndirectBindlessCount)(GLenum mode,
@@ -206,7 +206,7 @@ struct NVBindlessMultiDrawIndirectCount {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVBindlessMultiDrawIndirectCount
 
-// GL_NV_bindless_texture extension API specification.
+//! @brief The GL_NV_bindless_texture extension API specification.
 struct NVBindlessTexture {
     // Public Members
     GLuint64(APIENTRY *glGetImageHandle)(GLuint texture, GLint level,
@@ -238,7 +238,7 @@ struct NVBindlessTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVBindlessTexture
 
-// GL_NV_blend_equation_advanced extension API specification.
+//! @brief The GL_NV_blend_equation_advanced extension API specification.
 struct NVBlendEquationAdvanced {
     // Public Members
     void (APIENTRY *glBlendBarrier)();
@@ -252,7 +252,7 @@ struct NVBlendEquationAdvanced {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVBlendEquationAdvanced
 
-// GL_NV_clip_space_w_scaling extension API specification.
+//! @brief The GL_NV_clip_space_w_scaling extension API specification.
 struct NVClipSpaceWScaling {
     // Public Members
     void (APIENTRY *glViewportPositionWScale)(GLuint index, GLfloat xcoeff,
@@ -266,7 +266,7 @@ struct NVClipSpaceWScaling {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVClipSpaceWScaling
 
-// GL_NV_command_list extension API specification.
+//! @brief The GL_NV_command_list extension API specification.
 struct NVCommandList {
     // Public Members
     void (APIENTRY *glCallCommandList)(GLuint list);
@@ -312,7 +312,7 @@ struct NVCommandList {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVCommandList
 
-// GL_NV_conditional_render extension API specification.
+//! @brief The GL_NV_conditional_render extension API specification.
 struct NVConditionalRender {
     // Public Members
     void (APIENTRY *glBeginConditionalRender)(GLuint id, GLenum mode);
@@ -326,7 +326,7 @@ struct NVConditionalRender {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVConditionalRender
 
-// GL_NV_conservative_raster extension API specification.
+//! @brief The GL_NV_conservative_raster extension API specification.
 struct NVConservativeRaster {
     // Public Members
     void (APIENTRY *glSubpixelPrecisionBias)(GLuint xbits, GLuint ybits);
@@ -339,7 +339,7 @@ struct NVConservativeRaster {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVConservativeRaster
 
-// GL_NV_conservative_raster_dilate extension API specification.
+//! @brief The GL_NV_conservative_raster_dilate extension API specification.
 struct NVConservativeRasterDilate {
     // Public Members
     void (APIENTRY *glConservativeRasterParameterf)(GLenum pname, GLfloat value);
@@ -352,7 +352,7 @@ struct NVConservativeRasterDilate {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVConservativeRasterDilate
 
-// GL_NV_conservative_raster_pre_snap_triangles extension API specification.
+//! @brief The GL_NV_conservative_raster_pre_snap_triangles extension API specification.
 struct NVConservativeRasterPreSnapTriangles {
     // Public Members
     void (APIENTRY *glConservativeRasterParameteri)(GLenum pname, GLint param);
@@ -365,7 +365,7 @@ struct NVConservativeRasterPreSnapTriangles {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVConservativeRasterPreSnapTriangles
 
-// GL_NV_copy_image extension API specification.
+//! @brief The GL_NV_copy_image extension API specification.
 struct NVCopyImage {
     // Public Members
     void (APIENTRY *glCopyImageSubData)(GLuint srcName, GLenum srcTarget,
@@ -384,7 +384,7 @@ struct NVCopyImage {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVCopyImage
 
-// GL_NV_depth_buffer_float extension API specification.
+//! @brief The GL_NV_depth_buffer_float extension API specification.
 struct NVDepthBufferFloat {
     // Public Members
     void (APIENTRY *glClearDepthd)(GLdouble depth);
@@ -399,7 +399,7 @@ struct NVDepthBufferFloat {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVDepthBufferFloat
 
-// GL_NV_draw_texture extension API specification.
+//! @brief The GL_NV_draw_texture extension API specification.
 struct NVDrawTexture {
     // Public Members
     void (APIENTRY *glDrawTexture)(GLuint texture, GLuint sampler, GLfloat x0,
@@ -415,7 +415,7 @@ struct NVDrawTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVDrawTexture
 
-// GL_NV_draw_vulkan_image extension API specification.
+//! @brief The GL_NV_draw_vulkan_image extension API specification.
 struct NVDrawVulkanImage {
     // Public Members
     void (APIENTRY *glDrawVkImage)(GLuint64 vkImage, GLuint sampler, GLfloat x0,
@@ -435,7 +435,7 @@ struct NVDrawVulkanImage {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVDrawVulkanImage
 
-// GL_NV_evaluators extension API specification.
+//! @brief The GL_NV_evaluators extension API specification.
 struct NVEvaluators {
     // Public Members
     void (APIENTRY *glEvalMaps)(GLenum target, GLenum mode);
@@ -468,7 +468,7 @@ struct NVEvaluators {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVEvaluators
 
-// GL_NV_explicit_multisample extension API specification.
+//! @brief The GL_NV_explicit_multisample extension API specification.
 struct NVExplicitMultisample {
     // Public Members
     void (APIENTRY *glGetMultisamplefv)(GLenum pname, GLuint index, GLfloat *val);
@@ -483,7 +483,7 @@ struct NVExplicitMultisample {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVExplicitMultisample
 
-// GL_NV_fence extension API specification.
+//! @brief The GL_NV_fence extension API specification.
 struct NVFence {
     // Public Members
     void (APIENTRY *glDeleteFences)(GLsizei n, const GLuint *fences);
@@ -502,7 +502,7 @@ struct NVFence {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVFence
 
-// GL_NV_fragment_coverage_to_color extension API specification.
+//! @brief The GL_NV_fragment_coverage_to_color extension API specification.
 struct NVFragmentCoverageToColor {
     // Public Members
     void (APIENTRY *glFragmentCoverageColor)(GLuint color);
@@ -515,7 +515,7 @@ struct NVFragmentCoverageToColor {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVFragmentCoverageToColor
 
-// GL_NV_fragment_program extension API specification.
+//! @brief The GL_NV_fragment_program extension API specification.
 struct NVFragmentProgram {
     // Public Members
     void (APIENTRY *glGetProgramNamedParameterdv)(GLuint id, GLsizei len,
@@ -546,7 +546,7 @@ struct NVFragmentProgram {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVFragmentProgram
 
-// GL_NV_framebuffer_mixed_samples extension API specification.
+//! @brief The GL_NV_framebuffer_mixed_samples extension API specification.
 struct NVFramebufferMixedSamples {
     // Public Members
     void (APIENTRY *glCoverageModulation)(GLenum components);
@@ -561,7 +561,7 @@ struct NVFramebufferMixedSamples {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVFramebufferMixedSamples
 
-// GL_NV_framebuffer_multisample_coverage extension API specification.
+//! @brief The GL_NV_framebuffer_multisample_coverage extension API specification.
 struct NVFramebufferMultisampleCoverage {
     // Public Members
     void (APIENTRY *glRenderbufferStorageMultisampleCoverage)(GLenum target,
@@ -579,7 +579,7 @@ struct NVFramebufferMultisampleCoverage {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVFramebufferMultisampleCoverage
 
-// GL_NV_geometry_program4 extension API specification.
+//! @brief The GL_NV_geometry_program4 extension API specification.
 struct NVGeometryPROGRAM4 {
     // Public Members
     void (APIENTRY *glFramebufferTexture)(GLenum target, GLenum attachment,
@@ -597,7 +597,7 @@ struct NVGeometryPROGRAM4 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVGeometryPROGRAM4
 
-// GL_NV_gpu_multicast extension API specification.
+//! @brief The GL_NV_gpu_multicast extension API specification.
 struct NVGPUMulticast {
     // Public Members
     void (APIENTRY *glMulticastBarrier)();
@@ -656,7 +656,7 @@ struct NVGPUMulticast {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVGPUMulticast
 
-// GL_NV_gpu_program4 extension API specification.
+//! @brief The GL_NV_gpu_program4 extension API specification.
 struct NVGPUPROGRAM4 {
     // Public Members
     void (APIENTRY *glGetProgramEnvParameterIiv)(GLenum target, GLuint index,
@@ -707,7 +707,7 @@ struct NVGPUPROGRAM4 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVGPUPROGRAM4
 
-// GL_NV_gpu_program5 extension API specification.
+//! @brief The GL_NV_gpu_program5 extension API specification.
 struct NVGPUPROGRAM5 {
     // Public Members
     void (APIENTRY *glGetProgramSubroutineParameteruiv)(GLenum target,
@@ -725,7 +725,7 @@ struct NVGPUPROGRAM5 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVGPUPROGRAM5
 
-// GL_NV_half_float extension API specification.
+//! @brief The GL_NV_half_float extension API specification.
 struct NVHalfFloat {
     // Public Members
     void (APIENTRY *glColor3h)(GLhalfNV red, GLhalfNV green, GLhalfNV blue);
@@ -793,7 +793,7 @@ struct NVHalfFloat {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVHalfFloat
 
-// GL_NV_internalformat_sample_query extension API specification.
+//! @brief The GL_NV_internalformat_sample_query extension API specification.
 struct NVInternalformatSampleQuery {
     // Public Members
     void (APIENTRY *glGetInternalformatSampleiv)(GLenum target,
@@ -809,7 +809,7 @@ struct NVInternalformatSampleQuery {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVInternalformatSampleQuery
 
-// GL_NV_memory_attachment extension API specification.
+//! @brief The GL_NV_memory_attachment extension API specification.
 struct NVMemoryAttachment {
     // Public Members
     void (APIENTRY *glBufferAttachMemory)(GLenum target, GLuint memory,
@@ -835,7 +835,7 @@ struct NVMemoryAttachment {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVMemoryAttachment
 
-// GL_NV_memory_object_sparse extension API specification.
+//! @brief The GL_NV_memory_object_sparse extension API specification.
 struct NVMemoryObjectSparse {
     // Public Members
     void (APIENTRY *glBufferPageCommitmentMem)(GLenum target, GLintptr offset,
@@ -870,7 +870,7 @@ struct NVMemoryObjectSparse {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVMemoryObjectSparse
 
-// GL_NV_mesh_shader extension API specification.
+//! @brief The GL_NV_mesh_shader extension API specification.
 struct NVMeshShader {
     // Public Members
     void (APIENTRY *glDrawMeshTasksIndirect)(GLintptr indirect);
@@ -891,7 +891,7 @@ struct NVMeshShader {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVMeshShader
 
-// GL_NV_occlusion_query extension API specification.
+//! @brief The GL_NV_occlusion_query extension API specification.
 struct NVOcclusionQuery {
     // Public Members
     void (APIENTRY *glBeginOcclusionQuery)(GLuint id);
@@ -912,7 +912,7 @@ struct NVOcclusionQuery {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVOcclusionQuery
 
-// GL_NV_parameter_buffer_object extension API specification.
+//! @brief The GL_NV_parameter_buffer_object extension API specification.
 struct NVParameterBufferObject {
     // Public Members
     void (APIENTRY *glProgramBufferParametersIiv)(GLenum target,
@@ -938,7 +938,7 @@ struct NVParameterBufferObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVParameterBufferObject
 
-// GL_NV_path_rendering extension API specification.
+//! @brief The GL_NV_path_rendering extension API specification.
 struct NVPathRendering {
     // Public Members
     void (APIENTRY *glCopyPath)(GLuint resultPath, GLuint srcPath);
@@ -1124,7 +1124,7 @@ struct NVPathRendering {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVPathRendering
 
-// GL_NV_pixel_data_range extension API specification.
+//! @brief The GL_NV_pixel_data_range extension API specification.
 struct NVPixelDataRange {
     // Public Members
     void (APIENTRY *glFlushPixelDataRange)(GLenum target);
@@ -1139,7 +1139,7 @@ struct NVPixelDataRange {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVPixelDataRange
 
-// GL_NV_point_sprite extension API specification.
+//! @brief The GL_NV_point_sprite extension API specification.
 struct NVPointSprite {
     // Public Members
     void (APIENTRY *glPointParameteri)(GLenum pname, GLint param);
@@ -1153,7 +1153,7 @@ struct NVPointSprite {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVPointSprite
 
-// GL_NV_present_video extension API specification.
+//! @brief The GL_NV_present_video extension API specification.
 struct NVPresentVideo {
     // Public Members
     void (APIENTRY *glGetVideoi64v)(GLuint video_slot, GLenum pname,
@@ -1188,7 +1188,7 @@ struct NVPresentVideo {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVPresentVideo
 
-// GL_NV_primitive_restart extension API specification.
+//! @brief The GL_NV_primitive_restart extension API specification.
 struct NVPrimitiveRestart {
     // Public Members
     void (APIENTRY *glPrimitiveRestartIndex)(GLuint index);
@@ -1202,7 +1202,7 @@ struct NVPrimitiveRestart {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVPrimitiveRestart
 
-// GL_NV_query_resource extension API specification.
+//! @brief The GL_NV_query_resource extension API specification.
 struct NVQueryResource {
     // Public Members
     GLint(APIENTRY *glQueryResource)(GLenum queryType, GLint tagId,
@@ -1216,7 +1216,7 @@ struct NVQueryResource {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVQueryResource
 
-// GL_NV_query_resource_tag extension API specification.
+//! @brief The GL_NV_query_resource_tag extension API specification.
 struct NVQueryResourceTag {
     // Public Members
     void (APIENTRY *glDeleteQueryResourceTag)(GLsizei n, const GLint *tagIds);
@@ -1231,7 +1231,7 @@ struct NVQueryResourceTag {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVQueryResourceTag
 
-// GL_NV_register_combiners extension API specification.
+//! @brief The GL_NV_register_combiners extension API specification.
 struct NVRegisterCombiners {
     // Public Members
     void (APIENTRY *glCombinerInput)(GLenum stage, GLenum portion,
@@ -1274,7 +1274,7 @@ struct NVRegisterCombiners {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVRegisterCombiners
 
-// GL_NV_register_combiners2 extension API specification.
+//! @brief The GL_NV_register_combiners2 extension API specification.
 struct NVRegisterCOMBINERS2 {
     // Public Members
     void (APIENTRY *glCombinerStageParameterfv)(GLenum stage, GLenum pname,
@@ -1290,7 +1290,7 @@ struct NVRegisterCOMBINERS2 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVRegisterCOMBINERS2
 
-// GL_NV_sample_locations extension API specification.
+//! @brief The GL_NV_sample_locations extension API specification.
 struct NVSampleLocations {
     // Public Members
     void (APIENTRY *glFramebufferSampleLocationsfv)(GLenum target, GLuint start,
@@ -1310,7 +1310,7 @@ struct NVSampleLocations {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVSampleLocations
 
-// GL_NV_scissor_exclusive extension API specification.
+//! @brief The GL_NV_scissor_exclusive extension API specification.
 struct NVScissorExclusive {
     // Public Members
     void (APIENTRY *glScissorExclusiveArrayv)(GLuint first, GLsizei count,
@@ -1326,7 +1326,7 @@ struct NVScissorExclusive {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVScissorExclusive
 
-// GL_NV_shader_buffer_load extension API specification.
+//! @brief The GL_NV_shader_buffer_load extension API specification.
 struct NVShaderBufferLoad {
     // Public Members
     void (APIENTRY *glGetBufferParameterui64v)(GLenum target, GLenum pname,
@@ -1357,7 +1357,7 @@ struct NVShaderBufferLoad {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVShaderBufferLoad
 
-// GL_NV_shading_rate_image extension API specification.
+//! @brief The GL_NV_shading_rate_image extension API specification.
 struct NVShadingRateImage {
     // Public Members
     void (APIENTRY *glBindShadingRateImage)(GLuint texture);
@@ -1383,7 +1383,7 @@ struct NVShadingRateImage {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVShadingRateImage
 
-// GL_NV_texture_barrier extension API specification.
+//! @brief The GL_NV_texture_barrier extension API specification.
 struct NVTextureBarrier {
     // Public Members
     void (APIENTRY *glTextureBarrier)();
@@ -1396,7 +1396,7 @@ struct NVTextureBarrier {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVTextureBarrier
 
-// GL_NV_texture_multisample extension API specification.
+//! @brief The GL_NV_texture_multisample extension API specification.
 struct NVTextureMultisample {
     // Public Members
     void (APIENTRY *glTexImage2DMultisampleCoverage)(GLenum target,
@@ -1451,7 +1451,7 @@ struct NVTextureMultisample {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVTextureMultisample
 
-// GL_NV_timeline_semaphore extension API specification.
+//! @brief The GL_NV_timeline_semaphore extension API specification.
 struct NVTimelineSemaphore {
     // Public Members
     void (APIENTRY *glCreateSemaphores)(GLsizei n, GLuint *semaphores);
@@ -1468,7 +1468,7 @@ struct NVTimelineSemaphore {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVTimelineSemaphore
 
-// GL_NV_transform_feedback extension API specification.
+//! @brief The GL_NV_transform_feedback extension API specification.
 struct NVTransformFeedback {
     // Public Members
     void (APIENTRY *glActiveVarying)(GLuint program, const GLchar *name);
@@ -1507,7 +1507,7 @@ struct NVTransformFeedback {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVTransformFeedback
 
-// GL_NV_transform_feedback2 extension API specification.
+//! @brief The GL_NV_transform_feedback2 extension API specification.
 struct NVTransformFeedback2 {
     // Public Members
     void (APIENTRY *glBindTransformFeedback)(GLenum target, GLuint id);
@@ -1526,7 +1526,7 @@ struct NVTransformFeedback2 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVTransformFeedback2
 
-// GL_NV_vdpau_interop extension API specification.
+//! @brief The GL_NV_vdpau_interop extension API specification.
 struct NVVdpauInterop {
     // Public Members
     void (APIENTRY *glVDPAUFini)();
@@ -1560,7 +1560,7 @@ struct NVVdpauInterop {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVVdpauInterop
 
-// GL_NV_vdpau_interop2 extension API specification.
+//! @brief The GL_NV_vdpau_interop2 extension API specification.
 struct NVVdpauINTEROP2 {
     // Public Members
     GLvdpauSurfaceNV(APIENTRY *glVDPAURegisterVideoSurfaceWithPictureStructure)(const void *vdpSurface,
@@ -1577,7 +1577,7 @@ struct NVVdpauINTEROP2 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVVdpauINTEROP2
 
-// GL_NV_vertex_array_range extension API specification.
+//! @brief The GL_NV_vertex_array_range extension API specification.
 struct NVVertexArrayRange {
     // Public Members
     void (APIENTRY *glFlushVertexArrayRange)();
@@ -1591,7 +1591,7 @@ struct NVVertexArrayRange {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVVertexArrayRange
 
-// GL_NV_vertex_attrib_integer_64bit extension API specification.
+//! @brief The GL_NV_vertex_attrib_integer_64bit extension API specification.
 struct NVVertexAttribInteger64BIT {
     // Public Members
     void (APIENTRY *glGetVertexAttribLi64v)(GLuint index, GLenum pname,
@@ -1633,7 +1633,7 @@ struct NVVertexAttribInteger64BIT {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVVertexAttribInteger64BIT
 
-// GL_NV_vertex_buffer_unified_memory extension API specification.
+//! @brief The GL_NV_vertex_buffer_unified_memory extension API specification.
 struct NVVertexBufferUnifiedMemory {
     // Public Members
     void (APIENTRY *glBufferAddressRange)(GLenum pname, GLuint index,
@@ -1662,7 +1662,7 @@ struct NVVertexBufferUnifiedMemory {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVVertexBufferUnifiedMemory
 
-// GL_NV_vertex_program extension API specification.
+//! @brief The GL_NV_vertex_program extension API specification.
 struct NVVertexProgram {
     // Public Members
     GLboolean(APIENTRY *glAreProgramsResident)(GLsizei n,
@@ -1780,7 +1780,7 @@ struct NVVertexProgram {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVVertexProgram
 
-// GL_NV_video_capture extension API specification.
+//! @brief The GL_NV_video_capture extension API specification.
 struct NVVideoCapture {
     // Public Members
     void (APIENTRY *glBeginVideoCapture)(GLuint video_capture_slot);
@@ -1826,7 +1826,7 @@ struct NVVideoCapture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct NVVideoCapture
 
-// GL_NV_viewport_swizzle extension API specification.
+//! @brief The GL_NV_viewport_swizzle extension API specification.
 struct NVViewportSwizzle {
     // Public Members
     void (APIENTRY *glViewportSwizzle)(GLuint index, GLenum swizzlex,

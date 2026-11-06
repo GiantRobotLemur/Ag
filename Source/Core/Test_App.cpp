@@ -18,6 +18,8 @@
 
 #include <Ag/Core.hpp>
 
+#include "AppVersion.hpp"
+
 namespace Ag {
 
 namespace {
@@ -63,6 +65,8 @@ private:
         builder.defineAlias(Opt_Input, "input");
         builder.defineAlias(Opt_PossibleFail, U'f');
         builder.defineAlias(Opt_PossibleFail, "fail");
+
+        builder.setAppInfo(MAKE_APP_METADATA());
 
         return builder.createSchema();
     }

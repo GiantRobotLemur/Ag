@@ -1,7 +1,7 @@
 //! @file FsPath.cpp
 //! @brief The definition of an object representing a file path.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -641,7 +641,7 @@ void PathBuilder::assignHomeDirectory()
     }
 }
 
-//! @brief Overwrites the object with the fill path of the working directory
+//! @brief Overwrites the object with the full path of the working directory
 //! of the current process.
 void PathBuilder::assignWorkingDirectory()
 {
@@ -652,6 +652,19 @@ void PathBuilder::assignWorkingDirectory()
     if (tryParse(workingDir, error) == false)
     {
         throw InvalidFilePathException(workingDir, error);
+    }
+}
+
+//! @brief Overwrites the object with full path of the default temp directory.
+void PathBuilder::assignTempDirectory()
+{
+    String tempDir = getTempDirectory();
+    String error;
+    _schema = getNativeSchema();
+
+    if (tryParse(tempDir, error) == false)
+    {
+        throw InvalidFilePathException(tempDir, error);
     }
 }
 
@@ -846,8 +859,8 @@ void PathBuilder::convertToAbsolute()
     }
 }
 
-//! @brief Converts the object to an absolute path relative to the current
-//! working directory or drive.
+//! @brief Converts the object to an absolute path relative to a specified
+//! base path.
 //! @param[in] basePath An absolute path used to resolve the current one.
 void PathBuilder::convertToAbsolute(const PathBuilder &basePath)
 {
@@ -859,12 +872,12 @@ void PathBuilder::convertToAbsolute(const PathBuilder &basePath)
             throw OperationException("Cannot resolve a file path using a relative base path.");
         }
 
-        // Take the root of the base path at the very least.
-        _root = basePath._root;
-        _rootType = basePath._rootType;
-
         if (_rootType == PathRootType::None)
         {
+            // Take the root of the base path at the very least.
+            _root = basePath._root;
+            _rootType = basePath._rootType;
+
             // Concatenate the two sets of elements into the same collection.
             std::vector<String> elements;
             elements.reserve(basePath._pathElements.size() + _pathElements.size());
@@ -876,6 +889,12 @@ void PathBuilder::convertToAbsolute(const PathBuilder &basePath)
 
             // Overwrite the path elements with the combined collection.
             _pathElements = std::move(elements);
+        }
+        else if (_rootType == PathRootType::CurrentDrive)
+        {
+            // Only copy the root.
+            _root = basePath._root;
+            _rootType = basePath._rootType;
         }
     }
 }
@@ -1414,6 +1433,12 @@ Path Path::getHomeDirectory()
 Path Path::getWorkingDirectory()
 {
     return Path(Ag::getWorkingDirectory());
+}
+
+//! @brief Gets the full path of the directory used to store temporary files.
+Path Path::getTempDirectory()
+{
+    return Path(Ag::getTempDirectory());
 }
 
 //! @brief Removes all relative references within the path.

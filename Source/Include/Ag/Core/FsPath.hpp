@@ -1,14 +1,14 @@
 //! @file Ag/Core/FsPath.hpp
 //! @brief The declaration of an object representing a file path.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_FS_PATH_HPP__
-#define __AG_CORE_FS_PATH_HPP__
+#ifndef HEADER_AG_CORE_FS_PATH_HPP_
+#define HEADER_AG_CORE_FS_PATH_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -148,6 +148,7 @@ public:
     void assignProgramDirectory();
     void assignHomeDirectory();
     void assignWorkingDirectory();
+    void assignTempDirectory();
 
     void makeCanonical();
     bool tryParse(string_cref_t filePath);
@@ -204,6 +205,7 @@ public:
     static Path getProgramDirectory();
     static Path getHomeDirectory();
     static Path getWorkingDirectory();
+    static Path getTempDirectory();
 
     Path makeCanonical() const;
     Path append(string_cref_t fileName) const;
@@ -243,7 +245,6 @@ private:
     size_t _fileNameLength;
     size_t _fileExtLength;
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations

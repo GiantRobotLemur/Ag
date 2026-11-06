@@ -2,7 +2,7 @@
 //! @brief The definition of an object which processes raw Win32 input messages
 //! for a thread.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2023
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -34,7 +34,7 @@ static thread_local DispatcherDataSPtr _threadDispatcher;
 
 //! @brief Attempts to post a task to another thread for execution.
 //! @param[in] task The task to post and then dispose of.
-//! @param[i] threadId The identifier of the thread to post to.
+//! @param[in] threadId The identifier of the thread to post to.
 //! @param[out] errorCode Receives the error code logged if the message could
 //! not be posted.
 //! @retval true The task was successfully sent to the specified thread.

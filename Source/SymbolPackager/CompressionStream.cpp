@@ -2,7 +2,7 @@
 //! @brief The definition of IStream implementations which perform in-line data
 //! compression and decompression.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -131,8 +131,8 @@ bool Bz2DecompressionStream::tryFillInputBuffer()
 //! decompressed data.
 Bz2DecompressionStream::Bz2DecompressionStream(Ag::IStream *inputStream,
                                                size_t bufferSize) :
-    _inputStream(inputStream),
-    _compressedData(bufferSize)
+    _compressedData(bufferSize),
+    _inputStream(inputStream)
 {
     _decompressionContext.initialiseDecompression(0, false, bufferSize);
 }

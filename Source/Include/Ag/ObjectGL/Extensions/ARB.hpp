@@ -2,7 +2,7 @@
 //! @brief The declaration of Architecture Review Board (ARB) -specific
 //! extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_ARB_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_ARB_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_ARB_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_ARB_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -32,7 +32,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_ARB_ES3_2_compatibility extension API specification.
+//! @brief The GL_ARB_ES3_2_compatibility extension API specification.
 struct ARBES32Compatibility {
     // Public Members
     void (APIENTRY *glPrimitiveBoundingBox)(GLfloat minX, GLfloat minY,
@@ -48,7 +48,7 @@ struct ARBES32Compatibility {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBES32Compatibility
 
-// GL_ARB_bindless_texture extension API specification.
+//! @brief The GL_ARB_bindless_texture extension API specification.
 struct ARBBindlessTexture {
     // Public Members
     GLuint64(APIENTRY *glGetImageHandle)(GLuint texture, GLint level,
@@ -84,7 +84,7 @@ struct ARBBindlessTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBBindlessTexture
 
-// GL_ARB_cl_event extension API specification.
+//! @brief The GL_ARB_cl_event extension API specification.
 struct ARBClEvent {
     // Public Members
     GLsync(APIENTRY *glCreateSyncFromCLevent)(struct _cl_context *context,
@@ -99,7 +99,7 @@ struct ARBClEvent {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBClEvent
 
-// GL_ARB_color_buffer_float extension API specification.
+//! @brief The GL_ARB_color_buffer_float extension API specification.
 struct ARBColorBufferFloat {
     // Public Members
     void (APIENTRY *glClampColor)(GLenum target, GLenum clamp);
@@ -112,7 +112,7 @@ struct ARBColorBufferFloat {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBColorBufferFloat
 
-// GL_ARB_compute_variable_group_size extension API specification.
+//! @brief The GL_ARB_compute_variable_group_size extension API specification.
 struct ARBComputeVariableGroupSize {
     // Public Members
     void (APIENTRY *glDispatchComputeGroupSize)(GLuint num_groups_x,
@@ -130,7 +130,7 @@ struct ARBComputeVariableGroupSize {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBComputeVariableGroupSize
 
-// GL_ARB_debug_output extension API specification.
+//! @brief The GL_ARB_debug_output extension API specification.
 struct ARBDebugOutput {
     // Public Members
     void (APIENTRY *glDebugMessageCallback)(GLDEBUGPROCARB callback,
@@ -154,7 +154,7 @@ struct ARBDebugOutput {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBDebugOutput
 
-// GL_ARB_draw_buffers extension API specification.
+//! @brief The GL_ARB_draw_buffers extension API specification.
 struct ARBDrawBuffers {
     // Public Members
     void (APIENTRY *glDrawBuffers)(GLsizei n, const GLenum *bufs);
@@ -167,7 +167,7 @@ struct ARBDrawBuffers {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBDrawBuffers
 
-// GL_ARB_draw_buffers_blend extension API specification.
+//! @brief The GL_ARB_draw_buffers_blend extension API specification.
 struct ARBDrawBuffersBlend {
     // Public Members
     void (APIENTRY *glBlendEquationSeparatei)(GLuint buf, GLenum modeRGB,
@@ -186,7 +186,7 @@ struct ARBDrawBuffersBlend {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBDrawBuffersBlend
 
-// GL_ARB_draw_instanced extension API specification.
+//! @brief The GL_ARB_draw_instanced extension API specification.
 struct ARBDrawInstanced {
     // Public Members
     void (APIENTRY *glDrawArraysInstanced)(GLenum mode, GLint first,
@@ -203,7 +203,7 @@ struct ARBDrawInstanced {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBDrawInstanced
 
-// GL_ARB_fragment_program extension API specification.
+//! @brief The GL_ARB_fragment_program extension API specification.
 struct ARBFragmentProgram {
     // Public Members
     void (APIENTRY *glBindProgram)(GLenum target, GLuint program);
@@ -252,7 +252,7 @@ struct ARBFragmentProgram {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBFragmentProgram
 
-// GL_ARB_geometry_shader4 extension API specification.
+//! @brief The GL_ARB_geometry_shader4 extension API specification.
 struct ARBGeometrySHADER4 {
     // Public Members
     void (APIENTRY *glFramebufferTexture)(GLenum target, GLenum attachment,
@@ -274,7 +274,7 @@ struct ARBGeometrySHADER4 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBGeometrySHADER4
 
-// GL_ARB_gl_spirv extension API specification.
+//! @brief The GL_ARB_gl_spirv extension API specification.
 struct ARBGlSpirv {
     // Public Members
     void (APIENTRY *glSpecializeShader)(GLuint shader, const GLchar *pEntryPoint,
@@ -290,7 +290,7 @@ struct ARBGlSpirv {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBGlSpirv
 
-// GL_ARB_gpu_shader_int64 extension API specification.
+//! @brief The GL_ARB_gpu_shader_int64 extension API specification.
 struct ARBGPUShaderInt64 {
     // Public Members
     void (APIENTRY *glGetUniformi64v)(GLuint program, GLint location,
@@ -372,7 +372,7 @@ struct ARBGPUShaderInt64 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBGPUShaderInt64
 
-// GL_ARB_indirect_parameters extension API specification.
+//! @brief The GL_ARB_indirect_parameters extension API specification.
 struct ARBIndirectParameters {
     // Public Members
     void (APIENTRY *glMultiDrawArraysIndirectCount)(GLenum mode,
@@ -394,7 +394,7 @@ struct ARBIndirectParameters {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBIndirectParameters
 
-// GL_ARB_instanced_arrays extension API specification.
+//! @brief The GL_ARB_instanced_arrays extension API specification.
 struct ARBInstancedArrays {
     // Public Members
     void (APIENTRY *glVertexAttribDivisor)(GLuint index, GLuint divisor);
@@ -407,7 +407,7 @@ struct ARBInstancedArrays {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBInstancedArrays
 
-// GL_ARB_matrix_palette extension API specification.
+//! @brief The GL_ARB_matrix_palette extension API specification.
 struct ARBMatrixPalette {
     // Public Members
     void (APIENTRY *glCurrentPaletteMatrix)(GLint index);
@@ -425,7 +425,7 @@ struct ARBMatrixPalette {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBMatrixPalette
 
-// GL_ARB_multisample extension API specification.
+//! @brief The GL_ARB_multisample extension API specification.
 struct ARBMultisample {
     // Public Members
     void (APIENTRY *glSampleCoverage)(GLfloat value, GLboolean invert);
@@ -438,7 +438,7 @@ struct ARBMultisample {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBMultisample
 
-// GL_ARB_multitexture extension API specification.
+//! @brief The GL_ARB_multitexture extension API specification.
 struct ARBMultitexture {
     // Public Members
     void (APIENTRY *glActiveTexture)(GLenum texture);
@@ -491,7 +491,7 @@ struct ARBMultitexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBMultitexture
 
-// GL_ARB_occlusion_query extension API specification.
+//! @brief The GL_ARB_occlusion_query extension API specification.
 struct ARBOcclusionQuery {
     // Public Members
     void (APIENTRY *glBeginQuery)(GLenum target, GLuint id);
@@ -511,7 +511,7 @@ struct ARBOcclusionQuery {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBOcclusionQuery
 
-// GL_ARB_parallel_shader_compile extension API specification.
+//! @brief The GL_ARB_parallel_shader_compile extension API specification.
 struct ARBParallelShaderCompile {
     // Public Members
     void (APIENTRY *glMaxShaderCompilerThreads)(GLuint count);
@@ -524,7 +524,7 @@ struct ARBParallelShaderCompile {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBParallelShaderCompile
 
-// GL_ARB_point_parameters extension API specification.
+//! @brief The GL_ARB_point_parameters extension API specification.
 struct ARBPointParameters {
     // Public Members
     void (APIENTRY *glPointParameterf)(GLenum pname, GLfloat param);
@@ -538,7 +538,7 @@ struct ARBPointParameters {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBPointParameters
 
-// GL_ARB_robustness extension API specification.
+//! @brief The GL_ARB_robustness extension API specification.
 struct ARBRobustness {
     // Public Members
     GLenum(APIENTRY *glGetGraphicsResetStatus)();
@@ -566,7 +566,7 @@ struct ARBRobustness {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBRobustness
 
-// GL_ARB_sample_locations extension API specification.
+//! @brief The GL_ARB_sample_locations extension API specification.
 struct ARBSampleLocations {
     // Public Members
     void (APIENTRY *glEvaluateDepthValues)();
@@ -586,7 +586,7 @@ struct ARBSampleLocations {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBSampleLocations
 
-// GL_ARB_sample_shading extension API specification.
+//! @brief The GL_ARB_sample_shading extension API specification.
 struct ARBSampleShading {
     // Public Members
     void (APIENTRY *glMinSampleShading)(GLfloat value);
@@ -599,7 +599,7 @@ struct ARBSampleShading {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBSampleShading
 
-// GL_ARB_shader_objects extension API specification.
+//! @brief The GL_ARB_shader_objects extension API specification.
 struct ARBShaderObjects {
     // Public Members
     void (APIENTRY *glAttachObject)(GLhandleARB containerObj, GLhandleARB obj);
@@ -682,7 +682,7 @@ struct ARBShaderObjects {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBShaderObjects
 
-// GL_ARB_shading_language_include extension API specification.
+//! @brief The GL_ARB_shading_language_include extension API specification.
 struct ARBShadingLanguageInclude {
     // Public Members
     void (APIENTRY *glCompileShaderInclude)(GLuint shader, GLsizei count,
@@ -707,7 +707,7 @@ struct ARBShadingLanguageInclude {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBShadingLanguageInclude
 
-// GL_ARB_sparse_buffer extension API specification.
+//! @brief The GL_ARB_sparse_buffer extension API specification.
 struct ARBSparseBuffer {
     // Public Members
     void (APIENTRY *glBufferPageCommitment)(GLenum target, GLintptr offset,
@@ -729,7 +729,7 @@ struct ARBSparseBuffer {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBSparseBuffer
 
-// GL_ARB_sparse_texture extension API specification.
+//! @brief The GL_ARB_sparse_texture extension API specification.
 struct ARBSparseTexture {
     // Public Members
     void (APIENTRY *glTexPageCommitment)(GLenum target, GLint level,
@@ -746,7 +746,7 @@ struct ARBSparseTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBSparseTexture
 
-// GL_ARB_texture_buffer_object extension API specification.
+//! @brief The GL_ARB_texture_buffer_object extension API specification.
 struct ARBTextureBufferObject {
     // Public Members
     void (APIENTRY *glTexBuffer)(GLenum target, GLenum internalformat,
@@ -760,7 +760,7 @@ struct ARBTextureBufferObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBTextureBufferObject
 
-// GL_ARB_texture_compression extension API specification.
+//! @brief The GL_ARB_texture_compression extension API specification.
 struct ARBTextureCompression {
     // Public Members
     void (APIENTRY *glCompressedTexImage1D)(GLenum target, GLint level,
@@ -802,7 +802,7 @@ struct ARBTextureCompression {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBTextureCompression
 
-// GL_ARB_transpose_matrix extension API specification.
+//! @brief The GL_ARB_transpose_matrix extension API specification.
 struct ARBTransposeMatrix {
     // Public Members
     void (APIENTRY *glLoadTransposeMatrixd)(const GLdouble *m);
@@ -818,7 +818,7 @@ struct ARBTransposeMatrix {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBTransposeMatrix
 
-// GL_ARB_vertex_blend extension API specification.
+//! @brief The GL_ARB_vertex_blend extension API specification.
 struct ARBVertexBlend {
     // Public Members
     void (APIENTRY *glVertexBlend)(GLint count);
@@ -841,7 +841,7 @@ struct ARBVertexBlend {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBVertexBlend
 
-// GL_ARB_vertex_buffer_object extension API specification.
+//! @brief The GL_ARB_vertex_buffer_object extension API specification.
 struct ARBVertexBufferObject {
     // Public Members
     void (APIENTRY *glBindBuffer)(GLenum target, GLuint buffer);
@@ -869,7 +869,7 @@ struct ARBVertexBufferObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBVertexBufferObject
 
-// GL_ARB_vertex_program extension API specification.
+//! @brief The GL_ARB_vertex_program extension API specification.
 struct ARBVertexProgram {
     // Public Members
     void (APIENTRY *glDisableVertexAttribArray)(GLuint index);
@@ -937,7 +937,7 @@ struct ARBVertexProgram {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBVertexProgram
 
-// GL_ARB_vertex_shader extension API specification.
+//! @brief The GL_ARB_vertex_shader extension API specification.
 struct ARBVertexShader {
     // Public Members
     void (APIENTRY *glBindAttribLocation)(GLhandleARB programObj, GLuint index,
@@ -957,7 +957,7 @@ struct ARBVertexShader {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBVertexShader
 
-// GL_ARB_viewport_array extension API specification.
+//! @brief The GL_ARB_viewport_array extension API specification.
 struct ARBViewportArray {
     // Public Members
     void (APIENTRY *glDepthRangeArraydv)(GLuint first, GLsizei count,
@@ -972,7 +972,7 @@ struct ARBViewportArray {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct ARBViewportArray
 
-// GL_ARB_window_pos extension API specification.
+//! @brief The GL_ARB_window_pos extension API specification.
 struct ARBWindowPos {
     // Public Members
     void (APIENTRY *glWindowPos2d)(GLdouble x, GLdouble y);

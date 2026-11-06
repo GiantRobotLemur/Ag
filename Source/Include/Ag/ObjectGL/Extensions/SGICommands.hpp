@@ -2,7 +2,7 @@
 //! @brief The declaration of Silicon Graphics-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_SGI_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_SGI_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_SGI_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_SGI_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -26,7 +26,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_SGIS_detail_texture extension API.
+//! @brief Manages the entry points for the GL_SGIS_detail_texture extension API.
 class SGISDetailTextureAPI : public BaseExtension
 {
 public:
@@ -47,7 +47,7 @@ private:
     SGISDetailTexture _api;
 };
 
-// Manages the entry points for the GL_SGIS_fog_function extension API.
+//! @brief Manages the entry points for the GL_SGIS_fog_function extension API.
 class SGISFogFunctionAPI : public BaseExtension
 {
 public:
@@ -68,7 +68,7 @@ private:
     SGISFogFunction _api;
 };
 
-// Manages the entry points for the GL_SGIS_multisample extension API.
+//! @brief Manages the entry points for the GL_SGIS_multisample extension API.
 class SGISMultisampleAPI : public BaseExtension
 {
 public:
@@ -89,7 +89,7 @@ private:
     SGISMultisample _api;
 };
 
-// Manages the entry points for the GL_SGIS_pixel_texture extension API.
+//! @brief Manages the entry points for the GL_SGIS_pixel_texture extension API.
 class SGISPixelTextureAPI : public BaseExtension
 {
 public:
@@ -118,7 +118,7 @@ private:
     SGISPixelTexture _api;
 };
 
-// Manages the entry points for the GL_SGIS_point_parameters extension API.
+//! @brief Manages the entry points for the GL_SGIS_point_parameters extension API.
 class SGISPointParametersAPI : public BaseExtension
 {
 public:
@@ -139,7 +139,7 @@ private:
     SGISPointParameters _api;
 };
 
-// Manages the entry points for the GL_SGIS_sharpen_texture extension API.
+//! @brief Manages the entry points for the GL_SGIS_sharpen_texture extension API.
 class SGISSharpenTextureAPI : public BaseExtension
 {
 public:
@@ -160,7 +160,7 @@ private:
     SGISSharpenTexture _api;
 };
 
-// Manages the entry points for the GL_SGIS_texture4D extension API.
+//! @brief Manages the entry points for the GL_SGIS_texture4D extension API.
 class SGISTEXTURE4DAPI : public BaseExtension
 {
 public:
@@ -188,7 +188,7 @@ private:
     SGISTEXTURE4D _api;
 };
 
-// Manages the entry points for the GL_SGIS_texture_color_mask extension API.
+//! @brief Manages the entry points for the GL_SGIS_texture_color_mask extension API.
 class SGISTextureColorMaskAPI : public BaseExtension
 {
 public:
@@ -209,7 +209,7 @@ private:
     SGISTextureColorMask _api;
 };
 
-// Manages the entry points for the GL_SGIS_texture_filter4 extension API.
+//! @brief Manages the entry points for the GL_SGIS_texture_filter4 extension API.
 class SGISTextureFILTER4API : public BaseExtension
 {
 public:
@@ -232,7 +232,7 @@ private:
     SGISTextureFILTER4 _api;
 };
 
-// Manages the entry points for the GL_SGIX_async extension API.
+//! @brief Manages the entry points for the GL_SGIX_async extension API.
 class SGIXAsyncAPI : public BaseExtension
 {
 public:
@@ -257,7 +257,7 @@ private:
     SGIXAsync _api;
 };
 
-// Manages the entry points for the GL_SGIX_flush_raster extension API.
+//! @brief Manages the entry points for the GL_SGIX_flush_raster extension API.
 class SGIXFlushRasterAPI : public BaseExtension
 {
 public:
@@ -277,7 +277,7 @@ private:
     SGIXFlushRaster _api;
 };
 
-// Manages the entry points for the GL_SGIX_fragment_lighting extension API.
+//! @brief Manages the entry points for the GL_SGIX_fragment_lighting extension API.
 class SGIXFragmentLightingAPI : public BaseExtension
 {
 public:
@@ -322,7 +322,7 @@ private:
     SGIXFragmentLighting _api;
 };
 
-// Manages the entry points for the GL_SGIX_framezoom extension API.
+//! @brief Manages the entry points for the GL_SGIX_framezoom extension API.
 class SGIXFramezoomAPI : public BaseExtension
 {
 public:
@@ -342,7 +342,7 @@ private:
     SGIXFramezoom _api;
 };
 
-// Manages the entry points for the GL_SGIX_igloo_interface extension API.
+//! @brief Manages the entry points for the GL_SGIX_igloo_interface extension API.
 class SGIXIglooInterfaceAPI : public BaseExtension
 {
 public:
@@ -362,7 +362,7 @@ private:
     SGIXIglooInterface _api;
 };
 
-// Manages the entry points for the GL_SGIX_instruments extension API.
+//! @brief Manages the entry points for the GL_SGIX_instruments extension API.
 class SGIXInstrumentSAPI : public BaseExtension
 {
 public:
@@ -387,7 +387,7 @@ private:
     SGIXInstrumentS _api;
 };
 
-// Manages the entry points for the GL_SGIX_list_priority extension API.
+//! @brief Manages the entry points for the GL_SGIX_list_priority extension API.
 class SGIXListPriorityAPI : public BaseExtension
 {
 public:
@@ -415,7 +415,7 @@ private:
     SGIXListPriority _api;
 };
 
-// Manages the entry points for the GL_SGIX_pixel_texture extension API.
+//! @brief Manages the entry points for the GL_SGIX_pixel_texture extension API.
 class SGIXPixelTextureAPI : public BaseExtension
 {
 public:
@@ -435,7 +435,7 @@ private:
     SGIXPixelTexture _api;
 };
 
-// Manages the entry points for the GL_SGIX_polynomial_ffd extension API.
+//! @brief Manages the entry points for the GL_SGIX_polynomial_ffd extension API.
 class SGIXPolynomialFfdAPI : public BaseExtension
 {
 public:
@@ -464,7 +464,7 @@ private:
     SGIXPolynomialFfd _api;
 };
 
-// Manages the entry points for the GL_SGIX_reference_plane extension API.
+//! @brief Manages the entry points for the GL_SGIX_reference_plane extension API.
 class SGIXReferencePlaneAPI : public BaseExtension
 {
 public:
@@ -484,7 +484,7 @@ private:
     SGIXReferencePlane _api;
 };
 
-// Manages the entry points for the GL_SGIX_sprite extension API.
+//! @brief Manages the entry points for the GL_SGIX_sprite extension API.
 class SGIXSpriteAPI : public BaseExtension
 {
 public:
@@ -507,7 +507,7 @@ private:
     SGIXSprite _api;
 };
 
-// Manages the entry points for the GL_SGIX_tag_sample_buffer extension API.
+//! @brief Manages the entry points for the GL_SGIX_tag_sample_buffer extension API.
 class SGIXTagSampleBufferAPI : public BaseExtension
 {
 public:
@@ -527,7 +527,7 @@ private:
     SGIXTagSampleBuffer _api;
 };
 
-// Manages the entry points for the GL_SGI_color_table extension API.
+//! @brief Manages the entry points for the GL_SGI_color_table extension API.
 class SGIColorTableAPI : public BaseExtension
 {
 public:
@@ -572,7 +572,7 @@ private:
 #ifdef _USES_GLX
 namespace glx {
 
-// Manages the entry points for the GLX_SGIX_dmbuffer extension API.
+//! @brief Manages the entry points for the GLX_SGIX_dmbuffer extension API.
 class SGIXDmbufferAPI : public gl::BaseExtension
 {
 public:
@@ -593,7 +593,7 @@ private:
     SGIXDmbuffer _api;
 };
 
-// Manages the entry points for the GLX_SGIX_fbconfig extension API.
+//! @brief Manages the entry points for the GLX_SGIX_fbconfig extension API.
 class SGIXFbconfigAPI : public gl::BaseExtension
 {
 public:
@@ -623,7 +623,7 @@ private:
     SGIXFbconfig _api;
 };
 
-// Manages the entry points for the GLX_SGIX_hyperpipe extension API.
+//! @brief Manages the entry points for the GLX_SGIX_hyperpipe extension API.
 class SGIXHyperpipeAPI : public gl::BaseExtension
 {
 public:
@@ -656,7 +656,7 @@ private:
     SGIXHyperpipe _api;
 };
 
-// Manages the entry points for the GLX_SGIX_pbuffer extension API.
+//! @brief Manages the entry points for the GLX_SGIX_pbuffer extension API.
 class SGIXPbufferAPI : public gl::BaseExtension
 {
 public:
@@ -684,7 +684,7 @@ private:
     SGIXPbuffer _api;
 };
 
-// Manages the entry points for the GLX_SGIX_swap_barrier extension API.
+//! @brief Manages the entry points for the GLX_SGIX_swap_barrier extension API.
 class SGIXSwapBarrierAPI : public gl::BaseExtension
 {
 public:
@@ -705,7 +705,7 @@ private:
     SGIXSwapBarrier _api;
 };
 
-// Manages the entry points for the GLX_SGIX_swap_group extension API.
+//! @brief Manages the entry points for the GLX_SGIX_swap_group extension API.
 class SGIXSwapGroupAPI : public gl::BaseExtension
 {
 public:
@@ -725,7 +725,7 @@ private:
     SGIXSwapGroup _api;
 };
 
-// Manages the entry points for the GLX_SGIX_video_resize extension API.
+//! @brief Manages the entry points for the GLX_SGIX_video_resize extension API.
 class SGIXVideoResizeAPI : public gl::BaseExtension
 {
 public:
@@ -754,7 +754,7 @@ private:
     SGIXVideoResize _api;
 };
 
-// Manages the entry points for the GLX_SGIX_video_source extension API.
+//! @brief Manages the entry points for the GLX_SGIX_video_source extension API.
 class SGIXVideoSourceAPI : public gl::BaseExtension
 {
 public:
@@ -777,7 +777,7 @@ private:
     SGIXVideoSource _api;
 };
 
-// Manages the entry points for the GLX_SGI_cushion extension API.
+//! @brief Manages the entry points for the GLX_SGI_cushion extension API.
 class SgiCushionAPI : public gl::BaseExtension
 {
 public:
@@ -797,7 +797,7 @@ private:
     SgiCushion _api;
 };
 
-// Manages the entry points for the GLX_SGI_make_current_read extension API.
+//! @brief Manages the entry points for the GLX_SGI_make_current_read extension API.
 class SgiMakeCurrentReadAPI : public gl::BaseExtension
 {
 public:
@@ -819,7 +819,7 @@ private:
     SgiMakeCurrentRead _api;
 };
 
-// Manages the entry points for the GLX_SGI_swap_control extension API.
+//! @brief Manages the entry points for the GLX_SGI_swap_control extension API.
 class SgiSwapControlAPI : public gl::BaseExtension
 {
 public:
@@ -839,7 +839,7 @@ private:
     SgiSwapControl _api;
 };
 
-// Manages the entry points for the GLX_SGI_video_sync extension API.
+//! @brief Manages the entry points for the GLX_SGI_video_sync extension API.
 class SgiVideoSyncAPI : public gl::BaseExtension
 {
 public:

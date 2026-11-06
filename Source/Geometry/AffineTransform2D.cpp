@@ -225,7 +225,6 @@ AffineTransform2D &AffineTransform2D::makeRotation(double angleInRadians, const 
 }
 
 //! @brief Appends a uniform scale transform to the current transform.
-//! @param scaleFactor 
 //! @param[in] scaleFactor A vector object specifying individual scale factors
 //! in the X and Y direction.
 AffineTransform2D &AffineTransform2D::appendScale(double scaleFactor)
@@ -252,8 +251,8 @@ AffineTransform2D &AffineTransform2D::appendScale(const Point2D &scaleFactor)
 }
 
 //! @brief Appends a scale transform to the current transform.
-//! @param[in] scaleFactorX The scale factor to apply to the X axis.
-//! @param[in] scaleFactorY The scale factor to apply to the Y axis.
+//! @param[in] scaleX The scale factor to apply to the X axis.
+//! @param[in] scaleY The scale factor to apply to the Y axis.
 AffineTransform2D &AffineTransform2D::appendScale(double scaleX, double scaleY)
 {
     double n[8];

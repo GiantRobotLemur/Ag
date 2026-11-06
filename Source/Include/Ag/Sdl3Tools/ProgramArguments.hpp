@@ -24,6 +24,9 @@ namespace SDL3 {
 ////////////////////////////////////////////////////////////////////////////////
 // Data Type Declarations
 ////////////////////////////////////////////////////////////////////////////////
+class Renderer;
+class Window;
+
 //! @brief Lists commands inferred from SDL command line options.
 enum class SdlCommand : uint32_t
 {
@@ -90,8 +93,8 @@ public:
 
     bool tryFindDisplay(SDL_DisplayID &displayID) const;
     bool tryFindDisplayMode(SDL_DisplayID displayID, SDL_DisplayMode &mode) const;
-    bool tryCreatePreferredRenderer(SDL_Window *window,
-                                    SDL_Renderer *&renderer) const;
+    bool tryCreatePreferredRenderer(const Window &window,
+                                    Renderer &renderer) const;
     bool tryCreatePreferredGPUDevice(SDL_GPUShaderFormat possibleFormats,
                                      bool enableDebugMode,
                                      SDL_GPUDevice *&device) const;

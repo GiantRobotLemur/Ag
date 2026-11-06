@@ -4,6 +4,7 @@ include(CMakePrintHelpers)
 
 # This might be important when building for ARM64 on x64.
 set(AG_EXT_SYMBOL_PACKAGER "" CACHE FILEPATH "The path to an external Symbol Packager tool binary.")
+set(AG_CMAKE_UTILS_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 string(TIMESTAMP PROJECT_BUILD_YEAR "%Y")
 
@@ -48,7 +49,7 @@ function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
     else()
         # Ensure the linker generates a .map file and use it to produce a stack
         # trace symbol file which sits alongside the binary.
-        target_link_options(${targetName} PRIVATE "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.map")
+        # target_link_options(${targetName} PRIVATE "LINKER:-Map=${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${symbolTargetName}>.map")
 
         # install(TARGETS "${targetName}_Symbols" RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
 
@@ -62,8 +63,10 @@ function(ag_enable_proxy_stacktrace destTargetName symbolTargetName)
         #                   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         #                   COMMENT "Creating stack trace data for ${targetName}...")
 
+        # Have symbols extracted from the ELF binary itself so that they can
+        # be kept separately if the binary is stripped.
         add_custom_command(TARGET ${targetName} POST_BUILD
-                           COMMAND "${SymTool}" ARGS "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE_BASE_NAME:${targetName}>.map"
+                           COMMAND "${SymTool}" ARGS "--format" "ELF" "$<TARGET_FILE:${targetName}>"
                                                   -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
                            COMMAND "${SymTool}" ARGS "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.sym"
                                                   -o "$<TARGET_FILE_DIR:${destTargetName}>/$<TARGET_FILE_BASE_NAME:${targetName}>.txt"
@@ -87,12 +90,13 @@ endfunction()
 #            HEADERS <files>          - Public interface header files.
 #            WIN_HEADERS <files>      - Win32-specific public interface header files.
 #            POSIX_HEADERS <files>    - Linux-specific public interface header files.
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            PUBLIC_LIBS <libraries>  - Libraries which the library and its clients should link to.
 #            PRIVATE_LIBS <libraries> - Libraries which the library link to.
 function(ag_add_library target)
     set(prefix LIB)
     set(noValues QT)
-    set(singleValues "FOLDER" "NAME")
+    set(singleValues "FOLDER" "NAME" "PCH")
     set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES HEADERS WIN_HEADERS POSIX_HEADERS PUBLIC_LIBS PRIVATE_LIBS)
 
     cmake_parse_arguments("${prefix}"
@@ -105,13 +109,13 @@ function(ag_add_library target)
     #                      LIB_WIN_HEADERS LIB_POSIX_HEADERS)
 
     if (LIB_QT)
-        qt_add_library(${target} STATIC)
+        qt_add_library("${target}" STATIC)
     else()
-        add_library(${target} STATIC)
+        add_library("${target}" STATIC)
     endif()
 
     if (DEFINED LIB_FOLDER)
-        set_target_properties(${target} PROPERTIES FOLDER ${LIB_FOLDER})
+        set_target_properties("${target}" PROPERTIES FOLDER "${LIB_FOLDER}")
     endif()
 
     if (NOT DEFINED LIB_NAME)
@@ -119,36 +123,42 @@ function(ag_add_library target)
         string(REPLACE "::" "" LIB_NAME "${target}")
     endif()
 
-    set_target_properties(${target} PROPERTIES OUTPUT_NAME "${LIB_NAME}")
+    set_target_properties("${target}" PROPERTIES OUTPUT_NAME "${LIB_NAME}")
 
-    target_sources(${target} PRIVATE ${LIB_SOURCES})
-    target_sources(${target} PUBLIC ${LIB_HEADERS})
+    target_sources("${target}" PRIVATE ${LIB_SOURCES})
+    target_sources("${target}" PUBLIC ${LIB_HEADERS})
 
     if(DEFINED WIN32)
-        target_sources(${target} PRIVATE ${LIB_WIN_SOURCES})
-        target_sources(${target} PUBLIC ${LIB_WIN_HEADERS})
+        target_sources("${target}" PRIVATE ${LIB_WIN_SOURCES})
+        target_sources("${target}" PUBLIC ${LIB_WIN_HEADERS})
     else()
-        target_sources(${target} PRIVATE ${LIB_POSIX_SOURCES})
-        target_sources(${target} PUBLIC ${LIB_POSIX_HEADERS})
+        target_sources("${target}" PRIVATE ${LIB_POSIX_SOURCES})
+        target_sources("${target}" PUBLIC ${LIB_POSIX_HEADERS})
     endif()
 
     if(DEFINED LIB_PUBLIC_LIBS)
-        target_link_libraries(${target} PUBLIC ${LIB_PUBLIC_LIBS})
+        target_link_libraries("${target}" PUBLIC ${LIB_PUBLIC_LIBS})
     endif()
 
     if(DEFINED LIB_PRIVATE_LIBS)
-        target_link_libraries(${target} PRIVATE ${LIB_PRIVATE_LIBS})
+        target_link_libraries("${target}" PRIVATE ${LIB_PRIVATE_LIBS})
+    endif()
+
+    if (DEFINED LIB_PCH)
+        target_precompile_headers("${target}" PRIVATE ${LIB_PCH})
+        target_sources("${target}" PRIVATE ${LIB_PCH})
     endif()
 endfunction()
 
 # Create a Google Test unit test harness application or an Ag library.
 # Arguments: target - The mandatory target name
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            TEST_LIB <libName> - The Ag library to test.
 #            SOURCES <files>    - The unit test source code files.
 function(ag_add_test_app target)
     set(prefix TAPP)
     set(noValues "")
-    set(singleValues "TEST_LIB")
+    set(singleValues "TEST_LIB" "PCH")
     set(multiValues SOURCES)
 
     cmake_parse_arguments("${prefix}"
@@ -157,20 +167,20 @@ function(ag_add_test_app target)
                           "${multiValues}"
                           ${ARGN})
 
-    add_executable(${target})
+    add_executable("${target}")
 
-    target_link_libraries(${target} PRIVATE gtest gtest_main)
+    target_link_libraries("${target}" PRIVATE gtest gtest_main)
 
     if(DEFINED TAPP_TEST_LIB)
         # Link to the library under test.
-        target_link_libraries(${target} PRIVATE ${TAPP_TEST_LIB})
+        target_link_libraries("${target}" PRIVATE "${TAPP_TEST_LIB}")
     endif()
 
     # Put the test app in the same folder as the library under test.
-    get_target_property(folder ${TAPP_TEST_LIB} FOLDER)
+    get_target_property(folder "${TAPP_TEST_LIB}" FOLDER)
 
     if (DEFINED folder)
-        set_target_properties(${target} PROPERTIES FOLDER ${folder})
+        set_target_properties("${target}" PROPERTIES FOLDER "${folder}")
     endif()
 
     if (DEFINED WIN32)
@@ -178,44 +188,75 @@ function(ag_add_test_app target)
         target_compile_definitions(${target} PRIVATE "_CUI")
     endif()
 
+    if (DEFINED TAPP_PCH)
+        target_precompile_headers("${target}" PRIVATE ${TAPP_PCH})
+        target_sources("${target}" PRIVATE ${TAPP_PCH})
+    endif()
+
     target_sources(${target} PRIVATE ${TAPP_SOURCES})
-    gtest_discover_tests(${target})
-    ag_enable_stacktrace(${target})
+    gtest_discover_tests("${target}")
+    ag_enable_stacktrace("${target}")
 endfunction()
 
 macro(ag_configure_version target)
     string(TIMESTAMP CURRENT_YEAR "%Y")
 
     if (NOT DEFINED APP_VERSION)
-        set(APP_VERSION "${PROJECT_VERSION}")
+        set(APP_VERSION "${CMAKE_PROJECT_VERSION}")
     endif()
 
     if (NOT DEFINED APP_NAME)
         set(APP_NAME "${target}")
     endif()
 
+    if (NOT DEFINED APP_DISPLAY_NAME)
+        set(APP_DISPLAY_NAME "${APP_NAME}")
+    endif()
+
     if (NOT DEFINED APP_AUTHOR)
         set(APP_AUTHOR "Anon")
     endif()
 
+    if(NOT DEFINED APP_COPYRIGHT_YEAR)
+        set(APP_COPYRIGHT_YEAR "${CURRENT_YEAR}")
+    endif()
+
     if (NOT DEFINED APP_COPYRIGHT)
-        set(APP_COPYRIGHT "Copyright (c) ${CURRENT_YEAR} ${APP_AUTHOR}. All Rights Reserved")
+        if ("${APP_COPYRIGHT_YEAR}" STREQUAL "${CURRENT_YEAR}")
+            set(copyrightRange "${CURRENT_YEAR}")
+        else()
+            set(copyrightRange "${APP_COPYRIGHT_YEAR}-${CURRENT_YEAR}")
+        endif()
+
+        if (DEFINED APP_COMPANY)
+            set(APP_COPYRIGHT "Copyright (c) ${copyrightRange} ${APP_COMPANY}. All Rights Reserved")
+        else()
+            set(APP_COPYRIGHT "Copyright (c) ${copyrightRange} ${APP_AUTHOR}. All Rights Reserved")
+        endif()
+    endif()
+
+    if (NOT DEFINED APP_COMPANY)
+        set(APP_COMPANY "")
+    endif()
+
+    if (NOT DEFINED APP_PRODUCT)
+        set(APP_PRODUCT "${CMAKE_PROJECT_NAME}")
     endif()
 
     if (DEFINED APP_FOLDER)
-        set_target_properties(${target} PROPERTIES FOLDER ${APP_FOLDER})
+        set_target_properties("${target}" PROPERTIES FOLDER "${APP_FOLDER}")
     endif()
 
     if(DEFINED APP_LIBS)
-        target_link_libraries(${target} PUBLIC ${APP_LIBS})
+        target_link_libraries("${target}" PUBLIC ${APP_LIBS})
     endif()
 
     if(DEFINED APP_NAME)
-        set_target_properties(${target} PROPERTIES OUTPUT_NAME "${APP_NAME}")
+        set_target_properties("${target}" PROPERTIES OUTPUT_NAME "${APP_NAME}")
     endif()
 
     # Write the header and possibly resource file with the version substituted into it.
-    string(REGEX MATCHALL "^([0-9]+)" versionComponents "${APP_VERSION}")
+    string(REGEX MATCHALL "([0-9]+)" versionComponents "${APP_VERSION}")
     list(LENGTH versionComponents verComponentCount)
 
     if ("${verComponentCount}" GREATER 0)
@@ -243,9 +284,9 @@ macro(ag_configure_version target)
     endif()
 
     if(WIN32)
-        configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Win32Version.rc.in"
+        configure_file("${AG_CMAKE_UTILS_DIR}/Win32Version.rc.in"
                        "Win32Version.rc" COPYONLY)
-        configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Win32Version.h.in"
+        configure_file("${AG_CMAKE_UTILS_DIR}/Win32Version.h.in"
                        "Win32Version.h" @ONLY NEWLINE_STYLE WIN32)
 
         target_sources("${target}" PRIVATE
@@ -253,7 +294,10 @@ macro(ag_configure_version target)
                        "${CMAKE_CURRENT_BINARY_DIR}/Win32Version.h")
     endif()
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Version.hpp.in"
+    # Generate a unique-ish symbol for the header guard macro.
+    string(TIMESTAMP headerGuard "%s_%f")
+
+    configure_file("${AG_CMAKE_UTILS_DIR}/Version.hpp.in"
                    "AppVersion.hpp" @ONLY)
 
     target_sources("${target}" PRIVATE
@@ -269,9 +313,14 @@ endmacro()
 #            FOLDER <folder name>    - The name of the project folder to add the item to.
 #            NAME <app name>         - The base name of the application program file.
 #            AUTHOR <app author>     - The name of the author of the application.
+#            COMPANY <company name>    The name of the company which produced the app.
+#            PRODUCT <prod name>       The name of the product the application belongs to.
+#            DISPLAY_NAME <name>       The name of the application to display in a UI.
 #            DESCRIPTION <desc>      - A description of the application's purpose.
 #            COPYRIGHT <message>     - The application copyright message.
+#            COPYRIGHT_YEAR <year>     The first year of copyright, used to generate the copyright message if none specified.
 #            VERSION <version>       - The version to embed in the application.
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            SOURCES <files>         - Internal source and header files.
 #            WIN_SOURCES <files>     - Win32-specific source and header files.
 #            POSIX_SOURCES <files>   - Linux-specific source and header files.
@@ -279,7 +328,7 @@ endmacro()
 function(ag_add_gui_app target)
     set(prefix APP)
     set(noValues QT)
-    set(singleValues FOLDER NAME AUTHOR DESCRIPTION COPYRIGHT VERSION)
+    set(singleValues FOLDER PCH NAME AUTHOR COMPANY PRODUCT DISPLAY_NAME DESCRIPTION COPYRIGHT COPYRIGHT_YEAR VERSION)
     set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES LIBS)
 
     cmake_parse_arguments("${prefix}"
@@ -301,29 +350,33 @@ function(ag_add_gui_app target)
                                   "PATH=$<TARGET_FILE_DIR:Qt6::Core>;%PATH%")
         endif()
     elseif (DEFINED WIN32)
-        add_executable(${target} WIN32)
+        add_executable("${target}" WIN32)
 
         # Define a macro indicating the use of the WinMain() entry point.
-        target_compile_definitions(${target} PRIVATE "_GUI")
+        target_compile_definitions("${target}" PRIVATE "_GUI")
     else()
-        add_executable(${target})
+        add_executable("${target}")
     endif()
 
     if (DEFINED WIN32)
-        target_sources(${target} PRIVATE ${APP_WIN_SOURCES})
+        target_sources("${target}" PRIVATE ${APP_WIN_SOURCES})
     else()
-        target_sources(${target} PRIVATE ${APP_POSIX_SOURCES})
+        target_sources("${target}" PRIVATE ${APP_POSIX_SOURCES})
     endif()
 
-    target_sources(${target} PRIVATE ${APP_SOURCES})
+    target_sources("${target}" PRIVATE ${APP_SOURCES})
 
-    ag_configure_version(${target})
+    if (DEFINED APP_PCH)
+        target_precompile_headers("${target}" PRIVATE ${APP_PCH})
+        target_sources("${target}" PRIVATE ${APP_PCH})
+    endif()
+
+    ag_configure_version("${target}")
 
     include_directories("${target}" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
-    ag_enable_stacktrace(${target})
+    ag_enable_stacktrace("${target}")
 endfunction()
-
 
 # Create a console application dependent upon the Ag suite of libraries.
 # ag_add_cli_app(target ...)
@@ -331,9 +384,14 @@ endfunction()
 #            FOLDER <folder name>    - The name of the project folder to add the item to.
 #            NAME <app name>         - The base name of the application program file.
 #            AUTHOR <app author>     - The name of the author of the application.
+#            COMPANY <company name>    The name of the company which produced the app.
+#            PRODUCT <prod name>       The name of the product the application belongs to.
+#            DISPLAY_NAME <name>       The name of the application to display in a UI.
 #            DESCRIPTION <desc>      - A description of the application's purpose.
 #            COPYRIGHT <message>     - The application copyright message.
+#            COPYRIGHT_YEAR <year>     The first year of copyright, used to generate the copyright message if none specified.
 #            VERSION <version>       - The version to embed in the application.
+#            PCH <header file>       - The name of the optional pre-compiled header.
 #            SOURCES <files>         - Internal source and header files.
 #            WIN_SOURCES <files>     - Win32-specific source and header files.
 #            POSIX_SOURCES <files>   - Linux-specific source and header files.
@@ -341,7 +399,7 @@ endfunction()
 function(ag_add_cli_app target)
     set(prefix APP)
     set(noValues "")
-    set(singleValues FOLDER NAME AUTHOR DESCRIPTION COPYRIGHT VERSION)
+    set(singleValues FOLDER NAME AUTHOR COMPANY PRODUCT DISPLAY_NAME DESCRIPTION COPYRIGHT COPYRIGHT_YEAR VERSION PCH)
     set(multiValues SOURCES WIN_SOURCES POSIX_SOURCES LIBS)
 
     cmake_parse_arguments("${prefix}"
@@ -350,34 +408,39 @@ function(ag_add_cli_app target)
                           "${multiValues}"
                           ${ARGN})
 
-    add_executable(${target})
+    add_executable("${target}")
 
     if(DEFINED WIN32)
-        target_sources(${target} PRIVATE ${APP_WIN_SOURCES})
+        target_sources("${target}" PRIVATE ${APP_WIN_SOURCES})
 
         # Define a macro indicating the use of the WinMain() entry point.
-        target_compile_definitions(${target} PRIVATE "_CUI")
+        target_compile_definitions("${target}" PRIVATE "_CUI")
     else()
-        target_sources(${target} PRIVATE ${APP_POSIX_SOURCES})
+        target_sources("${target}" PRIVATE ${APP_POSIX_SOURCES})
     endif()
 
-    target_sources(${target} PRIVATE ${APP_SOURCES})
+    target_sources("${target}" PRIVATE ${APP_SOURCES})
 
     if (DEFINED APP_FOLDER)
-        set_target_properties(${target} PROPERTIES FOLDER ${APP_FOLDER})
+        set_target_properties("${target}" PROPERTIES FOLDER "${APP_FOLDER}")
     endif()
 
     if(DEFINED APP_LIBS)
-        target_link_libraries(${target} PUBLIC ${APP_LIBS})
+        target_link_libraries("${target}" PUBLIC ${APP_LIBS})
     endif()
 
     if(DEFINED APP_NAME)
-        set_target_properties(${target} PROPERTIES OUTPUT_NAME "${APP_NAME}")
+        set_target_properties("${target}" PROPERTIES OUTPUT_NAME "${APP_NAME}")
     endif()
 
-    ag_configure_version(${target})
+    if (DEFINED APP_PCH)
+        target_precompile_headers("${target}" PRIVATE ${APP_PCH})
+        target_sources("${target}" PRIVATE ${APP_PCH})
+    endif()
 
-    ag_enable_stacktrace(${target})
+    ag_configure_version("${target}")
+
+    ag_enable_stacktrace("${target}")
 endfunction()
 
 # ag_add_static_data(target, StaticData.hpp Input1.txt Input2.txt ...)
@@ -434,15 +497,11 @@ function(ag_add_static_data target headerName)
 
     cmake_path(APPEND headerDir "${headerBaseName}.cpp" OUTPUT_VARIABLE fullSourceName)
 
-    # Generate a UUID for the header guard macro.
-    string(UUID headerGuardGuid
-           NAMESPACE F54211FB-AC61-462A-B4A6-037E98FCB7CC
-           NAME ${headerName}
-           TYPE SHA1 UPPER)
 
-    string(REPLACE "-" "_" headerGuard ${headerGuardGuid})
+    # Generate a unique-ish symbol for the header guard macro.
+    string(TIMESTAMP headerGuard "%s_%f")
 
-    configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/StaticData.hpp.in"
+    configure_file("${AG_CMAKE_UTILS_DIR}/StaticData.hpp.in"
                    "${fullHeaderPath}" @ONLY)
 
     # Schedule the source file to be generated at build time if any of
@@ -450,9 +509,9 @@ function(ag_add_static_data target headerName)
     set(buildTimeScript "${CMAKE_CURRENT_BINARY_DIR}/${headerBaseName}.cmake")
 
     if (data_BINARY)
-        configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/GenerateData.cmake.in" "${buildTimeScript}" @ONLY)
+        configure_file("${AG_CMAKE_UTILS_DIR}/GenerateData.cmake.in" "${buildTimeScript}" @ONLY)
     else()
-        configure_file("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/GenerateText.cmake.in" "${buildTimeScript}" @ONLY)
+        configure_file("${AG_CMAKE_UTILS_DIR}/GenerateText.cmake.in" "${buildTimeScript}" @ONLY)
     endif()
 
     add_custom_command(OUTPUT ${fullSourceName}
@@ -495,4 +554,89 @@ function(ag_copy_shared_lib destTarget)
             message(SEND_ERROR "'${target}' is not a valid target.")
         endif()
     endforeach()
+endfunction()
+
+# ag_document_code(target [CHM <chm file path>])
+#
+# Creates a target which runs Doxygen on sources to produce an HTML reference
+# manual, which maybe compiled into a CHM file if HTML Help compiler is installed.
+function(ag_document_code targetName)
+    set(prefix "DOC")
+    set(noValues "")
+    set(singleValues "CHM" "FOLDER")
+    set(multiValues "SOURCES" "DEFINES")
+
+    cmake_parse_arguments("${prefix}"
+                          "${noValues}"
+                          "${singleValues}"
+                          "${multiValues}"
+                          ${ARGN})
+
+    find_package(Doxygen 1.8 OPTIONAL_COMPONENTS dot)
+
+    if (DOXYGEN_FOUND)
+        message(STATUS "Configuring production of HTML documentation using Doxygen...")
+        set(DOXYGEN_GENERATE_HTML YES)
+
+        # HTML Help CHM file generation options.
+        list(APPEND DOXYGEN_PREDEFINED DO_NOT_DOCUMENT "STRUCT_ALIGN_8="
+                                    "STRUCT_ALIGN_16=" "STRUCT_ALIGN_32=")
+        list(APPEND DOXYGEN_EXCLUDE_PATTERNS "*/Template.cpp"
+                                            "*/Template.hpp"
+                                            "*/Test_Template.cpp"
+                                            "${CMAKE_BINARY_DIR}/*")
+
+        set(DOXYGEN_WARN_IF_DOC_ERROR YES)
+        set(DOXYGEN_INHERIT_DOCS YES)
+        set(DOXYGEN_HIDE_UNDOC_CLASSES YES)
+        set(DOXYGEN_HIDE_UNDOC_MEMBERS YES)
+        set(DOXYGEN_SORT_BRIEF_DOCS YES)
+        set(DOXYGEN_SORT_MEMBER_DOCS YES)
+        set(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
+        set(DOXYGEN_GENERATE_TODOLIST YES)
+        set(DOXYGEN_ENABLE_PREPROCESSING YES)
+        set(DOXYGEN_EXPAND_ONLY_PREDEF NO)
+        set(DOXYGEN_MACRO_EXPANSION YES)
+
+        if (DEFINED DOC_DEFINES)
+            set(DOXYGEN_PREDDEFINED ${DOC_DEFINES})
+        endif()
+
+        # Find HTML Help Compiler to produce .CHM files under Windows.
+        include(FindHTMLHelp)
+
+        if(DEFINED HTML_HELP_COMPILER AND DEFINED DOC_CHM)
+            # Calculate the name of the CHM file, resolving relative to the
+            # output folder if necessary.
+            cmake_path(ABSOLUTE_PATH DOC_CHM
+                       BASE_DIRECTORY "${CMAKE_BINARY_DIR}"
+                       NORMALIZE OUTPUT_VARIABLE chmPath)
+
+            # HTML Help Compiler is a Windows tool and only accepts paths
+            # with forward slashes (\) as directory element separators, so
+            # we need to convert the CHM path to Win32 native form.
+            cmake_path(NATIVE_PATH chmPath win32ChmPath)
+
+            message(STATUS "Configuring generation of CHM help file: ${win32ChmPath}")
+
+            set(DOXYGEN_GENERATE_HTMLHELP YES)
+            set(DOXYGEN_SEARCHENGINE NO)
+            set(DOXYGEN_CHM_FILE "${win32ChmPath}")
+            set(DOXYGEN_HHC_LOCATION "${HTML_HELP_COMPILER}")
+        else()
+            # If HTML Help not available, consider:
+            set(DOXYGEN_GENERATE_TREEVIEW YES)
+            set(DOXYGEN_SEARCHENGINE YES)
+        endif()
+
+        # Create the target to run Doxygen.
+        # message(STATUS "Scanning files for documentation: ${DOC_SOURCES}")
+        doxygen_add_docs("${targetName}" ${DOC_SOURCES}
+                         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                         COMMENT "Generating HTML documentation...")
+
+        if (DEFINED DOC_FOLDER)
+            set_target_properties("${targetName}" PROPERTIES FOLDER "${DOC_FOLDER}")
+        endif()
+    endif()
 endfunction()

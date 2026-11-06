@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SDL3_TOOLS_INITIALISER_HPP__
-#define __AG_SDL3_TOOLS_INITIALISER_HPP__
+#ifndef HEADER_AG_SDL3_TOOLS_INITIALISER_HPP_
+#define HEADER_AG_SDL3_TOOLS_INITIALISER_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -38,7 +38,7 @@ public:
 
     // Accessors
     //! @brief Determines if at least some SDL sub-systems are already initialised.
-    constexpr bool Initialiser::isInitialised() const { return _isInitialised; }
+    constexpr bool isInitialised() const noexcept { return _isInitialised; }
 
     // Operations
     void addSubSystems(uint32_t subSystemFlags);

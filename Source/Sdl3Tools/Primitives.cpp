@@ -2,7 +2,7 @@
 //! @brief The definition of various C++ classes wrapping SDL-specific
 //! structures in order to provide useful services.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -12,10 +12,6 @@
 // Header File Includes
 ////////////////////////////////////////////////////////////////////////////////
 #include "Ag/Sdl3Tools/Primitives.hpp"
-
-////////////////////////////////////////////////////////////////////////////////
-// Macro Definitions
-////////////////////////////////////////////////////////////////////////////////
 
 namespace Ag {
 namespace SDL3 {
@@ -30,9 +26,10 @@ Point::Point()
     y = 0;
 }
 
-//! @brief Creates a points with components initialised to a uniform value.
-//! @param[in] initX The horizontal component.
-//! @param[in] initY The vertical component.
+//! @brief Creates a point with both components initialised to a uniform
+//! value.
+//! @param[in] scalar The value assigned to both the horizontal and vertical
+//! components.
 Point::Point(int scalar)
 {
     x = y = scalar;
@@ -411,7 +408,10 @@ bool Rect::contains(const SDL_Point &pos) const
 
 //! @brief Calculates the rectangle encompassing the current one and another.
 //! @param[in] rhs The rectangle to encompass.
-//! @return A rectangle covering the area of the current one and @p rhs.
+//! @return A rectangle covering the area of the current one and @p rhs, or
+//! an empty rectangle if SDL rejects the operation.
+//! @details No exception is thrown on failure; the empty result is the only
+//! indication.
 Rect Rect::makeUnion(const SDL_Rect &rhs) const
 {
     Rect shared;
@@ -595,9 +595,10 @@ FPoint::FPoint()
     y = 0;
 }
 
-//! @brief Creates a points with components initialised to a uniform value.
-//! @param[in] initX The horizontal component.
-//! @param[in] initY The vertical component.
+//! @brief Creates a point with both components initialised to a uniform
+//! value.
+//! @param[in] scalar The value assigned to both the horizontal and vertical
+//! components.
 FPoint::FPoint(float scalar)
 {
     x = y = scalar;
@@ -935,7 +936,10 @@ bool FRect::contains(const SDL_FPoint &pos) const
 
 //! @brief Calculates the rectangle encompassing the current one and another.
 //! @param[in] rhs The rectangle to encompass.
-//! @return A rectangle covering the area of the current one and @p rhs.
+//! @return A rectangle covering the area of the current one and @p rhs, or
+//! an empty rectangle if SDL rejects the operation.
+//! @details No exception is thrown on failure; the empty result is the only
+//! indication.
 FRect FRect::makeUnion(const SDL_FRect &rhs) const
 {
     FRect shared;

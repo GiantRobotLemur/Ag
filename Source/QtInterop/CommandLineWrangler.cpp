@@ -1,8 +1,8 @@
-//! @file Ag/QtInterop/CommandLineWrangler.cpp
+//! @file QtInterop/CommandLineWrangler.cpp
 //! @brief The definition of a class which prevents character set conversion
 //! errors in Qt command line argument processing.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2024
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.

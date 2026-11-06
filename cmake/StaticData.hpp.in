@@ -1,6 +1,6 @@
 // CMake-Generated Static Data declarations
 
-#ifndef __@headerGuard@__
+#ifndef HEADER_@headerGuard@_HPP
 
 @declarations@
 

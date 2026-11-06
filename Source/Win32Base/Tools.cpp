@@ -2,7 +2,7 @@
 //! @brief The definition of various utility functions and templates specific
 //! to basic Win32 integration.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -263,7 +263,7 @@ void SizeI::setWidth(int width)
 int SizeI::getHeight() const { return _height; }
 
 //! @brief Sets the new vertical component.
-//! @param[in] width The new component value.
+//! @param[in] height The new component value.
 //! @throws Ag::ArgumentException If height is negative.
 void SizeI::setHeight(int height)
 {

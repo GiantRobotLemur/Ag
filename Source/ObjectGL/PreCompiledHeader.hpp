@@ -1,14 +1,14 @@
 //! @file ObjectGL/PreCompiledHeader.hpp
 //! @brief The root private pre-compiled header for the ObjectGL library.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_PCH_HPP__
-#define __AG_OBJECT_GL_PCH_HPP__
+#ifndef HEADER_AG_OBJECT_GL_PCH_HPP_
+#define HEADER_AG_OBJECT_GL_PCH_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Macro Definitions
@@ -44,9 +44,6 @@
 // System Headers
 #ifdef _WIN32
 #include <Windows.h>
-#else
-#include <X11/X.h>
-#include <X11/Xlib.h>
 #endif
 
 #include <KHR/khrplatform.h>

@@ -2,7 +2,7 @@
 //! @brief The definition of types which support OpenGL API groups and wrapper
 //! command sets.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -64,6 +64,7 @@ void ClearEntryPoint::operator()(const EntryOffset &entry)
 //! @brief Constructs a functor to resolve the address of an entry point.
 //! @param[in] basePtr The base address of the data structure containing the
 //! entry points to operate upon.
+//! @param[in] resolver An object which can resolve named OpenGL entry points.
 ResolveEntryPoint::ResolveEntryPoint(void *basePtr, const APIResolver *resolver) :
     PerEntryPoint(basePtr),
     _resolver(resolver)
@@ -89,10 +90,12 @@ BaseAPI::BaseAPI() :
 
 //! @brief An action performed before a raw API command is executed.
 //! @param[in] commandName The name of the command about to be executed.
-//! @param[in] entryPoint A pointer to the command function about to be called.
-void BaseAPI::beforeCommand(const char *commandName, const void *entryPoint) const
+//! @param[in] hasEntryPoint True if the API entry point function has a non-null
+//! value.
+//! @throws NotSupportedException If hasEntryPoint is false.
+void BaseAPI::beforeCommand(const char *commandName, bool hasEntryPoint) const
 {
-    if (entryPoint != nullptr)
+    if (hasEntryPoint)
         return;
 
     std::string message;

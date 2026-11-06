@@ -2,7 +2,7 @@
 //! @brief The declaration of generic extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_EXT_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_EXT_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_EXT_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_EXT_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_EXT_EGL_image_storage extension API.
+//! @brief Manages the entry points for the GL_EXT_EGL_image_storage extension API.
 class EXTEglImageStorageAPI : public BaseExtension
 {
 public:
@@ -50,7 +50,7 @@ private:
     EXTEglImageStorage _api;
 };
 
-// Manages the entry points for the GL_EXT_bindable_uniform extension API.
+//! @brief Manages the entry points for the GL_EXT_bindable_uniform extension API.
 class EXTBindableUniformAPI : public BaseExtension
 {
 public:
@@ -72,7 +72,7 @@ private:
     EXTBindableUniform _api;
 };
 
-// Manages the entry points for the GL_EXT_blend_color extension API.
+//! @brief Manages the entry points for the GL_EXT_blend_color extension API.
 class EXTBlendColorAPI : public BaseExtension
 {
 public:
@@ -92,7 +92,7 @@ private:
     EXTBlendColor _api;
 };
 
-// Manages the entry points for the GL_EXT_blend_equation_separate extension API.
+//! @brief Manages the entry points for the GL_EXT_blend_equation_separate extension API.
 class EXTBlendEquationSeparateAPI : public BaseExtension
 {
 public:
@@ -113,7 +113,7 @@ private:
     EXTBlendEquationSeparate _api;
 };
 
-// Manages the entry points for the GL_EXT_blend_func_separate extension API.
+//! @brief Manages the entry points for the GL_EXT_blend_func_separate extension API.
 class EXTBlendFuncSeparateAPI : public BaseExtension
 {
 public:
@@ -135,7 +135,7 @@ private:
     EXTBlendFuncSeparate _api;
 };
 
-// Manages the entry points for the GL_EXT_blend_minmax extension API.
+//! @brief Manages the entry points for the GL_EXT_blend_minmax extension API.
 class EXTBlendMinmaxAPI : public BaseExtension
 {
 public:
@@ -155,7 +155,7 @@ private:
     EXTBlendMinmax _api;
 };
 
-// Manages the entry points for the GL_EXT_color_subtable extension API.
+//! @brief Manages the entry points for the GL_EXT_color_subtable extension API.
 class EXTColorSubtableAPI : public BaseExtension
 {
 public:
@@ -178,7 +178,7 @@ private:
     EXTColorSubtable _api;
 };
 
-// Manages the entry points for the GL_EXT_compiled_vertex_array extension API.
+//! @brief Manages the entry points for the GL_EXT_compiled_vertex_array extension API.
 class EXTCompiledVertexArrayAPI : public BaseExtension
 {
 public:
@@ -199,7 +199,7 @@ private:
     EXTCompiledVertexArray _api;
 };
 
-// Manages the entry points for the GL_EXT_convolution extension API.
+//! @brief Manages the entry points for the GL_EXT_convolution extension API.
 class EXTConvolutionAPI : public BaseExtension
 {
 public:
@@ -255,7 +255,7 @@ private:
     EXTConvolution _api;
 };
 
-// Manages the entry points for the GL_EXT_coordinate_frame extension API.
+//! @brief Manages the entry points for the GL_EXT_coordinate_frame extension API.
 class EXTCoordinateFrameAPI : public BaseExtension
 {
 public:
@@ -298,7 +298,7 @@ private:
     EXTCoordinateFrame _api;
 };
 
-// Manages the entry points for the GL_EXT_copy_texture extension API.
+//! @brief Manages the entry points for the GL_EXT_copy_texture extension API.
 class EXTCopyTextureAPI : public BaseExtension
 {
 public:
@@ -331,7 +331,7 @@ private:
     EXTCopyTexture _api;
 };
 
-// Manages the entry points for the GL_EXT_cull_vertex extension API.
+//! @brief Manages the entry points for the GL_EXT_cull_vertex extension API.
 class EXTCullVertexAPI : public BaseExtension
 {
 public:
@@ -352,7 +352,7 @@ private:
     EXTCullVertex _api;
 };
 
-// Manages the entry points for the GL_EXT_debug_label extension API.
+//! @brief Manages the entry points for the GL_EXT_debug_label extension API.
 class EXTDebugLabelAPI : public BaseExtension
 {
 public:
@@ -375,7 +375,7 @@ private:
     EXTDebugLabel _api;
 };
 
-// Manages the entry points for the GL_EXT_debug_marker extension API.
+//! @brief Manages the entry points for the GL_EXT_debug_marker extension API.
 class EXTDebugMarkerAPI : public BaseExtension
 {
 public:
@@ -397,7 +397,7 @@ private:
     EXTDebugMarker _api;
 };
 
-// Manages the entry points for the GL_EXT_depth_bounds_test extension API.
+//! @brief Manages the entry points for the GL_EXT_depth_bounds_test extension API.
 class EXTDepthBoundsTestAPI : public BaseExtension
 {
 public:
@@ -417,7 +417,7 @@ private:
     EXTDepthBoundsTest _api;
 };
 
-// Manages the entry points for the GL_EXT_direct_state_access extension API.
+//! @brief Manages the entry points for the GL_EXT_direct_state_access extension API.
 class EXTDirectStateAccessAPI : public BaseExtension
 {
 public:
@@ -1074,7 +1074,7 @@ private:
     EXTDirectStateAccess _api;
 };
 
-// Manages the entry points for the GL_EXT_draw_buffers2 extension API.
+//! @brief Manages the entry points for the GL_EXT_draw_buffers2 extension API.
 class EXTDrawBUFFERS2API : public BaseExtension
 {
 public:
@@ -1095,7 +1095,7 @@ private:
     EXTDrawBUFFERS2 _api;
 };
 
-// Manages the entry points for the GL_EXT_draw_instanced extension API.
+//! @brief Manages the entry points for the GL_EXT_draw_instanced extension API.
 class EXTDrawInstancedAPI : public BaseExtension
 {
 public:
@@ -1119,7 +1119,7 @@ private:
     EXTDrawInstanced _api;
 };
 
-// Manages the entry points for the GL_EXT_draw_range_elements extension API.
+//! @brief Manages the entry points for the GL_EXT_draw_range_elements extension API.
 class EXTDrawRangeElementsAPI : public BaseExtension
 {
 public:
@@ -1141,7 +1141,7 @@ private:
     EXTDrawRangeElements _api;
 };
 
-// Manages the entry points for the GL_EXT_external_buffer extension API.
+//! @brief Manages the entry points for the GL_EXT_external_buffer extension API.
 class EXTExternalBufferAPI : public BaseExtension
 {
 public:
@@ -1167,7 +1167,7 @@ private:
     EXTExternalBuffer _api;
 };
 
-// Manages the entry points for the GL_EXT_fog_coord extension API.
+//! @brief Manages the entry points for the GL_EXT_fog_coord extension API.
 class EXTFogCoordAPI : public BaseExtension
 {
 public:
@@ -1192,7 +1192,7 @@ private:
     EXTFogCoord _api;
 };
 
-// Manages the entry points for the GL_EXT_framebuffer_blit extension API.
+//! @brief Manages the entry points for the GL_EXT_framebuffer_blit extension API.
 class EXTFramebufferBlitAPI : public BaseExtension
 {
 public:
@@ -1215,7 +1215,7 @@ private:
     EXTFramebufferBlit _api;
 };
 
-// Manages the entry points for the GL_EXT_framebuffer_multisample extension API.
+//! @brief Manages the entry points for the GL_EXT_framebuffer_multisample extension API.
 class EXTFramebufferMultisampleAPI : public BaseExtension
 {
 public:
@@ -1238,7 +1238,7 @@ private:
     EXTFramebufferMultisample _api;
 };
 
-// Manages the entry points for the GL_EXT_framebuffer_object extension API.
+//! @brief Manages the entry points for the GL_EXT_framebuffer_object extension API.
 class EXTFramebufferObjectAPI : public BaseExtension
 {
 public:
@@ -1294,7 +1294,7 @@ private:
     EXTFramebufferObject _api;
 };
 
-// Manages the entry points for the GL_EXT_geometry_shader4 extension API.
+//! @brief Manages the entry points for the GL_EXT_geometry_shader4 extension API.
 class EXTGeometrySHADER4API : public BaseExtension
 {
 public:
@@ -1315,7 +1315,7 @@ private:
     EXTGeometrySHADER4 _api;
 };
 
-// Manages the entry points for the GL_EXT_gpu_program_parameters extension API.
+//! @brief Manages the entry points for the GL_EXT_gpu_program_parameters extension API.
 class EXTGPUProgramParametersAPI : public BaseExtension
 {
 public:
@@ -1338,7 +1338,7 @@ private:
     EXTGPUProgramParameters _api;
 };
 
-// Manages the entry points for the GL_EXT_gpu_shader4 extension API.
+//! @brief Manages the entry points for the GL_EXT_gpu_shader4 extension API.
 class EXTGPUSHADER4API : public BaseExtension
 {
 public:
@@ -1394,7 +1394,7 @@ private:
     EXTGPUSHADER4 _api;
 };
 
-// Manages the entry points for the GL_EXT_histogram extension API.
+//! @brief Manages the entry points for the GL_EXT_histogram extension API.
 class EXTHistogramAPI : public BaseExtension
 {
 public:
@@ -1433,7 +1433,7 @@ private:
     EXTHistogram _api;
 };
 
-// Manages the entry points for the GL_EXT_index_func extension API.
+//! @brief Manages the entry points for the GL_EXT_index_func extension API.
 class EXTIndexFuncAPI : public BaseExtension
 {
 public:
@@ -1453,7 +1453,7 @@ private:
     EXTIndexFunc _api;
 };
 
-// Manages the entry points for the GL_EXT_index_material extension API.
+//! @brief Manages the entry points for the GL_EXT_index_material extension API.
 class EXTIndexMaterialAPI : public BaseExtension
 {
 public:
@@ -1473,7 +1473,7 @@ private:
     EXTIndexMaterial _api;
 };
 
-// Manages the entry points for the GL_EXT_light_texture extension API.
+//! @brief Manages the entry points for the GL_EXT_light_texture extension API.
 class EXTLightTextureAPI : public BaseExtension
 {
 public:
@@ -1495,7 +1495,7 @@ private:
     EXTLightTexture _api;
 };
 
-// Manages the entry points for the GL_EXT_memory_object extension API.
+//! @brief Manages the entry points for the GL_EXT_memory_object extension API.
 class EXTMemoryObjectAPI : public BaseExtension
 {
 public:
@@ -1570,7 +1570,7 @@ private:
     EXTMemoryObject _api;
 };
 
-// Manages the entry points for the GL_EXT_memory_object_fd extension API.
+//! @brief Manages the entry points for the GL_EXT_memory_object_fd extension API.
 class EXTMemoryObjectFdAPI : public BaseExtension
 {
 public:
@@ -1591,7 +1591,7 @@ private:
     EXTMemoryObjectFd _api;
 };
 
-// Manages the entry points for the GL_EXT_memory_object_win32 extension API.
+//! @brief Manages the entry points for the GL_EXT_memory_object_win32 extension API.
 class EXTMemoryObjectWIN32API : public BaseExtension
 {
 public:
@@ -1614,7 +1614,7 @@ private:
     EXTMemoryObjectWIN32 _api;
 };
 
-// Manages the entry points for the GL_EXT_multi_draw_arrays extension API.
+//! @brief Manages the entry points for the GL_EXT_multi_draw_arrays extension API.
 class EXTMultiDrawArraysAPI : public BaseExtension
 {
 public:
@@ -1638,7 +1638,7 @@ private:
     EXTMultiDrawArrays _api;
 };
 
-// Manages the entry points for the GL_EXT_multisample extension API.
+//! @brief Manages the entry points for the GL_EXT_multisample extension API.
 class EXTMultisampleAPI : public BaseExtension
 {
 public:
@@ -1659,7 +1659,7 @@ private:
     EXTMultisample _api;
 };
 
-// Manages the entry points for the GL_EXT_paletted_texture extension API.
+//! @brief Manages the entry points for the GL_EXT_paletted_texture extension API.
 class EXTPalettedTextureAPI : public BaseExtension
 {
 public:
@@ -1688,7 +1688,7 @@ private:
     EXTPalettedTexture _api;
 };
 
-// Manages the entry points for the GL_EXT_pixel_transform extension API.
+//! @brief Manages the entry points for the GL_EXT_pixel_transform extension API.
 class EXTPixelTransformAPI : public BaseExtension
 {
 public:
@@ -1720,7 +1720,7 @@ private:
     EXTPixelTransform _api;
 };
 
-// Manages the entry points for the GL_EXT_point_parameters extension API.
+//! @brief Manages the entry points for the GL_EXT_point_parameters extension API.
 class EXTPointParametersAPI : public BaseExtension
 {
 public:
@@ -1741,7 +1741,7 @@ private:
     EXTPointParameters _api;
 };
 
-// Manages the entry points for the GL_EXT_polygon_offset extension API.
+//! @brief Manages the entry points for the GL_EXT_polygon_offset extension API.
 class EXTPolygonOffsetAPI : public BaseExtension
 {
 public:
@@ -1761,7 +1761,7 @@ private:
     EXTPolygonOffset _api;
 };
 
-// Manages the entry points for the GL_EXT_polygon_offset_clamp extension API.
+//! @brief Manages the entry points for the GL_EXT_polygon_offset_clamp extension API.
 class EXTPolygonOffsetClampAPI : public BaseExtension
 {
 public:
@@ -1781,7 +1781,7 @@ private:
     EXTPolygonOffsetClamp _api;
 };
 
-// Manages the entry points for the GL_EXT_provoking_vertex extension API.
+//! @brief Manages the entry points for the GL_EXT_provoking_vertex extension API.
 class EXTProvokingVertexAPI : public BaseExtension
 {
 public:
@@ -1801,7 +1801,7 @@ private:
     EXTProvokingVertex _api;
 };
 
-// Manages the entry points for the GL_EXT_raster_multisample extension API.
+//! @brief Manages the entry points for the GL_EXT_raster_multisample extension API.
 class EXTRasterMultisampleAPI : public BaseExtension
 {
 public:
@@ -1821,7 +1821,7 @@ private:
     EXTRasterMultisample _api;
 };
 
-// Manages the entry points for the GL_EXT_secondary_color extension API.
+//! @brief Manages the entry points for the GL_EXT_secondary_color extension API.
 class EXTSecondaryColorAPI : public BaseExtension
 {
 public:
@@ -1858,7 +1858,7 @@ private:
     EXTSecondaryColor _api;
 };
 
-// Manages the entry points for the GL_EXT_semaphore extension API.
+//! @brief Manages the entry points for the GL_EXT_semaphore extension API.
 class EXTSemaphoreAPI : public BaseExtension
 {
 public:
@@ -1893,7 +1893,7 @@ private:
     EXTSemaphore _api;
 };
 
-// Manages the entry points for the GL_EXT_semaphore_fd extension API.
+//! @brief Manages the entry points for the GL_EXT_semaphore_fd extension API.
 class EXTSemaphoreFdAPI : public BaseExtension
 {
 public:
@@ -1914,7 +1914,7 @@ private:
     EXTSemaphoreFd _api;
 };
 
-// Manages the entry points for the GL_EXT_semaphore_win32 extension API.
+//! @brief Manages the entry points for the GL_EXT_semaphore_win32 extension API.
 class EXTSemaphoreWIN32API : public BaseExtension
 {
 public:
@@ -1938,7 +1938,7 @@ private:
     EXTSemaphoreWIN32 _api;
 };
 
-// Manages the entry points for the GL_EXT_separate_shader_objects extension API.
+//! @brief Manages the entry points for the GL_EXT_separate_shader_objects extension API.
 class EXTSeparateShaderObjectsAPI : public BaseExtension
 {
 public:
@@ -1960,7 +1960,7 @@ private:
     EXTSeparateShaderObjects _api;
 };
 
-// Manages the entry points for the GL_EXT_shader_framebuffer_fetch_non_coherent extension API.
+//! @brief Manages the entry points for the GL_EXT_shader_framebuffer_fetch_non_coherent extension API.
 class EXTShaderFramebufferFetchNonCoherentAPI : public BaseExtension
 {
 public:
@@ -1980,7 +1980,7 @@ private:
     EXTShaderFramebufferFetchNonCoherent _api;
 };
 
-// Manages the entry points for the GL_EXT_shader_image_load_store extension API.
+//! @brief Manages the entry points for the GL_EXT_shader_image_load_store extension API.
 class EXTShaderImageLoadStoreAPI : public BaseExtension
 {
 public:
@@ -2003,7 +2003,7 @@ private:
     EXTShaderImageLoadStore _api;
 };
 
-// Manages the entry points for the GL_EXT_stencil_clear_tag extension API.
+//! @brief Manages the entry points for the GL_EXT_stencil_clear_tag extension API.
 class EXTStencilClearTagAPI : public BaseExtension
 {
 public:
@@ -2023,7 +2023,7 @@ private:
     EXTStencilClearTag _api;
 };
 
-// Manages the entry points for the GL_EXT_stencil_two_side extension API.
+//! @brief Manages the entry points for the GL_EXT_stencil_two_side extension API.
 class EXTStencilTwoSideAPI : public BaseExtension
 {
 public:
@@ -2043,7 +2043,7 @@ private:
     EXTStencilTwoSide _api;
 };
 
-// Manages the entry points for the GL_EXT_subtexture extension API.
+//! @brief Manages the entry points for the GL_EXT_subtexture extension API.
 class EXTSubtextureAPI : public BaseExtension
 {
 public:
@@ -2068,7 +2068,7 @@ private:
     EXTSubtexture _api;
 };
 
-// Manages the entry points for the GL_EXT_texture3D extension API.
+//! @brief Manages the entry points for the GL_EXT_texture3D extension API.
 class EXTTEXTURE3DAPI : public BaseExtension
 {
 public:
@@ -2095,7 +2095,7 @@ private:
     EXTTEXTURE3D _api;
 };
 
-// Manages the entry points for the GL_EXT_texture_array extension API.
+//! @brief Manages the entry points for the GL_EXT_texture_array extension API.
 class EXTTextureArrayAPI : public BaseExtension
 {
 public:
@@ -2117,7 +2117,7 @@ private:
     EXTTextureArray _api;
 };
 
-// Manages the entry points for the GL_EXT_texture_buffer_object extension API.
+//! @brief Manages the entry points for the GL_EXT_texture_buffer_object extension API.
 class EXTTextureBufferObjectAPI : public BaseExtension
 {
 public:
@@ -2138,7 +2138,7 @@ private:
     EXTTextureBufferObject _api;
 };
 
-// Manages the entry points for the GL_EXT_texture_integer extension API.
+//! @brief Manages the entry points for the GL_EXT_texture_integer extension API.
 class EXTTextureIntegerAPI : public BaseExtension
 {
 public:
@@ -2167,7 +2167,7 @@ private:
     EXTTextureInteger _api;
 };
 
-// Manages the entry points for the GL_EXT_texture_object extension API.
+//! @brief Manages the entry points for the GL_EXT_texture_object extension API.
 class EXTTextureObjectAPI : public BaseExtension
 {
 public:
@@ -2194,7 +2194,7 @@ private:
     EXTTextureObject _api;
 };
 
-// Manages the entry points for the GL_EXT_texture_perturb_normal extension API.
+//! @brief Manages the entry points for the GL_EXT_texture_perturb_normal extension API.
 class EXTTexturePerturbNormalAPI : public BaseExtension
 {
 public:
@@ -2214,7 +2214,7 @@ private:
     EXTTexturePerturbNormal _api;
 };
 
-// Manages the entry points for the GL_EXT_texture_storage extension API.
+//! @brief Manages the entry points for the GL_EXT_texture_storage extension API.
 class EXTTextureStorageAPI : public BaseExtension
 {
 public:
@@ -2241,7 +2241,7 @@ private:
     EXTTextureStorage _api;
 };
 
-// Manages the entry points for the GL_EXT_timer_query extension API.
+//! @brief Manages the entry points for the GL_EXT_timer_query extension API.
 class EXTTimerQueryAPI : public BaseExtension
 {
 public:
@@ -2264,7 +2264,7 @@ private:
     EXTTimerQuery _api;
 };
 
-// Manages the entry points for the GL_EXT_transform_feedback extension API.
+//! @brief Manages the entry points for the GL_EXT_transform_feedback extension API.
 class EXTTransformFeedbackAPI : public BaseExtension
 {
 public:
@@ -2297,7 +2297,7 @@ private:
     EXTTransformFeedback _api;
 };
 
-// Manages the entry points for the GL_EXT_vertex_array extension API.
+//! @brief Manages the entry points for the GL_EXT_vertex_array extension API.
 class EXTVertexArrayAPI : public BaseExtension
 {
 public:
@@ -2330,7 +2330,7 @@ private:
     EXTVertexArray _api;
 };
 
-// Manages the entry points for the GL_EXT_vertex_attrib_64bit extension API.
+//! @brief Manages the entry points for the GL_EXT_vertex_attrib_64bit extension API.
 class EXTVertexAttrib64BITAPI : public BaseExtension
 {
 public:
@@ -2362,7 +2362,7 @@ private:
     EXTVertexAttrib64BIT _api;
 };
 
-// Manages the entry points for the GL_EXT_vertex_shader extension API.
+//! @brief Manages the entry points for the GL_EXT_vertex_shader extension API.
 class EXTVertexShaderAPI : public BaseExtension
 {
 public:
@@ -2435,7 +2435,7 @@ private:
     EXTVertexShader _api;
 };
 
-// Manages the entry points for the GL_EXT_vertex_weighting extension API.
+//! @brief Manages the entry points for the GL_EXT_vertex_weighting extension API.
 class EXTVertexWeightingAPI : public BaseExtension
 {
 public:
@@ -2458,7 +2458,7 @@ private:
     EXTVertexWeighting _api;
 };
 
-// Manages the entry points for the GL_EXT_win32_keyed_mutex extension API.
+//! @brief Manages the entry points for the GL_EXT_win32_keyed_mutex extension API.
 class EXTWIN32KeyedMutexAPI : public BaseExtension
 {
 public:
@@ -2479,7 +2479,7 @@ private:
     EXTWIN32KeyedMutex _api;
 };
 
-// Manages the entry points for the GL_EXT_window_rectangles extension API.
+//! @brief Manages the entry points for the GL_EXT_window_rectangles extension API.
 class EXTWindowRectanglesAPI : public BaseExtension
 {
 public:
@@ -2499,7 +2499,7 @@ private:
     EXTWindowRectangles _api;
 };
 
-// Manages the entry points for the GL_EXT_x11_sync_object extension API.
+//! @brief Manages the entry points for the GL_EXT_x11_sync_object extension API.
 class EXTX11SyncObjectAPI : public BaseExtension
 {
 public:
@@ -2525,7 +2525,7 @@ private:
 #ifdef _WIN32
 namespace wgl {
 
-// Manages the entry points for the WGL_EXT_display_color_table extension API.
+//! @brief Manages the entry points for the WGL_EXT_display_color_table extension API.
 class EXTDisplayColorTableAPI : public gl::BaseExtension
 {
 public:
@@ -2548,7 +2548,7 @@ private:
     EXTDisplayColorTable _api;
 };
 
-// Manages the entry points for the WGL_EXT_extensions_string extension API.
+//! @brief Manages the entry points for the WGL_EXT_extensions_string extension API.
 class EXTExtensionsStringAPI : public gl::BaseExtension
 {
 public:
@@ -2568,7 +2568,7 @@ private:
     EXTExtensionsString _api;
 };
 
-// Manages the entry points for the WGL_EXT_make_current_read extension API.
+//! @brief Manages the entry points for the WGL_EXT_make_current_read extension API.
 class EXTMakeCurrentReadAPI : public gl::BaseExtension
 {
 public:
@@ -2589,7 +2589,7 @@ private:
     EXTMakeCurrentRead _api;
 };
 
-// Manages the entry points for the WGL_EXT_pbuffer extension API.
+//! @brief Manages the entry points for the WGL_EXT_pbuffer extension API.
 class EXTPbufferAPI : public gl::BaseExtension
 {
 public:
@@ -2614,7 +2614,7 @@ private:
     EXTPbuffer _api;
 };
 
-// Manages the entry points for the WGL_EXT_pixel_format extension API.
+//! @brief Manages the entry points for the WGL_EXT_pixel_format extension API.
 class EXTPixelFormatAPI : public gl::BaseExtension
 {
 public:
@@ -2642,7 +2642,7 @@ private:
     EXTPixelFormat _api;
 };
 
-// Manages the entry points for the WGL_EXT_swap_control extension API.
+//! @brief Manages the entry points for the WGL_EXT_swap_control extension API.
 class EXTSwapControlAPI : public gl::BaseExtension
 {
 public:
@@ -2670,7 +2670,7 @@ private:
 #ifdef _USES_GLX
 namespace glx {
 
-// Manages the entry points for the GLX_EXT_import_context extension API.
+//! @brief Manages the entry points for the GLX_EXT_import_context extension API.
 class EXTImportContextAPI : public gl::BaseExtension
 {
 public:
@@ -2695,7 +2695,7 @@ private:
     EXTImportContext _api;
 };
 
-// Manages the entry points for the GLX_EXT_swap_control extension API.
+//! @brief Manages the entry points for the GLX_EXT_swap_control extension API.
 class EXTSwapControlAPI : public gl::BaseExtension
 {
 public:
@@ -2715,7 +2715,7 @@ private:
     EXTSwapControl _api;
 };
 
-// Manages the entry points for the GLX_EXT_texture_from_pixmap extension API.
+//! @brief Manages the entry points for the GLX_EXT_texture_from_pixmap extension API.
 class EXTTextureFromPixmapAPI : public gl::BaseExtension
 {
 public:

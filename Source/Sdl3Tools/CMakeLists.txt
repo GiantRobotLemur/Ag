@@ -25,6 +25,10 @@ ag_add_library(Sdl3Tools FOLDER     "Core"
                                     Window.cpp
                                     ${SDL3_TOOLS_INCLUDE_DIR}/Surface.hpp
                                     Surface.cpp
+                                    ${SDL3_TOOLS_INCLUDE_DIR}/Renderer.hpp
+                                    Renderer.cpp
+                                    ${SDL3_TOOLS_INCLUDE_DIR}/Texture.hpp
+                                    Texture.cpp
                                     ${SDL3_TOOLS_INCLUDE_DIR}/OpenGL.hpp
                                     OpenGL.cpp
                                     ${SDL3_TOOLS_INCLUDE_DIR}/GPUObjects.hpp
@@ -60,8 +64,13 @@ list(APPEND DOC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}"
 
 # Define the unit test harness.
 ag_add_test_app(Sdl3Tools_Tests TEST_LIB Sdl3Tools
-                                SOURCES  Test_DisplayModeSpec.cpp
-                                         Test_ProgramArguments.cpp)
+                                SOURCES  SdlVideoFixture.hpp
+                                         Test_DisplayModeSpec.cpp
+                                         Test_ProgramArguments.cpp
+                                         Test_Window.cpp
+                                         Test_Surface.cpp
+                                         Test_Renderer.cpp
+                                         Test_Texture.cpp)
 
 target_precompile_headers(Sdl3Tools_Tests PRIVATE <gtest/gtest.h>
                                                   [["PreCompiledHeader.hpp"]])

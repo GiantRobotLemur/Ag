@@ -2,7 +2,7 @@
 //! @brief The definition of utilities functions and classes which interface
 //! with the Windows kernel.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -93,6 +93,7 @@ void KernelFile::assign(HANDLE handle, Ag::string_cref_t path /*= Ag::String::Em
 
 //! @brief Creates a connection to a kernel file object, possibly creating
 //! a file.
+//! @param[in] path The UTF-8-encoded path to the object to open.
 //! @param[in] access Flags specifying desired access to the opened object such
 //! as GENERIC_READ and GENERIC_WRITE.
 //! @param[in] shareMode Flags specifying the level of cooperative access, such
@@ -136,6 +137,7 @@ bool KernelFile::tryCreate(Ag::string_cref_t path, uint32_t access,
 
 //! @brief Creates a connection to a kernel file object, possibly creating
 //! a file, throwing an exception on failure.
+//! @param[in] path The UTF-8-encoded path to the object to open.
 //! @param[in] access Flags specifying desired access to the opened object such
 //! as GENERIC_READ and GENERIC_WRITE.
 //! @param[in] shareMode Flags specifying the level of cooperative access, such
@@ -144,8 +146,6 @@ bool KernelFile::tryCreate(Ag::string_cref_t path, uint32_t access,
 //! created such as OPEN_EXISTING or CREATE_NEW.
 //! @param[in] attribs Flags defining additional file attributes such as
 //! FILE_ATTRIBUTE_NORMAL.
-//! @param[out] errorCode Receives the error code captured if the underlying
-//! call to CreateFileW() fails.
 //! @throws Win32Exception If the operation failed.
 void KernelFile::create(Ag::string_cref_t path, uint32_t access,
                         uint32_t shareMode, uint32_t creationFlags,

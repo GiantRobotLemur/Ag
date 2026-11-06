@@ -1,14 +1,14 @@
 //! @file Ag/ObjectGL/APIResolvers.hpp
 //! @brief The declaration of various implementations of Api
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_API_RESOLVERS_HPP__
-#define __AG_OBJECT_GL_API_RESOLVERS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_API_RESOLVERS_HPP_
+#define HEADER_AG_OBJECT_GL_API_RESOLVERS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files
@@ -45,7 +45,16 @@ public:
     // Inherited from APIResolver.
     virtual void *resolveEntryPoint(const char *fnName) const
     {
-        return SDL_GL_GetProcAddress(fnName);
+#ifdef _MSC_VER
+        return reinterpret_cast<void *>(SDL_GL_GetProcAddress(fnName));
+#else
+        // NOTE: We can't cast directly under g++ because the compiler will
+        // produce and error based on -fpermissive - but we know a function
+        // pointer is just a scalar value, so we're going to allow this.
+        SDL_FunctionPointer fnPtr = SDL_GL_GetProcAddress(fnName);
+
+        return *reinterpret_cast<void **>(&fnPtr);
+#endif
     }
 
     // Inherited from APIResolver.
@@ -60,7 +69,6 @@ public:
 using SDL3Resolver = SDLResolver;
 
 #endif // ifdef AG_OBJECT_GL_SDL3_DRIVER
-
 
 #endif // Header guard
 ////////////////////////////////////////////////////////////////////////////////

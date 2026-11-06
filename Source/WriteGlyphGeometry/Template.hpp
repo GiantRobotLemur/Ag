@@ -7,8 +7,8 @@
 //! https://github.com/GiantRobotLemur/MightyOak for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __WRITE_GLYPH_GEOMETRY_XXX_HPP__
-#define __WRITE_GLYPH_GEOMETRY_XXX_HPP__
+#ifndef HEADER_WRITE_GLYPH_GEOMETRY_XXX_HPP_
+#define HEADER_WRITE_GLYPH_GEOMETRY_XXX_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files

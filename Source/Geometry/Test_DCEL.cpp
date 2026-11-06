@@ -212,7 +212,7 @@ GTEST_TEST(DCEL_Edges, RemoveEdge)
     EdgeTable specimen(8);
 
     RectIndices firstIndices = addRect(specimen, nodes, -10, -15, 20, 30);
-    RectIndices secondIndices = addRect(specimen, nodes, 10, -15, 10, 30);
+    addRect(specimen, nodes, 10, -15, 10, 30);
 
     // Ensure the coincident points are represented by a single edge.
     EXPECT_EQ(specimen.getCount(), 7u);
@@ -502,7 +502,7 @@ GTEST_TEST(DCEL_Edges, FindSuccessorEdge)
     EdgeTable specimen(8);
 
     RectIndices firstIndices = addRect(specimen, nodes, -10, -15, 20, 30);
-    RectIndices secondIndices = addRect(specimen, nodes, 10, -15, 10, 30);
+    addRect(specimen, nodes, 10, -15, 10, 30);
 
     // Ensure the coincident points are represented by a single edge.
     EXPECT_EQ(specimen.getCount(), 7u);

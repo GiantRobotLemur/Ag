@@ -7,8 +7,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_STRING_HPP__
-#define __AG_CORE_STRING_HPP__
+#ifndef HEADER_AG_CORE_STRING_HPP_
+#define HEADER_AG_CORE_STRING_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -177,11 +177,18 @@ public:
     void appendToWideBuffer(std::vector<wchar_t> &buffer) const;
     int compare(const String &rhs) const;
     int compareIgnoreCase(const String &rhs) const;
+    int compareIgnoreCase(const std::string_view &rhs) const;
     bool startsWith(const std::string_view &prefix) const;
+    bool tryParseScalar(int8_t &scalar, int radix = 10) const;
+    bool tryParseScalar(uint8_t &scalar, int radix = 10) const;
+    bool tryParseScalar(int16_t &scalar, int radix = 10) const;
+    bool tryParseScalar(uint16_t &scalar, int radix = 10) const;
     bool tryParseScalar(int32_t &scalar, int radix = 10) const;
     bool tryParseScalar(uint32_t &scalar, int radix = 10) const;
     bool tryParseScalar(int64_t &scalar, int radix = 10) const;
     bool tryParseScalar(uint64_t &scalar, int radix = 10) const;
+    bool tryParseScalar(float &scalar) const;
+    bool tryParseScalar(double &scalar) const;
 private:
     // Internal Fields
     std::shared_ptr<StringPrivate> _str;

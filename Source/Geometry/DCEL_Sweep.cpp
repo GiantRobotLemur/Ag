@@ -163,8 +163,8 @@ bool checkForIntersection(NodeTable &nodes,
         const NumericDomain &domain = nodes.getGrid().getDomain();
 
         auto colinearEnd = std::unique(colinearNodes, colinearNodes + colinearNodeCount,
-                                       [&domain](const ParametricNode &lhs, const ParametricNode &rhs) {
-                                           return domain.isNearEqual(lhs.first, rhs.first);
+                                       [&domain](const ParametricNode &lhsNode, const ParametricNode &rhsNode) {
+                                           return domain.isNearEqual(lhsNode.first, rhsNode.first);
                                        });
         size_t uniqueCount = (colinearEnd - colinearNodes) - 1;
 
@@ -269,7 +269,6 @@ void splitEdgesAtIntersections(NodeTable &nodes, EdgeTable &edges,
 //! @brief Constructs an object representing the environment of a vertical
 //! plane sweep.
 //! @param[in] allNodes The table of nodes being swept through.
-//! @param[in] allEdges The table of edges which will appear in the sweep.
 SweepContext::SweepContext(const NodeTable &allNodes) :
     _allNodes(allNodes),
     _sweepPosition(nullptr),
@@ -331,8 +330,8 @@ SnapPoint SweepContext::getSweepIntersection(const LineEq2D &line) const
 //! @brief Compares snapped positions in relation to where they appear on the sweep.
 //! @param[in] lhs The first position to compare.
 //! @param[in] rhs The second position to compare.
-//! @retval If @p lhs appears earlier in the sweep than @p rhs.
-//! @retval If @p lhs appears at the same or a later point in the sweep than @p rhs.
+//! @retval true If @p lhs appears earlier in the sweep than @p rhs.
+//! @retval false If @p lhs appears at the same or a later point in the sweep than @p rhs.
 bool SweepContext::comparePositions(const SnapPoint &lhs, const SnapPoint &rhs) const
 {
     return lhs.lessThanSweep(rhs);

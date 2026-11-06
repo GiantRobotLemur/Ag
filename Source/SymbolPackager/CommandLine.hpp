@@ -1,14 +1,14 @@
-//! @file CommandLine.hpp
+//! @file SymbolPackager/CommandLine.hpp
 //! @brief The declaration of an object which manages command line arguments.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2021-2025
+//! @date 2021-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_SYMPKG_COMMAND_LINE_HPP__
-#define __AG_SYMPKG_COMMAND_LINE_HPP__
+#ifndef HEADER_AG_SYMPKG_COMMAND_LINE_HPP_
+#define HEADER_AG_SYMPKG_COMMAND_LINE_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,6 +23,7 @@ enum Command
     Command_None,
     Command_DisplayHelp,
     Command_PackageMsMapFile,
+    Command_PackageELFFile,
     Command_PackageGnuMapFile,
     Command_PackageGnuNmFile,
     Command_PackagePdbFile,

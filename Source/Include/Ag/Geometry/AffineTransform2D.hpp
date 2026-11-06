@@ -8,8 +8,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_GEOMETRY_AFFINE_TRANSFORM_2D_HPP__
-#define __AG_GEOMETRY_AFFINE_TRANSFORM_2D_HPP__
+#ifndef HEADER_AG_GEOMETRY_AFFINE_TRANSFORM_2D_HPP_
+#define HEADER_AG_GEOMETRY_AFFINE_TRANSFORM_2D_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,6 +27,9 @@ namespace Geom {
 class STRUCT_ALIGN_16 AffineTransform2D
 {
 public:
+    // Public Constants
+    static constexpr size_t ElementCount = 8;
+
     // Construction/Destruction
     AffineTransform2D();
     AffineTransform2D(const Matrix2x2 &scale);
@@ -64,7 +67,7 @@ public:
     AffineTransform2D &operator*=(const AffineTransform2D &rhs);
 private:
     // Internal Fields
-    double _m[8];
+    double _m[ElementCount];
 };
 
 //! @brief An alias for a properly aligned collection of AffineTransform2D objects.

@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/IBM.hpp
 //! @brief The declaration of IBM-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_IBM_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_IBM_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_IBM_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_IBM_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,7 +23,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_IBM_multimode_draw_arrays extension API specification.
+//! @brief The GL_IBM_multimode_draw_arrays extension API specification.
 struct IBMMultimodeDrawArrays {
     // Public Members
     void (APIENTRY *glMultiModeDrawArrays)(const GLenum *mode,
@@ -43,7 +43,7 @@ struct IBMMultimodeDrawArrays {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct IBMMultimodeDrawArrays
 
-// GL_IBM_static_data extension API specification.
+//! @brief The GL_IBM_static_data extension API specification.
 struct IBMStaticData {
     // Public Members
     void (APIENTRY *glFlushStaticData)(GLenum target);
@@ -56,7 +56,7 @@ struct IBMStaticData {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct IBMStaticData
 
-// GL_IBM_vertex_array_lists extension API specification.
+//! @brief The GL_IBM_vertex_array_lists extension API specification.
 struct IBMVertexArrayLists {
     // Public Members
     void (APIENTRY *glColorPointerList)(GLint size, GLenum type, GLint stride,

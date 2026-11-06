@@ -2,7 +2,7 @@
 //! @brief The definition of an object which uses direct calls to the WGL API
 //! to create an OpenGL context.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -23,6 +23,8 @@
 #include "Ag/ObjectGL/WGLDriver.hpp"
 #include "Ag/ObjectGL/WGL_CommandSets.hpp"
 #include "Ag/ObjectGL/Extensions/ARB.hpp"
+
+#ifdef _WIN32
 
 namespace gl {
 
@@ -748,7 +750,8 @@ DisplayContext WGLDriver::createDisplayDevice(const DisplayFormat &format) const
 }
 
 } // namespace gl
+
+#endif // ifdef _WIN32
+
 ////////////////////////////////////////////////////////////////////////////////
-
-
 

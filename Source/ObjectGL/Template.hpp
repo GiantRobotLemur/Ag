@@ -7,8 +7,8 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_XXX_HPP__
-#define __AG_OBJECT_GL_XXX_HPP__
+#ifndef HEADER_AG_OBJECT_GL_XXX_HPP_
+#define HEADER_AG_OBJECT_GL_XXX_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files

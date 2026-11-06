@@ -2,7 +2,7 @@
 //! @brief The declaration of Apple-specific extensions to the OpenGL Command set
 //! wrappers.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -11,8 +11,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_APPLE_COMMANDS_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_APPLE_COMMANDS_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_APPLE_COMMANDS_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_APPLE_COMMANDS_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -27,7 +27,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// Manages the entry points for the GL_APPLE_element_array extension API.
+//! @brief Manages the entry points for the GL_APPLE_element_array extension API.
 class APPLEElementArrayAPI : public BaseExtension
 {
 public:
@@ -55,7 +55,7 @@ private:
     APPLEElementArray _api;
 };
 
-// Manages the entry points for the GL_APPLE_fence extension API.
+//! @brief Manages the entry points for the GL_APPLE_fence extension API.
 class APPLEFenceAPI : public BaseExtension
 {
 public:
@@ -82,7 +82,7 @@ private:
     APPLEFence _api;
 };
 
-// Manages the entry points for the GL_APPLE_flush_buffer_range extension API.
+//! @brief Manages the entry points for the GL_APPLE_flush_buffer_range extension API.
 class APPLEFlushBufferRangeAPI : public BaseExtension
 {
 public:
@@ -104,7 +104,7 @@ private:
     APPLEFlushBufferRange _api;
 };
 
-// Manages the entry points for the GL_APPLE_object_purgeable extension API.
+//! @brief Manages the entry points for the GL_APPLE_object_purgeable extension API.
 class APPLEObjectPurgeableAPI : public BaseExtension
 {
 public:
@@ -127,7 +127,7 @@ private:
     APPLEObjectPurgeable _api;
 };
 
-// Manages the entry points for the GL_APPLE_texture_range extension API.
+//! @brief Manages the entry points for the GL_APPLE_texture_range extension API.
 class APPLETextureRangeAPI : public BaseExtension
 {
 public:
@@ -148,7 +148,7 @@ private:
     APPLETextureRange _api;
 };
 
-// Manages the entry points for the GL_APPLE_vertex_array_object extension API.
+//! @brief Manages the entry points for the GL_APPLE_vertex_array_object extension API.
 class APPLEVertexArrayObjectAPI : public BaseExtension
 {
 public:
@@ -171,7 +171,7 @@ private:
     APPLEVertexArrayObject _api;
 };
 
-// Manages the entry points for the GL_APPLE_vertex_array_range extension API.
+//! @brief Manages the entry points for the GL_APPLE_vertex_array_range extension API.
 class APPLEVertexArrayRangeAPI : public BaseExtension
 {
 public:
@@ -193,7 +193,7 @@ private:
     APPLEVertexArrayRange _api;
 };
 
-// Manages the entry points for the GL_APPLE_vertex_program_evaluators extension API.
+//! @brief Manages the entry points for the GL_APPLE_vertex_program_evaluators extension API.
 class APPLEVertexProgramEvaluatorsAPI : public BaseExtension
 {
 public:

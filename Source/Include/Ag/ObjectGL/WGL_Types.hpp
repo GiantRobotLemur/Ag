@@ -2,14 +2,14 @@
 //! @brief The declaration of data types and constants specific to WGL (Windows
 //! OpenGL).
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_WGL_TYPES_HPP__
-#define __AG_OBJECT_GL_WGL_TYPES_HPP__
+#ifndef HEADER_AG_OBJECT_GL_WGL_TYPES_HPP_
+#define HEADER_AG_OBJECT_GL_WGL_TYPES_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -19,12 +19,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Data Type Declarations
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef _WIN32
 DECLARE_HANDLE(HGPUNV);
 DECLARE_HANDLE(HPBUFFERARB);
 DECLARE_HANDLE(HPBUFFEREXT);
 DECLARE_HANDLE(HPVIDEODEV);
 DECLARE_HANDLE(HVIDEOINPUTDEVICENV);
 DECLARE_HANDLE(HVIDEOOUTPUTDEVICENV);
+
 struct _GPU_DEVICE {
     DWORD  cb;
     CHAR   DeviceName[32];
@@ -33,6 +35,8 @@ struct _GPU_DEVICE {
     RECT   rcVirtualScreen;
 };
 typedef struct _GPU_DEVICE *PGPU_DEVICE;
+
+#endif
 
 //! @brief A namespace encapsulating Windows-specific OpenGL commands and
 //! extensions.

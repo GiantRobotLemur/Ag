@@ -2,14 +2,14 @@
 //! @brief The declaration of an object representing a 3x3 matrix with double
 //! precision values.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_GEOMETRY_MATRIX_3X3_HPP__
-#define __AG_GEOMETRY_MATRIX_3X3_HPP__
+#ifndef HEADER_AG_GEOMETRY_MATRIX_3X3_HPP_
+#define HEADER_AG_GEOMETRY_MATRIX_3X3_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -47,7 +47,7 @@ public:
 
     // Operations
     void makeIdentity();
-    void makeScale(double scaleFactor);
+    void makeScale(double uniformScale);
     void makeScaleXY(const Point2D &scaleFactor);
     void makeScaleXY(double scaleFactorX, double scaleFactorY);
     void makeRotationXY(double angleInRadians);

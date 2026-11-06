@@ -1,14 +1,14 @@
 //! @file Ag/Win32Base/ComTools.hpp
 //! @brief The declaration of tools useful for interacting with COM objects.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_WIN32_BASE_COM_TOOLS_HPP__
-#define __AG_WIN32_BASE_COM_TOOLS_HPP__
+#ifndef HEADER_AG_WIN32_BASE_COM_TOOLS_HPP_
+#define HEADER_AG_WIN32_BASE_COM_TOOLS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files
@@ -217,7 +217,7 @@ public:
     //! @param[in] ptr The wrapper containing the interface pointer to cast.
     //! @retval true The cast was successful, the object now wraps the new
     //! interface pointer.
-    //! @retval false Either @ptr was in an unbound state or the cast failed.
+    //! @retval false Either @p ptr was in an unbound state or the cast failed.
     template<typename U, std::enable_if_t<std::is_base_of_v<IUnknown, U>, bool> = true>
     bool tryCast(REFIID interfaceId, ComPtr<U> &ptr) const
     {

@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/Intel.hpp
 //! @brief The declaration of Intel-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_INTEL_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_INTEL_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_INTEL_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_INTEL_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -23,7 +23,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_INTEL_framebuffer_CMAA extension API specification.
+//! @brief The GL_INTEL_framebuffer_CMAA extension API specification.
 struct INTELFramebufferCmaa {
     // Public Members
     void (APIENTRY *glApplyFramebufferAttachmentCMAA)();
@@ -36,7 +36,7 @@ struct INTELFramebufferCmaa {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct INTELFramebufferCmaa
 
-// GL_INTEL_map_texture extension API specification.
+//! @brief The GL_INTEL_map_texture extension API specification.
 struct INTELMapTexture {
     // Public Members
     void *(APIENTRY *glMapTexture2D)(GLuint texture, GLint level,
@@ -53,7 +53,7 @@ struct INTELMapTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct INTELMapTexture
 
-// GL_INTEL_parallel_arrays extension API specification.
+//! @brief The GL_INTEL_parallel_arrays extension API specification.
 struct INTELParallelArrays {
     // Public Members
     void (APIENTRY *glColorPointerv)(GLint size, GLenum type,
@@ -72,7 +72,7 @@ struct INTELParallelArrays {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct INTELParallelArrays
 
-// GL_INTEL_performance_query extension API specification.
+//! @brief The GL_INTEL_performance_query extension API specification.
 struct INTELPerformanceQuery {
     // Public Members
     void (APIENTRY *glBeginPerfQuery)(GLuint queryHandle);

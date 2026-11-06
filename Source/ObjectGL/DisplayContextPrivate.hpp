@@ -2,14 +2,14 @@
 //! @brief The declaration of the inner implementation of the Display Context
 //! object.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2022-2025
+//! @date 2022-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_DISPLAY_CONTEXT_PRIVATE_HPP__
-#define __AG_OBJECT_GL_DISPLAY_CONTEXT_PRIVATE_HPP__
+#ifndef HEADER_AG_OBJECT_GL_DISPLAY_CONTEXT_PRIVATE_HPP_
+#define HEADER_AG_OBJECT_GL_DISPLAY_CONTEXT_PRIVATE_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files
@@ -107,7 +107,7 @@ public:
     //! @param[in] options Specifies attributes of the context to create.
     //! @note On failure, an Ag::Exception of some type will be thrown.
     virtual std::shared_ptr<RenderContextPrivate> createContext(uintptr_t drawable,
-                                                                const ContextOptions &option) = 0;
+                                                                const ContextOptions &options) = 0;
 
 protected:
     void initialiseAPI();

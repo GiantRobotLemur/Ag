@@ -1,7 +1,7 @@
 //! @file Sdl3Tools/PropertySet.cpp
 //! @brief The definition of an object wrapping the SDL_PropertiesID handle.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2024-2025
+//! @date 2024-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -201,6 +201,9 @@ const void *PropertySet::getPointer(utf8_cptr_t name, const void *defaultValue) 
 //! @brief Sets the a property to a boolean value.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
+//! @throws ApiException If SDL_SetBooleanProperty() fails.
+//! @details The underlying property set is created on demand if the object
+//! does not yet wrap one.
 void PropertySet::set(utf8_cptr_t name, bool value)
 {
     ensureExists();
@@ -262,6 +265,10 @@ void PropertySet::set(utf8_cptr_t name, uint32_t value)
 //! @brief Sets the a property to a signed 64-bit integer value.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
+//! @throws ApiException If SDL_SetNumberProperty() fails.
+//! @details The underlying property set is created on demand if the object
+//! does not yet wrap one. The narrower integer overloads all widen to this
+//! one, since SDL stores every numeric property as a 64-bit signed value.
 void PropertySet::set(utf8_cptr_t name, int64_t value)
 {
     ensureExists();
@@ -283,6 +290,9 @@ void PropertySet::set(utf8_cptr_t name, uint64_t value)
 //! @brief Sets the a property to a 32-bit floating point value.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
+//! @throws ApiException If SDL_SetFloatProperty() fails.
+//! @details The underlying property set is created on demand if the object
+//! does not yet wrap one.
 void PropertySet::set(utf8_cptr_t name, float value)
 {
     ensureExists();
@@ -296,6 +306,10 @@ void PropertySet::set(utf8_cptr_t name, float value)
 //! @brief Sets the a property to a string value.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
+//! @throws ApiException If SDL_SetStringProperty() fails.
+//! @details SDL copies the string, so @p value need not outlive the call.
+//! The underlying property set is created on demand if the object does not
+//! yet wrap one.
 void PropertySet::set(utf8_cptr_t name, utf8_cptr_t value)
 {
     ensureExists();
@@ -309,6 +323,10 @@ void PropertySet::set(utf8_cptr_t name, utf8_cptr_t value)
 //! @brief Sets the a property to a string value.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
+//! @throws ApiException If SDL_SetStringProperty() fails.
+//! @details SDL copies the string, so @p value need not outlive the call.
+//! The underlying property set is created on demand if the object does not
+//! yet wrap one.
 void PropertySet::set(utf8_cptr_t name, string_cref_t value)
 {
     ensureExists();
@@ -322,6 +340,10 @@ void PropertySet::set(utf8_cptr_t name, string_cref_t value)
 //! @brief Sets the a property to a string value.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
+//! @throws ApiException If SDL_SetStringProperty() fails.
+//! @details A view which is not already null-terminated is copied into a
+//! temporary buffer first, since SDL requires a C string. The underlying
+//! property set is created on demand if the object does not yet wrap one.
 void PropertySet::set(utf8_cptr_t name, const std::string_view &value)
 {
     ensureExists();
@@ -359,6 +381,10 @@ void PropertySet::set(utf8_cptr_t name, const std::wstring_view &value)
 //! @brief Sets the a property to a pointer value.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
+//! @throws ApiException If SDL_SetPointerProperty() fails.
+//! @details The property set does not take ownership of @p value, so the
+//! pointer must remain valid for as long as the property is read. Use the
+//! overload taking a cleanup callback to transfer ownership instead.
 void PropertySet::setPointer(utf8_cptr_t name, const void *value)
 {
     ensureExists();
@@ -372,9 +398,12 @@ void PropertySet::setPointer(utf8_cptr_t name, const void *value)
 //! @brief Sets the a property to a pointer value which the property set owns.
 //! @param[in] name The name of the property to set.
 //! @param[in] value The new property value.
-//! @param[in] deleteFn A pointer to a function which disposes of the pointer
+//! @param[in] deleterFn A pointer to a function which disposes of the pointer
 //! once the property set is disposed of.
 //! @param[in] deleterContext Optional data to pass to the deleter function.
+//! @throws ApiException If SDL_SetPointerPropertyWithCleanup() fails.
+//! @details The property set takes ownership of @p value, calling
+//! @p deleterFn when the property is replaced or the set is destroyed.
 void PropertySet::setPointer(utf8_cptr_t name, const void *value,
                              SDL_CleanupPropertyCallback deleterFn,
                              void *deleterContext /*= nullptr*/)
@@ -491,6 +520,9 @@ void PropertySet::clone(const PropertySet &rhs)
 
 //! @brief Ensures the object wraps a valid property set, creating an empty
 //! one if necessary.
+//! @throws ApiException If SDL_CreateProperties() fails.
+//! @details Called by every setter so that a default-constructed
+//! PropertySet becomes usable on first write.
 void PropertySet::ensureExists()
 {
     if (_setId == 0)
@@ -523,7 +555,10 @@ PropertySetLock::PropertySetLock(SDL_PropertiesID setId) :
 }
 
 //! @brief Constructs an object which locks a property set for the current thread.
-//! @param[in] setId The handle to the property set to lock.
+//! @param[in] properties The property set to lock.
+//! @throws ApiException If SDL_LockProperties() fails.
+//! @details The lock is released when the object is destroyed. An unbound
+//! property set is accepted and locks nothing.
 PropertySetLock::PropertySetLock(const PropertySet &properties) :
     _setId(0)
 {

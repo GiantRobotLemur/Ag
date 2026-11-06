@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/Ext.hpp
 //! @brief The declaration of generic extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_EXT_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_EXT_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_EXT_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_EXT_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -31,7 +31,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_EXT_EGL_image_storage extension API specification.
+//! @brief The GL_EXT_EGL_image_storage extension API specification.
 struct EXTEglImageStorage {
     // Public Members
     void (APIENTRY *glEGLImageTargetTexStorage)(GLenum target,
@@ -49,7 +49,7 @@ struct EXTEglImageStorage {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTEglImageStorage
 
-// GL_EXT_bindable_uniform extension API specification.
+//! @brief The GL_EXT_bindable_uniform extension API specification.
 struct EXTBindableUniform {
     // Public Members
     GLint(APIENTRY *glGetUniformBufferSize)(GLuint program, GLint location);
@@ -65,7 +65,7 @@ struct EXTBindableUniform {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTBindableUniform
 
-// GL_EXT_blend_color extension API specification.
+//! @brief The GL_EXT_blend_color extension API specification.
 struct EXTBlendColor {
     // Public Members
     void (APIENTRY *glBlendColor)(GLfloat red, GLfloat green, GLfloat blue,
@@ -79,7 +79,7 @@ struct EXTBlendColor {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTBlendColor
 
-// GL_EXT_blend_equation_separate extension API specification.
+//! @brief The GL_EXT_blend_equation_separate extension API specification.
 struct EXTBlendEquationSeparate {
     // Public Members
     void (APIENTRY *glBlendEquationSeparate)(GLenum modeRGB, GLenum modeAlpha);
@@ -92,7 +92,7 @@ struct EXTBlendEquationSeparate {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTBlendEquationSeparate
 
-// GL_EXT_blend_func_separate extension API specification.
+//! @brief The GL_EXT_blend_func_separate extension API specification.
 struct EXTBlendFuncSeparate {
     // Public Members
     void (APIENTRY *glBlendFuncSeparate)(GLenum sfactorRGB, GLenum dfactorRGB,
@@ -107,7 +107,7 @@ struct EXTBlendFuncSeparate {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTBlendFuncSeparate
 
-// GL_EXT_blend_minmax extension API specification.
+//! @brief The GL_EXT_blend_minmax extension API specification.
 struct EXTBlendMinmax {
     // Public Members
     void (APIENTRY *glBlendEquation)(GLenum mode);
@@ -120,7 +120,7 @@ struct EXTBlendMinmax {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTBlendMinmax
 
-// GL_EXT_color_subtable extension API specification.
+//! @brief The GL_EXT_color_subtable extension API specification.
 struct EXTColorSubtable {
     // Public Members
     void (APIENTRY *glColorSubTable)(GLenum target, GLsizei start, GLsizei count,
@@ -137,7 +137,7 @@ struct EXTColorSubtable {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTColorSubtable
 
-// GL_EXT_compiled_vertex_array extension API specification.
+//! @brief The GL_EXT_compiled_vertex_array extension API specification.
 struct EXTCompiledVertexArray {
     // Public Members
     void (APIENTRY *glLockArrays)(GLint first, GLsizei count);
@@ -151,7 +151,7 @@ struct EXTCompiledVertexArray {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTCompiledVertexArray
 
-// GL_EXT_convolution extension API specification.
+//! @brief The GL_EXT_convolution extension API specification.
 struct EXTConvolution {
     // Public Members
     void (APIENTRY *glConvolutionFilter1D)(GLenum target, GLenum internalformat,
@@ -198,7 +198,7 @@ struct EXTConvolution {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTConvolution
 
-// GL_EXT_coordinate_frame extension API specification.
+//! @brief The GL_EXT_coordinate_frame extension API specification.
 struct EXTCoordinateFrame {
     // Public Members
     void (APIENTRY *glBinormal3b)(GLbyte bx, GLbyte by, GLbyte bz);
@@ -234,7 +234,7 @@ struct EXTCoordinateFrame {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTCoordinateFrame
 
-// GL_EXT_copy_texture extension API specification.
+//! @brief The GL_EXT_copy_texture extension API specification.
 struct EXTCopyTexture {
     // Public Members
     void (APIENTRY *glCopyTexImage1D)(GLenum target, GLint level,
@@ -263,7 +263,7 @@ struct EXTCopyTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTCopyTexture
 
-// GL_EXT_cull_vertex extension API specification.
+//! @brief The GL_EXT_cull_vertex extension API specification.
 struct EXTCullVertex {
     // Public Members
     void (APIENTRY *glCullParameterdv)(GLenum pname, GLdouble *params);
@@ -277,7 +277,7 @@ struct EXTCullVertex {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTCullVertex
 
-// GL_EXT_debug_label extension API specification.
+//! @brief The GL_EXT_debug_label extension API specification.
 struct EXTDebugLabel {
     // Public Members
     void (APIENTRY *glGetObjectLabel)(GLenum type, GLuint object,
@@ -294,7 +294,7 @@ struct EXTDebugLabel {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTDebugLabel
 
-// GL_EXT_debug_marker extension API specification.
+//! @brief The GL_EXT_debug_marker extension API specification.
 struct EXTDebugMarker {
     // Public Members
     void (APIENTRY *glInsertEventMarker)(GLsizei length, const GLchar *marker);
@@ -309,7 +309,7 @@ struct EXTDebugMarker {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTDebugMarker
 
-// GL_EXT_depth_bounds_test extension API specification.
+//! @brief The GL_EXT_depth_bounds_test extension API specification.
 struct EXTDepthBoundsTest {
     // Public Members
     void (APIENTRY *glDepthBounds)(GLclampd zmin, GLclampd zmax);
@@ -322,7 +322,7 @@ struct EXTDepthBoundsTest {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTDepthBoundsTest
 
-// GL_EXT_direct_state_access extension API specification.
+//! @brief The GL_EXT_direct_state_access extension API specification.
 // DSA extension doesn't identify which interfaces are core profile and keeps getting expanded. This is in sync with revision 34, 2010/09/07
 struct EXTDirectStateAccess {
     // Public Members
@@ -1087,7 +1087,7 @@ struct EXTDirectStateAccess {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTDirectStateAccess
 
-// GL_EXT_draw_buffers2 extension API specification.
+//! @brief The GL_EXT_draw_buffers2 extension API specification.
 struct EXTDrawBUFFERS2 {
     // Public Members
     void (APIENTRY *glColorMaskIndexed)(GLuint index, GLboolean r, GLboolean g,
@@ -1101,7 +1101,7 @@ struct EXTDrawBUFFERS2 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTDrawBUFFERS2
 
-// GL_EXT_draw_instanced extension API specification.
+//! @brief The GL_EXT_draw_instanced extension API specification.
 struct EXTDrawInstanced {
     // Public Members
     void (APIENTRY *glDrawArraysInstanced)(GLenum mode, GLint start,
@@ -1118,7 +1118,7 @@ struct EXTDrawInstanced {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTDrawInstanced
 
-// GL_EXT_draw_range_elements extension API specification.
+//! @brief The GL_EXT_draw_range_elements extension API specification.
 struct EXTDrawRangeElements {
     // Public Members
     void (APIENTRY *glDrawRangeElements)(GLenum mode, GLuint start, GLuint end,
@@ -1133,7 +1133,7 @@ struct EXTDrawRangeElements {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTDrawRangeElements
 
-// GL_EXT_external_buffer extension API specification.
+//! @brief The GL_EXT_external_buffer extension API specification.
 struct EXTExternalBuffer {
     // Public Members
     void (APIENTRY *glBufferStorageExternal)(GLenum target, GLintptr offset,
@@ -1153,7 +1153,7 @@ struct EXTExternalBuffer {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTExternalBuffer
 
-// GL_EXT_fog_coord extension API specification.
+//! @brief The GL_EXT_fog_coord extension API specification.
 struct EXTFogCoord {
     // Public Members
     void (APIENTRY *glFogCoordPointer)(GLenum type, GLsizei stride,
@@ -1171,7 +1171,7 @@ struct EXTFogCoord {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTFogCoord
 
-// GL_EXT_framebuffer_blit extension API specification.
+//! @brief The GL_EXT_framebuffer_blit extension API specification.
 struct EXTFramebufferBlit {
     // Public Members
     void (APIENTRY *glBlitFramebuffer)(GLint srcX0, GLint srcY0, GLint srcX1,
@@ -1187,7 +1187,7 @@ struct EXTFramebufferBlit {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTFramebufferBlit
 
-// GL_EXT_framebuffer_blit_layers extension API specification.
+//! @brief The GL_EXT_framebuffer_blit_layers extension API specification.
 struct EXTFramebufferBlitLayers {
     // Public Members
     void (APIENTRY *glBlitFramebufferLayer)(GLint srcX0, GLint srcY0,
@@ -1210,7 +1210,7 @@ struct EXTFramebufferBlitLayers {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTFramebufferBlitLayers
 
-// GL_EXT_framebuffer_multisample extension API specification.
+//! @brief The GL_EXT_framebuffer_multisample extension API specification.
 struct EXTFramebufferMultisample {
     // Public Members
     void (APIENTRY *glRenderbufferStorageMultisample)(GLenum target,
@@ -1227,7 +1227,7 @@ struct EXTFramebufferMultisample {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTFramebufferMultisample
 
-// GL_EXT_framebuffer_object extension API specification.
+//! @brief The GL_EXT_framebuffer_object extension API specification.
 struct EXTFramebufferObject {
     // Public Members
     void (APIENTRY *glBindFramebuffer)(GLenum target, GLuint framebuffer);
@@ -1270,7 +1270,7 @@ struct EXTFramebufferObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTFramebufferObject
 
-// GL_EXT_geometry_shader4 extension API specification.
+//! @brief The GL_EXT_geometry_shader4 extension API specification.
 struct EXTGeometrySHADER4 {
     // Public Members
     void (APIENTRY *glProgramParameteri)(GLuint program, GLenum pname,
@@ -1284,7 +1284,7 @@ struct EXTGeometrySHADER4 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTGeometrySHADER4
 
-// GL_EXT_gpu_program_parameters extension API specification.
+//! @brief The GL_EXT_gpu_program_parameters extension API specification.
 struct EXTGPUProgramParameters {
     // Public Members
     void (APIENTRY *glProgramEnvParameters4fv)(GLenum target, GLuint index,
@@ -1302,7 +1302,7 @@ struct EXTGPUProgramParameters {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTGPUProgramParameters
 
-// GL_EXT_gpu_shader4 extension API specification.
+//! @brief The GL_EXT_gpu_shader4 extension API specification.
 struct EXTGPUSHADER4 {
     // Public Members
     void (APIENTRY *glBindFragDataLocation)(GLuint program, GLuint color,
@@ -1363,7 +1363,7 @@ struct EXTGPUSHADER4 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTGPUSHADER4
 
-// GL_EXT_histogram extension API specification.
+//! @brief The GL_EXT_histogram extension API specification.
 struct EXTHistogram {
     // Public Members
     void (APIENTRY *glGetHistogram)(GLenum target, GLboolean reset,
@@ -1393,7 +1393,7 @@ struct EXTHistogram {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTHistogram
 
-// GL_EXT_index_func extension API specification.
+//! @brief The GL_EXT_index_func extension API specification.
 struct EXTIndexFunc {
     // Public Members
     void (APIENTRY *glIndexFunc)(GLenum func, GLclampf ref);
@@ -1406,7 +1406,7 @@ struct EXTIndexFunc {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTIndexFunc
 
-// GL_EXT_index_material extension API specification.
+//! @brief The GL_EXT_index_material extension API specification.
 struct EXTIndexMaterial {
     // Public Members
     void (APIENTRY *glIndexMaterial)(GLenum face, GLenum mode);
@@ -1419,7 +1419,7 @@ struct EXTIndexMaterial {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTIndexMaterial
 
-// GL_EXT_light_texture extension API specification.
+//! @brief The GL_EXT_light_texture extension API specification.
 struct EXTLightTexture {
     // Public Members
     void (APIENTRY *glApplyTexture)(GLenum mode);
@@ -1434,7 +1434,7 @@ struct EXTLightTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTLightTexture
 
-// GL_EXT_memory_object extension API specification.
+//! @brief The GL_EXT_memory_object extension API specification.
 struct EXTMemoryObject {
     // Public Members
     void (APIENTRY *glBufferStorageMem)(GLenum target, GLsizeiptr size,
@@ -1511,7 +1511,7 @@ struct EXTMemoryObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTMemoryObject
 
-// GL_EXT_memory_object_fd extension API specification.
+//! @brief The GL_EXT_memory_object_fd extension API specification.
 struct EXTMemoryObjectFd {
     // Public Members
     void (APIENTRY *glImportMemoryFd)(GLuint memory, GLuint64 size,
@@ -1525,7 +1525,7 @@ struct EXTMemoryObjectFd {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTMemoryObjectFd
 
-// GL_EXT_memory_object_win32 extension API specification.
+//! @brief The GL_EXT_memory_object_win32 extension API specification.
 struct EXTMemoryObjectWIN32 {
     // Public Members
     void (APIENTRY *glImportMemoryWin32Handle)(GLuint memory, GLuint64 size,
@@ -1541,7 +1541,7 @@ struct EXTMemoryObjectWIN32 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTMemoryObjectWIN32
 
-// GL_EXT_multi_draw_arrays extension API specification.
+//! @brief The GL_EXT_multi_draw_arrays extension API specification.
 struct EXTMultiDrawArrays {
     // Public Members
     void (APIENTRY *glMultiDrawArrays)(GLenum mode, const GLint *first,
@@ -1558,7 +1558,7 @@ struct EXTMultiDrawArrays {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTMultiDrawArrays
 
-// GL_EXT_multisample extension API specification.
+//! @brief The GL_EXT_multisample extension API specification.
 struct EXTMultisample {
     // Public Members
     void (APIENTRY *glSampleMask)(GLclampf value, GLboolean invert);
@@ -1572,7 +1572,7 @@ struct EXTMultisample {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTMultisample
 
-// GL_EXT_paletted_texture extension API specification.
+//! @brief The GL_EXT_paletted_texture extension API specification.
 struct EXTPalettedTexture {
     // Public Members
     void (APIENTRY *glColorTable)(GLenum target, GLenum internalFormat,
@@ -1593,7 +1593,7 @@ struct EXTPalettedTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTPalettedTexture
 
-// GL_EXT_pixel_transform extension API specification.
+//! @brief The GL_EXT_pixel_transform extension API specification.
 struct EXTPixelTransform {
     // Public Members
     void (APIENTRY *glGetPixelTransformParameterfv)(GLenum target, GLenum pname,
@@ -1617,7 +1617,7 @@ struct EXTPixelTransform {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTPixelTransform
 
-// GL_EXT_point_parameters extension API specification.
+//! @brief The GL_EXT_point_parameters extension API specification.
 struct EXTPointParameters {
     // Public Members
     void (APIENTRY *glPointParameterf)(GLenum pname, GLfloat param);
@@ -1631,7 +1631,7 @@ struct EXTPointParameters {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTPointParameters
 
-// GL_EXT_polygon_offset extension API specification.
+//! @brief The GL_EXT_polygon_offset extension API specification.
 struct EXTPolygonOffset {
     // Public Members
     void (APIENTRY *glPolygonOffset)(GLfloat factor, GLfloat bias);
@@ -1644,7 +1644,7 @@ struct EXTPolygonOffset {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTPolygonOffset
 
-// GL_EXT_polygon_offset_clamp extension API specification.
+//! @brief The GL_EXT_polygon_offset_clamp extension API specification.
 struct EXTPolygonOffsetClamp {
     // Public Members
     void (APIENTRY *glPolygonOffsetClamp)(GLfloat factor, GLfloat units,
@@ -1658,7 +1658,7 @@ struct EXTPolygonOffsetClamp {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTPolygonOffsetClamp
 
-// GL_EXT_provoking_vertex extension API specification.
+//! @brief The GL_EXT_provoking_vertex extension API specification.
 struct EXTProvokingVertex {
     // Public Members
     void (APIENTRY *glProvokingVertex)(GLenum mode);
@@ -1671,7 +1671,7 @@ struct EXTProvokingVertex {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTProvokingVertex
 
-// GL_EXT_raster_multisample extension API specification.
+//! @brief The GL_EXT_raster_multisample extension API specification.
 struct EXTRasterMultisample {
     // Public Members
     void (APIENTRY *glRasterSamples)(GLuint samples,
@@ -1685,7 +1685,7 @@ struct EXTRasterMultisample {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTRasterMultisample
 
-// GL_EXT_secondary_color extension API specification.
+//! @brief The GL_EXT_secondary_color extension API specification.
 struct EXTSecondaryColor {
     // Public Members
     void (APIENTRY *glSecondaryColor3b)(GLbyte red, GLbyte green, GLbyte blue);
@@ -1718,7 +1718,7 @@ struct EXTSecondaryColor {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTSecondaryColor
 
-// GL_EXT_semaphore extension API specification.
+//! @brief The GL_EXT_semaphore extension API specification.
 struct EXTSemaphore {
     // Public Members
     void (APIENTRY *glDeleteSemaphores)(GLsizei n, const GLuint *semaphores);
@@ -1748,7 +1748,7 @@ struct EXTSemaphore {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTSemaphore
 
-// GL_EXT_semaphore_fd extension API specification.
+//! @brief The GL_EXT_semaphore_fd extension API specification.
 struct EXTSemaphoreFd {
     // Public Members
     void (APIENTRY *glImportSemaphoreFd)(GLuint semaphore, GLenum handleType,
@@ -1762,7 +1762,7 @@ struct EXTSemaphoreFd {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTSemaphoreFd
 
-// GL_EXT_semaphore_win32 extension API specification.
+//! @brief The GL_EXT_semaphore_win32 extension API specification.
 struct EXTSemaphoreWIN32 {
     // Public Members
     void (APIENTRY *glImportSemaphoreWin32Handle)(GLuint semaphore,
@@ -1780,7 +1780,7 @@ struct EXTSemaphoreWIN32 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTSemaphoreWIN32
 
-// GL_EXT_separate_shader_objects extension API specification.
+//! @brief The GL_EXT_separate_shader_objects extension API specification.
 struct EXTSeparateShaderObjects {
     // Public Members
     void (APIENTRY *glActiveProgram)(GLuint program);
@@ -1795,7 +1795,7 @@ struct EXTSeparateShaderObjects {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTSeparateShaderObjects
 
-// GL_EXT_shader_framebuffer_fetch_non_coherent extension API specification.
+//! @brief The GL_EXT_shader_framebuffer_fetch_non_coherent extension API specification.
 struct EXTShaderFramebufferFetchNonCoherent {
     // Public Members
     void (APIENTRY *glFramebufferFetchBarrier)();
@@ -1808,7 +1808,7 @@ struct EXTShaderFramebufferFetchNonCoherent {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTShaderFramebufferFetchNonCoherent
 
-// GL_EXT_shader_image_load_store extension API specification.
+//! @brief The GL_EXT_shader_image_load_store extension API specification.
 struct EXTShaderImageLoadStore {
     // Public Members
     void (APIENTRY *glBindImageTexture)(GLuint index, GLuint texture,
@@ -1824,7 +1824,7 @@ struct EXTShaderImageLoadStore {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTShaderImageLoadStore
 
-// GL_EXT_stencil_clear_tag extension API specification.
+//! @brief The GL_EXT_stencil_clear_tag extension API specification.
 struct EXTStencilClearTag {
     // Public Members
     void (APIENTRY *glStencilClearTag)(GLsizei stencilTagBits,
@@ -1838,7 +1838,7 @@ struct EXTStencilClearTag {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTStencilClearTag
 
-// GL_EXT_stencil_two_side extension API specification.
+//! @brief The GL_EXT_stencil_two_side extension API specification.
 struct EXTStencilTwoSide {
     // Public Members
     void (APIENTRY *glActiveStencilFace)(GLenum face);
@@ -1851,7 +1851,7 @@ struct EXTStencilTwoSide {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTStencilTwoSide
 
-// GL_EXT_subtexture extension API specification.
+//! @brief The GL_EXT_subtexture extension API specification.
 struct EXTSubtexture {
     // Public Members
     void (APIENTRY *glTexSubImage1D)(GLenum target, GLint level, GLint xoffset,
@@ -1870,7 +1870,7 @@ struct EXTSubtexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTSubtexture
 
-// GL_EXT_texture3D extension API specification.
+//! @brief The GL_EXT_texture3D extension API specification.
 struct EXTTEXTURE3D {
     // Public Members
     void (APIENTRY *glTexImage3D)(GLenum target, GLint level,
@@ -1891,7 +1891,7 @@ struct EXTTEXTURE3D {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTEXTURE3D
 
-// GL_EXT_texture_array extension API specification.
+//! @brief The GL_EXT_texture_array extension API specification.
 struct EXTTextureArray {
     // Public Members
     void (APIENTRY *glFramebufferTextureLayer)(GLenum target, GLenum attachment,
@@ -1906,7 +1906,7 @@ struct EXTTextureArray {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTextureArray
 
-// GL_EXT_texture_buffer_object extension API specification.
+//! @brief The GL_EXT_texture_buffer_object extension API specification.
 struct EXTTextureBufferObject {
     // Public Members
     void (APIENTRY *glTexBuffer)(GLenum target, GLenum internalformat,
@@ -1920,7 +1920,7 @@ struct EXTTextureBufferObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTextureBufferObject
 
-// GL_EXT_texture_integer extension API specification.
+//! @brief The GL_EXT_texture_integer extension API specification.
 struct EXTTextureInteger {
     // Public Members
     void (APIENTRY *glClearColorIi)(GLint red, GLint green, GLint blue,
@@ -1944,7 +1944,7 @@ struct EXTTextureInteger {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTextureInteger
 
-// GL_EXT_texture_object extension API specification.
+//! @brief The GL_EXT_texture_object extension API specification.
 struct EXTTextureObject {
     // Public Members
     GLboolean(APIENTRY *glAreTexturesResident)(GLsizei n,
@@ -1965,7 +1965,7 @@ struct EXTTextureObject {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTextureObject
 
-// GL_EXT_texture_perturb_normal extension API specification.
+//! @brief The GL_EXT_texture_perturb_normal extension API specification.
 struct EXTTexturePerturbNormal {
     // Public Members
     void (APIENTRY *glTextureNormal)(GLenum mode);
@@ -1978,7 +1978,7 @@ struct EXTTexturePerturbNormal {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTexturePerturbNormal
 
-// GL_EXT_texture_storage extension API specification.
+//! @brief The GL_EXT_texture_storage extension API specification.
 struct EXTTextureStorage {
     // Public Members
     void (APIENTRY *glTexStorage1D)(GLenum target, GLsizei levels,
@@ -1998,7 +1998,7 @@ struct EXTTextureStorage {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTextureStorage
 
-// GL_EXT_timer_query extension API specification.
+//! @brief The GL_EXT_timer_query extension API specification.
 struct EXTTimerQuery {
     // Public Members
     void (APIENTRY *glGetQueryObjecti64v)(GLuint id, GLenum pname,
@@ -2014,7 +2014,7 @@ struct EXTTimerQuery {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTimerQuery
 
-// GL_EXT_transform_feedback extension API specification.
+//! @brief The GL_EXT_transform_feedback extension API specification.
 struct EXTTransformFeedback {
     // Public Members
     void (APIENTRY *glBeginTransformFeedback)(GLenum primitiveMode);
@@ -2042,7 +2042,7 @@ struct EXTTransformFeedback {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTTransformFeedback
 
-// GL_EXT_vertex_array extension API specification.
+//! @brief The GL_EXT_vertex_array extension API specification.
 struct EXTVertexArray {
     // Public Members
     void (APIENTRY *glArrayElement)(GLint i);
@@ -2069,7 +2069,7 @@ struct EXTVertexArray {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTVertexArray
 
-// GL_EXT_vertex_attrib_64bit extension API specification.
+//! @brief The GL_EXT_vertex_attrib_64bit extension API specification.
 struct EXTVertexAttrib64BIT {
     // Public Members
     void (APIENTRY *glGetVertexAttribLdv)(GLuint index, GLenum pname,
@@ -2096,7 +2096,7 @@ struct EXTVertexAttrib64BIT {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTVertexAttrib64BIT
 
-// GL_EXT_vertex_shader extension API specification.
+//! @brief The GL_EXT_vertex_shader extension API specification.
 struct EXTVertexShader {
     // Public Members
     void (APIENTRY *glBeginVertexShader)();
@@ -2161,7 +2161,7 @@ struct EXTVertexShader {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTVertexShader
 
-// GL_EXT_vertex_weighting extension API specification.
+//! @brief The GL_EXT_vertex_weighting extension API specification.
 struct EXTVertexWeighting {
     // Public Members
     void (APIENTRY *glVertexWeightPointer)(GLint size, GLenum type,
@@ -2177,7 +2177,7 @@ struct EXTVertexWeighting {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTVertexWeighting
 
-// GL_EXT_win32_keyed_mutex extension API specification.
+//! @brief The GL_EXT_win32_keyed_mutex extension API specification.
 struct EXTWIN32KeyedMutex {
     // Public Members
     GLboolean(APIENTRY *glAcquireKeyedMutexWin32)(GLuint memory, GLuint64 key,
@@ -2192,7 +2192,7 @@ struct EXTWIN32KeyedMutex {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTWIN32KeyedMutex
 
-// GL_EXT_window_rectangles extension API specification.
+//! @brief The GL_EXT_window_rectangles extension API specification.
 struct EXTWindowRectangles {
     // Public Members
     void (APIENTRY *glWindowRectangles)(GLenum mode, GLsizei count,
@@ -2206,7 +2206,7 @@ struct EXTWindowRectangles {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct EXTWindowRectangles
 
-// GL_EXT_x11_sync_object extension API specification.
+//! @brief The GL_EXT_x11_sync_object extension API specification.
 struct EXTX11SyncObject {
     // Public Members
     GLsync(APIENTRY *glImportSync)(GLenum external_sync_type,

@@ -1,7 +1,7 @@
 //! @file Ag/ObjectGL/Extensions/AMD.hpp
 //! @brief The declaration of AMD-specific extensions to the OpenGL API.
 //! @author GiantRobotLemur@na-se.co.uk
-//! @date 2025
+//! @date 2025-2026
 //! @copyright This file is part of the Silver (Ag) project which is released
 //! under LGPL 3 license. See LICENSE file at the repository root or go to
 //! https://github.com/GiantRobotLemur/Ag for full license details.
@@ -10,8 +10,8 @@
 //! definition using a bespoke code generation tool.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_OBJECT_GL_AMD_EXTENSIONS_HPP__
-#define __AG_OBJECT_GL_AMD_EXTENSIONS_HPP__
+#ifndef HEADER_AG_OBJECT_GL_AMD_EXTENSIONS_HPP_
+#define HEADER_AG_OBJECT_GL_AMD_EXTENSIONS_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
@@ -30,7 +30,7 @@ namespace gl {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-// GL_AMD_debug_output extension API specification.
+//! @brief The GL_AMD_debug_output extension API specification.
 struct AMDDebugOutput {
     // Public Members
     void (APIENTRY *glDebugMessageCallback)(GLDEBUGPROCAMD callback,
@@ -54,7 +54,7 @@ struct AMDDebugOutput {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDDebugOutput
 
-// GL_AMD_draw_buffers_blend extension API specification.
+//! @brief The GL_AMD_draw_buffers_blend extension API specification.
 struct AMDDrawBuffersBlend {
     // Public Members
     void (APIENTRY *glBlendEquationIndexed)(GLuint buf, GLenum mode);
@@ -73,7 +73,7 @@ struct AMDDrawBuffersBlend {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDDrawBuffersBlend
 
-// GL_AMD_framebuffer_multisample_advanced extension API specification.
+//! @brief The GL_AMD_framebuffer_multisample_advanced extension API specification.
 struct AMDFramebufferMultisampleAdvanced {
     // Public Members
     void (APIENTRY *glNamedRenderbufferStorageMultisampleAdvanced)(GLuint renderbuffer,
@@ -97,7 +97,7 @@ struct AMDFramebufferMultisampleAdvanced {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDFramebufferMultisampleAdvanced
 
-// GL_AMD_framebuffer_sample_positions extension API specification.
+//! @brief The GL_AMD_framebuffer_sample_positions extension API specification.
 struct AMDFramebufferSamplePositions {
     // Public Members
     void (APIENTRY *glFramebufferSamplePositionsfv)(GLenum target,
@@ -127,7 +127,7 @@ struct AMDFramebufferSamplePositions {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDFramebufferSamplePositions
 
-// GL_AMD_gpu_shader_int64 extension API specification.
+//! @brief The GL_AMD_gpu_shader_int64 extension API specification.
 struct AMDGPUShaderInt64 {
     // Public Members
     void (APIENTRY *glGetUniformi64v)(GLuint program, GLint location,
@@ -215,7 +215,7 @@ struct AMDGPUShaderInt64 {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDGPUShaderInt64
 
-// GL_AMD_interleaved_elements extension API specification.
+//! @brief The GL_AMD_interleaved_elements extension API specification.
 struct AMDInterleavedElements {
     // Public Members
     void (APIENTRY *glVertexAttribParameteri)(GLuint index, GLenum pname,
@@ -229,7 +229,7 @@ struct AMDInterleavedElements {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDInterleavedElements
 
-// GL_AMD_multi_draw_indirect extension API specification.
+//! @brief The GL_AMD_multi_draw_indirect extension API specification.
 struct AMDMultiDrawIndirect {
     // Public Members
     void (APIENTRY *glMultiDrawArraysIndirect)(GLenum mode, const void *indirect,
@@ -247,7 +247,7 @@ struct AMDMultiDrawIndirect {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDMultiDrawIndirect
 
-// GL_AMD_name_gen_delete extension API specification.
+//! @brief The GL_AMD_name_gen_delete extension API specification.
 struct AMDNameGenDelete {
     // Public Members
     void (APIENTRY *glDeleteNames)(GLenum identifier, GLuint num,
@@ -263,7 +263,7 @@ struct AMDNameGenDelete {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDNameGenDelete
 
-// GL_AMD_occlusion_query_event extension API specification.
+//! @brief The GL_AMD_occlusion_query_event extension API specification.
 struct AMDOcclusionQueryEvent {
     // Public Members
     void (APIENTRY *glQueryObjectParameterui)(GLenum target, GLuint id,
@@ -277,7 +277,7 @@ struct AMDOcclusionQueryEvent {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDOcclusionQueryEvent
 
-// GL_AMD_performance_monitor extension API specification.
+//! @brief The GL_AMD_performance_monitor extension API specification.
 struct AMDPerformanceMonitor {
     // Public Members
     void (APIENTRY *glBeginPerfMonitor)(GLuint monitor);
@@ -315,7 +315,7 @@ struct AMDPerformanceMonitor {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDPerformanceMonitor
 
-// GL_AMD_sample_positions extension API specification.
+//! @brief The GL_AMD_sample_positions extension API specification.
 struct AMDSamplePositions {
     // Public Members
     void (APIENTRY *glSetMultisamplefv)(GLenum pname, GLuint index,
@@ -329,7 +329,7 @@ struct AMDSamplePositions {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDSamplePositions
 
-// GL_AMD_sparse_texture extension API specification.
+//! @brief The GL_AMD_sparse_texture extension API specification.
 struct AMDSparseTexture {
     // Public Members
     void (APIENTRY *glTexStorageSparse)(GLenum target, GLenum internalFormat,
@@ -349,7 +349,7 @@ struct AMDSparseTexture {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDSparseTexture
 
-// GL_AMD_stencil_operation_extended extension API specification.
+//! @brief The GL_AMD_stencil_operation_extended extension API specification.
 struct AMDStencilOperationExtended {
     // Public Members
     void (APIENTRY *glStencilOpValue)(GLenum face, GLuint value);
@@ -362,7 +362,7 @@ struct AMDStencilOperationExtended {
     void resolveEntryPoints(const APIResolver *resolver);
 }; // struct AMDStencilOperationExtended
 
-// GL_AMD_vertex_shader_tessellator extension API specification.
+//! @brief The GL_AMD_vertex_shader_tessellator extension API specification.
 struct AMDVertexShaderTessellator {
     // Public Members
     void (APIENTRY *glTessellationFactor)(GLfloat factor);
@@ -381,7 +381,7 @@ struct AMDVertexShaderTessellator {
 #ifdef _WIN32
 namespace wgl {
 
-// WGL_AMD_gpu_association extension API specification.
+//! @brief The WGL_AMD_gpu_association extension API specification.
 struct AMDGPUAssociation {
     // Public Members
     VOID(APIENTRY *wglBlitContextFramebuffer)(HGLRC dstCtx, GLint srcX0,
@@ -416,7 +416,7 @@ struct AMDGPUAssociation {
 #ifdef _USES_GLX
 namespace glx {
 
-// GLX_AMD_gpu_association extension API specification.
+//! @brief The GLX_AMD_gpu_association extension API specification.
 struct AMDGPUAssociation {
     // Public Members
     void (APIENTRY *glXBlitContextFramebuffer)(GLXContext dstCtx, GLint srcX0,
