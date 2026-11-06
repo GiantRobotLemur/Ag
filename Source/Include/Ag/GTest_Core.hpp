@@ -52,15 +52,12 @@ _Pragma("GCC optimize(\"-O0\")")
 #define NO_OPTIMIZE_FN_END
 #endif
 
-namespace Ag {
-namespace Fs {
-}} // namespace Ag::Fs
+#include "Core.hpp"
 
 inline void PrintTo(const Ag::Fs::Path &value, std::ostream *os)
 {
     *os << value.toString().getUtf8Bytes();
 }
-
 
 #endif // Header guard
 

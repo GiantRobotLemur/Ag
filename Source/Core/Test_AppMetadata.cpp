@@ -102,15 +102,16 @@ GTEST_TEST(AppMetadata, Construction)
     EXPECT_FALSE(Ag::Utf::isNullOrEmpty(specimen.Description.data()));
 }
 
-GTEST_TEST(AppMetadata, ConstructionWithBuildNo)
+GTEST_TEST(AppMetadata, ConstructionWithBuildName)
 {
-    constexpr int BuildNo = 69;
-    AppMetadata specimen = MAKE_APP_METADATA_EX(69);
+    std::string_view BuildName = "69 is Divine";
+    AppMetadata specimen = MAKE_APP_METADATA_EX(BuildName);
 
     EXPECT_EQ(specimen.AppVersion.getMajor(), 1);
     EXPECT_EQ(specimen.AppVersion.getMinor(), 2);
     EXPECT_EQ(specimen.AppVersion.getRevision(), 3);
-    EXPECT_EQ(specimen.AppVersion.getPatch(), BuildNo);
+    EXPECT_EQ(specimen.AppVersion.getPatch(), 4);
+    EXPECT_EQ(specimen.AppVersion.getComment(), BuildName);
 
     EXPECT_FALSE(Ag::Utf::isNullOrEmpty(specimen.AppName.data()));
     EXPECT_FALSE(Ag::Utf::isNullOrEmpty(specimen.DisplayName.data()));

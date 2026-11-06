@@ -53,6 +53,9 @@ if (DEFINED AG_IS_ROOT)
         ag_configure_sdl3()
     endif()
 else()
+    # Promote AG_CMAKE_UTILS_DIR for use in sibling sub-directories.
+    set(AG_CMAKE_UTILS_DIR "${AG_CMAKE_UTILS_DIR}" PARENT_SCOPE)
+
     # Set build settings compatible with the Ag libraries.
     ag_configure_build()
 
