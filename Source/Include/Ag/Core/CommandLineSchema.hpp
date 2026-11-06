@@ -165,7 +165,7 @@ public:
     SchemaBuilder();
 
     // Accessors
-    void setAppInfo(const AppMetadata &appInfo);
+    void setAppInfo(const AppMetadata &appInfo, bool enableShowVersion = false);
     void setAppName(const std::string_view &name);
     void setDescription(const std::string_view &description);
 

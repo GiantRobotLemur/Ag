@@ -50,6 +50,10 @@ void *mallocAligned(size_t alignment, size_t sizeInBytes);
 void *mallocAlignedPow2(uint8_t alignmentPow2, size_t sizeInBytes);
 void freeAligned(void *alignedBlock);
 
+size_t getPagedBlockSize();
+void *allocatePagedBlock(size_t blockCount);
+bool freePagedBlock(void *block, size_t blockCount, bool dontThrow);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Templates
 ////////////////////////////////////////////////////////////////////////////////

@@ -599,9 +599,16 @@ bool App::initialise(const Cli::ProgramArguments * /* args */)
 //! @param[in] args The arguments parsed from the command line.
 //! @return The global process result to be returned from the process entry
 //! point function i.e. main() or WinMain().
-//! @details The default implementation executes run(void).
-int App::run(const Cli::ProgramArguments */* args */)
+//! @details The default implementation attempts to process any
+//! standard command specified on the command line and exit, if none
+//! was specified, the run(void) member function is called.
+int App::run(const Cli::ProgramArguments *args)
 {
+    if (args->hasStandardCommand())
+    {
+        return args->tryProcessStandardCommand() ? 0 : 1;
+    }
+
     return run();
 }
 

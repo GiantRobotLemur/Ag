@@ -888,9 +888,14 @@ SchemaBuilder::SchemaBuilder() :
 //! @brief Sets the name, description and version from an application metadata object.
 //! @param[in] appInfo The fixed metadata used to initialise application information
 //! fields to be displayed by command line help.
-void SchemaBuilder::setAppInfo(const AppMetadata &appInfo)
+//! @param[in] enableShowVersion True to use the version value in @p appInfo to enable
+//! processing of the standard --version command.
+void SchemaBuilder::setAppInfo(const AppMetadata &appInfo, bool enableShowVersion /* = false */)
 {
     _builder->setAppInfo(appInfo);
+
+    if (enableShowVersion)
+        addShowVersionCommand(appInfo.AppVersion);
 }
 
 //! @brief Sets the name of the application which appears in command line help text.

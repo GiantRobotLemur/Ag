@@ -155,6 +155,13 @@ public:
         return hasMatch;
     }
 
+    //! @brief Suggests how big the initial allocation of storage should be.
+    //! @param[in] sizeHint The expected initial count of elements.
+    void reserve(size_t sizeHint)
+    {
+        _index.reserve(sizeHint);
+    }
+
     //! @brief Searches all items in the collection for the first which
     //! matches a specified value.
     //! @param[in] value The value to search for.
