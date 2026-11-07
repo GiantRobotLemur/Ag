@@ -52,6 +52,21 @@ if (DEFINED AG_IS_ROOT)
     if (AG_CONFIG_SDL3)
         ag_configure_sdl3()
     endif()
+
+    if (AG_CONFIG_QT)
+        find_package(Qt6 QUIET COMPONENTS Core Widgets Concurrent)
+
+        if (${Qt6_FOUND})
+            set(AG_CONFIG_QT ON CACHE "BOOL" "Use Qt" FORCE)
+            message(STATUS "Qt6: Found (Version ${Qt6_VERSION})")
+
+            # Perform Qt initialisation once other 3rd party libraries are configured.
+            qt_standard_project_setup()
+        else()
+            set(AG_CONFIG_QT OFF CACHE "BOOL" "Use Qt" FORCE)
+            message(STATUS "Qt6: Not Found (Add Qt6 path to CMAKE_PREFIX_PATH)")
+        endif()
+    endif()
 else()
     # Promote AG_CMAKE_UTILS_DIR for use in sibling sub-directories.
     set(AG_CMAKE_UTILS_DIR "${AG_CMAKE_UTILS_DIR}" PARENT_SCOPE)
@@ -64,6 +79,26 @@ else()
 
     # Get Google Test
     ag_configure_gtest()
+
+    if (AG_CONFIG_QT)
+        # Attempt to find the Qt6 package if it hasn't previously been found.
+        if (NOT ${Qt6_FOUND})
+            find_package(Qt6 QUIET COMPONENTS Core Widgets Concurrent)
+        endif()
+
+        # Deal with the existence of Qt whether we just found it or it was
+        # found previously.
+        if (${Qt6_FOUND})
+            set(AG_CONFIG_QT ON CACHE "BOOL" "Use Qt" FORCE)
+            message(STATUS "Qt6: Found (Version ${Qt6_VERSION})")
+
+            # Perform Qt initialisation once other 3rd party libraries are configured.
+            qt_standard_project_setup()
+        else()
+            set(AG_CONFIG_QT OFF CACHE "BOOL" "Use Qt" FORCE)
+            message(STATUS "Qt6: Not Found (Add Qt6 path to CMAKE_PREFIX_PATH)")
+        endif()
+    endif()
 endif()
 
 add_subdirectory(Source)
