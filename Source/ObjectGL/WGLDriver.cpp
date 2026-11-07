@@ -86,8 +86,7 @@ private:
                                          std::vector<int> &intProps);
     static void mapContextProperties(const ContextOptions &options,
                                      bool noVersion, std::vector<int> &intProps);
-    HGLRC WGLDisplayContextPrivate::createLegacyOpenGLContext(HDC device,
-                                                              const DisplayFormat &format) const;
+    HGLRC createLegacyOpenGLContext(HDC device, const DisplayFormat &format) const;
 public:
     // Construction/Destruction
     WGLDisplayContextPrivate(const DisplayFormat &format);

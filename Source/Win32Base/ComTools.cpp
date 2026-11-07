@@ -336,7 +336,7 @@ ComException::ComException(const std::string_view &fnName, HRESULT hr,
     else
     {
         detail = Ag::String::format("COM function {0} produced an unexpected HRESULT: 0x{1:X8}.",
-                                    { fnName, hr });
+                                    { fnName, static_cast<uint32_t>(hr) });
     }
 
     initialise("ComException", "A COM function returned an unexpected error code.",
