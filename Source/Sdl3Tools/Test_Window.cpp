@@ -105,9 +105,10 @@ TEST_F(WindowVideoTest, CreateWithPointSizeMatchesScalarForm)
 
 TEST_F(WindowVideoTest, SizeRoundTripsThroughPointOverload)
 {
-    Window window = makeHiddenWindow(64, 48);
+    Window window = makeHiddenWindow(60, 40);
 
     ASSERT_NO_THROW(window.setSize(Point(128, 96)));
+    ASSERT_TRUE(window.trySync());
 
     SDL_Point size = window.getSize();
     EXPECT_EQ(size.x, 128);
@@ -119,6 +120,7 @@ TEST_F(WindowVideoTest, PositionRoundTripsThroughPointOverload)
     Window window = makeHiddenWindow();
 
     ASSERT_NO_THROW(window.setPosition(Point(120, 90)));
+    ASSERT_TRUE(window.trySync());
 
     int x = 0, y = 0;
     ASSERT_NO_THROW(window.getPosition(x, y));
