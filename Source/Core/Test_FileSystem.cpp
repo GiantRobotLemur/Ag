@@ -826,6 +826,7 @@ GTEST_TEST(FsPathBuilder, ConvertToAbsolutePosix)
     PathBuilder specimen("../Data/ROMs/RiscOS_2_00.rom", getPosixSchema());
     EXPECT_EQ(specimen.getElementCount(), 4u);
 
+    // Making an absolute path from an absolute path should do nothing.
     specimen.convertToAbsolute(root);
 
     EXPECT_EQ(specimen.getElementCount(), 11u);
