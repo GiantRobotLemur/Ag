@@ -206,6 +206,8 @@ public:
     static Path getHomeDirectory();
     static Path getWorkingDirectory();
     static Path getTempDirectory();
+    bool tryFindAncestor(string_cref_t directoryName, Path &ancestor) const;
+    bool tryFindAncestor(string_cref_t directoryName, PathBuilder &ancestor) const;
 
     Path makeCanonical() const;
     Path append(string_cref_t fileName) const;
