@@ -116,7 +116,7 @@ size_t getPagedBlockSize()
 //! @brief Allocates a count page blocks.
 //! @param[in] blockCount The count of page blocks to allocate.
 //! @return A pointer to the newly allocated block.
-//! @throws OutOfMemoryException if the 
+//! @throws OutOfMemoryException if the
 void *allocatePagedBlock(size_t blockCount)
 {
     if (blockCount < 1)
@@ -133,7 +133,7 @@ void *allocatePagedBlock(size_t blockCount)
     if (block == nullptr)
 #else
     void *block = mmap64(nullptr, actualSize, PROT_READ | PROT_WRITE,
-;                        MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+                         MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 
     if (block == MAP_FAILED)
 #endif
@@ -158,10 +158,10 @@ bool freePagedBlock(void *block, size_t blockCount, bool dontThrow)
     if ((isOK == false) && (dontThrow == false))
         throw Win32Exception("VirtualFree()", ::GetLastError());
 #else
-    bool isOK = (::munmap(block, blockCount * getPagedBlockSize() == 0);
+    bool isOK = (::munmap(block, blockCount * getPagedBlockSize()) == 0);
 
     if ((isOK == false) && (dontThrow == false))
-        throw RuntimeLibraryException("mmap64()", errno)
+        throw RuntimeLibraryException("mmap64()", errno);
 #endif
 
     return isOK;

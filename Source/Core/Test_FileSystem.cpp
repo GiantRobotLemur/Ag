@@ -826,6 +826,7 @@ GTEST_TEST(FsPathBuilder, ConvertToAbsolutePosix)
     PathBuilder specimen("../Data/ROMs/RiscOS_2_00.rom", getPosixSchema());
     EXPECT_EQ(specimen.getElementCount(), 4u);
 
+    // Making an absolute path from an absolute path should do nothing.
     specimen.convertToAbsolute(root);
 
     EXPECT_EQ(specimen.getElementCount(), 11u);
@@ -874,6 +875,49 @@ GTEST_TEST(FsPathBuilder, MakeCanonicalPosix)
     EXPECT_EQ(specimen.getElementCount(), 6u);
     EXPECT_STRINGEQC(specimen.toString(PathUsage::Display),
                      "/usr/shared/MightyOak/Data/ROMs/RiscOS_2_00.rom");
+}
+
+GTEST_TEST(FsPath, TryFindAncestorWin32)
+{
+    // Start with no extension.
+    Path specimen("C:\\Program Files\\MightyOak\\.\\Bin\\..\\Data\\ROMs\\RiscOS_2_00.rom",
+                  getWin32Schema());
+    Path ancestor;
+
+    // Verify we can find an ancestor element.
+    ASSERT_TRUE(specimen.tryFindAncestor("MightyOak", ancestor));
+    EXPECT_STRINGEQC(ancestor.toString(PathUsage::Display), "C:\\Program Files\\MightyOak");
+
+    // Verify that case-insensitive comparisons are used in Win32 path schemas.
+    ASSERT_TRUE(specimen.tryFindAncestor("program files", ancestor));
+    EXPECT_STRINGEQC(ancestor.toString(PathUsage::Display), "C:\\Program Files");
+
+    // Verify that we can't find an element which isn't in the actual path.
+    EXPECT_FALSE(specimen.tryFindAncestor("Bin", ancestor));
+
+    // Verify that the leaf element is not reported as an ancestor.
+    EXPECT_FALSE(specimen.tryFindAncestor("RiscOS_2_00.rom", ancestor));
+}
+
+GTEST_TEST(FsPath, TryFindAncestorPOSIX)
+{
+    // Start with no extension.
+    Path specimen("/usr/bin/../shared/./MightyOak/Data/ROMs/RiscOS_2_00.rom",
+                  getPosixSchema());
+    Path ancestor;
+
+    // Verify we can find an ancestor element.
+    ASSERT_TRUE(specimen.tryFindAncestor("MightyOak", ancestor));
+    EXPECT_STRINGEQC(ancestor.toString(PathUsage::Display), "/usr/shared/MightyOak");
+
+    // Verify that case-sensitive comparisons are used in POSIX path schemas.
+    EXPECT_FALSE(specimen.tryFindAncestor("roms", ancestor));
+
+    // Verify that we can't find an element which isn't in the actual path.
+    EXPECT_FALSE(specimen.tryFindAncestor("Bin", ancestor));
+
+    // Verify that the leaf element is not reported as an ancestor.
+    EXPECT_FALSE(specimen.tryFindAncestor("RiscOS_2_00.rom", ancestor));
 }
 
 GTEST_TEST(FsPath, DefaultConstruct)

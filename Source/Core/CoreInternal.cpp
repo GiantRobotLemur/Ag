@@ -192,7 +192,7 @@ bool tryOpenFile(const String &fileName, const utf8_cptr_t mode,
     }
 #else
     // The POSIX version, where system calls interpret char as UTF-8.
-    stream = fopen(fileName.getUtf8Bytes(), mode);
+    stream = fopen64(fileName.getUtf8Bytes(), mode);
 
     if (stream == nullptr)
     {

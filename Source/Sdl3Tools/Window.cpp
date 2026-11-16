@@ -1003,6 +1003,15 @@ void Window::sync()
         throw ApiException("SDL_SyncWindow()");
 }
 
+//! @brief Atempts to block until pending window state changes have been applied.
+//! @retval true Pending changes were successfully applied.
+//! @retval false Either the object was in an unvound state of the operation
+//! timed out before changes were applied.
+bool Window::trySync()
+{
+    return (_window != nullptr) && SDL_SyncWindow(_window);
+}
+
 //! @brief Requests the window flash to indicate a need for attention.
 //! @param[in] operation How long to flash for:
 //! SDL_FLASH_CANCEL to stop flashing, SDL_FLASH_BRIEFLY for a single

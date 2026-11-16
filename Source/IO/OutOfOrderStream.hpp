@@ -44,11 +44,14 @@ public:
     public:
         // Construction/Destruction
         BlockWriterStream(OutOfOrderStream *parent, bool bigBuffer);
+        BlockWriterStream(const BlockWriterStream &) = delete;
+        BlockWriterStream(BlockWriterStream &&rhs) noexcept;
 
         // Accessors
         bool isActive() const;
 
         // Operations
+        BlockWriterStream &operator=(BlockWriterStream &&rhs) noexcept;
         StreamLength endWritingBlock(BlockRef startBlock);
         void closeBlock();
 

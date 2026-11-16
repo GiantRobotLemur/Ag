@@ -41,6 +41,11 @@ namespace std {
 //! @param[in] name The name of the data type which needs a unique pointer.
 #define IMPLEMENT_UNIQUE_PTR(name) void name ## Deleter::operator()(name *ptr) const { if (ptr) delete ptr; }
 
+//! @brief Declares a unique pointer type with its own deleter.
+//! @param[in] name The name of the type which needs a unique pointer, which
+//! will be defined as &lt;name&gt;UPtr.
+#define DECLARE_DERIVED_UNIQUE_PTR(name,baseName) using name ## UPtr = std::unique_ptr<name, baseName ## Deleter>
+
 namespace Ag {
 
 ////////////////////////////////////////////////////////////////////////////////

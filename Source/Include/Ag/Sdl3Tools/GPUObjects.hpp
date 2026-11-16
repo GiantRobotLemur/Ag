@@ -246,13 +246,7 @@ public:
     ShaderBuilder(const Device &device,
                   const T(&code)[U],
                   SDL_GPUShaderStage stage,
-                  SDL_GPUShaderFormat format) :
-        _device(device._device),
-        _defaultFormat(format)
-    {
-        beginShader(reinterpret_cast<const uint8_t *>(code),
-                    U * sizeof(T), stage, format);
-    }
+                  SDL_GPUShaderFormat format); // Forward declaration.
 
     // Accessors
     // TODO: Add accessors for binding count values.
@@ -634,6 +628,23 @@ private:
     SDL_GPUDevice *_device;
     String _backendName;
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Template Declarations
+////////////////////////////////////////////////////////////////////////////////
+// Documented at declaration.
+template<typename T, size_t U>
+ShaderBuilder::ShaderBuilder(const Device &device,
+                             const T(&code)[U],
+                             SDL_GPUShaderStage stage,
+                             SDL_GPUShaderFormat format) :
+    _device(device._device),
+    _defaultFormat(format)
+{
+    beginShader(reinterpret_cast<const uint8_t *>(code),
+                U * sizeof(T), stage, format);
+}
 
 }}} // namespace Ag::SDL3::GPU
 

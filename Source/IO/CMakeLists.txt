@@ -23,7 +23,7 @@ ag_add_library(AgIO FOLDER      "Core"
                                 "MemoryMappedFile.cpp"
                                 "${AG_IO_PATH}/HierarchySerialization.hpp"
                                 "HierarchySerialization.cpp"
-                                "HierarchyInterfaces.hpp"
+                                "${AG_IO_PATH}/HierarchyInterfaces.hpp"
                                 "OutOfOrderStream.cpp"
                                 "OutOfOrderStream.hpp"
                                 "ReadOnlyDataSource.cpp"
@@ -32,6 +32,8 @@ ag_add_library(AgIO FOLDER      "Core"
                                 "BinaryReaderWriters.hpp"
                                 "BinaryHierarchyEncoding.cpp"
                                 "BinaryHierarchyEncoding.hpp"
+                                "TextInputStream.cpp"
+                                "${AG_IO_PATH}/TextInputStream.hpp"
                     PUBLIC_LIBS AgCore)
 
 target_precompile_headers(AgIO PRIVATE [["PreCompiledHeader.hpp"]])
@@ -67,10 +69,15 @@ source_group("Streams" FILES
             "StreamTools.cpp"
 )
 
+source_group("Text" FILES
+             "TextInputStream.cpp"
+             "${AG_IO_PATH}/TextInputStream.hpp"
+)
+
 source_group("Hierarchy" FILES
             "${AG_IO_PATH}/HierarchySerialization.hpp"
             "HierarchySerialization.cpp"
-            "HierarchyInterfaces.hpp"
+            "${AG_IO_PATH}/HierarchyInterfaces.hpp"
             "BinaryReaderWriters.cpp"
             "BinaryReaderWriters.hpp"
             "BinaryHierarchyEncoding.cpp"
@@ -92,6 +99,7 @@ ag_add_test_app(AgIO_Tests TEST_LIB AgIO
                                     Test_BufferedInputStream.cpp
                                     Test_MemoryMappedFile.cpp
                                     Test_HierarchySerialization.cpp
+                                    Test_TextInputStream.cpp
 )
 
 target_precompile_headers(AgIO_Tests PRIVATE <gtest/gtest.h>

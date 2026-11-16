@@ -45,6 +45,11 @@ struct FileTraits
         return Win32Exception(fnName.data(), errorCode);
     }
 
+    static String getErrorText(ErrorCode errorCode)
+    {
+        return Win32Exception::getErrorMessage(errorCode);
+    }
+
     static bool isValidFd(FileDescriptor fd)
     {
         return (fd != NULL) && (fd != INVALID_HANDLE_VALUE);
@@ -270,6 +275,11 @@ struct FileTraits
                                  ErrorCode errorCode)
     {
         return RuntimeLibraryException(fnName.data(), errorCode);
+    }
+
+    static String getErrorText(ErrorCode errorCode)
+    {
+        return RuntimeLibraryException::getErrorMessage(static_cast<RuntimeLibraryException::ErrorCode>(errorCode));
     }
 
     static bool isValidFd(FileDescriptor fd)
@@ -521,6 +531,38 @@ bool SeekableFileStream::tryOpen(ISeekableStreamUPtr &stream,
     }
 
     return false;
+}
+
+//! @brief Attempts to create a new instance of an ISeekableFileStream by opening a file.
+//! @param[out] stream Receives the newly created stream, or is reset to an empty state.
+//! @param[in] at The location of the file to open.
+//! @param[in] access A flags field defined by FileAccess specifying how the file
+//! should be opened and managed.
+//! @param[out] error Receives the text of the error message if the function failed.
+//! @retval true The file was successfully opened, @p stream has received a valid value.
+//! @retval false The operation failed, @p stream is set to an empty state.
+bool SeekableFileStream::tryOpen(ISeekableStreamUPtr &stream,
+                                 const Fs::Path &at, FileAccessBits access,
+                                 string_ref_t error)
+{
+    stream.reset();
+
+    FileTraits::FileDescriptor fd;
+    FileTraits::ErrorCode errorCode;
+
+    if (FileTraits::tryOpen(at, access, fd, errorCode))
+    {
+        stream = ISeekableStreamUPtr(new SeekableFileStream(at, fd));
+        error = String::Empty;
+
+        return true;
+    }
+    else
+    {
+        error = FileTraits::getErrorText(errorCode);
+
+        return false;
+    }
 }
 
 //! @brief Creates a temporary file and returns a stream object.

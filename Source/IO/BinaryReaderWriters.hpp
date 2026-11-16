@@ -17,7 +17,7 @@
 #include <deque>
 #include <unordered_map>
 
-#include "HierarchyInterfaces.hpp"
+#include "Ag/IO/HierarchyInterfaces.hpp"
 #include "BinaryHierarchyEncoding.hpp"
 #include "OutOfOrderStream.hpp"
 #include "ReadOnlyDataSource.hpp"

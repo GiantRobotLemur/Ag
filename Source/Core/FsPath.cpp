@@ -1441,6 +1441,83 @@ Path Path::getTempDirectory()
     return Path(Ag::getTempDirectory());
 }
 
+//! @brief Attempts to find a named ancestor of the currently referenced file
+//! system object, but without checking if the object actually exists.
+//! @param[in] directoryName The name of the directory to match in the current path.
+//! @param[out] ancestor Receives the path to the ancestor, if one was found.
+//! @retval true An ancestor path element matching @p directoryName was found and
+//! the absolute path was written to @p ancestor.
+//! @retval false No ancestor matching @directoryName was found in the current path.
+//! @note Just because the member function returns a path, does not imply that
+//! the referenced file system object exists.
+bool Path::tryFindAncestor(string_cref_t directoryName, Path &ancestor) const
+{
+    // Create a builder to receive the result.
+    PathBuilder builder;
+
+    if (tryFindAncestor(directoryName, builder))
+    {
+        ancestor = Path(builder);
+
+        return true;
+    }
+    else
+    {
+        ancestor = Path();
+        return false;
+    }
+}
+
+//! @brief Attempts to find a named ancestor of the currently referenced file
+//! system object, but without checking if the object actually exists.
+//! @param[in] directoryName The name of the directory to match in the current path.
+//! @param[out] ancestor Receives the path to the ancestor, if one was found.
+//! @retval true An ancestor path element matching @p directoryName was found and
+//! the absolute path was written to @p ancestor.
+//! @retval false No ancestor matching @directoryName was found in the current path.
+//! @note Just because the member function returns a path, does not imply that
+//! the referenced file system object exists.
+bool Path::tryFindAncestor(string_cref_t directoryName, PathBuilder &ancestor) const
+{
+    // Break the current path down so that we can manipulate it.
+    ancestor = (*this);
+
+    // Remove all relative references from the path.
+    ancestor.makeCanonical();
+
+    // Remove the last element from the path so that it can't be returned
+    // as an ancestor as itself.
+    ancestor.popElement();
+
+    while (ancestor.hasElements())
+    {
+        // Get the leaf element of the path.
+        string_cref_t element = ancestor.getElement(ancestor.getElementCount() - 1);
+        bool isMatch;
+
+        if (_schema->isCaseSensitive())
+        {
+            isMatch = (element.compare(directoryName) == 0);
+        }
+        else
+        {
+            isMatch = (element.compareIgnoreCase(directoryName) == 0);
+        }
+
+        if (isMatch)
+        {
+            return true;
+        }
+        else
+        {
+            ancestor.popElement();
+        }
+    }
+
+    ancestor = PathBuilder();
+    return false;
+}
+
 //! @brief Removes all relative references within the path.
 Path Path::makeCanonical() const
 {
