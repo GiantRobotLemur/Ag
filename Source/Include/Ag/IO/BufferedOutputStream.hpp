@@ -42,12 +42,19 @@ public:
 
     // Construction/Destruction
     BufferedOutputStream(IStream *innerStream, size_t bufferSize = 0);
+    BufferedOutputStream(IStreamUPtr &&innerStream, size_t bufferSize = 0);
+    BufferedOutputStream(const BufferedOutputStream &) = delete;
+    BufferedOutputStream(BufferedOutputStream &&rhs) noexcept;
     virtual ~BufferedOutputStream();
 
     // Accessors
     size_t getBufferSize() const;
     size_t getBufferUsed() const;
     const IStream *getInnerStream() const;
+
+    // Operations
+    BufferedOutputStream &operator=(const BufferedOutputStream &) = delete;
+    BufferedOutputStream &operator=(BufferedOutputStream &&rhs) noexcept;
 
     // Overrides
     virtual bool isBuffered() const override;
@@ -57,6 +64,7 @@ public:
 private:
     // Internal Fields
     ByteBlock _buffer;
+    IStreamUPtr _ownedStream;
     IStream *_innerStream;
 };
 

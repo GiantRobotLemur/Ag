@@ -124,7 +124,7 @@ public:
                                        StreamPosition offset) = 0;
 };
 
-DECLARE_UNIQUE_PTR(ISeekableStream);
+DECLARE_DERIVED_UNIQUE_PTR(ISeekableStream, IStream);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Global Functions

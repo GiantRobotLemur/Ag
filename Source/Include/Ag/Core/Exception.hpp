@@ -242,6 +242,8 @@ public:
     // Construction
     Win32Exception(const char *fnName, uint32_t win32ErrorCode);
     ~Win32Exception() = default;
+
+    static String getErrorMessage(uint32_t win32ErrorCode);
 };
 #endif // ifdef _WIN32
 
@@ -264,6 +266,8 @@ public:
     // Construction
     RuntimeLibraryException(const char *fnName, ErrorCode runtimeErrorCode);
     ~RuntimeLibraryException() = default;
+
+    static String getErrorMessage(ErrorCode runtimeErrorCode);
 };
 
 //! @}

@@ -48,6 +48,15 @@ OutOfOrderStream::BlockWriterStream::BlockWriterStream(OutOfOrderStream *parent,
 {
 }
 
+//! @brief Takes ownership of the resources of a block writer to create a new one.
+//! @param[in] rhs The block writer to take ownership of.
+OutOfOrderStream::BlockWriterStream::BlockWriterStream(BlockWriterStream &&rhs) noexcept :
+    BufferedOutputStream(std::move(rhs)),
+    _parent(std::exchange(rhs._parent, nullptr)),
+    _block(rhs._block)
+{
+}
+
 //! @brief Determines whether the stream is set to write to an active block.
 //! @retval true The stream is writing to an active block and recording the
 //! bytes written.
@@ -55,6 +64,19 @@ OutOfOrderStream::BlockWriterStream::BlockWriterStream(OutOfOrderStream *parent,
 bool OutOfOrderStream::BlockWriterStream::isActive() const
 {
     return _block != _parent->_orderedBlocks.end();
+}
+
+//! @brief Move assigns a BlockWriterStream over the current one.
+//! @param[in] rhs The stream to acquire the resources of.
+//! @return A reference to the current object.
+OutOfOrderStream::BlockWriterStream &OutOfOrderStream::BlockWriterStream::operator=(OutOfOrderStream::BlockWriterStream &&rhs) noexcept
+{
+    BufferedOutputStream::operator=(std::move(rhs));
+
+    _parent = std::exchange(rhs._parent, nullptr);
+    _block = rhs._block;
+
+    return *this;
 }
 
 //! @brief Finishes writing the current block, flushing any cached data to the
@@ -426,7 +448,8 @@ void OutOfOrderStream::checkForUpgrade(size_t bytesToAdd)
 
     // Reset the buffered writer to point to the new base stream.
     // Use a larger buffer now that we are writing large volumes out to a file.
-    _currentBlock = BlockWriterStream(this, true);
+    BlockWriterStream largeBlockStream(this, true);
+    _currentBlock = std::move(largeBlockStream);
     _currentBlock._block = currentRef;
 }
 

@@ -38,6 +38,40 @@ BufferedOutputStream::BufferedOutputStream(IStream *innerStream,
     _buffer.reserve(bufferSizeHint);
 }
 
+//! @brief Constructs a wrapper for a stream which batches write operations and
+//! becomes owned by the new stream.
+//! @param[in] innerStream The stream to take ownership of and wrap.
+//! @param[in] bufferSize The suggested size of the buffer used to batch writes.
+//! @remarks The buffer size will be clamped to a value between MinBufferSize,
+//! and MaxBufferSize.
+BufferedOutputStream::BufferedOutputStream(IStreamUPtr &&innerStream,
+                                           size_t bufferSize /*= 0*/) :
+    _ownedStream(std::move(innerStream)),
+    _innerStream(nullptr)
+{
+    if (_ownedStream)
+    {
+        _innerStream = _ownedStream.get();
+    }
+    else
+    {
+        throw ArgumentNullException("innerStream");
+    }
+
+    size_t bufferSizeHint = std::clamp(bufferSize, MinBufferSize, MaxBufferSize);
+
+    _buffer.reserve(bufferSizeHint);
+}
+
+//! @brief Takes ownership of the resources of another buffered stream.
+//! @param[in] rhs The buffered stream to take ownership of.
+BufferedOutputStream::BufferedOutputStream(BufferedOutputStream &&rhs) noexcept :
+    _buffer(std::move(rhs._buffer)),
+    _ownedStream(std::move(rhs._ownedStream)),
+    _innerStream(std::exchange(rhs._innerStream, nullptr))
+{
+}
+
 //! @brief Ensures any buffered data is flushed before destruction.
 BufferedOutputStream::~BufferedOutputStream()
 {
@@ -64,6 +98,21 @@ const IStream *BufferedOutputStream::getInnerStream() const
     return _innerStream;
 }
 
+//! @brief Move assigns a buffered stream to this object.
+//! @param[in] rhs The stream to take ownership of and leave in a closed state.
+//! @return A reference to the current object.
+BufferedOutputStream &BufferedOutputStream::operator=(BufferedOutputStream &&rhs) noexcept
+{
+    if (&rhs != this)
+    {
+        _buffer = std::move(rhs._buffer);
+        _ownedStream = std::move(rhs._ownedStream);
+        _innerStream = std::exchange(rhs._innerStream, nullptr);
+    }
+
+    return *this;
+}
+
 // Inherited from IStream.
 bool BufferedOutputStream::isBuffered() const
 {
@@ -74,7 +123,7 @@ bool BufferedOutputStream::isBuffered() const
 void BufferedOutputStream::flush()
 {
     if (_innerStream == nullptr)
-        throw OperationException("Cannot flush to a closed stream.");
+        return;
 
     if (_buffer.empty() == false)
     {
