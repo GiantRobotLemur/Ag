@@ -263,7 +263,7 @@ struct FileTraits
     }
 
     static bool tryOpen(const Fs::Path &path, FileAccessBits access,
-                        FileDescriptor &fd, uintptr_t &errorCode)
+                        FileDescriptor &fd, ErrorCode &errorCode)
     {
         String pathText = path.toString(Fs::PathUsage::Kernel);
         int flags = 0;
@@ -294,7 +294,7 @@ struct FileTraits
                 // Truncate the file to zero length.
                 if (ftruncate(fd, 0) < 0)
                 {
-                    errorCode = static_cast<uintptr_t>(errno);
+                    errorCode = static_cast<ErrorCode>(errno);
 
                     return false;
                 }
@@ -306,14 +306,14 @@ struct FileTraits
         }
 
         // Capture the last error.
-        errorCode = static_cast<uintptr_t>(errno);
+        errorCode = static_cast<ErrorCode>(errno);
 
         return (fd >= 0);
     }
 
     static FileDescriptor open(const Fs::Path &path, FileAccessBits access)
     {
-        uintptr_t errorCode;
+        ErrorCode errorCode;
         int fd;
 
         if (tryOpen(path, access, fd, errorCode))
