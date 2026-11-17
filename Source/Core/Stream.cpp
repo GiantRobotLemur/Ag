@@ -44,6 +44,11 @@ struct FileTraits
         return Win32Exception(fnName.data(), errorCode);
     }
 
+    static String getErrorText(ErrorCode errorCode)
+    {
+        return Win32Exception::getErrorMessage(errorCode);
+    }
+
     static bool isValidFd(FileDescriptor fd)
     {
         return (fd != NULL) && (fd != INVALID_HANDLE_VALUE);
@@ -121,7 +126,7 @@ struct FileTraits
     }
 
     static bool tryOpen(const Fs::Path &path, FileAccessBits access,
-                        FileDescriptor &fd, uintptr_t &errorCode)
+                        FileDescriptor &fd, ErrorCode &errorCode)
     {
         std::wstring filename = path.toWideString(Fs::PathUsage::Kernel);
 
@@ -168,7 +173,7 @@ struct FileTraits
 
     static FileDescriptor open(const Fs::Path &path, FileAccessBits access)
     {
-        uintptr_t errorCode;
+        ErrorCode errorCode;
         FileDescriptor fd;
 
         if (tryOpen(path, access, fd, errorCode) == false)
@@ -206,6 +211,11 @@ struct FileTraits
                                  ErrorCode errorCode)
     {
         return RuntimeLibraryException(fnName.data(), errorCode);
+    }
+
+    static String getErrorText(ErrorCode errorCode)
+    {
+        return RuntimeLibraryException::getErrorMessage(static_cast<RuntimeLibraryException::ErrorCode>(errorCode));
     }
 
     static bool isValidFd(FileDescriptor fd)
@@ -253,7 +263,7 @@ struct FileTraits
     }
 
     static bool tryOpen(const Fs::Path &path, FileAccessBits access,
-                        FileDescriptor &fd, uintptr_t &errorCode)
+                        FileDescriptor &fd, ErrorCode &errorCode)
     {
         String pathText = path.toString(Fs::PathUsage::Kernel);
         int flags = 0;
@@ -284,7 +294,7 @@ struct FileTraits
                 // Truncate the file to zero length.
                 if (ftruncate(fd, 0) < 0)
                 {
-                    errorCode = static_cast<uintptr_t>(errno);
+                    errorCode = static_cast<ErrorCode>(errno);
 
                     return false;
                 }
@@ -296,14 +306,14 @@ struct FileTraits
         }
 
         // Capture the last error.
-        errorCode = static_cast<uintptr_t>(errno);
+        errorCode = static_cast<ErrorCode>(errno);
 
         return (fd >= 0);
     }
 
     static FileDescriptor open(const Fs::Path &path, FileAccessBits access)
     {
-        uintptr_t errorCode;
+        ErrorCode errorCode;
         int fd;
 
         if (tryOpen(path, access, fd, errorCode))
@@ -700,12 +710,6 @@ size_t BufferedStream::write(const void *sourceBuffer, size_t sourceByteCount)
 ////////////////////////////////////////////////////////////////////////////////
 // IFileStream Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief Deletes an IFileStream implementation embedded in an IFileStreamUPtr.
-//! @param[in] stream The implementation to delete.
-void IFileStream::Deleter::operator()(IFileStream *stream) const
-{
-    safeDelete(stream);
-}
 
 //! @brief Creates a new instance of an IFileStream by opening a file.
 //! @param[in] at The location of the file to open.
@@ -737,7 +741,7 @@ bool IFileStream::tryOpen(UPtr &stream, const Fs::Path &at, FileAccessBits acces
 
     // Create an absolute path from the outset.
     Fs::Path fullPath = at.convertToAbsolute();
-    uintptr_t errorCode;
+    FileTraits::ErrorCode errorCode;
     FileTraits::FileDescriptor fd;
 
     if (FileTraits::tryOpen(fullPath, access, fd, errorCode))
@@ -747,6 +751,38 @@ bool IFileStream::tryOpen(UPtr &stream, const Fs::Path &at, FileAccessBits acces
     }
 
     return false;
+}
+
+//! @brief Attempts to create a new instance of an IFileStream by opening a file.
+//! @param[out] stream Receives the newly created stream, or is reset to an empty state.
+//! @param[in] at The location of the file to open.
+//! @param[in] access A flags field defined by FileAccess specifying how the file
+//! should be opened and managed.
+//! @param[out] error Receives the text of the error message if the function failed.
+//! @retval true The file was successfully opened, @p stream has received a valid value.
+//! @retval false The operation failed, @p stream is set to an empty state.
+bool IFileStream::tryOpen(UPtr &stream, const Fs::Path &at, FileAccessBits access,
+                          string_ref_t error)
+{
+    // Ensure the stream is in an empty state should we fail.
+    stream.reset();
+
+    // Create an absolute path from the outset.
+    Fs::Path fullPath = at.convertToAbsolute();
+    FileTraits::ErrorCode errorCode;
+    FileTraits::FileDescriptor fd;
+
+    if (FileTraits::tryOpen(fullPath, access, fd, errorCode))
+    {
+        stream.reset(new FileStream(fullPath, fd));
+        error = String::Empty;
+        return true;
+    }
+    else
+    {
+        error = FileTraits::getErrorText(errorCode);
+        return false;
+    }
 }
 
 //! @brief Reads the entire contents of a file.
@@ -815,7 +851,15 @@ Bz2CompressionStream::Bz2CompressionStream(IStream *outputStream,
     _context->initialiseCompression(bufferSize, compressionLevel, verbosity, workFactor);
 }
 
+//! @brief Ensures the compression stream is flushed and disposed of.
 Bz2CompressionStream::~Bz2CompressionStream()
+{
+    close();
+}
+
+//! @brief Flushes and disposes of the compression stream resources prior to
+//! destruction of the current object.
+void Bz2CompressionStream::close()
 {
     if (_context != nullptr)
     {
@@ -826,6 +870,8 @@ Bz2CompressionStream::~Bz2CompressionStream()
     }
 }
 
+//! @brief Ensures that the object does not raise exceptions during processing
+//! so that it can be used in exception-handling code.
 void Bz2CompressionStream::disableExceptions()
 {
     _context->disableExceptions();
@@ -887,6 +933,17 @@ Bz2DecompressionStream::Bz2DecompressionStream(IStream *inputStream,
 
 Bz2DecompressionStream::~Bz2DecompressionStream()
 {
+    close();
+}
+
+void Bz2DecompressionStream::setReadLimit(int64_t maxBytesToRead)
+{
+    _maxBytesToRead = maxBytesToRead;
+    _compressedBytesRead = 0;
+}
+
+void Bz2DecompressionStream::close()
+{
     if (_context != nullptr)
     {
         _context->finishDecompression();
@@ -894,12 +951,6 @@ Bz2DecompressionStream::~Bz2DecompressionStream()
 
         AgBz2Context::destroyInPlace(_workspace);
     }
-}
-
-void Bz2DecompressionStream::setReadLimit(int64_t maxBytesToRead)
-{
-    _maxBytesToRead = maxBytesToRead;
-    _compressedBytesRead = 0;
 }
 
 void Bz2DecompressionStream::disableExceptions()

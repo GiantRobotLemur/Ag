@@ -31,7 +31,7 @@ class Window;
 enum class SdlCommand : uint32_t
 {
     //! @brief List object enumerated by SDL.
-    ListObjects = Cli::StandardCommands::LastStdCommand,
+    ListObjects = toScalar(Cli::StandardCommands::LastStdCommand),
 
     //! @brief The command ID to base additional standard commands on.
     LastSdlCommand,
@@ -40,7 +40,7 @@ enum class SdlCommand : uint32_t
 //! @brief Defines identifiers for standard SDL command line options.
 enum SdlOptions : uint32_t
 {
-    SdlList = Cli::StandardOptions::LastStdOption,
+    SdlList = toScalar(Cli::StandardOptions::LastStdOption),
     SdlDisplayName,
     SdlDisplayMode,
     SdlDisplayDriver,

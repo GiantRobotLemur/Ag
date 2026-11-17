@@ -24,6 +24,11 @@ costly single linear block of memory.
 * `MemoryMappedFile` - An platform independent wrapper around file mapping APIs
 that allow a file to be read or written as if it were addressable memory.
 * `copyStream()` - Utility functions for efficiently copying data between streams.
+* `TextInputStream` - A class which wraps an `IStream` implementation and interprets
+bytes from it into Unicode characters based on one of a number of different encodings.
+The initial bytes of the stream can optionally be interpreted as a Byte Order Mark
+(BOM), a function with sporadic support by `fopen()` in C runtime library
+implementations.
 
 ## Hierarchy Serialization
 

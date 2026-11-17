@@ -104,6 +104,7 @@ public:
     void maximize();
     void restore();
     void sync();
+    bool trySync();
     void flash(SDL_FlashOperation operation);
     void setBordered(bool bordered);
     void setResizable(bool resizable);

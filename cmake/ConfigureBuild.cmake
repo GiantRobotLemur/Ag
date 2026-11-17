@@ -6,7 +6,7 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
     macro(ag_configure_build)
         set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-        set(CMAKE_CXX_STANDARD          17)
+        set(CMAKE_CXX_STANDARD          23)
         set(CMAKE_CXX_STANDARD_REQUIRED ON)
         set(CMAKE_CXX_EXTENSIONS        ON)
 
@@ -22,13 +22,24 @@ if (NOT DEFINED AG_BUILD_CONFIGURED)
         if (DEFINED MSVC)
             add_compile_options("/W4")
         else()
-            add_compile_options(-Wall -Wextra -pedantic -Wshadow -Wno-psabi -Wno-unknown-pragmas)
+            add_compile_options(-Wall -Wextra -pedantic -Wshadow
+                                -Wno-psabi -Wno-unknown-pragmas
+                                -Wno-interference-size)
             # NOTE: --Wno-psapi is to suppress warnings about code which is
             # fine, but the effect has altered due to bugs in GCCs ABI being
             # fixed. See: https://stackoverflow.com/questions/72052105/how-can-i-suppress-certain-abi-change-notes-embedded-c
 
             # NOTE: -Wno-unknown-pragmas - g++ doesn't understand #pragma region,
             # which makes code more readable in Visual Studio and the like.
+
+            # NOTE: Use of std::hardware_destructive_interference_size with gcc
+            # raises a warning as its value can vary between compiler versions
+            # or with different ‘-mtune’ or ‘-mcpu’ flags. Thus it should NOT
+            # be used as part of a public API as the value may differ between
+            # interface and implementation.
+            # The value could be stabilized with ‘--param hardware_destructive_interference_size=256’,
+            # but I have opted to disable it warning with ‘-Wno-interference-size’
+            # for the moment.
 
             # Ensure _DEBUG is defined for debug builds, this is done automatically
             # for MSVC.

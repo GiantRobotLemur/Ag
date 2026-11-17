@@ -479,7 +479,6 @@ OperationException::OperationException(utf8_cptr_t detail, const Exception &inne
     setInnerException(inner);
 }
 
-
 //! @brief A constructor used explicitly when logic within the program detects
 //! that it is about to try to perform an invalid operation.
 //! @param[in] detail Provides some context for the operation which was being
@@ -715,6 +714,38 @@ Win32Exception::Win32Exception(const char *fnName, uint32_t win32ErrorCode)
 
     initialise(Domain, win32Message, detail);
 }
+
+//! @brief Gets the message text associated with a Win32 error code.
+//! @param[in] win32ErrorCode The error code to interpret.
+//! @return The message associted with the error code, or an empty string.
+String Win32Exception::getErrorMessage(uint32_t win32ErrorCode)
+{
+    LPWSTR messageBuffer = nullptr;
+
+    uint32_t length = ::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                                       FORMAT_MESSAGE_FROM_SYSTEM |
+                                       FORMAT_MESSAGE_IGNORE_INSERTS,
+                                       nullptr, win32ErrorCode,
+                                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                                       reinterpret_cast<LPWSTR>(&messageBuffer),
+                                       0, nullptr);
+
+    std::string detail;
+
+    if (length > 0)
+    {
+        String message(messageBuffer, length);
+
+        // Ensure the buffer is freed.
+        ::LocalFree(messageBuffer);
+        messageBuffer = nullptr;
+
+        return message;
+    }
+
+    return String::Empty;
+}
+
 #endif // ifdef _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -768,6 +799,37 @@ RuntimeLibraryException::RuntimeLibraryException(const char *fnName,
     }
 
     initialise(Domain, rtErrorMessage, detail);
+}
+
+//! @brief Looks up the message associated with a runtime library error code.
+//! @param[in] runtimeErrorCode The error code to look up.
+//! @return A string containing the corresponding text or an empty string.
+String RuntimeLibraryException::getErrorMessage(RuntimeLibraryException::ErrorCode runtimeErrorCode)
+{
+#ifdef _MSC_VER
+    std::vector<wchar_t> buffer;
+    buffer.resize(256, L'\0');
+
+    if (_wcserror_s(buffer.data(), buffer.size(), runtimeErrorCode) == 0)
+    {
+        // Append the error message text encoded as UTF-8 bytes.
+        return String(buffer.data());
+    }
+#else
+    // Create a temporary buffer to hold a thread-safe copy of the system
+    // error message.
+    std::vector<char> buffer;
+    buffer.resize(256, '\0');
+
+    char *result = strerror_r(runtimeErrorCode, buffer.data(), buffer.size());
+
+    if (result != nullptr)
+    {
+        return String(result);
+    }
+#endif
+
+    return String::Empty;
 }
 
 } // namespace Ag

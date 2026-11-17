@@ -2,7 +2,7 @@
 
 ## Identity
 
-**Ag** (the periodic table symbol for Silver) is a cross-platform C++17 runtime
+**Ag** (the periodic table symbol for Silver) is a cross-platform C++23 runtime
 utility library suite. It underpins the
 [Mighty Oak](https://github.com/GiantRobotLemur/MightyOak) project and serves
 as a reusable foundation for other C++ projects by the same author.
@@ -11,7 +11,7 @@ as a reusable foundation for other C++ projects by the same author.
 - **Author:** GiantRobotLemur (GiantRobotLemur@na-se.co.uk)
 - **Repository:** https://github.com/GiantRobotLemur/Ag
 - **Designed as:** a git submodule consumed by parent projects
-- **Build system:** CMake >= 3.25, C++17, multi-config (Debug / RelWithDebInfo)
+- **Build system:** CMake >= 4.4, C++23, multi-config (Debug / RelWithDebInfo)
 - **Primary platform:** Windows (MSVC), with POSIX / Linux support
 
 ---
@@ -60,7 +60,7 @@ Ag/
   Doc/                        Per-library markdown documentation
   Source/
     CMakeLists.txt            Orchestrates subdirectory inclusion
-    Include/Ag/              Public headers (one folder per library)
+    Include/Ag/               Public headers (one folder per library)
       Core/                   Core public headers
       Geometry/               Geometry public headers
       ObjectGL/               OpenGL public headers (incl. Extensions/)

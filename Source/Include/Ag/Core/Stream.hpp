@@ -68,9 +68,6 @@ public:
 
 DECLARE_UNIQUE_PTR(IStream);
 
-//! @brief An alias for a unique pointer to a stream.
-using IStreamUPtr = std::unique_ptr<IStream, IStreamDeleter>;
-
 //! @brief A simple interface for reading and writing binary data.
 class BufferedStream : public IStream
 {
@@ -117,19 +114,15 @@ class IFileStream : public IStream
 {
 public:
     // Public Types
-    //! @brief An object which can delete an IFileStream implementation as part
-    //! of a unique_ptr type.
-    struct Deleter
-    {
-        void operator()(IFileStream *stream) const;
-    };
 
     //! @brief An alias for a unique_ptr to an IFileStream implementation.
-    using UPtr = std::unique_ptr<IFileStream, Deleter>;
+    using UPtr = std::unique_ptr<IFileStream, IStreamDeleter>;
 
     // Construction/Destruction
     static UPtr open(const Fs::Path &at, FileAccessBits access);
     static bool tryOpen(UPtr &stream, const Fs::Path &at, FileAccessBits access);
+    static bool tryOpen(UPtr &stream, const Fs::Path &at, FileAccessBits access,
+                        string_ref_t error);
     virtual ~IFileStream() = default;
 
     // Accessors

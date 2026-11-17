@@ -33,6 +33,9 @@ public:
 
     // Construction/Destruction
     BufferedInputStream(IStream *input, size_t bufferSize = 0);
+    BufferedInputStream(IStreamUPtr &&input, size_t bufferSize = 0);
+    BufferedInputStream(const BufferedInputStream &) = delete;
+    BufferedInputStream(BufferedInputStream &&rhs) noexcept;
     virtual ~BufferedInputStream() override = default;
 
     // Accessors
@@ -43,6 +46,7 @@ public:
 
     // Operations
     void ungetBytes(size_t count);
+    BufferedInputStream &operator=(BufferedInputStream &&rhs) noexcept;
 
     // Overrides
     virtual bool isBuffered() const override;
@@ -52,6 +56,7 @@ public:
 private:
     // Internal Fields
     ByteBlock _buffer;
+    IStreamUPtr _ownedStream;
     IStream *_innerStream;
     size_t _bytesRead;
 };

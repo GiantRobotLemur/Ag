@@ -49,6 +49,8 @@ public:
     static ISeekableStreamUPtr open(const Fs::Path &at, FileAccessBits access);
     static bool tryOpen(ISeekableStreamUPtr &stream, const Fs::Path &at,
                         FileAccessBits access);
+    static bool tryOpen(ISeekableStreamUPtr &stream, const Fs::Path &at,
+                        FileAccessBits access, string_ref_t error);
     static ISeekableStreamUPtr createTempFile(const std::string_view &templateName);
     static ISeekableStreamUPtr createTempFile(const Fs::Path &tempDir,
                                               const std::string_view &templateName);

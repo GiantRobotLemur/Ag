@@ -34,6 +34,42 @@ BufferedInputStream::BufferedInputStream(IStream *input, size_t bufferSize /*= 0
     _buffer.reserve(safeBufferSize);
 }
 
+//! @brief Constructs a stream to batch reads to an underlying stream, which it takes
+//! ownership of.
+//! @param[in] input The underlying stream to read form.
+//! @param[in] bufferSize A hint at the size of the buffer to use, in bytes.
+//! @remarks The buffer size will be clamped to a value between MinBufferSize,
+//! and MaxBufferSize.
+BufferedInputStream::BufferedInputStream(IStreamUPtr &&input, size_t bufferSize /*= 0*/) :
+    _ownedStream(std::move(input)),
+    _innerStream(nullptr),
+    _bytesRead(0)
+{
+    if (_ownedStream)
+    {
+        _innerStream = _ownedStream.get();
+    }
+    else
+    {
+        throw ArgumentNullException("input");
+    }
+
+    size_t safeBufferSize = std::clamp(bufferSize, MinBufferSize, MaxBufferSize);
+
+    // Ensure the buffer is allocated once only.
+    _buffer.reserve(safeBufferSize);
+}
+
+//! @brief Constructs a buffered input stream by acquiring the resources of another.
+//! @param[in] rhs The stream to acquire resources from and leaving in an empty state.
+BufferedInputStream::BufferedInputStream(BufferedInputStream &&rhs) noexcept :
+    _buffer(std::move(rhs._buffer)),
+    _ownedStream(std::move(rhs._ownedStream)),
+    _innerStream(std::exchange(rhs._innerStream, nullptr)),
+    _bytesRead(std::exchange(rhs._bytesRead, 0))
+{
+}
+
 //! @brief Gets the total size of the buffer, in bytes.
 size_t BufferedInputStream::getBufferSize() const
 {
@@ -61,7 +97,25 @@ void BufferedInputStream::ungetBytes(size_t count)
 {
     if (count > _bytesRead)
         throw ArgumentException("Not enough buffered bytes to unget.", "count");
+
     _bytesRead -= count;
+}
+
+//! @brief Move-assigns an input stream to the current object, overwriting it and
+//! acquiring the state and wrapped input stream of the other.
+//! @param[in] rhs The stream to acquire.
+//! @return A reference to the current object.
+BufferedInputStream &BufferedInputStream::operator=(BufferedInputStream &&rhs) noexcept
+{
+    if (&rhs != this)
+    {
+        _buffer = std::move(rhs._buffer);
+        _ownedStream = std::move(rhs._ownedStream);
+        _innerStream = std::exchange(rhs._innerStream, nullptr);
+        _bytesRead = std::exchange(rhs._bytesRead, 0);
+    }
+
+    return *this;
 }
 
 //! @brief Gets a read-only reference to the underlying stream.
@@ -80,7 +134,8 @@ bool BufferedInputStream::isBuffered() const
 void BufferedInputStream::flush()
 {
     // Nothing to flush for a reader. Simply pass down to the inner stream.
-    _innerStream->flush();
+    if (_innerStream != nullptr)
+        _innerStream->flush();
 }
 
 // Inherited from IStream.
@@ -101,7 +156,7 @@ size_t BufferedInputStream::read(void *targetBuffer, size_t requiredByteCount)
         _bytesRead += bytesToCopy;
     }
 
-    if (bytesRead < requiredByteCount)
+    if ((bytesRead < requiredByteCount) && (_innerStream != nullptr))
     {
         // There are still more bytes left to read, and we have already
         // emptied the buffer.
