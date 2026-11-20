@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
-#include "CharacterSource.hpp"
+#include <Ag/IO.hpp>
 
 namespace Ag {
 namespace Text {
@@ -61,14 +61,15 @@ public:
 //! read up to the current point can be committed, preventing rollback until
 //! more characters are read.
 //! 
-//! @note The object collapses CR+ LF combinations down to a single LF ('\n')
-//! code point.
+//! Input is based on the Ag::IO::TextInputStream, which can be configured in
+//! various ways to deal with text encodings, byte order marks and translation
+//! of new line encodings.
 class CharacterAnalyser
 {
 public:
     // Construction/Destruction
-    CharacterAnalyser(ICharacterSource *input);
-    CharacterAnalyser(ICharacterSource *input, string_cref_t sourceIdentifier);
+    CharacterAnalyser(IO::TextInputStream *input);
+    CharacterAnalyser(IO::TextInputStream *input, string_cref_t sourceIdentifier);
     ~CharacterAnalyser() = default;
 
     // Accessors
@@ -86,17 +87,16 @@ public:
 private:
     // Internal Functions
     bool tryRefillBuffer();
-    void compactLineBreaks(size_t start, size_t length);
+    void truncateBuffer(size_t length);
 
     // Internal Fields
-    ICharacterSource *_source;
+    IO::TextInputStream *_source = nullptr;
     String _sourceIdentifier;
     CodePointBuffer _buffer;
-    size_t _committed;
-    size_t _read;
-    int32_t _line;
-    int32_t _column;
-    bool _isInLinebreakSequence;
+    size_t _committed = 0;
+    size_t _read = 0;
+    int32_t _line = 1;
+    int32_t _column = 1;
 };
 
 }} // namespace Ag::Text

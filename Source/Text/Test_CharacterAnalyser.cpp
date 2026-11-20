@@ -47,8 +47,7 @@ std::vector<char32_t> makeLongAlphabet(size_t count)
 ////////////////////////////////////////////////////////////////////////////////
 GTEST_TEST(CharacterAnalyser, NewAnalyserHasZeroRollbackLimit)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     EXPECT_EQ(analyser.getRollbackLimit(), 0u);
@@ -56,8 +55,7 @@ GTEST_TEST(CharacterAnalyser, NewAnalyserHasZeroRollbackLimit)
 
 GTEST_TEST(CharacterAnalyser, EmptySourceReturnsNoCharacters)
 {
-    String empty;
-    StringCharacterSource src(empty);
+    IO::TextInputStream src = IO::TextInputStream::createFromString(String::Empty);
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0xDEADBEEF;
@@ -71,8 +69,7 @@ GTEST_TEST(CharacterAnalyser, EmptySourceReturnsNoCharacters)
 ////////////////////////////////////////////////////////////////////////////////
 GTEST_TEST(CharacterAnalyser, ReadsCharactersInOrder)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     for (size_t i = 0; i < kSampleCodePointCount; ++i)
@@ -92,8 +89,8 @@ GTEST_TEST(CharacterAnalyser, SupplementaryPlaneCharIsOneCodePoint)
     // U+1D11E (musical G clef) is a surrogate pair in UTF-16, but the analyser
     // walks UTF-32 code points so it must appear as exactly one character.
     constexpr char32_t single[] = { U'\U0001D11E' };
-    String text(single, std::size(single));
-    StringCharacterSource src(text);
+
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(single, std::size(single)));
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0;
@@ -106,8 +103,7 @@ GTEST_TEST(CharacterAnalyser, SupplementaryPlaneCharIsOneCodePoint)
 
 GTEST_TEST(CharacterAnalyser, RollbackLimitGrowsWithUncommittedReads)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0;
@@ -120,8 +116,7 @@ GTEST_TEST(CharacterAnalyser, RollbackLimitGrowsWithUncommittedReads)
 
 GTEST_TEST(CharacterAnalyser, CommitClearsRollbackLimit)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0;
@@ -142,8 +137,7 @@ GTEST_TEST(CharacterAnalyser, CommitClearsRollbackLimit)
 ////////////////////////////////////////////////////////////////////////////////
 GTEST_TEST(CharacterAnalyser, RollbackRestoresPriorPosition)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0;
@@ -162,8 +156,7 @@ GTEST_TEST(CharacterAnalyser, RollbackRestoresPriorPosition)
 
 GTEST_TEST(CharacterAnalyser, RollbackZeroIsNoOp)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0;
@@ -180,8 +173,7 @@ GTEST_TEST(CharacterAnalyser, RollbackZeroIsNoOp)
 
 GTEST_TEST(CharacterAnalyser, RollbackBeyondLimitThrows)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0;
@@ -193,8 +185,7 @@ GTEST_TEST(CharacterAnalyser, RollbackBeyondLimitThrows)
 
 GTEST_TEST(CharacterAnalyser, RollbackPastCommitThrows)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     char32_t next = 0;
@@ -212,8 +203,7 @@ GTEST_TEST(CharacterAnalyser, RollbackPastCommitThrows)
 ////////////////////////////////////////////////////////////////////////////////
 GTEST_TEST(CharacterAnalyser, EnsureNextMatchesAdvances)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     EXPECT_TRUE(analyser.tryEnsureNextCharacter(U'A'));
@@ -226,8 +216,7 @@ GTEST_TEST(CharacterAnalyser, EnsureNextMatchesAdvances)
 
 GTEST_TEST(CharacterAnalyser, EnsureNextMismatchDoesNotAdvance)
 {
-    String text(kSampleUtf32, kSampleCodePointCount);
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(kSampleUtf32, kSampleCodePointCount));
     CharacterAnalyser analyser(&src);
 
     EXPECT_FALSE(analyser.tryEnsureNextCharacter(U'Z'));
@@ -241,8 +230,7 @@ GTEST_TEST(CharacterAnalyser, EnsureNextMismatchDoesNotAdvance)
 
 GTEST_TEST(CharacterAnalyser, EnsureNextAtEofReturnsFalse)
 {
-    String empty;
-    StringCharacterSource src(empty);
+    IO::TextInputStream src = IO::TextInputStream::createFromString(String::Empty);
     CharacterAnalyser analyser(&src);
 
     EXPECT_FALSE(analyser.tryEnsureNextCharacter(U'X'));
@@ -252,8 +240,7 @@ GTEST_TEST(CharacterAnalyser, EnsureNextAtEofReturnsFalse)
 GTEST_TEST(CharacterAnalyser, EnsureNextMatchesSupplementaryCharacter)
 {
     constexpr char32_t single[] = { U'\U0001D11E' };
-    String text(single, std::size(single));
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(single, std::size(single)));
     CharacterAnalyser analyser(&src);
 
     EXPECT_TRUE(analyser.tryEnsureNextCharacter(U'\U0001D11E'));
@@ -270,8 +257,7 @@ GTEST_TEST(CharacterAnalyser, ReadsAcrossBufferRefill)
     constexpr size_t kLength = 800;
     auto long_ = makeLongAlphabet(kLength);
 
-    String text(long_.data(), long_.size());
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(long_.data(), long_.size()));
     CharacterAnalyser analyser(&src);
 
     analyser.setBufferSize(256);
@@ -279,9 +265,10 @@ GTEST_TEST(CharacterAnalyser, ReadsAcrossBufferRefill)
     for (size_t i = 0; i < kLength; ++i)
     {
         char32_t next = 0;
+        char32_t expected = long_[i];
         ASSERT_TRUE(analyser.tryGetNextCharacter(next))
             << "stalled at index " << i;
-        EXPECT_EQ(next, long_[i]) << "wrong char at index " << i;
+        EXPECT_EQ(next, expected) << "wrong char at index " << i;
 
         // Commit periodically so the rollback buffer doesn't grow without
         // bound; this also exercises the "erase committed, refill" branch.
@@ -301,8 +288,7 @@ GTEST_TEST(CharacterAnalyser, RollbackAfterRefillBoundary)
     constexpr size_t kLength = 400;
     auto long_ = makeLongAlphabet(kLength);
 
-    String text(long_.data(), long_.size());
-    StringCharacterSource src(text);
+    IO::TextInputStream src = IO::TextInputStream::createFromStringView(std::u32string_view(long_.data(), long_.size()));
     CharacterAnalyser analyser(&src);
 
     // Consume 300 chars, committing the first 250 so the rollback window

@@ -16,6 +16,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <deque>
 
+#include <Ag/Core/Memory.hpp>
+
 #include "ISeekableStream.hpp"
 
 namespace Ag {
@@ -65,6 +67,8 @@ private:
     size_t _position;
     bool _isReadOnly;
 };
+
+DECLARE_DERIVED_UNIQUE_PTR(MemoryStream, IStream);
 
 }} // namespace Ag::IO
 

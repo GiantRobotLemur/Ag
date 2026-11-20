@@ -23,12 +23,13 @@ namespace Test {
 
 namespace {
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // Unit Tests
 ////////////////////////////////////////////////////////////////////////////////
 GTEST_TEST(TokenStream, NoTokensFromEmptyStream)
 {
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(String::Empty);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(String::Empty);
     ExprInput::ITokeniserCPtr initialTokeniser = &StatementTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -41,7 +42,7 @@ GTEST_TEST(TokenStream, NoTokensFromEmptyStream)
 GTEST_TEST(TokenStream, NoTokensFromWhiteSpaceStream)
 {
     String source = "   \t\t\n\t  \r\n\t  ";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &StatementTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -54,7 +55,7 @@ GTEST_TEST(TokenStream, NoTokensFromWhiteSpaceStream)
 GTEST_TEST(TokenStream, LiteralTokenFromStream)
 {
     String source = "\t 12345\n  ";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -71,7 +72,7 @@ GTEST_TEST(TokenStream, LiteralTokenFromStream)
 GTEST_TEST(TokenStream, SymbolTokenOnNewLine)
 {
     String source = "\t  \n   \r\n   HelloWorld\n  ";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -90,7 +91,7 @@ GTEST_TEST(TokenStream, SymbolTokenOnNewLine)
 GTEST_TEST(TokenStream, SingleCharacterTokens)
 {
     String source = "\t  ;\n +  \r\n  * \n /";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -136,12 +137,11 @@ GTEST_TEST(TokenStream, ConstructorAcceptsInputStream)
     // underlying binary stream) functions equivalently when no binary stream
     // is supplied.
     String source = "x";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     IStreamUPtr noStream;
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
-                                    std::move(sourceStream),
-                                    std::move(noStream));
+                                    std::move(sourceStream));
 
     ExprInput::Token next;
 
@@ -154,7 +154,7 @@ GTEST_TEST(TokenStream, ConstructorAcceptsInputStream)
 GTEST_TEST(TokenStream, MoveConstructionPreservesPosition)
 {
     String source = "alpha beta gamma";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream original(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -181,7 +181,7 @@ GTEST_TEST(TokenStream, MoveConstructionPreservesPosition)
 GTEST_TEST(TokenStream, LocationCarriesSourceIdentifier)
 {
     String source = "value";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "my-source.txt",
                                     std::move(sourceStream));
@@ -195,7 +195,7 @@ GTEST_TEST(TokenStream, LocationCarriesSourceIdentifier)
 GTEST_TEST(TokenStream, EndOfStreamRemainsExhausted)
 {
     String source = "only";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -214,7 +214,7 @@ GTEST_TEST(TokenStream, EndOfStreamRemainsExhausted)
 GTEST_TEST(TokenStream, RecognisesMixedExpressionTokens)
 {
     String source = "result = 1.5 + 'A' - \"hi\";";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -260,7 +260,7 @@ GTEST_TEST(TokenStream, RecognisesMixedExpressionTokens)
 GTEST_TEST(TokenStream, RecognisesParentheses)
 {
     String source = "(a)";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -283,7 +283,7 @@ GTEST_TEST(TokenStream, RecognisesParentheses)
 GTEST_TEST(TokenStream, ProducesErrorTokenForUnterminatedString)
 {
     String source = "\"never closed";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -297,7 +297,7 @@ GTEST_TEST(TokenStream, ProducesErrorTokenForUnterminatedString)
 GTEST_TEST(TokenStream, RewindZeroIsNoOp)
 {
     String source = "first second";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -316,7 +316,7 @@ GTEST_TEST(TokenStream, RewindZeroIsNoOp)
 GTEST_TEST(TokenStream, RewindOnFreshStreamThrowsForPositiveCount)
 {
     String source = "anything";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -327,7 +327,7 @@ GTEST_TEST(TokenStream, RewindOnFreshStreamThrowsForPositiveCount)
 GTEST_TEST(TokenStream, RewindBeyondReadCountThrows)
 {
     String source = "one two";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -343,7 +343,7 @@ GTEST_TEST(TokenStream, RewindBeyondReadCountThrows)
 GTEST_TEST(TokenStream, RewindReReadsCachedTokens)
 {
     String source = "alpha beta gamma";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -379,7 +379,7 @@ GTEST_TEST(TokenStream, RewindReReadsCachedTokens)
 GTEST_TEST(TokenStream, RewindThenAdvanceMixesCachedAndNew)
 {
     String source = "one two three four";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -411,7 +411,7 @@ GTEST_TEST(TokenStream, RewindThenAdvanceMixesCachedAndNew)
 GTEST_TEST(TokenStream, RewindRestoresLocationInformation)
 {
     String source = "x\n  yy";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "src",
                                     std::move(sourceStream));
@@ -435,7 +435,7 @@ GTEST_TEST(TokenStream, RewindRestoresLocationInformation)
 GTEST_TEST(TokenStream, CommitPreventsRewindOverCommittedTokens)
 {
     String source = "alpha beta gamma";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -456,7 +456,7 @@ GTEST_TEST(TokenStream, CommitPreventsRewindOverCommittedTokens)
 GTEST_TEST(TokenStream, CommitAllowsContinuedReading)
 {
     String source = "a b c d";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -481,7 +481,7 @@ GTEST_TEST(TokenStream, CommitAllowsContinuedReading)
 GTEST_TEST(TokenStream, CommitOnFreshStreamIsNoOp)
 {
     String source = "alpha";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -497,7 +497,7 @@ GTEST_TEST(TokenStream, CommitOnFreshStreamIsNoOp)
 GTEST_TEST(TokenStream, CommitAfterRewindKeepsUnreadCachedTokens)
 {
     String source = "one two three";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -529,7 +529,7 @@ GTEST_TEST(TokenStream, CommitClearsCacheWhenFullyConsumed)
     // release the rewind buffer; that should not affect the ability to read
     // further tokens but does prevent rewinding back into the cleared range.
     String source = "a b c";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -556,7 +556,7 @@ GTEST_TEST(TokenStream, StatementTokeniserOnlyRecognisesAssignmentAndTerminator)
     // The StatementTokeniser variant from Test_ExampleParser only recognises
     // '=', ';' and symbols. Verify TokenStream forwards to it correctly.
     String source = "name = ;";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &StatementTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -580,8 +580,8 @@ GTEST_TEST(TokenStream, PushTokenStreamReadsFromNewSource)
 {
     String firstSource = "outer";
     String secondSource = "inner";
-    ICharacterSourceUPtr firstStream = std::make_unique<StringCharacterSource>(firstSource);
-    ICharacterSourceUPtr secondStream = std::make_unique<StringCharacterSource>(secondSource);
+    IO::TextInputStreamUPtr firstStream = IO::TextInputStream::createUPtrFromString(firstSource);
+    IO::TextInputStreamUPtr secondStream = IO::TextInputStream::createUPtrFromString(secondSource);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "outer.src",
                                     std::move(firstStream));
@@ -602,8 +602,8 @@ GTEST_TEST(TokenStream, PopTokenStreamReturnsToPriorSource)
 {
     String firstSource = "outerOne outerTwo";
     String secondSource = "inner";
-    ICharacterSourceUPtr firstStream = std::make_unique<StringCharacterSource>(firstSource);
-    ICharacterSourceUPtr secondStream = std::make_unique<StringCharacterSource>(secondSource);
+    IO::TextInputStreamUPtr firstStream = IO::TextInputStream::createUPtrFromString(firstSource);
+    IO::TextInputStreamUPtr secondStream = IO::TextInputStream::createUPtrFromString(secondSource);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "outer.src",
                                     std::move(firstStream));
@@ -631,9 +631,9 @@ GTEST_TEST(TokenStream, RestoreTokenStreamPopsToRecordedState)
     String outerSource = "outer";
     String middleSource = "middle";
     String innerSource = "inner";
-    ICharacterSourceUPtr outerStream = std::make_unique<StringCharacterSource>(outerSource);
-    ICharacterSourceUPtr middleStream = std::make_unique<StringCharacterSource>(middleSource);
-    ICharacterSourceUPtr innerStream = std::make_unique<StringCharacterSource>(innerSource);
+    IO::TextInputStreamUPtr outerStream = IO::TextInputStream::createUPtrFromString(outerSource);
+    IO::TextInputStreamUPtr middleStream = IO::TextInputStream::createUPtrFromString(middleSource);
+    IO::TextInputStreamUPtr innerStream = IO::TextInputStream::createUPtrFromString(innerSource);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "outer.src",
                                     std::move(outerStream));
@@ -654,7 +654,7 @@ GTEST_TEST(TokenStream, PushTokeniserChangesRecognitionWithinSource)
 {
     // StatementTokeniser does not recognise '+'; ExpressionTokeniser does.
     String source = "+";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &StatementTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -673,7 +673,7 @@ GTEST_TEST(TokenStream, PushTokeniserChangesRecognitionWithinSource)
 GTEST_TEST(TokenStream, RestoreTokeniserRevertsToPriorRecogniser)
 {
     String source = "a + b ;";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &StatementTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));
@@ -701,7 +701,7 @@ GTEST_TEST(TokenStream, RestoreTokeniserRevertsToPriorRecogniser)
 GTEST_TEST(TokenStream, RestoreTokeniserRejectsZero)
 {
     String source = "x";
-    ICharacterSourceUPtr sourceStream = std::make_unique<StringCharacterSource>(source);
+    IO::TextInputStreamUPtr sourceStream = IO::TextInputStream::createUPtrFromString(source);
     ExprInput::ITokeniserCPtr initialTokeniser = &ExpressionTokeniser::Instance;
     ExprInput::TokenStream specimen(initialTokeniser, "(anon)",
                                     std::move(sourceStream));

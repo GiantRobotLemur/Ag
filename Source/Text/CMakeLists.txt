@@ -18,7 +18,7 @@ ag_add_library(Text FOLDER      Core
                                 Json.cpp
                                 ${TEXT_INCLUDE_DIR}/Json.hpp
                     HEADERS     ${AG_INCLUDE_DIR}/Ag/Text.hpp
-                    PUBLIC_LIBS AgCore)
+                    PUBLIC_LIBS AgCore AgIO)
 
 target_precompile_headers(Text PRIVATE [["PreCompiledHeader.hpp"]])
 target_include_directories(Text PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

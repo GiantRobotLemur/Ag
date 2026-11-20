@@ -123,6 +123,7 @@ public:
         _messages(messages),
         _exitRequested(false)
     {
+        _partialNodes.push_back(rootNode);
     }
 
 

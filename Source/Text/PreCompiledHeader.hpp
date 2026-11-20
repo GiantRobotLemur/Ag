@@ -17,6 +17,8 @@
 // C/CRT Header Files
 
 // C++/STL Header Files
+#include <bit>
+#include <span>
 
 // Upstream Library Files
 #include <Ag/Core.hpp>

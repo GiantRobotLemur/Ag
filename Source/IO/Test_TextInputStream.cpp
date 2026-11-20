@@ -316,9 +316,7 @@ GTEST_TEST(TextInputStream, InvalidBOM)
     char32_t buffer[BufferSize];
 
     // Case 1: Try with a mandatory BOM ///////////////////////////////////////
-    TextInputStream specimen1(&rawInput, options);
-
-    EXPECT_THROW(specimen1.read(buffer, BufferSize), InvalidBOMException);
+    EXPECT_THROW(TextInputStream specimen1(&rawInput, options), InvalidBOMException);
 
     // Case 2: Try with an optional BOM ///////////////////////////////////////
     options.setBOMExpectation(TextInputOptions::BOMMode::Optional);
@@ -399,6 +397,119 @@ GTEST_TEST(TextInputStream, InvalidSequence)
 
     // Try a third time to confirm.
     EXPECT_EQ(specimen3.read(buffer, BufferSize), 0u);
+}
+
+GTEST_TEST(TextInputStream, NewlineNoConversion)
+{
+    std::string_view source = "\r\n\n";
+    TextInputOptions options;
+    options.enableNewLineProcessing(false);
+
+    TextInputStream specimen = TextInputStream::createFromStringView(source, options);
+
+    char32_t text[3];
+
+    ASSERT_EQ(specimen.read(text, 3), 3u);
+    EXPECT_EQ(text[0], U'\r');
+    EXPECT_EQ(text[1], U'\n');
+    EXPECT_EQ(text[2], U'\n');
+
+    // Verify the end of the stream.
+    EXPECT_EQ(specimen.read(text, 1), 0u);
+}
+
+GTEST_TEST(TextInputStream, NewlineLFCRToLF)
+{
+    std::string_view source = "\r\n\n";
+    TextInputOptions options;
+    options.enableNewLineProcessing(true);
+
+    TextInputStream specimen = TextInputStream::createFromStringView(source, options);
+
+    char32_t text[3];
+
+    ASSERT_EQ(specimen.read(text, 2), 2u);
+    EXPECT_EQ(text[0], U'\n');
+    EXPECT_EQ(text[1], U'\n');
+
+    // Verify the end of the stream.
+    EXPECT_EQ(specimen.read(text, 1), 0u);
+}
+
+GTEST_TEST(TextInputStream, NewlineCRLFToLF)
+{
+    std::string_view source = "\n\r\n";
+    TextInputOptions options;
+    options.enableNewLineProcessing(true);
+
+    TextInputStream specimen = TextInputStream::createFromStringView(source, options);
+
+    char32_t text[3];
+
+    ASSERT_EQ(specimen.read(text, 2), 2u);
+    EXPECT_EQ(text[0], U'\n');
+    EXPECT_EQ(text[1], U'\n');
+
+    // Verify the end of the stream.
+    EXPECT_EQ(specimen.read(text, 1), 0u);
+}
+
+GTEST_TEST(TextInputStream, NewlineMultiCRToMultiLF)
+{
+    std::string_view source = "\r\r\r";
+    TextInputOptions options;
+    options.enableNewLineProcessing(true);
+
+    TextInputStream specimen = TextInputStream::createFromStringView(source, options);
+
+    char32_t text[3];
+
+    ASSERT_EQ(specimen.read(text, 3), 3u);
+    EXPECT_EQ(text[0], U'\n');
+    EXPECT_EQ(text[1], U'\n');
+    EXPECT_EQ(text[1], U'\n');
+
+    // Verify the end of the stream.
+    EXPECT_EQ(specimen.read(text, 1), 0u);
+}
+
+GTEST_TEST(TextInputStream, NewlineTrailingCRNotProcessed)
+{
+    std::string_view source = "\r\n\r\n\r\n\r";
+    TextInputOptions options;
+    options.enableNewLineProcessing(true);
+
+    TextInputStream specimen = TextInputStream::createFromStringView(source, options);
+
+    char32_t text[4];
+
+    ASSERT_EQ(specimen.read(text, 4), 4u);
+    EXPECT_EQ(text[0], U'\n');
+    EXPECT_EQ(text[1], U'\n');
+    EXPECT_EQ(text[2], U'\n');
+    EXPECT_EQ(text[3], U'\r');
+
+    // Verify the end of the stream.
+    EXPECT_EQ(specimen.read(text, 1), 0u);
+}
+
+GTEST_TEST(TextInputStream, NewlineConversionWithText)
+{
+    std::string_view source = "Hello\r\n\tThere\n\rYou\t\r";
+    const char32_t expected[] = U"Hello\n\tThere\nYou\t\r";
+    TextInputOptions options;
+    options.enableNewLineProcessing(true);
+
+    TextInputStream specimen = TextInputStream::createFromStringView(source, options);
+
+    constexpr size_t ExpectedSize = std::size(expected) - 1;
+    char32_t buffer[ExpectedSize];
+
+    ASSERT_EQ(specimen.read(buffer, ExpectedSize), ExpectedSize);
+    EXPECT_TRUE(std::equal(expected, expected + ExpectedSize, buffer));
+
+    // Verify the end of the stream.
+    EXPECT_EQ(specimen.read(buffer, 1), 0u);
 }
 
 } // Anonymous namespace

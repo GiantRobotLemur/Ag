@@ -18,12 +18,21 @@
 #include <initializer_list>
 
 #include "Ag/IO/BufferedInputStream.hpp"
+#include "Ag/IO/MemoryStream.hpp"
 #include "Ag/IO/TextInputStream.hpp"
 
 namespace Ag {
 namespace IO {
 
 namespace {
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Local Data
+////////////////////////////////////////////////////////////////////////////////
+constexpr char32_t LF = U'\n'; // 0x0A
+constexpr char32_t CR = U'\r'; // 0x0D
+
 ////////////////////////////////////////////////////////////////////////////////
 // Local Data Types
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,14 +289,24 @@ ICharacterDecoderUPtr createDecoder(TextEncoding encoding)
     return decoder;
 }
 
-//! @brief Attempts to read the next byte from an input stream.
-//! @param[in] input The stream to read from.
-//! @param[out] next The next byte read from the stream if successful.
-//! @retval true A byte was successfully read and returned in @p next.
-//! @retval false There were no bytes available in @p input.
-bool tryGetNextByte(IStream *input, uint8_t &next)
+//! @brief Compares a sequence of bytes against a fixed sequence.
+//! @tparam N The count of bytes in the fixed sequence.
+//! @param[in] lhs The sequence to compare against.
+//! @param[in] lhsSize The count of bytes in the @p lhs sequence.
+//! @param[in] rhs The fixed-sized sequence to compare against.
+//! @retval true The first N bytes of @p lhs match the corresponding
+//! bytes of @p rhs.
+template<std::size_t N>
+bool isMatchingSequence(uint8_cptr_t lhs, size_t lhsSize, const uint8_t (&rhs)[N])
 {
-    return input->read(&next, 1) == 1;
+    constexpr size_t rhsSize = N;
+
+    if (lhsSize < rhsSize)
+    {
+        return false;
+    }
+
+    return std::equal(lhs, lhs + rhsSize, rhs);
 }
 
 //! @brief Attempts to interpret a Byte Order Mark at the beginning of a text
@@ -307,140 +326,80 @@ bool tryGetNextByte(IStream *input, uint8_t &next)
 bool tryInterpretBOM(IStream *input, uint8_ptr_t decodeBuffer,
                      size_t &decodedByteCount, TextEncoding &encoding)
 {
-    encoding = TextEncoding::ASCII;
-    bool hasEncoding = false;
-
     if (decodedByteCount < 4)
     {
         throw ArgumentException("The buffer needs to be at least 4 bytes long.", "bufferSize");
     }
 
-    // We have to be very careful hear to read only what we need and
-    // waste as few bytes as possible.
-    decodedByteCount = 0;
+    static const uint8_t Utf8Bom[] = { 0xEF, 0xBB, 0xBF };
+    static const uint8_t Utf16LeBom[] = { 0xFF, 0xFE };
+    static const uint8_t Utf16BeBom[] = { 0xFE, 0xFF };
+    static const uint8_t Utf32LeBom[] = { 0xFF, 0xFE, 0x00, 0x00 };
+    static const uint8_t Utf32BeBom[] = { 0x00, 0x00, 0xFE, 0xFF };
 
-    if (tryGetNextByte(input, decodeBuffer[0]))
+    size_t bytesRead = input->read(decodeBuffer, 4);
+    size_t bomSize = 0;
+    encoding = TextEncoding::ASCII;
+    bool hasEncoding = true;
+
+    if (isMatchingSequence(decodeBuffer, bytesRead, Utf32LeBom))
     {
-        ++decodedByteCount;
+        // UTF-32 Little Endian.
+        encoding = TextEncoding::UTF32_LittleEndian;
+        bomSize = std::size(Utf32LeBom);
+    }
+    else if (isMatchingSequence(decodeBuffer, bytesRead, Utf32BeBom))
+    {
+        // UTF-32 Big Endian.
+        encoding = TextEncoding::UTF32_BigEndian;
+        bomSize = std::size(Utf32BeBom);
+    }
+    else if (isMatchingSequence(decodeBuffer, bytesRead, Utf16LeBom))
+    {
+        // UTF-16 Little Endian.
+        encoding = TextEncoding::UTF16_LittleEndian;
+        bomSize = std::size(Utf16LeBom);
+    }
+    else if (isMatchingSequence(decodeBuffer, bytesRead, Utf16BeBom))
+    {
+        // UTF-16 Big Endian.
+        encoding = TextEncoding::UTF16_BigEndian;
+        bomSize = std::size(Utf16BeBom);
+    }
+    else if (isMatchingSequence(decodeBuffer, bytesRead, Utf8Bom))
+    {
+        // UTF-8.
+        encoding = TextEncoding::UTF8;
+        bomSize = std::size(Utf8Bom);
+    }
+    else
+    {
+        hasEncoding = false;
+    }
 
-        switch (decodeBuffer[0])
+    // Deal with any left over bytes which are to be decoded as characters.
+    if (hasEncoding)
+    {
+        decodedByteCount = bytesRead - bomSize;
+
+        if (bomSize < bytesRead)
         {
-        case 0x00: // Could be UTF32-BE.
-            if (tryGetNextByte(input, decodeBuffer[1]))
-            {
-                ++decodedByteCount;
-
-                if ((decodeBuffer[1] == 0x00) && tryGetNextByte(input, decodeBuffer[2]))
-                {
-                    ++decodedByteCount;
-
-                    if ((decodeBuffer[2] == 0xFE) && tryGetNextByte(input, decodeBuffer[3]))
-                    {
-                        ++decodedByteCount;
-
-                        if (decodeBuffer[3] == 0x0FF)
-                        {
-                            encoding = TextEncoding::UTF32_BigEndian;
-                            hasEncoding = true;
-                            decodedByteCount = 0;
-                        }
-                    }
-                }
-            }
-            break;
-
-        case 0xEF: // Could be UTF-8.
-            if (tryGetNextByte(input, decodeBuffer[1]))
-            {
-                ++decodedByteCount;
-
-                if ((decodeBuffer[1] == 0xBB) && tryGetNextByte(input, decodeBuffer[2]))
-                {
-                    ++decodedByteCount;
-
-                    if (decodeBuffer[2] == 0xBF)
-                    {
-                        encoding = TextEncoding::UTF8;
-                        hasEncoding = true;
-                        decodedByteCount = 0;
-                    }
-                }
-            }
-            break;
-
-        case 0xFE: // Could be UTF-16-BE.
-            if (tryGetNextByte(input, decodeBuffer[1]))
-            {
-                ++decodedByteCount;
-
-                if (decodeBuffer[1] == 0xFF)
-                {
-                    encoding = TextEncoding::UTF16_BigEndian;
-                    hasEncoding = true;
-                    decodedByteCount = 0;
-                }
-            }
-            break;
-
-        case 0xFF: // Could be UTF16-LE or UTF32-LE.
-            if (tryGetNextByte(input, decodeBuffer[1]))
-            {
-                ++decodedByteCount;
-
-                if (decodeBuffer[1] == 0xFE)
-                {
-                    // We have a UTF-16-LE BOM. Some extra bytes could make
-                    // that a UTF-32-LE BOM.
-                    if (tryGetNextByte(input, decodeBuffer[2]))
-                    {
-                        ++decodedByteCount;
-
-                        if (decodeBuffer[2] == 0x00)
-                        {
-                            if (tryGetNextByte(input, decodeBuffer[3]))
-                            {
-                                ++decodedByteCount;
-
-                                if (decodeBuffer[3] == 0x00)
-                                {
-                                    encoding = TextEncoding::UTF32_LittleEndian;
-                                    decodedByteCount = 0;
-                                    hasEncoding = true;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // We recognised UTF-16 Little Endian with one wasted byte.
-                            encoding = TextEncoding::UTF16_LittleEndian;
-                            hasEncoding = true;
-
-                            // Store the wasted byte for future processing.
-                            decodeBuffer[0] = decodeBuffer[2];
-                            decodedByteCount = 1;
-                        }
-                    }
-                    else
-                    {
-                        // We recognise the UTF-16-LE BOM and then ran out of bytes.
-                        encoding = TextEncoding::UTF16_LittleEndian;
-                        decodedByteCount = 0;
-                        hasEncoding = true;
-                    }
-                }
-            }
-            break;
+            // Shuffle bytes in the decoding buffer down.
+            std::memmove(decodeBuffer, decodeBuffer + bomSize, decodedByteCount);
         }
     }
     else
     {
-        // We failed to read any bytes at all.
-        decodedByteCount = 0;
+        decodedByteCount = bytesRead;
     }
 
     return hasEncoding;
 }
 
+//! @brief Appends text representing a sequence of bytes to a UTF-8 string.
+//! @param[in] buffer The string to append to.
+//! @param[in] bytes The array of bytes to format.
+//! @param[in] count The count of bytes in @p bytes to format.
 void appendByteSequence(std::string &buffer, uint8_cptr_t bytes, size_t count)
 {
     Ag::ensureExtraCapacity(buffer, (count * 6) + 2);
@@ -469,6 +428,79 @@ void appendByteSequence(std::string &buffer, uint8_cptr_t bytes, size_t count)
 
     buffer.push_back(' ');
     buffer.push_back('}');
+}
+
+
+//! @brief Creates a TextInputStream from a copy of a std::basic_string_view<> derived string.
+//! @tparam T The data type of the string view to copy.
+//! @tparam TEnc The encoding of the string data.
+//! @param[in] stringView The string data to copy.
+//! @return An object to read the string data.
+template<IO::TextEncoding TEnc, typename T>
+TextInputStream createTextStreamFromStringView(const T &stringView)
+{
+    IStreamUPtr memStream(new MemoryStream(stringView.data(), stringView.length() * sizeof(T::value_type), true));
+    TextInputOptions options;
+    options.setPreferredEncoding(TEnc);
+    options.setBOMExpectation(TextInputOptions::BOMMode::Ignored);
+
+    return TextInputStream(std::move(memStream), options);
+}
+
+//! @brief Creates a TextInputStream from a copy of a std::basic_string_view<> derived string.
+//! @tparam T The data type of the string view to copy.
+//! @tparam TEnc The encoding of the string data.
+//! @param[in] stringView The string data to copy.
+//! @param[in] options The base set of options used to configure the stream.
+//! @return An object to read the string data.
+template<IO::TextEncoding TEnc, typename T>
+TextInputStream createTextStreamFromStringView(const T &stringView,
+                                               const TextInputOptions &options)
+{
+    IStreamUPtr memStream(new MemoryStream(stringView.data(), stringView.length() * sizeof(T::value_type), true));
+
+    TextInputOptions effectiveOptions(options);
+    effectiveOptions.setPreferredEncoding(TEnc);
+    effectiveOptions.setBOMExpectation(TextInputOptions::BOMMode::Ignored);
+
+    return TextInputStream(std::move(memStream), effectiveOptions);
+}
+
+//! @brief Creates a unique pointer to a TextInputStream from a copy of a
+//! std::basic_string_view<> derived string.
+//! @tparam T The data type of the string view to copy.
+//! @tparam TEnc The encoding of the string data.
+//! @param[in] stringView The string data to copy.
+//! @return An object to read the string data.
+template<IO::TextEncoding TEnc, typename T>
+TextInputStreamUPtr createTextStreamUPtrFromStringView(const T &stringView)
+{
+    IStreamUPtr memStream(new MemoryStream(stringView.data(), stringView.length() * sizeof(T::value_type), true));
+    TextInputOptions options;
+    options.setPreferredEncoding(TEnc);
+    options.setBOMExpectation(TextInputOptions::BOMMode::Ignored);
+
+    return std::make_unique<TextInputStream>(std::move(memStream), options);
+}
+
+//! @brief Creates a unique pointer to a TextInputStream from a copy of a
+//! std::basic_string_view<> derived string.
+//! @tparam T The data type of the string view to copy.
+//! @tparam TEnc The encoding of the string data.
+//! @param[in] stringView The string data to copy.
+//! @param[in] options The base set of options used to configure the stream.
+//! @return An object to read the string data.
+template<IO::TextEncoding TEnc, typename T>
+TextInputStreamUPtr createTextStreamUPtrFromStringView(const T &stringView,
+                                                       const TextInputOptions &options)
+{
+    IStreamUPtr memStream(new MemoryStream(stringView.data(), stringView.length() * sizeof(T::value_type), true));
+
+    TextInputOptions effectiveOptions(options);
+    effectiveOptions.setPreferredEncoding(TEnc);
+    effectiveOptions.setBOMExpectation(TextInputOptions::BOMMode::Ignored);
+
+    return std::make_unique<TextInputStream>(std::move(memStream), effectiveOptions);
 }
 
 } // Anonymous namespace
@@ -534,6 +566,26 @@ char32_t TextInputOptions::getErrorSubstituteCharacter() const
 void TextInputOptions::setErrorSubstituteCharacter(char32_t substitute)
 {
     _substitute = substitute;
+}
+
+//! @brief Gets whether encodings of a new line should be rendered down to a
+//! simple '\n' character.
+//! @retval true '\n', '\r\n' and '\r' characters will all be reported as a
+//! single '\n' character.
+//! @retval false Decoded characters will not be returned without additional
+//! processing.
+bool TextInputOptions::hasNewLineProcessing() const
+{
+    return _processNewLine;
+}
+
+//! @brief Sets whether decoded characters should be processed to simplify
+//! newline encodings.
+//! @param[in] isEnabled True to enable new line character processing, false
+//! to disable processing of decoded characters.
+void TextInputOptions::enableNewLineProcessing(bool isEnabled)
+{
+    _processNewLine = isEnabled;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -653,6 +705,235 @@ TextInputStream::TextInputStream(TextInputStream &&rhs) noexcept
     moveAssign(std::move(rhs));
 }
 
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStream TextInputStream::createFromString(string_cref_t &text)
+{
+    return createTextStreamFromStringView<TextEncoding::UTF8>(text.toUtf8View());
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStream TextInputStream::createFromStringView(const std::string_view &utf8Text)
+{
+    return createTextStreamFromStringView<TextEncoding::UTF8>(utf8Text);
+}
+
+//! @brief Creates a text input stream from a copy of a wide string.
+//! @param[in] wideText A view of a wide text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p wideText.
+TextInputStream TextInputStream::createFromStringView(const std::wstring_view &wideText)
+{
+    return createTextStreamFromStringView<Wide_Native>(wideText);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStream TextInputStream::createFromStringView(const std::u8string_view &utf8Text)
+{
+    return createTextStreamFromStringView<TextEncoding::UTF8>(utf8Text);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-16 encoded string.
+//! @param[in] utf16Text A view of a UTF-16 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStream TextInputStream::createFromStringView(const std::u16string_view &utf16Text)
+{
+    return createTextStreamFromStringView<UTF16_Native>(utf16Text);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
+//! @param[in] utf32Text A view of a UTF-32 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStream TextInputStream::createFromStringView(const std::u32string_view &utf32Text)
+{
+    return createTextStreamFromStringView<UTF32_Native>(utf32Text);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStream TextInputStream::createFromString(string_cref_t &text,
+                                                  const TextInputOptions &options)
+{
+    return createTextStreamFromStringView<TextEncoding::UTF8>(text.toUtf8View(),
+                                                              options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStream TextInputStream::createFromStringView(const std::string_view &utf8Text,
+                                                      const TextInputOptions &options)
+{
+    return createTextStreamFromStringView<TextEncoding::UTF8>(utf8Text, options);
+}
+
+//! @brief Creates a text input stream from a copy of a wide string.
+//! @param[in] wideText A view of a wide text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p wideText.
+TextInputStream TextInputStream::createFromStringView(const std::wstring_view &wideText,
+                                                      const TextInputOptions &options)
+{
+    return createTextStreamFromStringView<Wide_Native>(wideText, options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStream TextInputStream::createFromStringView(const std::u8string_view &utf8Text,
+                                                      const TextInputOptions &options)
+{
+    return createTextStreamFromStringView<TextEncoding::UTF8>(utf8Text, options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-16 encoded string.
+//! @param[in] utf16Text A view of a UTF-16 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStream TextInputStream::createFromStringView(const std::u16string_view &utf16Text,
+                                                      const TextInputOptions &options)
+{
+    return createTextStreamFromStringView<UTF16_Native>(utf16Text, options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
+//! @param[in] utf32Text A view of a UTF-32 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStream TextInputStream::createFromStringView(const std::u32string_view &utf32Text,
+                                                      const TextInputOptions &options)
+{
+    return createTextStreamFromStringView<UTF32_Native>(utf32Text, options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromString(string_cref_t &text)
+{
+    return createTextStreamUPtrFromStringView<TextEncoding::UTF8>(text.toUtf8View());
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::string_view &utf8Text)
+{
+    return createTextStreamUPtrFromStringView<TextEncoding::UTF8>(utf8Text);
+}
+
+//! @brief Creates a text input stream from a copy of a wide string.
+//! @param[in] wideText A view of a wide text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p wideText.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::wstring_view &wideText)
+{
+    return createTextStreamUPtrFromStringView<Wide_Native>(wideText);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u8string_view &utf8Text)
+{
+    return createTextStreamUPtrFromStringView<TextEncoding::UTF8>(utf8Text);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-16 encoded string.
+//! @param[in] utf16Text A view of a UTF-16 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u16string_view &utf16Text)
+{
+    return createTextStreamUPtrFromStringView<UTF16_Native>(utf16Text);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
+//! @param[in] utf32Text A view of a UTF-32 text string to be copied to create the stream.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u32string_view &utf32Text)
+{
+    return createTextStreamUPtrFromStringView<UTF32_Native>(utf32Text);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromString(string_cref_t &text,
+                                                          const TextInputOptions &options)
+{
+    return createTextStreamUPtrFromStringView<TextEncoding::UTF8>(text.toUtf8View(), options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::string_view &utf8Text,
+                                                              const TextInputOptions &options)
+{
+    return createTextStreamUPtrFromStringView<TextEncoding::UTF8>(utf8Text, options);
+}
+
+//! @brief Creates a text input stream from a copy of a wide string.
+//! @param[in] wideText A view of a wide text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p wideText.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::wstring_view &wideText,
+                                                              const TextInputOptions &options)
+{
+    return createTextStreamUPtrFromStringView<Wide_Native>(wideText, options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
+//! @param[in] utf8Text A view of a UTF-8 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf8Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u8string_view &utf8Text,
+                                                              const TextInputOptions &options)
+{
+    return createTextStreamUPtrFromStringView<TextEncoding::UTF8>(utf8Text, options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-16 encoded string.
+//! @param[in] utf16Text A view of a UTF-16 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u16string_view &utf16Text,
+                                                              const TextInputOptions &options)
+{
+    return createTextStreamUPtrFromStringView<UTF16_Native>(utf16Text, options);
+}
+
+//! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
+//! @param[in] utf32Text A view of a UTF-32 text string to be copied to create the stream.
+//! @param[in] options The base set of options used to configure the stream. The
+//! BOM expectation and encoding properties will be ignored.
+//! @return A new instance of a text input stream which will read a copy of @p utf16Text.
+TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u32string_view &utf32Text,
+                                                              const TextInputOptions &options)
+{
+    return createTextStreamUPtrFromStringView<UTF32_Native>(utf32Text, options);
+}
+
 //! @brief Attempts to read characters from the input stream.
 //! @param[in] buffer A pointer to the buffer to write new characters to.
 //! @param[in] maxCharacters The maximum number of characters which can be
@@ -667,110 +948,80 @@ size_t TextInputStream::read(utf32_ptr_t buffer, size_t maxCharacters)
     if (buffer == nullptr)
         throw ArgumentNullException("buffer");
 
-    size_t charsRead = 0;
-    char32_t next;
-    bool hasError;
+    CodePointSpan output(buffer, maxCharacters);
 
-    if (!_decoder)
+    bool mightHaveMore = true;
+
+    if (_options.hasNewLineProcessing())
     {
-        // This is the first request for characters from an unbuffered stream
-        // where a Byte Order Mark is either optional or mandatory.
-        //
-        // We need to detect any BOM and try to decode any unused bytes.
-        _decodedByteCount = DecoderSize;
-        TextEncoding encoding;
+        // We need to go through cycles to ensure the buffer is filled as
+        // far as it can be, as combining character sequences in-place
+        // can leave gaps which could be filled with more characters.
+        size_t charsProcessed = 0;
 
-        if (tryInterpretBOM(_sourceStream, _decodedBytes, _decodedByteCount, encoding))
+        while (mightHaveMore && (charsProcessed < maxCharacters))
         {
-            // Create a decoder based in what we discovered, but we may have unconsumed bytes.
-            _decoder = createDecoder(encoding);
-        }
-        else if (_options.getBOMExpectation() == TextInputOptions::BOMMode::Mandatory)
-        {
-            // Raise an error using the decoder bytes.
-            throw InvalidBOMException(_decodedBytes, _decodedByteCount);
-        }
-        else
-        {
-            // Create the default encoding, but we may have unused bytes.
-            _decoder = createDecoder(_options.getPreferredEncoding());
-        }
+            mightHaveMore = false;
 
-        // If we get this far, we should know the encoding.
+            // Create a section of the buffer to read unprocessed characters into.
+            CodePointSpan unprocessed = output.subspan(charsProcessed, output.size() - charsProcessed);
 
-        // Process any unconsumed bytes into characters.
-        for (size_t i = 0; i < _decodedByteCount; ++i)
-        {
-            if (_decoder->tryDecode(_decodedBytes[i], next, hasError))
+            // Read what we can from cache first.
+            size_t charsRead = readFromCache(unprocessed);
+
+            if ((charsRead > 0) &&
+                ((_cachedCharsRead * 2) >= _characterCache.size()))
             {
-                size_t decodedBytes = _decodedByteCount;
-                _decodedByteCount = 0;
-
-                if (hasError)
-                {
-                    handleInvalidSequence(buffer, charsRead, decodedBytes);
-                }
-                else
-                {
-                    if (charsRead == maxCharacters)
-                    {
-                        // We can't consume the extra bytes as character data
-                        // without the input buffer overflowing.
-                        throw OperationException("Potential buffer overflow, try to read with a bigger buffer.");
-                    }
-
-                    // We have successfully interpreted a character.
-                    buffer[charsRead++] = next;
-                }
-
-                // Shuffle the buffer down in case we end up with a partial character.
-                std::memmove(_decodedBytes, _decodedBytes + i, _decodedByteCount - i);
-                _decodedByteCount -= i;
-                i = 0;
+                compressCache();
             }
+
+            if (charsRead < unprocessed.size())
+            {
+                // Generate additional characters straight into the output buffer.
+                CodePointSpan toGenerate = unprocessed.subspan(charsRead, unprocessed.size() - charsRead);
+
+                size_t newCharsRead = generateCharacters(toGenerate);
+
+                mightHaveMore = (newCharsRead == toGenerate.size());
+                charsRead += newCharsRead;
+            }
+
+            // Post-process the output buffer to combine newline character
+            // encodings down to individual '\n' characters.
+            charsProcessed += postProcessNewlines(unprocessed.subspan(0, charsRead));
         }
+
+        if ((charsProcessed < maxCharacters) && (mightHaveMore == false))
+        {
+            // We've reached the end of the input stream, flush out
+            // any left over new line characters.
+            charsProcessed += _nlProcessor.flushUnprocessed(
+                output.subspan(charsProcessed, output.size() - charsProcessed));
+        }
+
+        return charsProcessed;
     }
-
-    size_t bytesRead = 1;
-    char32_t nextChar;
-    uint8_t nextByte;
-    bool decodingError;
-
-    while ((charsRead < maxCharacters) && (bytesRead > 0))
+    else
     {
-        // Read the next byte from the input source.
-        bytesRead = _sourceStream->read(&nextByte, 1);
+        // What we read it what we return.
+        size_t charsRead = readFromCache(output);
 
-        if (bytesRead > 0)
+        if ((charsRead > 0) &&
+            ((_cachedCharsRead * 2) >= _characterCache.size()))
         {
-            _decodedBytes[_decodedByteCount++] = nextByte;
-
-            if (_decoder->tryDecode(nextByte, nextChar, decodingError))
-            {
-                // Reset the decode buffer, unless the sequence was invalid.
-                size_t encodingSize = _decodedByteCount;
-                _decodedByteCount = 0;
-
-                if (decodingError)
-                {
-                    // Handle the error, possibly reporting the erroneous sequence
-                    // of bytes.
-                    handleInvalidSequence(buffer, charsRead, encodingSize);
-                }
-                else
-                {
-                    buffer[charsRead++] = nextChar;
-                }
-            }
-
-            if (_decodedByteCount == DecoderSize)
-            {
-                throw OperationException("Potential buffer overflow detected.");
-            }
+            compressCache();
         }
-    }
 
-    return charsRead;
+        if (charsRead < maxCharacters)
+        {
+            // Generate additional characters straight into the output buffer.
+            CodePointSpan bufferLeft = output.subspan(charsRead, output.size() - charsRead);
+
+            charsRead += generateCharacters(bufferLeft);
+        }
+
+        return charsRead;
+    }
 }
 
 //! @brief Overwrites the current input stream by acquiring the contents of another.
@@ -786,10 +1037,142 @@ TextInputStream &TextInputStream::operator=(TextInputStream &&rhs) noexcept
     return *this;
 }
 
+//! @brief Processes characters to combine sequences into single 'LF' characters.
+//! @param[in] next The next code point to process.
+//! @param[out] output1 Receives the first processed character if the return
+//! value is greater than 0.
+//! @param[out] output2 Receives the second processed character if the return
+//! value is greater than 1.
+//! @return The count of processed characters to return.
+int TextInputStream::NewlineProcessor::tryProcessCharacter(char32_t next,
+                                                           char32_t &output1,
+                                                           char32_t &output2)
+{
+    int resultCount = 0;
+
+    switch (_state)
+    {
+    case NLState::Start:
+        if (next == LF)
+        {
+            _state = NLState::AfterLF;
+            resultCount = 0;
+        }
+        else if (next == CR)
+        {
+            _state = NLState::AfterCR;
+            resultCount = 0;
+        }
+        else
+        {
+            output1 = next;
+            resultCount = 1;
+        }
+        break;
+
+    case NLState::AfterCR:
+        if (next == LF)
+        {
+            // CR + LF => LF
+            _state = NLState::Start;
+            output1 = LF;
+            resultCount = 1;
+        }
+        else if (next == CR)
+        {
+            // CR + CR => CR [CR]
+
+            // Output one line break, the other could proceed an LF,
+            // so we need to retain it until we are sure.
+            output1 = LF;
+            resultCount = 1;
+        }
+        else
+        {
+            // We've processed CR + ? => CR + ?.
+            _state = NLState::Start;
+            output1 = CR;
+            output2 = next;
+            resultCount = 2;
+        }
+        break;
+
+    case NLState::AfterLF:
+        if (next == LF)
+        {
+            // LF + LF => LF [LF]
+
+            // Output one line break, the other could proceed an LF,
+            // so we need to retain it until we are sure.
+            output1 = LF;
+            resultCount = 1;
+        }
+        else if (next == CR)
+        {
+            // We've processed LF + CR => LF.
+            _state = NLState::Start;
+            output1 = LF;
+            resultCount = 1;
+        }
+        else
+        {
+            // We've processed LF + ? => LF + ?.
+            _state = NLState::Start;
+            output1 = LF;
+            output2 = next;
+            resultCount = 2;
+        }
+        break;
+
+    default:
+        output1 = next;
+        resultCount = 1;
+        break;
+    }
+
+    return resultCount;
+}
+
+//! @brief Flushes any left over unprocessed characters from the processor.
+//! @param[in] buffer The buffer to receive any unprocessed characters.
+//! @returns The count of characters added to @p buffer.
+size_t TextInputStream::NewlineProcessor::flushUnprocessed(CodePointSpan buffer)
+{
+    if (buffer.empty())
+        return 0;
+
+    // Reset the state before acting.
+    NLState finalState = _state;
+    _state = NLState::Start;
+
+    char32_t leftOver = U'\0';
+
+    switch (finalState)
+    {
+    case NLState::AfterCR:
+        leftOver = CR;
+        break;
+
+    case NLState::AfterLF:
+        leftOver = LF;
+        break;
+
+    default:
+        return 0;
+    }
+
+    buffer.front() = leftOver;
+
+    return 1;
+}
+
 //! @brief Performs shared initialisation for the stream for a non-owned input stream.
 //! @param[in] input The unowned input stream to wrap.
 void TextInputStream::initialise(IStream *input)
 {
+    // Set the capacity of the character cache.
+    _characterCache.reserve(16);
+
     if (input->isBuffered())
     {
         _sourceStream = input;
@@ -807,34 +1190,69 @@ void TextInputStream::initialise(IStream *input)
     }
     else
     {
-        // Attempt to detect a byte order mark.
+        // Attempt to detect a byte order mark from the initial bytes of the
+        // stream.
         _decodedByteCount = DecoderSize;
 
-        BufferedInputStream *bufferedInput;
         TextEncoding encoding = _options.getPreferredEncoding();
 
-        if (tryCast(_sourceStream, bufferedInput))
+        // Detect BOM from the initial bytes and cache any characters produced
+        // from processing initial bytes.
+        if (tryInterpretBOM(_sourceStream, _decodedBytes, _decodedByteCount, encoding))
         {
-            // Detect BOM now as we can roll back on unconsumed bytes,
-            // otherwise, wait until the first character is requested.
-            if (tryInterpretBOM(bufferedInput, _decodedBytes, _decodedByteCount, encoding))
-            {
-                // Roll back the bytes we didn't consume.
-                bufferedInput->ungetBytes(_decodedByteCount);
-            }
-            else if (_options.getBOMExpectation() == TextInputOptions::BOMMode::Mandatory)
-            {
-                // Throw error using the decoder bytes.
-                throw InvalidBOMException(_decodedBytes, _decodedByteCount);
-            }
-            else
-            {
-                // Roll back over all bytes read.
-                bufferedInput->ungetBytes(_decodedByteCount);
-                encoding = _options.getPreferredEncoding();
-            }
-
+            // The BOM was detected, but bytes read from the stream might be left over.
             _decoder = createDecoder(encoding);
+        }
+        else if (_options.getBOMExpectation() == TextInputOptions::BOMMode::Mandatory)
+        {
+            // Throw error using the decoder bytes.
+            throw InvalidBOMException(_decodedBytes, _decodedByteCount);
+        }
+        else
+        {
+            // No BOM was detected, but some bytes read from the stream might
+            // be left over.
+            _decoder = createDecoder(_options.getPreferredEncoding());
+        }
+
+        // Process any unconsumed bytes into characters which can be buffered.
+        char32_t next;
+        bool hasError;
+
+        for (size_t i = 0; i < _decodedByteCount; ++i)
+        {
+            if (_decoder->tryDecode(_decodedBytes[i], next, hasError))
+            {
+                size_t decodedBytes = _decodedByteCount;
+                size_t bytesProcessed = i + 1;
+                _decodedByteCount -= bytesProcessed;
+                i = 0;
+
+                // Shuffle the buffer down in case we end up with a partial character.
+                if (bytesProcessed < _decodedByteCount)
+                {
+                    std::memmove(_decodedBytes, _decodedBytes + bytesProcessed,
+                                 decodedBytes - bytesProcessed);
+                }
+
+                if (hasError)
+                {
+                    size_t bufSize = 1;
+
+                    handleInvalidSequence(&next, bufSize, decodedBytes);
+
+                    if (bufSize == 1)
+                    {
+                        // Buffer the substitute character.
+                        _characterCache.push_back(next);
+                    }
+                }
+                else
+                {
+                    // We have successfully interpreted a character.
+                    _characterCache.push_back(next);
+                }
+            }
         }
     }
 }
@@ -892,9 +1310,154 @@ void TextInputStream::moveAssign(TextInputStream &&rhs) noexcept
     _ownedStream = std::move(rhs._ownedStream);
     _sourceStream = std::exchange(rhs._sourceStream, nullptr);
     _decoder = std::move(rhs._decoder);
+    _characterCache = std::move(rhs._characterCache);
+    _cachedCharsRead = std::exchange(rhs._cachedCharsRead, 0);
     _options = std::move(rhs._options);
     _decodedByteCount = std::exchange(rhs._decodedByteCount, 0);
     std::memcpy(_decodedBytes, rhs._decodedBytes, _decodedByteCount);
+}
+
+//! @brief Remove any characters from the cache which have been already read.
+void TextInputStream::compressCache()
+{
+    if (_cachedCharsRead == 0)
+        return;
+
+    if (_cachedCharsRead < _characterCache.size())
+    {
+        // Remove the characters previously read and shuffle down the
+        // unread characters.
+        _characterCache.erase(_characterCache.begin(), _characterCache.begin() + _cachedCharsRead);
+        _cachedCharsRead = 0;
+    }
+    else
+    {
+        // All characters in the cache had been read, clear the cache.
+        _cachedCharsRead = 0;
+        _characterCache.clear();
+    }
+}
+
+//! @brief Reads as many characters from cache as possible.
+//! @param[in] buffer The buffer to copy cached characters from.
+//! @param[in,out] bufferSize The maximum number of characters to copy to
+//! @p buffer, receives the actual number copied.
+//! @retval true More cached characters are available, but cannot be copied
+//! until newline processing decodes further characters.
+//! @retval false The cache is empty.
+size_t TextInputStream::readFromCache(CodePointSpan buffer)
+{
+    if (buffer.empty())
+        return 0;
+
+    size_t charsRead = 0;
+
+    if (_cachedCharsRead < _characterCache.size())
+    {
+        // Calculate how many characters can be copied.
+        size_t safeCount = std::min(_characterCache.size() - _cachedCharsRead,
+                                    buffer.size());
+
+        // Copy the characters.
+        std::copy_n(_characterCache.data() + _cachedCharsRead,
+                    safeCount, buffer.data());
+
+        // Update the counts.
+        _cachedCharsRead += safeCount;
+        charsRead += safeCount;
+
+        if (_cachedCharsRead == _characterCache.size())
+        {
+            // Clear the cache if it has been fully read.
+            _characterCache.clear();
+            _cachedCharsRead = 0;
+        }
+    }
+
+    return charsRead;
+}
+
+//! @brief Decodes characters directly from the buffered input stream to an
+//! output buffer.
+//! @param[in] buffer The buffer to receive the decoded characters.
+//! @param[in] maxCharacters The maximum count of characters to copy to @p buffer.
+//! @return The actual count of characters copied to @p buffer.
+size_t TextInputStream::generateCharacters(CodePointSpan buffer)
+{
+    size_t bytesRead = 1;
+    size_t charsRead = 0;
+    char32_t nextChar;
+    uint8_t nextByte;
+    bool decodingError;
+
+    while ((charsRead < buffer.size()) && (bytesRead > 0))
+    {
+        // Read the next byte from the input source.
+        bytesRead = _sourceStream->read(&nextByte, 1);
+
+        if (bytesRead > 0)
+        {
+            _decodedBytes[_decodedByteCount++] = nextByte;
+
+            if (_decoder->tryDecode(nextByte, nextChar, decodingError))
+            {
+                // Reset the decode buffer, unless the sequence was invalid.
+                size_t encodingSize = _decodedByteCount;
+                _decodedByteCount = 0;
+
+                if (decodingError)
+                {
+                    // Handle the error, possibly reporting the erroneous sequence
+                    // of bytes.
+                    handleInvalidSequence(buffer.data(), charsRead, encodingSize);
+                }
+                else
+                {
+                    buffer[charsRead++] = nextChar;
+                }
+            }
+
+            if (_decodedByteCount == DecoderSize)
+            {
+                throw OperationException("Potential buffer overflow detected.");
+            }
+        }
+    }
+
+    return charsRead;
+}
+
+//! @brief Processes the contents of a buffer in-place, to convert sequences of
+//! white space characters into single LF ('\n') characters.
+//! @param[in] buffer The buffer of characters to process.
+//! @param[in] maxCharacters The count of characters in @p buffer.
+//! @return The count of processed characters remaining in buffer.
+size_t TextInputStream::postProcessNewlines(CodePointSpan buffer)
+{
+    // Post-process the output buffer to combine newline character
+    // encodings down to individual '\n' characters.
+    char32_t first, second;
+
+    size_t dest = 0;
+
+    for (size_t source = 0; source < buffer.size(); ++source)
+    {
+        int result = _nlProcessor.tryProcessCharacter(buffer[source], first, second);
+
+        if (result > 0)
+        {
+            buffer[dest++] = first;
+        }
+
+        // NOTE: NewlineProcessor will never return two characters without
+        // previously withholding at least one character.
+        if (result > 1)
+        {
+            buffer[dest++] = second;
+        }
+    }
+
+    return dest;
 }
 
 }} // namespace Ag::IO

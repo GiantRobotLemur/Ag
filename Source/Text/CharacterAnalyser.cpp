@@ -59,13 +59,8 @@ string_cref_t SourceReference::getIdentifier() const
 //! @brief Constructs an object to create a moving window on a stream of
 //! Unicode characters being analysed.
 //! @param[in] input The source of characters to analyse.
-CharacterAnalyser::CharacterAnalyser(ICharacterSource *input) :
-    _source(input),
-    _committed(0),
-    _read(0),
-    _line(1),
-    _column(1),
-    _isInLinebreakSequence(false)
+CharacterAnalyser::CharacterAnalyser(IO::TextInputStream *input) :
+    _source(input)
 {
     _buffer.reserve(MinBufferSize);
 }
@@ -75,15 +70,10 @@ CharacterAnalyser::CharacterAnalyser(ICharacterSource *input) :
 //! @param[in] input The source of characters to analyse.
 //! @param[in] sourceIdentifier A text identifier for the input source, such as
 //! a file path or URI.
-CharacterAnalyser::CharacterAnalyser(ICharacterSource *input,
+CharacterAnalyser::CharacterAnalyser(IO::TextInputStream *input,
                                      string_cref_t sourceIdentifier) :
     _source(input),
-    _sourceIdentifier(sourceIdentifier),
-    _committed(0),
-    _read(0),
-    _line(1),
-    _column(1),
-    _isInLinebreakSequence(false)
+    _sourceIdentifier(sourceIdentifier)
 {
     _buffer.reserve(MinBufferSize);
 }
@@ -297,16 +287,16 @@ bool CharacterAnalyser::tryRefillBuffer()
         _buffer.resize(preferredSize);
         _committed = _read = 0;
 
-        size_t charsRead = _source->readUtf32(_buffer.data(), _buffer.size());
+        size_t charsRead = _source->read(_buffer.data(), _buffer.size());
 
         // Compact line breaks and truncate the buffer to only the characters read.
-        compactLineBreaks(0, charsRead);
+        truncateBuffer(charsRead);
 
         return charsRead > 0;
     }
     else if (uncommittedChars >= preferredSize)
     {
-        throw OperationException("To many uncommitted characters to be able to read more.");
+        throw OperationException("Too many uncommitted characters to be able to read more.");
     }
     else // if (uncommittedChars < preferredSize)
     {
@@ -323,65 +313,27 @@ bool CharacterAnalyser::tryRefillBuffer()
         size_t bufferLeft = _buffer.size() - _read;
 
         // Read as much as we can into the buffer.
-        size_t charsRead = _source->readUtf32(_buffer.data() + _read, bufferLeft);
+        size_t charsRead = _source->read(_buffer.data() + _read, bufferLeft);
 
         // Compact line breaks and truncate the buffer to only the characters read.
-        compactLineBreaks(_read, charsRead);
+        truncateBuffer(charsRead + _read);
 
         return charsRead > 0;
     }
 }
 
-//! @brief Compacts recently buffered characters so that line breaks are
-//! represented by a single '\n' character and to the proper size.
-//! @param[in] start The index of the first character newly read into the buffer.
+//! @brief Truncates the character input buffer to its proper size.
 //! @param[in] length The count of code points read into the buffer.
-void CharacterAnalyser::compactLineBreaks(size_t start, size_t length)
+void CharacterAnalyser::truncateBuffer(size_t length)
 {
-    // We want to collapse various encodings of line breaks encoded in a
-    // newly read buffer to '\n'/LF/U'\x00000A'
-    static constexpr char32_t LF = U'\x0000000A';
-    static constexpr char32_t CR = U'\x0000000D';
-
-    size_t effectiveOffset = start;
-
-    for (size_t i = 0; i < length; ++i)
+    if (length > 0)
     {
-        char32_t current = _buffer.at(start + i);
-
-        if (_isInLinebreakSequence)
-        {
-            if (current == LF)
-            {
-                // It's the end of a newline sequence.
-                _isInLinebreakSequence = false;
-                _buffer[effectiveOffset++] = LF;
-            }
-            else if (current != CR)
-            {
-                // We encountered one or more CR characters followed by
-                // a non-LF character. Add a single new line and move on.
-                _isInLinebreakSequence = false;
-                _buffer[effectiveOffset++] = LF;
-                _buffer[effectiveOffset++] = current;
-            }
-        }
-        else if (current == CR)
-        {
-            // The start of a line-break sequence.
-            _isInLinebreakSequence = true;
-        }
-        else
-        {
-            // Copy the character.
-            _buffer[effectiveOffset++] = current;
-        }
+        _buffer.erase(_buffer.begin() + length, _buffer.end());
     }
-
-    // Trim the buffer to the processed length.
-    // NOTE: The _isInLinebreakSequence member variable will remember between
-    // buffer fills if the previous character was CR.
-    _buffer.erase(_buffer.begin() + effectiveOffset, _buffer.end());
+    else
+    {
+        _buffer.clear();
+    }
 }
 
 }} // namespace Ag::Text

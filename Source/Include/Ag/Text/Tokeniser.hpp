@@ -164,8 +164,7 @@ private:
     {
     private:
         // Internal Fields
-        IStreamUPtr _inputStream;
-        ICharacterSourceUPtr _characterStream;
+        IO::TextInputStreamUPtr _characterStream;
         CharacterAnalyser _analyser;
         std::vector<TokeniserCPtr> _tokeniserStack;
     public:
@@ -181,9 +180,7 @@ private:
         //! of when this object is destroyed.
         TokenSource(TokeniserCPtr tokenStream,
                     string_cref_t sourceIdentifier,
-                    ICharacterSourceUPtr &&characterStream,
-                    IStreamUPtr &&inputStream) :
-            _inputStream(std::move(inputStream)),
+                    IO::TextInputStreamUPtr &&characterStream) :
             _characterStream(std::move(characterStream)),
             _analyser(_characterStream.get(), sourceIdentifier)
         {
@@ -192,7 +189,6 @@ private:
         }
 
         TokenSource(TokenSource &&rhs) noexcept :
-            _inputStream(std::move(rhs._inputStream)),
             _characterStream(std::move(rhs._characterStream)),
             _analyser(std::move(rhs._analyser)),
             _tokeniserStack(std::move(rhs._tokeniserStack))
@@ -201,7 +197,6 @@ private:
 
         TokenSource operator=(TokenSource &&rhs) noexcept
         {
-            _inputStream = std::move(rhs._inputStream);
             _characterStream = std::move(rhs._characterStream);
             _analyser = std::move(rhs._analyser);
             _tokeniserStack = std::move(rhs._tokeniserStack);
@@ -273,8 +268,8 @@ private:
     CodePointBuffer _scratchBuffer;
     std::vector<TokenSource> _sourceStack;
     std::vector<Token> _tokenCache;
-    size_t _committed;
-    size_t _read;
+    size_t _committed = 0;
+    size_t _read = 0;
 
     // Internal Functions
 
@@ -308,31 +303,24 @@ public:
     //! stream, for the new object to take ownership of.
     TokenStream(TokeniserCPtr initialTokeniser,
                 string_cref_t sourceIdentifier,
-                ICharacterSourceUPtr &&characterStream) :
-        _committed(0),
-        _read(0)
+                IO::TextInputStreamUPtr &&characterStream)
     {
         _sourceStack.reserve(8);
         _tokenCache.reserve(16);
         _scratchBuffer.reserve(32);
 
-        IStreamUPtr noStream;
-
         // Stoke with the first stream.
         _sourceStack.emplace_back(initialTokeniser, sourceIdentifier,
-                                  std::move(characterStream),
-                                  std::move(noStream));
+                                  std::move(characterStream));
     }
 
     TokenStream(TokenStream &&rhs) noexcept :
         _scratchBuffer(std::move(rhs._scratchBuffer)),
         _sourceStack(std::move(rhs._sourceStack)),
         _tokenCache(std::move(rhs._tokenCache)),
-        _committed(rhs._committed),
-        _read(rhs._read)
+        _committed(std::exchange(rhs._committed, 0)),
+        _read(std::exchange(rhs._read, 0))
     {
-        rhs._committed = 0;
-        rhs._read = 0;
     }
 
     TokenStream &operator=(TokenStream &&rhs) noexcept
@@ -340,37 +328,8 @@ public:
         _scratchBuffer = std::move(rhs._scratchBuffer);
         _sourceStack = std::move(rhs._sourceStack);
         _tokenCache = std::move(rhs._tokenCache);
-        _committed = rhs._committed,
-        _read = rhs._read;
-
-        rhs._committed = 0;
-        rhs._read = 0;
-    }
-
-    //! @brief Constructs an object to provide token input to a parser.
-    //! @param[in] initialTokeniser The object which initially groups characters
-    //! into valid tokens.
-    //! @param[in] sourceIdentifier The identifier of the initial input stream,
-    //! such as a file path or URL.
-    //! @param[in] characterStream An r-value reference to the character input
-    //! stream, for the new object to take ownership of.
-    //! @param[in] inputStream An r-value reference to the stream which
-    //! underlies the @p characterStream for the new object to take ownership of.
-    TokenStream(TokeniserCPtr initialTokeniser,
-                string_cref_t sourceIdentifier,
-                ICharacterSourceUPtr &&characterStream,
-                IStreamUPtr &&inputStream) :
-        _committed(0),
-        _read(0)
-    {
-        _sourceStack.reserve(8);
-        _tokenCache.reserve(16);
-        _scratchBuffer.reserve(32);
-
-        // Stoke with the first stream.
-        _sourceStack.emplace_back(initialTokeniser, sourceIdentifier,
-                                  std::move(characterStream),
-                                  std::move(inputStream));
+        _committed = std::exchange(rhs._committed, 0);
+        _read = std::exchange(rhs._read, 0);
     }
 
     // Accessors
@@ -437,45 +396,16 @@ public:
     //! file path or URI.
     //! @param[in] characterStream An object which provides a stream of
     //! characters to be disposed of when the stream is popped.
-    //! @param[in] inputStream An optional binary input stream which feeds
-    //! the character stream, to be disposed of when the stream is popped.
     //! @return The value to pass to restoreTokenStream() to remove the
     //! new stream and all streams pushed after it.
     size_t pushTokenStream(TokeniserCPtr tokenStream,
                            string_cref_t identifier,
-                           ICharacterSourceUPtr &&characterStream,
-                           IStreamUPtr &&inputStream)
+                           IO::TextInputStreamUPtr &&characterStream)
     {
         size_t prevSize = _sourceStack.size();
-
-        _sourceStack->emplace_back(tokenStream, sourceIdentifier,
-                                   std::move(characterStream),
-                                   std::move(inputStream));
-
-        return prevSize;
-    }
-
-    //! @brief Starts reading tokens from a new input stream.
-    //! @param[in] tokenStream The initial object to recognise tokens from a
-    //! stream of characters.
-    //! @param[in] identifier Text identifying the input stream, such as a
-    //! file path or URI.
-    //! @param[in] characterStream An object which provides a stream of
-    //! characters to be disposed of when the stream is popped.
-    //! @param[in] inputStream An optional binary input stream which feeds
-    //! the character stream, to be disposed of when the stream is popped.
-    //! @return The value to pass to restoreTokenStream() to remove the
-    //! new stream and all streams pushed after it.
-    size_t pushTokenStream(TokeniserCPtr tokenStream,
-                           string_cref_t identifier,
-                           ICharacterSourceUPtr &&characterStream)
-    {
-        size_t prevSize = _sourceStack.size();
-        IStreamUPtr noStream;
 
         _sourceStack.emplace_back(tokenStream, identifier,
-                                  std::move(characterStream),
-                                  std::move(noStream));
+                                  std::move(characterStream));
 
         return prevSize;
     }
