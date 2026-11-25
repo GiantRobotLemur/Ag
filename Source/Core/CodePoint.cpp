@@ -16,6 +16,7 @@
 
 #include "Ag/Core/Configuration.hpp"
 #include "Ag/Core/Utf.hpp"
+#include "Ag/Core/CodePoint.hpp"
 
 namespace Ag {
 namespace CodePoint {
@@ -174,6 +175,18 @@ bool isLetter(char32_t codePoint)
 bool isPrintable(char32_t codePoint)
 {
     return classifyCodePoint<iswprint>(codePoint);
+}
+
+//! @brief Determines if a value represents a valid code point.
+//! @param[in] codePoint The value to test.
+//! @retval true The value passed in @p codePoint is in the valid
+//! range of Unicode code points.
+//! @retval false The value passed in @p codePoint is outside the
+//! range of valid Unicode code points.
+bool isValid(char32_t codePoint)
+{
+    // TODO: There are gaps in the range which we should cater for.
+    return (codePoint >= MinValue) && (codePoint <= MaxValue);
 }
 
 }} // namespace Ag::CodePoint

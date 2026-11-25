@@ -14,7 +14,6 @@
 #include <gtest/gtest.h>
 
 #include "Ag/Text/CharacterAnalyser.hpp"
-#include "Ag/Text/CharacterSource.hpp"
 
 namespace Ag {
 namespace Text {

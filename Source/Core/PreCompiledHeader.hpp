@@ -35,6 +35,7 @@
 // C++/STL Headers
 #include <algorithm>
 #include <atomic>
+#include <bit>
 #include <exception>
 #include <deque>
 #include <functional>

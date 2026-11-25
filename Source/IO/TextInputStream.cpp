@@ -15,9 +15,9 @@
 
 #include <algorithm>
 #include <bit>
-#include <initializer_list>
 
 #include "Ag/IO/BufferedInputStream.hpp"
+#include "Ag/IO/Exceptions.hpp"
 #include "Ag/IO/MemoryStream.hpp"
 #include "Ag/IO/TextInputStream.hpp"
 
@@ -25,7 +25,6 @@ namespace Ag {
 namespace IO {
 
 namespace {
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Local Data
@@ -118,11 +117,7 @@ public:
     // Inherited from ICharacterDecoder.
     virtual std::string_view getName() const override
     {
-        constexpr std::endian reverseNative = (std::endian::native == std::endian::little) ? std::endian::big :
-                                                                                             std::endian::little;
-        constexpr std::endian ByteOrder = ByteSwap ? std::endian::native : reverseNative;
-
-        if constexpr (ByteOrder == std::endian::little)
+        if constexpr (Ag::Bin::ResolvedByteOrder<ByteSwap>::value == Bin::Endedness::LittleEndian)
         {
             return "UTF16-LE";
         }
@@ -192,11 +187,7 @@ public:
     // Inherited from ICharacterDecoder.
     virtual std::string_view getName() const override
     {
-        constexpr std::endian reverseNative = (std::endian::native == std::endian::little) ? std::endian::big :
-            std::endian::little;
-        constexpr std::endian ByteOrder = ByteSwap ? std::endian::native : reverseNative;
-
-        if constexpr (ByteOrder == std::endian::little)
+        if constexpr (Ag::Bin::ResolvedByteOrder<ByteSwap>::value == Bin::Endedness::LittleEndian)
         {
             return "UTF32-LE";
         }
@@ -267,19 +258,19 @@ ICharacterDecoderUPtr createDecoder(TextEncoding encoding)
         break;
 
     case TextEncoding::UTF16_LittleEndian:
-        decoder.reset(new UTF16Decoder<std::endian::native != std::endian::little>());
+        decoder.reset(new UTF16Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::LittleEndian>::value>());
         break;
 
     case TextEncoding::UTF16_BigEndian:
-        decoder.reset(new UTF16Decoder<std::endian::native != std::endian::big>());
+        decoder.reset(new UTF16Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::BigEndian>::value>());
         break;
 
     case TextEncoding::UTF32_LittleEndian:
-        decoder.reset(new UTF32Decoder<std::endian::native != std::endian::little>());
+        decoder.reset(new UTF32Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::LittleEndian>::value>());
         break;
 
     case TextEncoding::UTF32_BigEndian:
-        decoder.reset(new UTF32Decoder<std::endian::native != std::endian::big>());
+        decoder.reset(new UTF32Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::BigEndian>::value>());
         break;
 
     default:
@@ -395,41 +386,6 @@ bool tryInterpretBOM(IStream *input, uint8_ptr_t decodeBuffer,
 
     return hasEncoding;
 }
-
-//! @brief Appends text representing a sequence of bytes to a UTF-8 string.
-//! @param[in] buffer The string to append to.
-//! @param[in] bytes The array of bytes to format.
-//! @param[in] count The count of bytes in @p bytes to format.
-void appendByteSequence(std::string &buffer, uint8_cptr_t bytes, size_t count)
-{
-    Ag::ensureExtraCapacity(buffer, (count * 6) + 2);
-
-    buffer.push_back('{');
-    buffer.push_back(' ');
-
-    FormatInfo formatInfo(Ag::LocaleInfo::getNeutral());
-
-    formatInfo.enableUpperCase(true);
-    formatInfo.setRadix(16);
-
-    for (size_t i = 0; i < count; ++i)
-    {
-        if (i == 0)
-        {
-            buffer.append("0x");
-        }
-        else
-        {
-            buffer.append(", 0x");
-        }
-
-        Ag::appendValue(formatInfo, buffer, bytes[i]);
-    }
-
-    buffer.push_back(' ');
-    buffer.push_back('}');
-}
-
 
 //! @brief Creates a TextInputStream from a copy of a std::basic_string_view<> derived string.
 //! @tparam T The data type of the string view to copy.
@@ -589,47 +545,6 @@ void TextInputOptions::enableNewLineProcessing(bool isEnabled)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// InvalidEncodingSequenceException Member Definitions
-////////////////////////////////////////////////////////////////////////////////
-const char *InvalidEncodingSequenceException::Domain = "InvalidEncodingSequenceException";
-
-//! @brief Constructs an exception raised when a sequence of bytes is encountered
-//! which does not correspond to a valid Unicode code point.
-InvalidEncodingSequenceException::InvalidEncodingSequenceException(const std::string_view &encodingName,
-                                                                   uint8_cptr_t bytes, size_t count)
-{
-    std::string detail;
-    detail.assign("In the ");
-    detail.append(encodingName);
-    detail.append(" character encoding, the following sequence of bytes was invalid: ");
-    appendByteSequence(detail, bytes, count);
-    detail.push_back('.');
-
-    initialise(Domain, "A sequence of bytes was encountered which could not be "
-                       "decoded into a valid Unicode character.",
-               detail);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// InvalidBOMException Member Definitions
-////////////////////////////////////////////////////////////////////////////////
-const char *InvalidBOMException::Domain = "InvalidEncodingSequenceException";
-
-//! @brief Constructs an exception raised when a sequence of bytes is encountered
-//! at the beginning of a text stream which does not represent a valid Byte Order Mark.
-InvalidBOMException::InvalidBOMException(uint8_cptr_t bytes, size_t count)
-{
-    std::string detail;
-    detail.assign("The byte sequence ");
-    appendByteSequence(detail, bytes, count);
-    detail.append(" was not recognised as a valid byte order mark.");
-
-    initialise(Domain, "When expecting a byte order mark at the beginning of a "
-                       "text stream and invalid sequence of bytes was encountered.",
-               detail);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // TextInputStream Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Constructs a text input stream which reads bytes from a specified
@@ -726,7 +641,7 @@ TextInputStream TextInputStream::createFromStringView(const std::string_view &ut
 //! @return A new instance of a text input stream which will read a copy of @p wideText.
 TextInputStream TextInputStream::createFromStringView(const std::wstring_view &wideText)
 {
-    return createTextStreamFromStringView<Wide_Native>(wideText);
+    return createTextStreamFromStringView<TextEncodings::Wide_Native>(wideText);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
@@ -742,7 +657,7 @@ TextInputStream TextInputStream::createFromStringView(const std::u8string_view &
 //! @return A new instance of a text input stream which will read a copy of @p utf16Text.
 TextInputStream TextInputStream::createFromStringView(const std::u16string_view &utf16Text)
 {
-    return createTextStreamFromStringView<UTF16_Native>(utf16Text);
+    return createTextStreamFromStringView<TextEncodings::UTF16_Native>(utf16Text);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
@@ -750,7 +665,7 @@ TextInputStream TextInputStream::createFromStringView(const std::u16string_view 
 //! @return A new instance of a text input stream which will read a copy of @p utf16Text.
 TextInputStream TextInputStream::createFromStringView(const std::u32string_view &utf32Text)
 {
-    return createTextStreamFromStringView<UTF32_Native>(utf32Text);
+    return createTextStreamFromStringView<TextEncodings::UTF32_Native>(utf32Text);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
@@ -784,7 +699,7 @@ TextInputStream TextInputStream::createFromStringView(const std::string_view &ut
 TextInputStream TextInputStream::createFromStringView(const std::wstring_view &wideText,
                                                       const TextInputOptions &options)
 {
-    return createTextStreamFromStringView<Wide_Native>(wideText, options);
+    return createTextStreamFromStringView<TextEncodings::Wide_Native>(wideText, options);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
@@ -806,7 +721,7 @@ TextInputStream TextInputStream::createFromStringView(const std::u8string_view &
 TextInputStream TextInputStream::createFromStringView(const std::u16string_view &utf16Text,
                                                       const TextInputOptions &options)
 {
-    return createTextStreamFromStringView<UTF16_Native>(utf16Text, options);
+    return createTextStreamFromStringView<TextEncodings::UTF16_Native>(utf16Text, options);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
@@ -817,7 +732,7 @@ TextInputStream TextInputStream::createFromStringView(const std::u16string_view 
 TextInputStream TextInputStream::createFromStringView(const std::u32string_view &utf32Text,
                                                       const TextInputOptions &options)
 {
-    return createTextStreamFromStringView<UTF32_Native>(utf32Text, options);
+    return createTextStreamFromStringView<TextEncodings::UTF32_Native>(utf32Text, options);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
@@ -841,7 +756,7 @@ TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::string_
 //! @return A new instance of a text input stream which will read a copy of @p wideText.
 TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::wstring_view &wideText)
 {
-    return createTextStreamUPtrFromStringView<Wide_Native>(wideText);
+    return createTextStreamUPtrFromStringView<TextEncodings::Wide_Native>(wideText);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
@@ -857,7 +772,7 @@ TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u8strin
 //! @return A new instance of a text input stream which will read a copy of @p utf16Text.
 TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u16string_view &utf16Text)
 {
-    return createTextStreamUPtrFromStringView<UTF16_Native>(utf16Text);
+    return createTextStreamUPtrFromStringView<TextEncodings::UTF16_Native>(utf16Text);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
@@ -865,7 +780,7 @@ TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u16stri
 //! @return A new instance of a text input stream which will read a copy of @p utf16Text.
 TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u32string_view &utf32Text)
 {
-    return createTextStreamUPtrFromStringView<UTF32_Native>(utf32Text);
+    return createTextStreamUPtrFromStringView<TextEncodings::UTF32_Native>(utf32Text);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
@@ -898,7 +813,7 @@ TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::string_
 TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::wstring_view &wideText,
                                                               const TextInputOptions &options)
 {
-    return createTextStreamUPtrFromStringView<Wide_Native>(wideText, options);
+    return createTextStreamUPtrFromStringView<TextEncodings::Wide_Native>(wideText, options);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-8 encoded string.
@@ -920,7 +835,7 @@ TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u8strin
 TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u16string_view &utf16Text,
                                                               const TextInputOptions &options)
 {
-    return createTextStreamUPtrFromStringView<UTF16_Native>(utf16Text, options);
+    return createTextStreamUPtrFromStringView<TextEncodings::UTF16_Native>(utf16Text, options);
 }
 
 //! @brief Creates a text input stream from a copy of a UTF-32 encoded string.
@@ -931,7 +846,7 @@ TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u16stri
 TextInputStreamUPtr TextInputStream::createUPtrFromStringView(const std::u32string_view &utf32Text,
                                                               const TextInputOptions &options)
 {
-    return createTextStreamUPtrFromStringView<UTF32_Native>(utf32Text, options);
+    return createTextStreamUPtrFromStringView<TextEncodings::UTF32_Native>(utf32Text, options);
 }
 
 //! @brief Attempts to read characters from the input stream.
@@ -948,7 +863,7 @@ size_t TextInputStream::read(utf32_ptr_t buffer, size_t maxCharacters)
     if (buffer == nullptr)
         throw ArgumentNullException("buffer");
 
-    CodePointSpan output(buffer, maxCharacters);
+    CodePointView output(buffer, maxCharacters);
 
     bool mightHaveMore = true;
 
@@ -964,7 +879,7 @@ size_t TextInputStream::read(utf32_ptr_t buffer, size_t maxCharacters)
             mightHaveMore = false;
 
             // Create a section of the buffer to read unprocessed characters into.
-            CodePointSpan unprocessed = output.subspan(charsProcessed, output.size() - charsProcessed);
+            CodePointView unprocessed = output.slice(charsProcessed);
 
             // Read what we can from cache first.
             size_t charsRead = readFromCache(unprocessed);
@@ -975,28 +890,27 @@ size_t TextInputStream::read(utf32_ptr_t buffer, size_t maxCharacters)
                 compressCache();
             }
 
-            if (charsRead < unprocessed.size())
+            if (charsRead < unprocessed.getCount())
             {
                 // Generate additional characters straight into the output buffer.
-                CodePointSpan toGenerate = unprocessed.subspan(charsRead, unprocessed.size() - charsRead);
+                CodePointView toGenerate = unprocessed.slice(charsRead);
 
                 size_t newCharsRead = generateCharacters(toGenerate);
 
-                mightHaveMore = (newCharsRead == toGenerate.size());
+                mightHaveMore = (newCharsRead == toGenerate.getCount());
                 charsRead += newCharsRead;
             }
 
             // Post-process the output buffer to combine newline character
             // encodings down to individual '\n' characters.
-            charsProcessed += postProcessNewlines(unprocessed.subspan(0, charsRead));
+            charsProcessed += postProcessNewlines(unprocessed.slice(0, charsRead));
         }
 
         if ((charsProcessed < maxCharacters) && (mightHaveMore == false))
         {
             // We've reached the end of the input stream, flush out
             // any left over new line characters.
-            charsProcessed += _nlProcessor.flushUnprocessed(
-                output.subspan(charsProcessed, output.size() - charsProcessed));
+            charsProcessed += _nlProcessor.flushUnprocessed(output.slice(charsProcessed));
         }
 
         return charsProcessed;
@@ -1015,7 +929,7 @@ size_t TextInputStream::read(utf32_ptr_t buffer, size_t maxCharacters)
         if (charsRead < maxCharacters)
         {
             // Generate additional characters straight into the output buffer.
-            CodePointSpan bufferLeft = output.subspan(charsRead, output.size() - charsRead);
+            CodePointView bufferLeft = output.slice(charsRead);
 
             charsRead += generateCharacters(bufferLeft);
         }
@@ -1136,9 +1050,9 @@ int TextInputStream::NewlineProcessor::tryProcessCharacter(char32_t next,
 //! @brief Flushes any left over unprocessed characters from the processor.
 //! @param[in] buffer The buffer to receive any unprocessed characters.
 //! @returns The count of characters added to @p buffer.
-size_t TextInputStream::NewlineProcessor::flushUnprocessed(CodePointSpan buffer)
+size_t TextInputStream::NewlineProcessor::flushUnprocessed(CodePointView buffer)
 {
-    if (buffer.empty())
+    if (buffer.isEmpty())
         return 0;
 
     // Reset the state before acting.
@@ -1161,7 +1075,7 @@ size_t TextInputStream::NewlineProcessor::flushUnprocessed(CodePointSpan buffer)
         return 0;
     }
 
-    buffer.front() = leftOver;
+    buffer[0] = leftOver;
 
     return 1;
 }
@@ -1345,9 +1259,9 @@ void TextInputStream::compressCache()
 //! @retval true More cached characters are available, but cannot be copied
 //! until newline processing decodes further characters.
 //! @retval false The cache is empty.
-size_t TextInputStream::readFromCache(CodePointSpan buffer)
+size_t TextInputStream::readFromCache(CodePointView buffer)
 {
-    if (buffer.empty())
+    if (buffer.isEmpty())
         return 0;
 
     size_t charsRead = 0;
@@ -1356,11 +1270,11 @@ size_t TextInputStream::readFromCache(CodePointSpan buffer)
     {
         // Calculate how many characters can be copied.
         size_t safeCount = std::min(_characterCache.size() - _cachedCharsRead,
-                                    buffer.size());
+                                    buffer.getCount());
 
         // Copy the characters.
         std::copy_n(_characterCache.data() + _cachedCharsRead,
-                    safeCount, buffer.data());
+                    safeCount, buffer.getData());
 
         // Update the counts.
         _cachedCharsRead += safeCount;
@@ -1382,7 +1296,7 @@ size_t TextInputStream::readFromCache(CodePointSpan buffer)
 //! @param[in] buffer The buffer to receive the decoded characters.
 //! @param[in] maxCharacters The maximum count of characters to copy to @p buffer.
 //! @return The actual count of characters copied to @p buffer.
-size_t TextInputStream::generateCharacters(CodePointSpan buffer)
+size_t TextInputStream::generateCharacters(CodePointView buffer)
 {
     size_t bytesRead = 1;
     size_t charsRead = 0;
@@ -1390,7 +1304,7 @@ size_t TextInputStream::generateCharacters(CodePointSpan buffer)
     uint8_t nextByte;
     bool decodingError;
 
-    while ((charsRead < buffer.size()) && (bytesRead > 0))
+    while ((charsRead < buffer.getCount()) && (bytesRead > 0))
     {
         // Read the next byte from the input source.
         bytesRead = _sourceStream->read(&nextByte, 1);
@@ -1409,7 +1323,7 @@ size_t TextInputStream::generateCharacters(CodePointSpan buffer)
                 {
                     // Handle the error, possibly reporting the erroneous sequence
                     // of bytes.
-                    handleInvalidSequence(buffer.data(), charsRead, encodingSize);
+                    handleInvalidSequence(buffer.getData(), charsRead, encodingSize);
                 }
                 else
                 {
@@ -1432,7 +1346,7 @@ size_t TextInputStream::generateCharacters(CodePointSpan buffer)
 //! @param[in] buffer The buffer of characters to process.
 //! @param[in] maxCharacters The count of characters in @p buffer.
 //! @return The count of processed characters remaining in buffer.
-size_t TextInputStream::postProcessNewlines(CodePointSpan buffer)
+size_t TextInputStream::postProcessNewlines(CodePointView buffer)
 {
     // Post-process the output buffer to combine newline character
     // encodings down to individual '\n' characters.
@@ -1440,9 +1354,9 @@ size_t TextInputStream::postProcessNewlines(CodePointSpan buffer)
 
     size_t dest = 0;
 
-    for (size_t source = 0; source < buffer.size(); ++source)
+    for (char32_t codePoint : buffer)
     {
-        int result = _nlProcessor.tryProcessCharacter(buffer[source], first, second);
+        int result = _nlProcessor.tryProcessCharacter(codePoint, first, second);
 
         if (result > 0)
         {

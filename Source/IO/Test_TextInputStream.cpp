@@ -12,6 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <gtest/gtest.h>
 
+#include "Ag/IO/Exceptions.hpp"
 #include "Ag/IO/MemoryStream.hpp"
 #include "Ag/IO/TextInputStream.hpp"
 

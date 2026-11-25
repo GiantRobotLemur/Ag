@@ -14,9 +14,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
-#include <bit>
 #include <span>
 #include <Ag/Core.hpp>
+
+#include "TextEncoding.hpp"
 
 namespace Ag {
 namespace IO {
@@ -24,51 +25,6 @@ namespace IO {
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
-//! @brief An enumeration expressing the binary encoding of text.
-enum class TextEncoding : uint8_t
-{
-    //! @brief Each 8-bit quantity is a character. The lower 128 characters are
-    //! defined by ASCII, the upper 128 by a code page which is region-specific.
-    ASCII,
-
-    //! @brief Unicode code points encoded as sequences of 1-4 bytes.
-    UTF8,
-
-    //! @brief Unicode code points encoded as 1 or 2 16-bit words with LSB-first
-    //! byte ordering.
-    UTF16_LittleEndian,
-
-    //! @brief Unicode code points encoded as 1 or 2 16-bit words with MSB-first
-    //! byte ordering.
-    UTF16_BigEndian,
-
-    //! @brief Unicode code points encoded as 32-bit words with LSB-first
-    //! byte ordering.
-    UTF32_LittleEndian,
-
-    //! @brief Unicode code points encoded as 32-bit words with MSB-first
-    //! byte ordering.
-    UTF32_BigEndian,
-};
-
-//! @brief A UTF16 text encoding which uses the native byte order of the host system.
-constexpr TextEncoding UTF16_Native =
-    (std::endian::native == std::endian::little) ? TextEncoding::UTF16_LittleEndian :
-                                                   TextEncoding::UTF16_BigEndian;
-
-//! @brief A UTF32 text encoding which uses the native byte order of the host system.
-constexpr TextEncoding UTF32_Native =
-    (std::endian::native == std::endian::little) ? TextEncoding::UTF32_LittleEndian :
-                                                   TextEncoding::UTF32_BigEndian;
-
-#ifdef WCHAR_IS_32BIT
-//! @brief A text encoding for wide characters in the native byte order of the host system (UTF-16 or 32).
-constexpr TextEncoding Wide_Native = UTF32_Native;
-#else
-//! @brief A text encoding for wide characters in the native byte order of the host system (UTF-16 or 32).
-constexpr TextEncoding Wide_Native = UTF16_Native;
-#endif
-
 //! @brief An object which defines the options by which text should be decoded
 //! from a binary input stream.
 class TextInputOptions
@@ -143,9 +99,10 @@ private:
 //! bytes into Unicode code points.
 class ICharacterDecoder
 {
-public:
+protected:
     // Construction/Destruction
     ICharacterDecoder() = default;
+public:
     virtual ~ICharacterDecoder() = default;
 
     // Accessors
@@ -166,35 +123,6 @@ public:
 
 DECLARE_UNIQUE_PTR(ICharacterDecoder);
 
-//! @brief An exception raised when a sequence of bytes is encountered which does
-//! not correspond to a valid Unicode code point.
-class InvalidEncodingSequenceException : public Ag::Exception
-{
-public:
-    // Public Data
-    //! @brief The domain used to annotate exceptions of this type.
-    static const char *Domain;
-
-    // Construction
-    InvalidEncodingSequenceException(const std::string_view &encodingName,
-                                     uint8_cptr_t bytes, size_t count);
-};
-
-//! @brief An exception raised when a sequence of bytes is encountered at the
-//! beginning of a text stream which does not represent a valid Byte Order Mark.
-class InvalidBOMException : public Ag::Exception
-{
-public:
-    // Public Data
-    //! @brief The domain used to annotate exceptions of this type.
-    static const char *Domain;
-
-    // Construction
-    InvalidBOMException(uint8_cptr_t bytes, size_t count);
-};
-
-using CodePointSpan = std::span<char32_t>;
-
 //! @brief An object which can convert a stream of bytes into a stream of
 //! Unicode characters. The object can optionally own the underlying
 //! IStream from which it receives raw bytes as input.
@@ -205,6 +133,7 @@ public:
     using UPtr = std::unique_ptr<TextInputStream>;
 
     // Construction/Destruction
+    TextInputStream() = delete;
     TextInputStream(IStream *input);
     TextInputStream(IStreamUPtr &&input);
     TextInputStream(IStream *input, const TextInputOptions &options);
@@ -244,9 +173,6 @@ public:
     TextInputStream &operator=(TextInputStream &&rhs) noexcept;
 private:
     // Internal Types
-    //! @brief An alias for a buffer of Unicode code points.
-    using CodePointCollection = std::vector<char32_t>;
-
     //! @brief The state of processing newline character sequences.
     enum class NLState : uint8_t
     {
@@ -266,7 +192,7 @@ private:
         NewlineProcessor() = default;
 
         int tryProcessCharacter(char32_t next, char32_t &output1, char32_t &output2);
-        size_t flushUnprocessed(CodePointSpan buffer);
+        size_t flushUnprocessed(CodePointView buffer);
     };
 
     // Internal Functions
@@ -276,9 +202,9 @@ private:
                                size_t decodedByteCount) const;
     void moveAssign(TextInputStream &&rhs) noexcept;
     void compressCache();
-    size_t readFromCache(CodePointSpan buffer);
-    size_t generateCharacters(CodePointSpan buffer);
-    size_t postProcessNewlines(CodePointSpan buffer);
+    size_t readFromCache(CodePointView buffer);
+    size_t generateCharacters(CodePointView buffer);
+    size_t postProcessNewlines(CodePointView buffer);
 
     // Internal Fields
     static constexpr size_t DecoderSize = 8;

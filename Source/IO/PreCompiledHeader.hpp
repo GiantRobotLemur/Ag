@@ -20,6 +20,7 @@
 
 // C++/STL Header Files
 #include <algorithm>
+#include <bit>
 #include <deque>
 #include <limits>
 #include <list>

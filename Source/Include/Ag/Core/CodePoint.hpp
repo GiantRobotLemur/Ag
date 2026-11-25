@@ -8,16 +8,42 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef __AG_CORE_CODE_POINT_HPP__
-#define __AG_CORE_CODE_POINT_HPP__
+#ifndef HEADER_AG_CORE_CODE_POINT_HPP_
+#define HEADER_AG_CORE_CODE_POINT_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include <cuchar>
 
+#include "Memory.hpp"
+
 namespace Ag {
+
+////////////////////////////////////////////////////////////////////////////////
+// Data Type Declarations
+////////////////////////////////////////////////////////////////////////////////
+//! @brief An alias for a view of contiguous writeable memory containing
+//! Unicode code points.
+using CodePointView = View<char32_t>;
+
+//! An alias for a read-only view of contiguous memory containing Unicode
+//! code points.
+using CodePointConstView = ConstView<char32_t>;
+
+//! @brief An alias for a buffer of Unicode code points.
+using CodePointCollection = std::vector<char32_t>;
+
 namespace CodePoint {
+
+////////////////////////////////////////////////////////////////////////////////
+// Data Declarations
+////////////////////////////////////////////////////////////////////////////////
+//! @brief Defines the minimum value of any valid Unicode code point.
+constexpr char32_t MinValue = U'\x000000';
+
+//! @brief Defines the maximum value of any valid Unicode code point.
+constexpr char32_t MaxValue = U'\x10FFFF';
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
@@ -33,6 +59,7 @@ bool isNumeric(char32_t codePoint);
 bool isHexDigit(char32_t codePoint);
 bool isLetter(char32_t codePoint);
 bool isPrintable(char32_t codePoint);
+bool isValid(char32_t codePoint);
 
 }} // namespace Ag::CodePoint
 

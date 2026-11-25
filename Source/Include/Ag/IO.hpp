@@ -23,7 +23,9 @@
 #include "IO/MemoryMappedFile.hpp"
 #include "IO/BufferedInputStream.hpp"
 #include "IO/BufferedOutputStream.hpp"
+#include "IO/TextEncoding.hpp"
 #include "IO/TextInputStream.hpp"
+#include "IO/TextOutputStream.hpp"
 #include "IO/StreamTools.hpp"
 
 #include "IO/HierarchySerialization.hpp"

@@ -88,6 +88,61 @@ public:
     FieldTooBigException(StreamLength blockSize);
 };
 
+//! @brief An exception raised when a sequence of bytes is encountered which does
+//! not correspond to a valid Unicode code point.
+class InvalidEncodingSequenceException : public Ag::Exception
+{
+public:
+    // Public Data
+    //! @brief The domain used to annotate exceptions of this type.
+    static const char *Domain;
+
+    // Construction
+    InvalidEncodingSequenceException(const std::string_view &encodingName,
+                                     uint8_cptr_t bytes, size_t count);
+};
+
+//! @brief An exception raised when a sequence of bytes is encountered at the
+//! beginning of a text stream which does not represent a valid Byte Order Mark.
+class InvalidBOMException : public Ag::Exception
+{
+public:
+    // Public Data
+    //! @brief The domain used to annotate exceptions of this type.
+    static const char *Domain;
+
+    // Construction
+    InvalidBOMException(uint8_cptr_t bytes, size_t count);
+};
+
+//! @brief An exception raised when an invalid Unicode code point was passed
+//! for output encoding.
+class CharacterEncodingFailureException : public Ag::Exception
+{
+public:
+    // Public Data
+    //! @brief The domain used to annotate exceptions of this type.
+    static const char *Domain;
+
+    // Construction
+    CharacterEncodingFailureException(uint8_cptr_t sequence, size_t count);
+    CharacterEncodingFailureException(utf16_cptr_t sequence, size_t count);
+    CharacterEncodingFailureException(char32_t ch);
+};
+
+//! @brief An exception raised when an Unicode code point was sent to output
+//! which has no corresponding encoding in the output format.
+class NoCharacterEncodingException : public Ag::Exception
+{
+public:
+    // Public Data
+    //! @brief The domain used to annotate exceptions of this type.
+    static const char *Domain;
+
+    // Construction
+    NoCharacterEncodingException(const std::string_view &outputFormat, char32_t ch);
+};
+
 }} // namespace Ag::IO
 
 #endif // Header guard

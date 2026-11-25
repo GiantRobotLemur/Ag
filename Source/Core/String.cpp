@@ -41,7 +41,7 @@ class UTF8CodePoint
 {
 private:
     // Internal Fields
-    char _encoded[Utf::MaxUTF8EncodingLength + 1];
+    char _encoded[Utf::ToUtf8Converter::MaxEncodingSize + 1];
     uint32_t _encodingLength;
 public:
     // Construction

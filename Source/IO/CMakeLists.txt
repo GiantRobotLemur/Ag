@@ -32,8 +32,11 @@ ag_add_library(AgIO FOLDER      "Core"
                                 "BinaryReaderWriters.hpp"
                                 "BinaryHierarchyEncoding.cpp"
                                 "BinaryHierarchyEncoding.hpp"
+                                "${AG_IO_PATH}/TextEncoding.hpp"
                                 "TextInputStream.cpp"
                                 "${AG_IO_PATH}/TextInputStream.hpp"
+                                "TextOutputStream.cpp"
+                                "${AG_IO_PATH}/TextOutputStream.hpp"
                     PUBLIC_LIBS AgCore)
 
 target_precompile_headers(AgIO PRIVATE [["PreCompiledHeader.hpp"]])
@@ -70,8 +73,11 @@ source_group("Streams" FILES
 )
 
 source_group("Text" FILES
+             "${AG_IO_PATH}/TextEncoding.hpp"
              "TextInputStream.cpp"
              "${AG_IO_PATH}/TextInputStream.hpp"
+             "TextOutputStream.cpp"
+             "${AG_IO_PATH}/TextOutputStream.hpp"
 )
 
 source_group("Hierarchy" FILES
@@ -100,6 +106,7 @@ ag_add_test_app(AgIO_Tests TEST_LIB AgIO
                                     Test_MemoryMappedFile.cpp
                                     Test_HierarchySerialization.cpp
                                     Test_TextInputStream.cpp
+                                    Test_TextOutputStream.cpp
 )
 
 target_precompile_headers(AgIO_Tests PRIVATE <gtest/gtest.h>

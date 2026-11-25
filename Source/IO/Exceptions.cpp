@@ -15,6 +15,60 @@
 namespace Ag {
 namespace IO {
 
+namespace {
+
+//! @brief Appends text representing a sequence of bytes to a UTF-8 string.
+//! @param[in] buffer The string to append to.
+//! @param[in] sequence The array of values to format.
+//! @param[in] count The count of values in @p sequence to format.
+template<typename T>
+void appendHexSequence(std::string &buffer, const T *sequence, size_t count)
+{
+    constexpr size_t hexDigitsPerValue = sizeof(T) * 2;
+    Ag::ensureExtraCapacity(buffer, (count * (hexDigitsPerValue + 4)) + 2);
+
+    buffer.push_back('{');
+    buffer.push_back(' ');
+
+    FormatInfo formatInfo(Ag::LocaleInfo::getNeutral());
+
+    formatInfo.setRadix(16);
+    formatInfo.enableUpperCase(true);
+    formatInfo.setMinimumWholeDigits(static_cast<uint16_t>(hexDigitsPerValue));
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        if (i == 0)
+        {
+            buffer.append("0x");
+        }
+        else
+        {
+            buffer.append(", 0x");
+        }
+
+        Ag::appendValue(formatInfo, buffer, sequence[i]);
+    }
+
+    buffer.push_back(' ');
+    buffer.push_back('}');
+}
+
+//! @brief Appends a text rendering of a Unicode code point to a UTF-8 buffer.
+//! @param[in] buffer The buffer to append to.
+//! @param[in] ch The code point to format into output.
+void appendCodePointHexValue(std::string &buffer, char32_t ch)
+{
+    FormatInfo format(LocaleInfo::getNeutral());
+    format.setRadix(16);
+    format.setMinimumWholeDigits(6);
+
+    buffer.append("\\u");
+    appendValue(format, buffer, static_cast<uint32_t>(ch));
+}
+
+} // Anonymous namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // IOException Member Definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -124,6 +178,116 @@ FieldTooBigException::FieldTooBigException(StreamLength blockSize)
 
     initialise(Domain, "The program attempted to access a byte "
                "block field which was too large", detail);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// InvalidEncodingSequenceException Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+const char *InvalidEncodingSequenceException::Domain = "InvalidEncodingSequenceException";
+
+//! @brief Constructs an exception raised when a sequence of bytes is encountered
+//! which does not correspond to a valid Unicode code point.
+InvalidEncodingSequenceException::InvalidEncodingSequenceException(const std::string_view &encodingName,
+                                                                   uint8_cptr_t bytes, size_t count)
+{
+    std::string detail;
+    detail.assign("In the ");
+    detail.append(encodingName);
+    detail.append(" character encoding, the following sequence of bytes was invalid: ");
+    appendHexSequence(detail, bytes, count);
+    detail.push_back('.');
+
+    initialise(Domain, "A sequence of bytes was encountered which could not be "
+               "decoded into a valid Unicode character.",
+               detail);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// InvalidBOMException Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+const char *InvalidBOMException::Domain = "InvalidEncodingSequenceException";
+
+//! @brief Constructs an exception raised when a sequence of bytes is encountered
+//! at the beginning of a text stream which does not represent a valid Byte Order Mark.
+InvalidBOMException::InvalidBOMException(uint8_cptr_t bytes, size_t count)
+{
+    std::string detail;
+    detail.assign("The byte sequence ");
+    appendHexSequence(detail, bytes, count);
+    detail.append(" was not recognised as a valid byte order mark.");
+
+    initialise(Domain, "When expecting a byte order mark at the beginning of a "
+               "text stream and invalid sequence of bytes was encountered.",
+               detail);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CharacterEncodingFailureException Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+const char *CharacterEncodingFailureException::Domain = "CharacterEncodingFailureException";
+
+//! @brief Constructs an exception raised an invalid Unicode code point was
+//! sent to an output stream.
+//! @param[in] sequence The invalid sequence of UTF-8 bytes.
+//! @param[in] count The number of valid elements in @p sequence.
+CharacterEncodingFailureException::CharacterEncodingFailureException(uint8_cptr_t sequence, size_t count)
+{
+    std::string detail;
+    detail.assign("The UTF-8 sequence ");
+    appendHexSequence(detail, reinterpret_cast<uint8_cptr_t>(sequence), count);
+    detail.append(" was not valid.");
+
+    initialise(Domain, "An attempt was made to output invalid Unicode code point.",
+               detail);
+}
+
+//! @brief Constructs an exception raised an invalid Unicode code point was
+//! sent to an output stream.
+//! @param[in] sequence The invalid sequence of UTF-16 words.
+//! @param[in] count The number of valid elements in @p sequence.
+CharacterEncodingFailureException::CharacterEncodingFailureException(utf16_cptr_t sequence, size_t count)
+{
+    std::string detail;
+    detail.assign("The UTF-16 sequence ");
+    appendHexSequence(detail, reinterpret_cast<const uint16_t *>(sequence), count);
+    detail.append(" was not valid.");
+
+    initialise(Domain, "An attempt was made to output invalid Unicode code point.",
+               detail);
+}
+
+//! @brief Constructs an exception raised an invalid Unicode code point was
+//! sent to an output stream.
+//! @param[in] ch The invalid code point.
+CharacterEncodingFailureException::CharacterEncodingFailureException(char32_t ch)
+{
+    std::string detail;
+    detail.assign("The Unicode code point ");
+    appendCodePointHexValue(detail, ch);
+    detail.append(" was not valid.");
+
+    initialise(Domain, "An attempt was made to output invalid Unicode code point.",
+               detail, static_cast<uint32_t>(ch));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NoCharacterEncodingException Member Definitions
+////////////////////////////////////////////////////////////////////////////////
+const char *NoCharacterEncodingException::Domain = "NoCharacterEncodingException";
+
+//! @brief Constructs an exception raised when a Unicode code point had not
+//! corresponding sequence of bytes in the requested output encoding.
+NoCharacterEncodingException::NoCharacterEncodingException(const std::string_view &outputFormat, char32_t ch)
+{
+    std::string detail;
+    detail.assign("The Unicode code point ");
+    appendCodePointHexValue(detail, ch);
+    detail.append(" cannot be encoded for output using the ");
+    detail.append(outputFormat);
+    detail.append(" encoding scheme.");
+
+    initialise(Domain, "A Unicode code point has no corresponding byte sequence "
+                       "in the requested encoding scheme.", detail);
 }
 
 }} // namespace Ag::IO

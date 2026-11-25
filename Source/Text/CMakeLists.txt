@@ -5,10 +5,6 @@ set(TEXT_INCLUDE_DIR "${AG_INCLUDE_DIR}/Ag/Text")
 # Define the library.
 ag_add_library(Text FOLDER      Core
                     SOURCES     PreCompiledHeader.hpp
-                                CharacterSource.cpp
-                                ${TEXT_INCLUDE_DIR}/CharacterSource.hpp
-                                CharacterSink.cpp
-                                ${TEXT_INCLUDE_DIR}/CharacterSink.hpp
                                 CharacterAnalyser.cpp
                                 ${TEXT_INCLUDE_DIR}/CharacterAnalyser.hpp
                                 ${TEXT_INCLUDE_DIR}/Tokeniser.hpp
@@ -35,8 +31,6 @@ source_group("Build" FILES  PreCompiledHeader.hpp
 ag_add_test_app(Text_Tests TEST_LIB   Text
                            SOURCES    Test_MemoryStream.hpp
                                       Test_MemoryStream.cpp
-                                      Test_CharacterSource.cpp
-                                      Test_CharacterSink.cpp
                                       Test_CharacterAnalyser.cpp
                                       Test_ExampleParser.cpp
                                       Test_ExampleParser.hpp

@@ -91,6 +91,11 @@ private:
 class ToUtf8Converter
 {
 public:
+    // Public Constants
+    //! @brief The maximum count of bytes required to encode any
+    //! Unicode code point.
+    static constexpr size_t MaxEncodingSize = 4;
+
     // Constructors/Destructors
     ToUtf8Converter();
 
@@ -130,6 +135,11 @@ private:
 class ToUtf16Converter
 {
 public:
+    // Public Constants
+    //! @brief The maximum count of 16-bit words required to encode any
+    //! Unicode code point.
+    static constexpr size_t MaxEncodingSize = 2;
+
     // Constructors/Destructors
     ToUtf16Converter();
 
@@ -149,6 +159,17 @@ private:
 class ToWideConverter
 {
 public:
+    // Public Constants
+
+    //! @brief The maximum count of wchar_t values required to encode any
+    //! Unicode code point.
+#ifdef WCHAR_IS_32BIT
+    static constexpr size_t MaxEncodingSize = 1;
+#else
+    static constexpr size_t MaxEncodingSize = 2;
+#endif
+
+    // Construction/Destruction
     ToWideConverter();
 
     // Accessors

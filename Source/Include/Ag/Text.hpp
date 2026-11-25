@@ -8,15 +8,13 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _AG_TEXT_HPP__
-#define _AG_TEXT_HPP__
+#ifndef HEADER_AG_TEXT_HPP_
+#define HEADER_AG_TEXT_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependant Header Files
 ////////////////////////////////////////////////////////////////////////////////
 // The headers of the library roughly in dependency order.
-#include "Text/CharacterSource.hpp"
-#include "Text/CharacterSink.hpp"
 #include "Text/CharacterAnalyser.hpp"
 #include "Text/Tokeniser.hpp"
 #include "Text/Parser.hpp"

@@ -8,13 +8,14 @@
 //! https://github.com/GiantRobotLemur/Ag for full license details.
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _AG_CORE_BYTE_ORDER_HPP__
-#define _AG_CORE_BYTE_ORDER_HPP__
+#ifndef HEADER_AG_CORE_BYTE_ORDER_HPP_
+#define HEADER_AG_CORE_BYTE_ORDER_HPP_
 
 ////////////////////////////////////////////////////////////////////////////////
 // Dependent Header Files
 ////////////////////////////////////////////////////////////////////////////////
 #include <cstdint>
+#include <bit>
 
 namespace Ag {
 namespace Bin {
@@ -36,6 +37,35 @@ enum class Endedness : uint8_t
 
     //! @brief The byte order which is the reverse of the host hardware.
     Reverse,
+};
+
+//! @brief Provides a concrete value for the host byte order.
+constexpr Endedness HostByteOrder =
+    (std::endian::native == std::endian::little) ? Endedness::LittleEndian :
+                                                   Endedness::BigEndian;
+
+//! @brief Provides a concrete value for the byte ordering opposed to the
+//! host order.
+constexpr Endedness ReverseByteOrder =
+    (std::endian::native == std::endian::little) ? Endedness::BigEndian :
+                                                   Endedness::LittleEndian;
+
+//! @brief A template structure which determines if a byte swap is needed
+//! to encode data in a specified byte order.
+//! @tparam TargetByteOrder The byte order to encode data as.
+template<Endedness TargetByteOrder>
+struct NeedsSwap
+{
+    static constexpr bool value = (HostByteOrder != TargetByteOrder);
+};
+
+//! @brief A template structure which resolves the byte order based on whether
+//! a byte swap has been implemented at compile type
+//! @tparam IsSwapped True if bytes are swapped, false if in host order.
+template<bool IsSwapped>
+struct ResolvedByteOrder
+{
+    static constexpr Endedness value = IsSwapped ? ReverseByteOrder : HostByteOrder;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

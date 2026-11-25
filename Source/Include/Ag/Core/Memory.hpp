@@ -18,6 +18,11 @@
 #include <exception>
 #include <memory>
 #include <new>
+#include <vector>
+#include <string>
+#include <string_view>
+
+#include "Exception.hpp"
 
 #ifndef __cpp_lib_hardware_interference_size
     // Make up for the lack of definitions provided with gcc.
@@ -202,6 +207,478 @@ public:
         ::operator delete[](allocatedPointer, ALIGNMENT);
     }
 };
+
+//! @brief An object representing a read-only view of a contiguous set of objects.
+//! @tparam T The data type of the objects being viewed.
+template<typename T> class View
+{
+public:
+    // Public Types
+    using ValueType = typename T;
+    using PointerType = typename ValueType *;
+    using ReferenceType = typename ValueType &;
+    using ConstPointerType = typename const ValueType *;
+    using ConstReferenceType = typename const ValueType &;
+    using VectorType = std::vector<ValueType>;
+    using StringType = std::basic_string<ValueType>;
+    using StringViewType = std::basic_string_view<ValueType>;
+private:
+    // Internal Fields
+    PointerType _data;
+    size_t _count;
+public:
+    // Construction/Destruction
+    ~View() = default;
+
+    //! @brief Constructs a view of 0 objects.
+    View() :
+        _data(nullptr),
+        _count(0)
+    {
+    }
+
+    //! @brief Constructs a view of a fixed number of objects.
+    //! @param[in] data A pointer to the first object.
+    //! @param[in] count The count of objects pointed to by @p data.
+    View(PointerType data, size_t count) :
+        _data(data),
+        _count(count)
+    {
+        if ((count > 0) && (data == nullptr))
+        {
+            throw ArgumentNullException("data");
+        }
+    }
+
+    //! @brief Constructs a view of a number of objects known at compile time.
+    //! @tparam N The count of objects in the array.
+    //! @param[in] data The array of objects to view.
+    template<std::size_t N>
+    View(ValueType(&rhs)[N]) :
+        _data(rhs),
+        _count(N)
+    {
+    }
+
+    //! @brief Creates a view of the elements of a vector.
+    //! @param[in] collection The collection to view.
+    View(VectorType &collection) :
+        _data(collection.data()),
+        _count(collection.size())
+    {
+    }
+
+    //! @brief Creates a view of the elements of a string, not including any
+    //! terminating null character.
+    //! @param[in] str The string to view.
+    View(StringType &str) :
+        _data(str.c_str()),
+        _count(str.length())
+    {
+    }
+
+    //! @brief Creates a view of the elements of a string view.
+    //! @param[in] str The string to view.
+    View(StringViewType &str) :
+        _data(str.data()),
+        _count(str.length())
+    {
+    }
+
+    // Accessors
+
+    //! @brief Determines if the view contains zero elements.
+    bool isEmpty() const { return _count == 0; }
+
+    //! @brief Gets the count of elements in the view.
+    size_t getCount() const { return _count; }
+
+    //! @brief Gets the count of bytes used by all elements in the view.
+    size_t getByteCount() const { return _count * sizeof(ValueType); }
+
+    //! @brief Gets a pointer to the first element in the view.
+    PointerType getData() { return _data; }
+
+    //! @brief Gets a pointer to the first element in the view.
+    ConstPointerType getData() const { return _data; }
+
+    //! @brief Allows subscript access to the elements of the view.
+    //! @param[in] index The 0-based index of the item to obtain.
+    //! @return A read-only reference to the specified object.
+    //! @throws IndexOutOfRangeException Thrown if the value of @p index is invalid.
+    ReferenceType &operator[](size_t index)
+    {
+        if (index < _count)
+        {
+            return _data[index];
+        }
+
+        throw IndexOutOfRangeException(index, _count);
+    }
+
+    //! @brief Allows subscript access to the elements of the view.
+    //! @param[in] index The 0-based index of the item to obtain.
+    //! @return A read-only reference to the specified object.
+    //! @throws IndexOutOfRangeException Thrown if the value of @p index is invalid.
+    ConstReferenceType &operator[](size_t index) const
+    {
+        if (index < _count)
+        {
+            return _data[index];
+        }
+
+        throw IndexOutOfRangeException(index, _count);
+    }
+
+    //! @brief Gets an iterator-compatible value representing the position of
+    //! the first element in the view.
+    PointerType begin() { return _data; }
+
+    //! @brief Gets an iterator-compatible value representing the position of
+    //! the element after the last one in the view.
+    PointerType end() { return _data + _count; }
+
+    //! @brief Gets an iterator-compatible value representing the position of
+    //! the first element in the view.
+    ConstPointerType begin() const { return _data; }
+
+    //! @brief Gets an iterator-compatible value representing the position of
+    //! the element after the last one in the view.
+    ConstPointerType end() const { return _data + _count; }
+
+    // Operations
+
+    //! @brief Gets a subset of the view.
+    //! @param[in] start The 0-based index of the first element in the subset view.
+    //! @return A subset view containing all elements in the original view at or
+    //! after the one at @p start.
+    //! @throws IndexOutOfRangeException Thrown if @p start is beyond the end
+    //! of the current view.
+    View slice(size_t start) const
+    {
+        if (start < _count)
+        {
+            return View(_data + start, _count - start);
+        }
+        else
+        {
+            throw IndexOutOfRangeException(start, _count);
+        }
+    }
+
+    //! @brief Gets a subset of the view.
+    //! @param[in] start The 0-based index of the first element in the subset view.
+    //! @param[in] count The count of elements to include in the subset.
+    //! @return A subset view containing @p count elements from the original view
+    //! starting with the one at @p start.
+    //! @throws IndexOutOfRangeException Thrown if @p start is beyond the end
+    //! of the current view or @p count attempt to create a view of items beyond
+    //! the end of the current view.
+    View slice(size_t start, size_t count) const
+    {
+        if (start < _count)
+        {
+            size_t maxCount = _count - start;
+
+            if (count <= maxCount)
+            {
+                return View(_data + start, count);
+            }
+            else
+            {
+                throw IndexOutOfRangeException(count, _count);
+            }
+        }
+        else
+        {
+            throw IndexOutOfRangeException(start, _count);
+        }
+    }
+
+    //! @brief Creates a view of the current data, but expressed as raw bytes.
+    View<uint8_t> toBytes() const
+    {
+        return View<uint8_t>(reinterpret_cast<uint8_cptr_t>(_data),
+                             _count * sizeof(ValueType));
+    }
+
+    //! @brief Creates a new view of the same elements hosted in a different
+    //! block of memory.
+    //! @param[in] newSource The base address of the new first element.
+    //! @return A view starting at @p newSource containing the same number of
+    //! elements as the current view.
+    View retarget(PointerType newSource) const
+    {
+        return View(newSource, _count);
+    }
+
+    //! @brief Creates a new view of the same elements hosted in a different
+    //! block of memory.
+    //! @param[in] originalSource The start of the block which the current object
+    //! viewed a subset, not necessarily beginning at @p originalSource.
+    //! @param[in] newSource The start of the block which will be a copy of
+    //! @p oiginalSource to create a new view into.
+    //! @return A new view which references a subset of @p newSource.
+    View retarget(ConstPointerType originalSource, PointerType newSource) const
+    {
+        size_t originalOffset = _data - originalSource;
+
+        return ConstView(newSource + originalOffset, _count);
+    }
+
+    //! @brief Copies the contents of the view to another array.
+    //! @param[in] dest A pointer to the array to receive the copied values.
+    //! @return A pointer to the destination element just after the last one copied.
+    PointerType copyTo(PointerType dest) const
+    {
+        return std::copy_n(_data, _count, dest);
+    }
+
+    //! @brief Copies the contents of the view into an uninitialised array,
+    //! using copy-construction on the new elements.
+    //! @param[in] dest A pointer to the first element to overwrite.
+    //! @return A pointer to the destination element just after the last one copied.
+    PointerType copyConstructTo(PointerType dest) const
+    {
+        return std::uninitialized_copy_n(_data, _count, dest);
+    }
+};
+
+//! @brief An object representing a read-only view of a contiguous set of objects.
+//! @tparam T The data type of the objects being viewed.
+template<typename T> class ConstView
+{
+public:
+    // Public Types
+    using ValueType = typename T;
+    using PointerType = typename ValueType *;
+    using ReferenceType = typename ValueType &;
+    using ConstPointerType = typename const ValueType *;
+    using ConstReferenceType = typename const ValueType &;
+    using VectorType = std::vector<ValueType>;
+    using StringType = std::basic_string<ValueType>;
+    using StringViewType = std::basic_string_view<ValueType>;
+private:
+    // Internal Fields
+    ConstPointerType _data;
+    size_t _count;
+public:
+    // Construction/Destruction
+    ~ConstView() = default;
+
+    //! @brief Constructs a view of 0 objects.
+    ConstView() :
+        _data(nullptr),
+        _count(0)
+    {
+    }
+
+    //! @brief Constructs a read-only view of a writable view of objects.
+    ConstView(const View<ValueType> &rhs) :
+        _data(rhs.getData()),
+        _count(rhs.getCount())
+    {
+    }
+
+    //! @brief Constructs a view of a fixed number of objects.
+    //! @param[in] data A pointer to the first object.
+    //! @param[in] count The count of objects pointed to by @p data.
+    ConstView(ConstPointerType data, size_t count) :
+        _data(data),
+        _count(count)
+    {
+        if ((count > 0) && (data == nullptr))
+        {
+            throw ArgumentNullException("data");
+        }
+    }
+
+    //! @brief Constructs a view of a number of objects known at compile time.
+    //! @tparam N The count of objects in the array.
+    //! @param[in] data The array of objects to view.
+    template<std::size_t N>
+    ConstView(const ValueType (&rhs)[N]) :
+        _data(rhs),
+        _count(N)
+    {
+    }
+
+    //! @brief Creates a view of the elements of a vector.
+    //! @param[in] collection The collection to view.
+    ConstView(const VectorType &collection) :
+        _data(collection.data()),
+        _count(collection.size())
+    {
+    }
+
+    //! @brief Creates a view of the elements of a string, not including any
+    //! terminating null character.
+    //! @param[in] str The string to view.
+    ConstView(const StringType &str) :
+        _data(str.c_str()),
+        _count(str.length())
+    {
+    }
+
+    //! @brief Creates a view of the elements of a string view.
+    //! @param[in] str The string to view.
+    ConstView(const StringViewType &str) :
+        _data(str.data()),
+        _count(str.length())
+    {
+    }
+
+    // Accessors
+
+    //! @brief Determines if the view contains zero elements.
+    bool isEmpty() const { return _count == 0; }
+
+    //! @brief Gets the count of elements in the view.
+    size_t getCount() const { return _count; }
+
+    //! @brief Gets the count of bytes used by all elements in the view.
+    size_t getByteCount() const { return _count * sizeof(ValueType); }
+
+    //! @brief Gets a pointer to the first element in the view.
+    ConstPointerType getData() const { return _data; }
+
+    //! @brief Allows subscript access to the elements of the view.
+    //! @param[in] index The 0-based index of the item to obtain.
+    //! @return A read-only reference to the specified object.
+    //! @throws IndexOutOfRangeException Thrown if the value of @p index is invalid.
+    ConstReferenceType &operator[](size_t index) const
+    {
+        if (index < _count)
+        {
+            return _data[index];
+        }
+
+        throw IndexOutOfRangeException(index, _count);
+    }
+
+    //! @brief Gets an iterator-compatible value representing the position of
+    //! the first element in the view.
+    ConstPointerType begin() const { return _data; }
+
+    //! @brief Gets an iterator-compatible value representing the position of
+    //! the element after the last one in the view.
+    ConstPointerType end() const { return _data + _count; }
+
+    // Operations
+
+    //! @brief Overwrites the current read-only view with the properties
+    //! of a writable view.
+    //! @param[in] rhs The writable view to assign to this one.
+    //! @returns A reference to the current object.
+    ConstView &operator=(const View<ValueType> &rhs)
+    {
+        _data = rhs.getData();
+        _count = rhs.getCount();
+
+        return *this;
+    }
+
+    //! @brief Gets a subset of the view.
+    //! @param[in] start The 0-based index of the first element in the subset view.
+    //! @return A subset view containing all elements in the original view at or
+    //! after the one at @p start.
+    //! @throws IndexOutOfRangeException Thrown if @p start is beyond the end
+    //! of the current view.
+    ConstView slice(size_t start) const
+    {
+        if (start < _count)
+        {
+            return ConstView(_data + start, _count - start);
+        }
+        else
+        {
+            throw IndexOutOfRangeException(start, _count);
+        }
+    }
+
+    //! @brief Gets a subset of the view.
+    //! @param[in] start The 0-based index of the first element in the subset view.
+    //! @param[in] count The count of elements to include in the subset.
+    //! @return A subset view containing @p count elements from the original view
+    //! starting with the one at @p start.
+    //! @throws IndexOutOfRangeException Thrown if @p start is beyond the end
+    //! of the current view or @p count attempt to create a view of items beyond
+    //! the end of the current view.
+    ConstView slice(size_t start, size_t count) const
+    {
+        if (start < _count)
+        {
+            size_t maxCount = _count - start;
+
+            if (count <= maxCount)
+            {
+                return ConstView(_data + start, count);
+            }
+            else
+            {
+                throw IndexOutOfRangeException(count, _count);
+            }
+        }
+        else
+        {
+            throw IndexOutOfRangeException(start, _count);
+        }
+    }
+
+    //! @brief Creates a view of the current data, but expressed as raw bytes.
+    ConstView<uint8_t> toBytes() const
+    {
+        return ConstView<uint8_t>(reinterpret_cast<uint8_cptr_t>(_data),
+                                  _count * sizeof(ValueType));
+    }
+
+    //! @brief Creates a new view of the same elements hosted in a different
+    //! block of memory.
+    //! @param[in] newSource The base address of the new first element.
+    //! @return A view starting at @p newSource containing the same number of
+    //! elements as the current view.
+    ConstView retarget(ConstPointerType newSource) const
+    {
+        return ConstView(newSource, _count);
+    }
+
+    //! @brief Creates a new view of the same elements hosted in a different
+    //! block of memory.
+    //! @param[in] originalSource The start of the block which the current object
+    //! viewed a subset, not necessarily beginning at @p originalSource.
+    //! @param[in] newSource The start of the block which will be a copy of
+    //! @p oiginalSource to create a new view into.
+    //! @return A new view which references a subset of @p newSource.
+    ConstView retarget(ConstPointerType originalSource, ConstPointerType newSource) const
+    {
+        size_t originalOffset = _data - originalSource;
+
+        return ConstView(newSource + originalOffset, _count);
+    }
+
+    //! @brief Copies the contents of the view to another array.
+    //! @param[in] dest A pointer to the array to receive the copied values.
+    //! @return A pointer to the destination element just after the last one copied.
+    PointerType copyTo(PointerType dest) const
+    {
+        return std::copy_n(_data, _count, dest);
+    }
+
+    //! @brief Copies the contents of the view into an uninitialised array,
+    //! using copy-construction on the new elements.
+    //! @param[in] dest A pointer to the first element to overwrite.
+    //! @return A pointer to the destination element just after the last one copied.
+    PointerType copyConstructTo(PointerType dest) const
+    {
+        return std::uninitialized_copy_n(_data, _count, dest);
+    }
+};
+
+//! @brief An alias for a writable view of a contiguous run of bytes.
+using ByteView = View<uint8_t>;
+
+//! @brief An alias for a read-only view of a contiguous run of bytes.
+using ByteConstView = ConstView<uint8_t>;
 
 } // namespace Ag
 
