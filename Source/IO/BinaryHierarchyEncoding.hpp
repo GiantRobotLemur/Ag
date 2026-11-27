@@ -84,6 +84,10 @@ enum class FieldType : uint8_t
     Array,
 };
 
+//! @brief An alias for a type which will convert between encoded and system
+//! byte order.
+using EncodingByteOrder = Ag::Bin::ByteSwapper<std::endian::little>;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class Declarations
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,8 +125,8 @@ class ReadOnlyDataSource;
 ////////////////////////////////////////////////////////////////////////////////
 // Function Declarations
 ////////////////////////////////////////////////////////////////////////////////
-size_t readSize(IStream *stream, const Bin::ByteOrder *encoding);
-StreamLength readStreamSize(IStream *stream, const Bin::ByteOrder *encoding);
+size_t readSize(IStream *stream);
+StreamLength readStreamSize(IStream *stream);
 StreamLength readStreamSize(ReadOnlyDataSource *source, const StreamRegion &region,
                             int &bytesUsed);
 StreamLength writeStreamSize(IStream *stream, StreamLength length);
@@ -312,7 +316,7 @@ bool tryReadRealEncoding(ReadOnlyDataSource *source, const StreamRegion &region,
 
     if (source->tryRead(region, buffer))
     {
-        if (Ag::Bin::ByteOrder::getLittleEndian()->requiresSwap())
+        if constexpr (EncodingByteOrder::SwapToTarget)
             std::reverse(buffer, buffer + sizeof(T));
 
         value = *reinterpret_cast<const T *>(buffer);
@@ -341,7 +345,7 @@ void writeReal(IStream *output, T value)
 
     memcpy(buffer + 1, &value, sizeof(RealType));
 
-    if (Bin::ByteOrder::getLittleEndian()->requiresSwap())
+    if constexpr (EncodingByteOrder::SwapToTarget)
         std::reverse(buffer + 1, buffer + sizeof(RealType) + 1);
 
     size_t bytesWritten = output->write(buffer, std::size(buffer));

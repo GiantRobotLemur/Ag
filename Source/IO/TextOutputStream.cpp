@@ -137,14 +137,15 @@ public:
 
 //! @brief An implementation of ICharacterEncoder which outputs code points
 //! encoded as UTF-16 word sequences.
-//! @tparam SwapBytes Indicates whether the output encoding has the opposite
-//! byte order to the host encoding.
-template<bool SwapBytes>
+//! @tparam TTargetByteOrder Defines the target byte order for encoding
+//! UTF-16 words.
+template<std::endian TTargetByteOrder>
 class UTF16CharacterEncoder : public ICharacterEncoder
 {
 private:
     // Internal Types
     using BufferView = ConstView<uint16_t>;
+    using Encoder = Bin::ByteSwapper<TTargetByteOrder>;
 
     // Internal Fields
     uint16_t _buffer[Utf::ToUtf16Converter::MaxEncodingSize];
@@ -160,7 +161,7 @@ public:
     // Inherited from ICharacterEncoder
     virtual std::string_view getName() const override
     {
-        if constexpr (Ag::Bin::ResolvedByteOrder<SwapBytes>::value == Bin::Endedness::LittleEndian)
+        if constexpr (TTargetByteOrder == std::endian::little)
         {
             return "UTF16-LE";
         }
@@ -178,14 +179,7 @@ public:
         // Encode the 2-byte BOM for UTF-16 and swap it accordingly.
         constexpr uint16_t BOM = 0xFEFF;
 
-        if constexpr (SwapBytes)
-        {
-            _buffer[0] = std::byteswap(BOM);
-        }
-        else
-        {
-            _buffer[0] = BOM;
-        }
+        _buffer[0] = Encoder::apply(BOM);
 
         return BufferView(_buffer, 1).toBytes();
     }
@@ -218,14 +212,7 @@ public:
 
         while (converter.tryGetNextCharacter(word))
         {
-            if constexpr (SwapBytes)
-            {
-                _buffer[i] = std::byteswap(static_cast<uint16_t>(word));
-            }
-            else
-            {
-                _buffer[i] = static_cast<uint16_t>(word);
-            }
+            _buffer[i] = Encoder::apply(static_cast<uint16_t>(word));
 
             ++i;
         }
@@ -237,14 +224,15 @@ public:
 
 //! @brief An implementation of ICharacterEncoder which outputs code points
 //! encoded as UTF-32 words.
-//! @tparam SwapBytes Indicates whether the output encoding has the opposite
-//! byte order to the host encoding.
-template<bool SwapBytes>
+//! @tparam TTargetByteOrder Defines the target byte order for encoding
+//! UTF-32 words.
+template<std::endian TTargetByteOrder>
 class UTF32CharacterEncoder : public ICharacterEncoder
 {
 private:
     // Internal Fields
     using BufferConstView = ConstView<uint32_t>;
+    using Encoder = Bin::ByteSwapper<TTargetByteOrder>;
 
     // Internal Fields
     uint32_t _buffer = 0;
@@ -257,7 +245,7 @@ public:
     // Inherited from ICharacterEncoder
     virtual std::string_view getName() const override
     {
-        if constexpr (Ag::Bin::ResolvedByteOrder<SwapBytes>::value == Bin::Endedness::LittleEndian)
+        if constexpr (TTargetByteOrder == std::endian::little)
         {
             return "UTF32-LE";
         }
@@ -275,14 +263,7 @@ public:
         // Encode the 4-byte BOM for UTF-32 and swap it accordingly.
         constexpr uint32_t BOM = 0xFEFF;
 
-        if constexpr (SwapBytes)
-        {
-            _buffer = std::byteswap(BOM);
-        }
-        else
-        {
-            _buffer = BOM;
-        }
+        _buffer = Encoder::apply(BOM);
 
         return BufferConstView(&_buffer, 1).toBytes();
     }
@@ -299,14 +280,7 @@ public:
 
         error = false;
 
-        if constexpr (SwapBytes)
-        {
-            _buffer = std::byteswap(static_cast<uint32_t>(next));
-        }
-        else
-        {
-            _buffer = static_cast<uint32_t>(next);
-        }
+        _buffer = Encoder::apply(static_cast<uint32_t>(next));
 
         // Return the span of bytes representing the encoding.
         return BufferConstView(&_buffer, 1).toBytes();
@@ -332,18 +306,18 @@ ICharacterEncoderUPtr createEncoder(TextEncoding encoding)
         break;
 
     case Ag::IO::TextEncoding::UTF16_LittleEndian:
-        encoder = new UTF16CharacterEncoder<Bin::NeedsSwap<Bin::Endedness::LittleEndian>::value>();
+        encoder = new UTF16CharacterEncoder<std::endian::little>();
         break;
 
     case Ag::IO::TextEncoding::UTF16_BigEndian:
-        encoder = new UTF16CharacterEncoder<Bin::NeedsSwap<Bin::Endedness::BigEndian>::value>();
+        encoder = new UTF16CharacterEncoder<std::endian::big>();
         break;
 
     case Ag::IO::TextEncoding::UTF32_LittleEndian:
-        encoder = new UTF32CharacterEncoder<Bin::NeedsSwap<Bin::Endedness::LittleEndian>::value>();
+        encoder = new UTF32CharacterEncoder<std::endian::little>();
         break;
     case Ag::IO::TextEncoding::UTF32_BigEndian:
-        encoder = new UTF32CharacterEncoder<Bin::NeedsSwap<Bin::Endedness::BigEndian>::value>();
+        encoder = new UTF32CharacterEncoder<std::endian::big>();
         break;
 
     default:

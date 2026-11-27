@@ -347,7 +347,6 @@ IArrayReader *BinaryHierarchyRoot::getRootArray()
 //! @returns A collection of strings in the order in which they were read in.
 StringCollection BinaryHierarchyRoot::readStringTable(IStream *stream, size_t stringCount)
 {
-    auto encoding = Bin::ByteOrder::getLittleEndian();
     StringCollection symbols;
     std::vector<char> buffer;
 
@@ -356,7 +355,7 @@ StringCollection BinaryHierarchyRoot::readStringTable(IStream *stream, size_t st
 
     for (size_t i = 0; i < stringCount; ++i)
     {
-        size_t utf8ByteCount = readSize(stream, encoding);
+        size_t utf8ByteCount = readSize(stream);
 
         if (utf8ByteCount > 0)
         {

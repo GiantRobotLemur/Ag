@@ -213,33 +213,31 @@ void BinaryStreamHeader::validate() const
 //! @retval false There were not enough bytes in the stream to populate the header.
 bool BinaryStreamHeader::tryRead(IStream *input)
 {
-    auto decoder = Bin::ByteOrder::getLittleEndian();
-
     uint32_t encodedDword;
 
     // Read and decode the Signature field.
     if (input->read(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
-    Signature = decoder->toHost(encodedDword);
+    Signature = EncodingByteOrder::apply(encodedDword);
 
     // Read and decode the Version field.
     if (input->read(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
-    Version = decoder->toHost(encodedDword);
+    Version = EncodingByteOrder::apply(encodedDword);
 
     // Read and decode the Flags field.
     if (input->read(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
-    Flags = decoder->toHost(encodedDword);
+    Flags = EncodingByteOrder::apply(encodedDword);
 
     // Read and decode the Symbol Count field.
     if (input->read(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
-    SymbolCount = decoder->toHost(encodedDword);
+    SymbolCount = EncodingByteOrder::apply(encodedDword);
 
     uint64_t encodedLong;
 
@@ -247,25 +245,25 @@ bool BinaryStreamHeader::tryRead(IStream *input)
     if (input->read(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
 
-    SymbolTableSize = static_cast<int64_t>(decoder->toHost(encodedLong));
+    SymbolTableSize = static_cast<int64_t>(EncodingByteOrder::apply(encodedLong));
 
     // Read and decode the Compressed Symbol Table Size field.
     if (input->read(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
 
-    CompressedSymbolTableSize = static_cast<int64_t>(decoder->toHost(encodedLong));
+    CompressedSymbolTableSize = static_cast<int64_t>(EncodingByteOrder::apply(encodedLong));
 
     // Read and decode the Payload Size field.
     if (input->read(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
 
-    PayloadSize = static_cast<int64_t>(decoder->toHost(encodedLong));
+    PayloadSize = static_cast<int64_t>(EncodingByteOrder::apply(encodedLong));
 
     // Read and decode the Compressed Payload Size field.
     if (input->read(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
 
-    CompressedPayloadSize = static_cast<int64_t>(decoder->toHost(encodedLong));
+    CompressedPayloadSize = static_cast<int64_t>(EncodingByteOrder::apply(encodedLong));
 
     return true;
 }
@@ -277,34 +275,33 @@ bool BinaryStreamHeader::tryRead(IStream *input)
 bool BinaryStreamHeader::tryWrite(IStream *output)
 {
     BufferedOutputStream bufferedOutput(output);
-    auto encoder = Bin::ByteOrder::getLittleEndian();
 
     // Encode and store the Signature field.
-    uint32_t encodedDword = encoder->toTarget(Signature);
+    uint32_t encodedDword = EncodingByteOrder::apply(Signature);
 
     if (bufferedOutput.write(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
     // Encode and store the Version field.
-    encodedDword = encoder->toTarget(Version);
+    encodedDword = EncodingByteOrder::apply(Version);
 
     if (bufferedOutput.write(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
     // Encode and store the Flags field.
-    encodedDword = encoder->toTarget(Flags);
+    encodedDword = EncodingByteOrder::apply(Flags);
 
     if (bufferedOutput.write(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
     // Encode and store the Symbol Count field.
-    encodedDword = encoder->toTarget(SymbolCount);
+    encodedDword = EncodingByteOrder::apply(SymbolCount);
 
     if (bufferedOutput.write(&encodedDword, sizeof(encodedDword)) != sizeof(encodedDword))
         return false;
 
     // Encode and store the Symbol Table Size field.
-    uint64_t encodedLong = encoder->toTarget(static_cast<uint64_t>(SymbolTableSize));
+    uint64_t encodedLong = EncodingByteOrder::apply(static_cast<uint64_t>(SymbolTableSize));
 
     if (bufferedOutput.write(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
@@ -313,20 +310,20 @@ bool BinaryStreamHeader::tryWrite(IStream *output)
     int64_t sizeValue = (CompressedSymbolTableSize < 0) ? SymbolTableSize :
                                                           CompressedSymbolTableSize;
 
-    encodedLong = encoder->toTarget(static_cast<uint64_t>(sizeValue));
+    encodedLong = EncodingByteOrder::apply(static_cast<uint64_t>(sizeValue));
 
     if (bufferedOutput.write(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
 
     // Encode and store the Payload Size field.
-    encodedLong = encoder->toTarget(static_cast<uint64_t>(PayloadSize));
+    encodedLong = EncodingByteOrder::apply(static_cast<uint64_t>(PayloadSize));
 
     if (bufferedOutput.write(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
 
     // Encode and store the Compressed Payload Size field.
     sizeValue = (CompressedPayloadSize < 0) ? PayloadSize : CompressedPayloadSize;
-    encodedLong = encoder->toTarget(static_cast<uint64_t>(sizeValue));
+    encodedLong = EncodingByteOrder::apply(static_cast<uint64_t>(sizeValue));
 
     if (bufferedOutput.write(&encodedLong, sizeof(encodedLong)) != sizeof(encodedLong))
         return false;
@@ -342,13 +339,11 @@ bool BinaryStreamHeader::tryWrite(IStream *output)
 ////////////////////////////////////////////////////////////////////////////////
 //! @brief Reads an anonymous byte size value directly from a stream.
 //! @param[in] stream The stream to read bytes from.
-//! @param[in] encoding The object used to decode serialized values into the
-//! proper host byte order.
 //! @return The size read from the stream.
 //! @throws OperationException If the bytes cannot be read or the size is too large.
-size_t readSize(IStream *stream, const Bin::ByteOrder *encoding)
+size_t readSize(IStream *stream)
 {
-    StreamLength streamSize = readStreamSize(stream, encoding);
+    StreamLength streamSize = readStreamSize(stream);
 
     return streamToMemorySize(streamSize);
 }
@@ -358,7 +353,7 @@ size_t readSize(IStream *stream, const Bin::ByteOrder *encoding)
 //! @param[in] encoding The object used to decode serialized values into the
 //! proper host byte order.
 //! @return The size read from the stream.
-StreamLength readStreamSize(IStream *stream, const Bin::ByteOrder *encoding)
+StreamLength readStreamSize(IStream *stream)
 {
     uint8_t headerByte;
 
@@ -375,7 +370,7 @@ StreamLength readStreamSize(IStream *stream, const Bin::ByteOrder *encoding)
         if (stream->read(&encodedSize, byteCount) != byteCount)
             throw IOException("Failed to read size encoding.");
 
-        return static_cast<StreamLength>(encoding->toHost(encodedSize));
+        return static_cast<StreamLength>(EncodingByteOrder::apply(encodedSize));
     }
     else
     {

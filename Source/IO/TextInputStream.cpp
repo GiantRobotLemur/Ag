@@ -98,9 +98,9 @@ public:
 
 //! @brief An implementation of ICharacterDecoder which interprets UTF-16-encoded
 //! words into Unicode code points.
-//! @tparam ByteSwap True of 16-bit words read from the input stream are in
-//! a format opposite to that of the host architecture and need to be swapped.
-template<bool ByteSwap>
+//! @tparam TSourceByteOrder Defines the byte order used to encode the UTF-16 words
+//! the object is to read.
+template<std::endian TSourceByteOrder>
 class UTF16Decoder : public ICharacterDecoder
 {
 private:
@@ -117,7 +117,7 @@ public:
     // Inherited from ICharacterDecoder.
     virtual std::string_view getName() const override
     {
-        if constexpr (Ag::Bin::ResolvedByteOrder<ByteSwap>::value == Bin::Endedness::LittleEndian)
+        if constexpr (TSourceByteOrder == std::endian::little)
         {
             return "UTF16-LE";
         }
@@ -144,7 +144,7 @@ public:
             uint16_t readWord;
             _offset = 0;
 
-            if constexpr (ByteSwap)
+            if constexpr (TSourceByteOrder == std::endian::big)
             {
                 readWord = (static_cast<uint16_t>(_lowByte) << 8) | next;
             }
@@ -169,9 +169,9 @@ public:
 
 //! @brief An implementation of ICharacterDecoder which interprets UTF-32-encoded
 //! words into Unicode code points.
-//! @tparam ByteSwap True of 32-bit words read from the input stream are in
-//! a format opposite to that of the host architecture and need to be swapped.
-template<bool ByteSwap>
+//! @tparam TSourceByteOrder Defines the byte order used to encode the UTF-32 words
+//! the object is to read.
+template<std::endian TSourceByteOrder>
 class UTF32Decoder : public ICharacterDecoder
 {
 private:
@@ -187,7 +187,7 @@ public:
     // Inherited from ICharacterDecoder.
     virtual std::string_view getName() const override
     {
-        if constexpr (Ag::Bin::ResolvedByteOrder<ByteSwap>::value == Bin::Endedness::LittleEndian)
+        if constexpr (TSourceByteOrder == std::endian::little)
         {
             return "UTF32-LE";
         }
@@ -200,7 +200,7 @@ public:
     // Inherited from ICharacterDecoder.
     virtual bool tryDecode(uint8_t next, char32_t &ch, bool &error) override
     {
-        // We have a low byte, not enough to decode.
+        // Read the word in as little endian.
         _word |= static_cast<uint32_t>(next) << (_offset * 8);
 
         ++_offset;
@@ -210,8 +210,9 @@ public:
             // We have all the bytes we need.
             uint32_t readWord;
 
-            if constexpr (ByteSwap)
+            if constexpr (TSourceByteOrder == std::endian::big)
             {
+                // Swap the byte order if necessary
                 readWord = std::byteswap(_word);
             }
             else
@@ -258,19 +259,19 @@ ICharacterDecoderUPtr createDecoder(TextEncoding encoding)
         break;
 
     case TextEncoding::UTF16_LittleEndian:
-        decoder.reset(new UTF16Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::LittleEndian>::value>());
+        decoder.reset(new UTF16Decoder<std::endian::little>());
         break;
 
     case TextEncoding::UTF16_BigEndian:
-        decoder.reset(new UTF16Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::BigEndian>::value>());
+        decoder.reset(new UTF16Decoder<std::endian::big>());
         break;
 
     case TextEncoding::UTF32_LittleEndian:
-        decoder.reset(new UTF32Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::LittleEndian>::value>());
+        decoder.reset(new UTF32Decoder<std::endian::little>());
         break;
 
     case TextEncoding::UTF32_BigEndian:
-        decoder.reset(new UTF32Decoder<Ag::Bin::NeedsSwap<Bin::Endedness::BigEndian>::value>());
+        decoder.reset(new UTF32Decoder<std::endian::big>());
         break;
 
     default:
